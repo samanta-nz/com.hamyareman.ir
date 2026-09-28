@@ -30,6 +30,8 @@ object ContentCatalog {
 
     @Volatile private var cats: List<ContentCat> = emptyList()
     @Volatile private var itemsById: Map<String, ContentItem> = emptyMap()
+    @Volatile private var mirrorKeys: Map<String, String> = emptyMap()
+    @Volatile private var relativeFiles: Map<String, String> = emptyMap()
     @Volatile private var loaded = false
 
     fun load(ctx: Context) {
@@ -66,8 +68,23 @@ object ContentCatalog {
                     )
                     map[item.id] = item
                 }
+                val mirrors = mutableMapOf<String, String>()
+                // catalog مرجع UI است؛ server-map همهٔ payloadهای مشترک از جمله
+                // صوت/PDF/HTML تدریس را پوشش می‌دهد.
+                map.values.forEach { mirrors[it.aw] = it.key }
+                runCatching {
+                    val mirrorText = ctx.applicationContext.assets.open("content/server-map.json")
+                        .bufferedReader().use { it.readText() }
+                    val mirrorArray = JSONObject(mirrorText).getJSONArray("entries")
+                    for (i in 0 until mirrorArray.length()) {
+                        val entry = mirrorArray.getJSONObject(i)
+                        mirrors[entry.getString("id")] = entry.getString("key")
+                    }
+                }
                 cats = cs.sortedBy { it.order }
                 itemsById = map
+                mirrorKeys = mirrors
+                relativeFiles = map.values.associate { it.key.substringAfterLast('/') to it.id }
                 loaded = true
             }
         }
@@ -87,12 +104,18 @@ object ContentCatalog {
 
     fun item(id: String): ContentItem? = itemsById[id]
 
-    /** نگاشت شناسهٔ Appwrite ← کلید آروان (برای ابزارها/آزمایشگاه‌ها هم). */
-    fun keyFor(fileId: String): String? = itemsById[fileId]?.key
+    /** نگاشت همهٔ payloadهای عمومی Appwrite ← کلید قطعی و اتمیک آروان. */
+    fun keyFor(fileId: String): String? = mirrorKeys[fileId]
 
-    /** یک کلید HTML کوچک‌تر برای کاوش — نخستین آیتم HTML. */
-    fun sampleHtmlKey(): String? =
-        itemsById.values.firstOrNull { it.kind == "html" }?.key
+    /** مقصد لینک نسبی در HTMLهای آموزشی، مثل 02-handwriting.html. */
+    fun itemIdForRelativeFile(fileName: String): String? =
+        relativeFiles[fileName.substringBefore('?').substringBefore('#').substringAfterLast('/')]
+
+    /** یک فایل واقعیِ موجود روی هر دو origin برای سنجش Range و سرعت. */
+    fun sampleHtmlItem(): ContentItem? =
+        itemsById.values.filter { it.kind == "html" }.minByOrNull { it.id }
+
+    fun sampleHtmlKey(): String? = sampleHtmlItem()?.key
 
     /** برای ابزارها: از روی شناسهٔ Appwrite (tool-*.html). */
     fun keyForOrNull(fileId: String): String? = keyFor(fileId)

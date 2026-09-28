@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -196,6 +197,96 @@ object ApkUpdate {
         return actual.equals(expected.trim(), ignoreCase = true)
     }
 
+    private const val INSTALL_PREF = "hamyar_update_install"
+    private const val KEY_PENDING_VERSION = "pending_version"
+
+    @Suppress("DEPRECATION")
+    private fun archiveInfo(ctx: Context) = if (Build.VERSION.SDK_INT >= 33) {
+        ctx.packageManager.getPackageArchiveInfo(
+            file(ctx).absolutePath,
+            PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()),
+        )
+    } else {
+        ctx.packageManager.getPackageArchiveInfo(file(ctx).absolutePath, PackageManager.GET_SIGNING_CERTIFICATES)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun installedInfo(ctx: Context) = if (Build.VERSION.SDK_INT >= 33) {
+        ctx.packageManager.getPackageInfo(
+            ctx.packageName,
+            PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()),
+        )
+    } else {
+        ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun versionCodeOf(info: android.content.pm.PackageInfo): Long =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode else info.versionCode.toLong()
+
+    private fun signerSha256(info: android.content.pm.PackageInfo): String? = runCatching {
+        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.signingInfo?.apkContentsSigners
+        } else {
+            @Suppress("DEPRECATION") info.signatures
+        }.orEmpty()
+        val cert = signatures.firstOrNull()?.toByteArray() ?: return@runCatching null
+        MessageDigest.getInstance("SHA-256").digest(cert).joinToString("") { "%02x".format(it) }
+    }.getOrNull()
+
+    /**
+     * پیش از بازکردن نصب‌کننده سه نگهبان قطعی دارد: package همان پایه، versionCode
+     * دقیق payload و همان گواهی امضای نسخهٔ نصب‌شده. null یعنی فایل مجاز است.
+     */
+    fun identityError(ctx: Context, info: UpdateInfo): String? {
+        val archive = archiveInfo(ctx) ?: return "فایل، APK معتبر اندروید نیست."
+        if (archive.packageName != ctx.packageName) {
+            return "این فایل برای یک پایهٔ دیگر است و روی این برنامه نصب نمی‌شود."
+        }
+        if (versionCodeOf(archive) != info.latest.toLong()) {
+            return "کد نسخهٔ فایل با نسخهٔ اعلام‌شدهٔ سرور یکسان نیست."
+        }
+        val archiveSigner = signerSha256(archive) ?: return "امضای فایل قابل بررسی نیست."
+        val installedSigner = runCatching { signerSha256(installedInfo(ctx)) }.getOrNull()
+            ?: return "امضای نسخهٔ نصب‌شده قابل بررسی نیست."
+        if (!archiveSigner.equals(installedSigner, ignoreCase = true)) {
+            return "کلید امضای فایل با نسخهٔ نصب‌شده یکسان نیست."
+        }
+        val declared = info.signingSha256.filter { it.isLetterOrDigit() }.lowercase()
+        if (declared.isNotBlank() && declared != archiveSigner.lowercase()) {
+            return "اثر انگشت امضای فایل با اعلام سرور یکسان نیست."
+        }
+        return null
+    }
+
+    private fun markPendingInstall(ctx: Context, version: Int) {
+        ctx.getSharedPreferences(INSTALL_PREF, Context.MODE_PRIVATE)
+            .edit().putInt(KEY_PENDING_VERSION, version).apply()
+    }
+
+    private fun clearPendingInstall(ctx: Context) {
+        ctx.getSharedPreferences(INSTALL_PREF, Context.MODE_PRIVATE).edit().clear().apply()
+    }
+
+    /**
+     * اجرای نسخهٔ تازه ممکن است process قبلی را قبل از callback ببندد؛ در شروع
+     * نسخهٔ جدید نیز فایل APK و part حتماً پاک می‌شوند.
+     */
+    fun cleanupAfterSuccessfulInstall(ctx: Context) {
+        val pending = ctx.getSharedPreferences(INSTALL_PREF, Context.MODE_PRIVATE)
+            .getInt(KEY_PENDING_VERSION, 0)
+        val current = runCatching { versionCodeOf(installedInfo(ctx)).toInt() }.getOrDefault(0)
+        if (pending > 0 && current >= pending) {
+            clear(ctx)
+            clearPendingInstall(ctx)
+        }
+    }
+
+    fun onInstallSucceeded(ctx: Context) {
+        clear(ctx)
+        clearPendingInstall(ctx)
+    }
+
     /** آیا اجازهٔ «نصب از منابع ناشناس» برای همین اپ داده شده؟ */
     fun canInstall(ctx: Context): Boolean = runCatching {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -266,11 +357,14 @@ object ApkUpdate {
      * اجرای نصب‌کنندهٔ سیستم، به ترتیبِ مطمئن‌ترین راه‌ها.
      * @return false یعنی هیچ راهی باز نشد (فراخوان باید راهِ جایگزین نشان دهد).
      */
-    fun install(ctx: Context): Boolean {
+    fun install(ctx: Context, info: UpdateInfo): Boolean {
         val f = file(ctx)
         if (!f.exists() || f.length() <= 0L) return false
+        if (identityError(ctx, info) != null) return false
+        markPendingInstall(ctx, info.latest)
         if (installViaIntent(ctx)) return true
         if (installViaSession(ctx)) return true
+        clearPendingInstall(ctx)
         return false
     }
 

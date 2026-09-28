@@ -1,5 +1,7 @@
 package com.hamyareman.ir.ui.study
 
+import android.content.Context
+
 /**
  * نگاشت پک ریاضی نهم به فایل HTML داخل assets/math/c905.
  * درس‌ها: فقط تمرین کتاب. جمع‌بندی فصل: فلش + نمونه سوال (بدون تمرین کتاب).
@@ -40,6 +42,11 @@ internal object MathHtmlAssets {
             )
         }
         return null
+    }
+
+    fun exists(ctx: Context, assetPath: String?): Boolean {
+        if (assetPath.isNullOrBlank()) return false
+        return runCatching { ctx.assets.open(assetPath).use { } }.isSuccess
     }
 
     fun pdfFileName(packId: String): String? {

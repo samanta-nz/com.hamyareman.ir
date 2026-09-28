@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * لایهٔ رمز مشترک HTML روی باکت: جادوی `HMK1` + IV ۱۲ بایتی + AES-GCM.
- * فایل بدون این سرآیند همان متن خام قدیمی است (سازگار با HTMLهای رمزنشده).
+ * محتوای remote باید همیشه HMK1 باشد؛ نبود magic به‌صورت fail-closed رد می‌شود.
  */
 object HtmlCodec {
 
@@ -20,7 +20,7 @@ object HtmlCodec {
     }
 
     fun unwrap(ctx: Context, data: ByteArray): ByteArray {
-        if (!isWrapped(data)) return data
+        require(isWrapped(data)) { "فایل HTML رمز معتبر HMK1 ندارد." }
         val key = HtmlMediaKey.get(ctx)
             ?: error("کلید درس روی دستگاه نیست. دوباره وارد شو.")
         val iv = data.copyOfRange(4, 16)

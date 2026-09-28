@@ -32,8 +32,11 @@ android {
         applicationId = "com.hamyareman.ir"   // Platform ثبت‌شده در کنسول Appwrite
         minSdk = 26
         targetSdk = 36
-        versionCode = 98
-        versionName = "1.97"
+        // هر خروجی انتشار باید versionCode بزرگ‌تر از نسخهٔ قبلی همان پایه داشته
+        // باشد. workflow انتشار این دو مقدار را با -PhamyarVersionCode/Name override
+        // و با ردیف مستقل همان پایه روی سرور مقایسه می‌کند.
+        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 99
+        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "1.98"
         ndk {
             // فقط معماری‌های واقعیِ گوشی. x86/x86_64 (شبیه‌ساز) عمداً حذف‌اند:
             // کتابخانه‌ی بومیِ WebRTC برای هر معماری ~۶ تا ۱۲ مگابایت است و هر دو
@@ -73,6 +76,10 @@ android {
                 buildConfigField("String", "GRADE_FA_SHORT", "\"$faShort\"")
                 buildConfigField("String", "GRADE_FA_NUMERAL", "\"$faNumeral\"")
                 buildConfigField("String", "BOOKS_FOLDER", "\"$folder\"")
+                // کانال آپدیت هر پایه مستقل است؛ هیچ APK پایه‌ای به پایهٔ دیگر
+                // پیشنهاد یا نصب نمی‌شود.
+                buildConfigField("String", "UPDATE_ROW_ID", "\"app_release_$id\"")
+                resValue("string", "app_name", "همیار من - پایه $faShort")
             }
         }
         gradeApp("p04", 4, "grade4", "چهارم", "۴", "com.hamyareman.p04", "Base-04")

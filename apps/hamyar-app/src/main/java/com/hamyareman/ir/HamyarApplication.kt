@@ -22,9 +22,13 @@ class HamyarApplication : Application() {
             previous?.uncaughtException(thread, error)
         }
         container = AppContainer(this)
+        // اگر process نسخهٔ قبلی پیش از callback نصب بسته شد، نسخهٔ تازه در همین
+        // شروع فایل APK/part را بعد از تطبیق versionCode حذف می‌کند.
+        runCatching { com.hamyareman.ir.ui.update.ApkUpdate.cleanupAfterSuccessfulInstall(this) }
         // نشانی دوگانهٔ محتوا: تنظیمات سرور + کاتالوگ assets (پیش‌بارگذاری در آغاز اجرا)
         com.hamyareman.ir.ui.study.ServerPrefs.init(this)
         runCatching { com.hamyareman.ir.ui.content.ContentCatalog.load(this) }
+        runCatching { com.hamyareman.ir.ui.tools.ToolRemote.clearPlainCache(this) }
         com.hamyareman.ir.ui.study.ServerResolver.probeAsync()
         // پخشِ فایل‌های گاوصندوق: طرحِ vault:// به جریانِ رمزگشاییِ تنبل وصل می‌شود
         // (خوانشِ جسته‌گریخته؛ بدونِ بلوکه‌شدنِ لودرِ پلیر برای رمزگشاییِ کل فایل).

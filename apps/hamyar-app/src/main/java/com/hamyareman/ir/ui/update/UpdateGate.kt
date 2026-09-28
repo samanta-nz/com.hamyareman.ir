@@ -127,12 +127,18 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
 
     fun installNow() {
         note = null
+        val identityError = if (ApkUpdate.isReady(ctx)) ApkUpdate.identityError(ctx, info) else null
         when {
             !ApkUpdate.isReady(ctx) -> note = "فایلِ نصبی آماده نیست؛ اول دانلودش کن."
             !ApkUpdate.verify(ctx, info.sha256) -> {
                 ApkUpdate.clear(ctx)
                 ready = false
                 note = "فایلِ دانلودشده سالم نبود و پاک شد؛ یک‌بار دیگر دانلود کن."
+            }
+            identityError != null -> {
+                ApkUpdate.clear(ctx)
+                ready = false
+                note = identityError + " فایل حذف شد."
             }
             !ApkUpdate.canInstall(ctx) -> {
                 if (!askedPermission) {
@@ -144,7 +150,7 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
                     note = "هنوز مجوز نصب داده نشده. بعد از روشن‌کردنش به برنامه برگرد."
                 }
             }
-            !ApkUpdate.install(ctx) -> {
+            !ApkUpdate.install(ctx, info) -> {
                 ApkUpdate.explain(ctx)
                 note = "نصب‌کننده باز نشد؛ یک‌بار دیگر بزن."
             }
@@ -174,6 +180,11 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
                 !ApkUpdate.verify(ctx, info.sha256) -> {
                     ApkUpdate.clear(ctx)
                     note = "فایلِ دانلودشده سالم نبود و پاک شد؛ یک‌بار دیگر بزن."
+                }
+                ApkUpdate.identityError(ctx, info) != null -> {
+                    val why = ApkUpdate.identityError(ctx, info).orEmpty()
+                    ApkUpdate.clear(ctx)
+                    note = "$why فایل حذف شد."
                 }
                 else -> afterDownloadOk()
             }

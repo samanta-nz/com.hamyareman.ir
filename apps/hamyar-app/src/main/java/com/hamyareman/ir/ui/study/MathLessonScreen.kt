@@ -339,11 +339,12 @@ private fun MathChromeTabRow(tabs: List<MathTab>, tab: Int, onSelect: (Int) -> U
 @Composable
 private fun MathBookHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomChanged: (Boolean) -> Unit = {}) {
     val asset = html?.bookAsset
-    if (!asset.isNullOrBlank()) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    if (MathHtmlAssets.exists(ctx, asset)) {
         MathInteractiveHtml(
             packId = pack.packId,
             kind = "book",
-            assetPath = asset,
+            assetPath = asset.orEmpty(),
             modifier = Modifier.fillMaxSize(),
             onZoomChanged = onZoomChanged,
         )
@@ -355,11 +356,12 @@ private fun MathBookHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomC
 @Composable
 private fun MathFlashHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomChanged: (Boolean) -> Unit = {}) {
     val asset = html?.flashAsset
-    if (!asset.isNullOrBlank()) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    if (MathHtmlAssets.exists(ctx, asset)) {
         MathInteractiveHtml(
             packId = pack.packId,
             kind = "flash",
-            assetPath = asset,
+            assetPath = asset.orEmpty(),
             modifier = Modifier.fillMaxSize(),
             onZoomChanged = onZoomChanged,
         )
@@ -371,11 +373,12 @@ private fun MathFlashHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoom
 @Composable
 private fun MathExamHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomChanged: (Boolean) -> Unit = {}) {
     val asset = html?.examAsset
-    if (!asset.isNullOrBlank()) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    if (MathHtmlAssets.exists(ctx, asset)) {
         MathInteractiveHtml(
             packId = pack.packId,
             kind = "exam",
-            assetPath = asset,
+            assetPath = asset.orEmpty(),
             modifier = Modifier.fillMaxSize(),
             onZoomChanged = onZoomChanged,
         )
@@ -402,6 +405,9 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
             runCatching {
                 if (!MediaVault.isVerified(ctx, fid)) {
                     MediaVault.downloadEncrypted(ctx, StudyMedia.viewUrl(fid), fid) { _, _ -> }
+                    if (MediaVault.isVerified(ctx, fid)) {
+                        MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
+                    }
                 }
                 String(MediaVault.decryptToMemory(ctx, fid), Charsets.UTF_8)
             }.getOrNull()

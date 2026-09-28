@@ -87,15 +87,31 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
         try {
             val cacheDir = File(ctx.filesDir, "media/pdf-cache").apply { mkdirs() }
             val target = File(cacheDir, fileId)
-            if (!target.exists() || target.length() < 1024) {
+            val part = File(cacheDir, "$fileId.part")
+            fun looksLikePdf(file: File): Boolean = runCatching {
+                if (!file.isFile || file.length() < 1024L) return@runCatching false
+                val headerOk = file.inputStream().use { input ->
+                    val magic = ByteArray(5)
+                    input.read(magic) == 5 && String(magic, Charsets.US_ASCII) == "%PDF-"
+                }
+                val tailSize = minOf(file.length(), 4096L).toInt()
+                val tail = ByteArray(tailSize)
+                java.io.RandomAccessFile(file, "r").use { raf ->
+                    raf.seek(file.length() - tailSize)
+                    raf.readFully(tail)
+                }
+                headerOk && String(tail, Charsets.ISO_8859_1).contains("%%EOF")
+            }.getOrDefault(false)
+            if (target.exists() && !looksLikePdf(target)) target.delete()
+            if (!target.exists()) {
                 state = PdfState.Downloading(0)
-                val url = "$PDF_ENDPOINT/storage/buckets/$PDF_BUCKET/files/$fileId/view?project=$PDF_PROJECT"
+                val url = StudyMedia.viewUrl(StudyMedia.resolveFileId(fileId))
                 // دانلودِ مقاوم: اگر شبکه/پروکسی وسطِ راه عوض شود، به‌جای شکستن، از
                 // همان‌جا ادامه می‌دهد (تا ۶ تلاش، با صبر برای برگشتنِ اینترنت).
                 var attempt = 0
                 var finished = false
                 while (attempt <= 6 && !finished) {
-                    val done0 = if (target.exists()) target.length() else 0L
+                    val done0 = if (part.exists()) part.length() else 0L
                     val resume = done0 > 1024
                     try {
                         val conn = ResilientHttp.open(
@@ -109,16 +125,16 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
                             state = PdfState.Error("دانلود ناموفق بود (کد ${conn.responseCode}). اینترنت یا باکت را بررسی کنید.")
                             return@LaunchedEffect
                         }
-                        if (resume && conn.responseCode == 200) target.delete()
+                        if (resume && conn.responseCode == 200) part.delete()
                         val partial = resume && conn.responseCode == 206
                         val total = conn.contentLengthLong.let {
-                            if (it > 0 && partial) it + target.length() else it
+                            if (it > 0 && partial) it + part.length() else it
                         }
-                        java.io.FileOutputStream(target, partial).use { out ->
+                        java.io.FileOutputStream(part, partial).use { out ->
                             conn.inputStream.use { input ->
                                 val buf = ByteArray(64 * 1024)
                                 var read: Int
-                                var done = if (partial) target.length() else 0L
+                                var done = if (partial) part.length() else 0L
                                 while (input.read(buf).also { read = it } > 0) {
                                     out.write(buf, 0, read)
                                     done += read
@@ -132,7 +148,7 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
                             }
                         }
                         runCatching { conn.disconnect() }
-                        finished = total <= 0 || target.length() >= total
+                        finished = total <= 0 || part.length() >= total
                     } catch (t: Throwable) {
                         attempt++
                         if (attempt > 6) throw t
@@ -140,6 +156,12 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
                         runCatching { Thread.sleep((400L * attempt).coerceAtMost(3000L)) }
                     }
                 }
+                require(finished && looksLikePdf(part)) { "دانلود PDF ناقص یا نامعتبر است." }
+                if (!part.renameTo(target)) {
+                    part.copyTo(target, overwrite = true)
+                    part.delete()
+                }
+                require(looksLikePdf(target)) { "PDF نهایی معتبر نیست." }
             }
             state = PdfState.Downloading(100)
             val fd = ParcelFileDescriptor.open(target, ParcelFileDescriptor.MODE_READ_ONLY)

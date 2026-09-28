@@ -28,9 +28,13 @@ class UpdateInstallReceiver : BroadcastReceiver() {
             }
             return
         }
+        if (status == PackageInstaller.STATUS_SUCCESS) {
+            // data directory در آپدیت حفظ می‌شود؛ APK و فایل part دیگر لازم نیستند.
+            ApkUpdate.onInstallSucceeded(context)
+        }
         val text = when (status) {
             PackageInstaller.STATUS_SUCCESS ->
-                "نسخهٔ تازه نصب شد ✅ — اپ دوباره باز می‌شود."
+                "نسخهٔ تازه نصب شد ✅ — فایل نصب پاک شد."
             PackageInstaller.STATUS_FAILURE_ABORTED ->
                 "نصب لغو شد."
             PackageInstaller.STATUS_FAILURE_BLOCKED ->

@@ -188,10 +188,13 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
         pageUrl = when {
             local != null -> "file://$local"
             else -> {
-                loadErr = "برای نمایش این صفحه به اینترنت نیاز است."
+                loadErr = "فایل از سرور انتخاب‌شده دریافت نشد؛ اتصال یا تنظیم منبع محتوا را بررسی کن."
                 null
             }
         }
+    }
+    DisposableEffect(toolId) {
+        onDispose { ToolRemote.release(ctx, toolId) }
     }
     val isLab = toolId == "chemistry" || toolId == "physics" || toolId == "biology"
     val isCalc = toolId == "ti_nspire" || toolId == "casio991" || toolId == "dj120d"

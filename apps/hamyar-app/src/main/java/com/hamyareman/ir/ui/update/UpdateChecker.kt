@@ -3,6 +3,7 @@ package com.hamyareman.ir.ui.update
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import com.hamyareman.ir.BuildConfig
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
 import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.common.LocalStore
@@ -36,6 +37,7 @@ object UpdateChecker {
         .getString(KEY_PAYLOAD)
         .takeIf { it.isNotBlank() }
         ?.let { UpdatePlan.parse(it) }
+        ?.takeIf { UpdatePlan.isCompatible(it, ctx.packageName, BuildConfig.GRADE_ID) }
 
     fun fetchedAt(ctx: Context): Long = store(ctx).getLong(KEY_AT, 0L)
 
@@ -69,9 +71,14 @@ object UpdateChecker {
                 if (body.isBlank()) {
                     cached(ctx)
                 } else {
-                    store(ctx).putString(KEY_PAYLOAD, body)
-                    store(ctx).putLong(KEY_AT, System.currentTimeMillis())
-                    UpdatePlan.parse(body)
+                    val parsed = UpdatePlan.parse(body)
+                    if (!UpdatePlan.isCompatible(parsed, ctx.packageName, BuildConfig.GRADE_ID)) {
+                        cached(ctx)
+                    } else {
+                        store(ctx).putString(KEY_PAYLOAD, body)
+                        store(ctx).putLong(KEY_AT, System.currentTimeMillis())
+                        parsed
+                    }
                 }
             }
             is AppResult.Err -> cached(ctx)

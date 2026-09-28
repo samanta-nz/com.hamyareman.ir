@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,13 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.ui.profile.StudentProfileState
-import com.hamyareman.ir.ui.study.HtmlCodec
 import com.hamyareman.ir.ui.study.SecureWebEffect
-import com.hamyareman.ir.ui.study.ServerResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
 
 private fun faNum(n: Int): String =
     n.toString().map { '۰' + (it - '0') }.joinToString("")
@@ -118,57 +112,67 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
     SecureWebEffect()
-    var html by remember { mutableStateOf<String?>(null) }
-    var err by remember { mutableStateOf<String?>(null) }
+    var activeId by remember(itemId) { mutableStateOf(itemId) }
+    var html by remember(activeId) { mutableStateOf<String?>(null) }
+    var error by remember(activeId) { mutableStateOf<String?>(null) }
+    var progress by remember(activeId) { mutableStateOf(0) }
+    var sourceLabel by remember(activeId) { mutableStateOf("") }
+    var retry by remember(activeId) { mutableStateOf(0) }
     remember { ContentCatalog.load(ctx) }
-    val item = remember(itemId) { ContentCatalog.item(itemId) }
+    val item = ContentCatalog.item(activeId)
 
-    LaunchedEffect(itemId) {
-        val it = item
-        if (it == null) {
-            err = "این فایل در کاتالوگ نیست."
+    LaunchedEffect(activeId, retry) {
+        val current = item
+        html = null
+        error = null
+        progress = 0
+        sourceLabel = ""
+        if (current == null) {
+            error = "این فایل در کاتالوگ نیست."
             return@LaunchedEffect
         }
-        html = withContext(Dispatchers.IO) {
-            val candidates = listOf(
-                ServerResolver.pick(it.aw, it.key),
-                ServerResolver.external(it.aw),
-                ServerResolver.internal(it.key),
-            ).distinct()
-            var result: String? = null
-            for (u in candidates) {
-                val r = runCatching {
-                    val conn = (URL(u).openConnection() as HttpURLConnection).apply {
-                        connectTimeout = 20_000
-                        readTimeout = 90_000
-                        instanceFollowRedirects = true
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val loaded = withContext(Dispatchers.IO) {
+            com.hamyareman.ir.ui.study.RemoteHtmlCache.load(ctx, current.aw, current.key) { done, total, source ->
+                if (total > 0) {
+                    val p = ((done * 100L) / total).toInt().coerceIn(0, 100)
+                    handler.post {
+                        progress = p
+                        sourceLabel = if (source == com.hamyareman.ir.ui.study.ServerPrefs.Origin.INTERNAL) "آروان" else "Appwrite"
                     }
-                    conn.connect()
-                    if (conn.responseCode !in 200..299) error("HTTP ${conn.responseCode}")
-                    val bytes = conn.inputStream.use { s -> s.readBytes() }
-                    conn.disconnect()
-                    String(HtmlCodec.unwrap(ctx, bytes), Charsets.UTF_8)
-                }
-                if (r.isSuccess) {
-                    result = r.getOrNull()
-                    break
                 }
             }
-            result
         }
-        if (html == null) err = "دریافت فایل ممکن نشد — اتصال اینترنت را بررسی کن."
+        loaded.onSuccess {
+            html = it.html
+            progress = 100
+            sourceLabel = if (it.source == com.hamyareman.ir.ui.study.ServerPrefs.Origin.INTERNAL) "آروان" else "Appwrite"
+        }.onFailure {
+            error = it.message?.take(220) ?: "دریافت فایل از سرور انتخاب‌شده ممکن نشد."
+        }
     }
 
     Column(Modifier.fillMaxSize()) {
         AppTopBar(item?.title ?: "محتوا", onBack)
+        if (sourceLabel.isNotBlank()) {
+            Text(
+                "منبع: $sourceLabel",
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 3.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         when {
-            err != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(err.orEmpty(), color = MaterialTheme.colorScheme.error)
+            error != null -> Column(
+                Modifier.fillMaxSize().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
+                androidx.compose.material3.TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
             }
-            html == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            else -> key(html) {
+            html == null -> com.hamyareman.ir.ui.study.HtmlPercentLoader(progress)
+            else -> key(activeId, html) {
                 AndroidView(
                     factory = { c ->
                         WebView(c).apply {
@@ -180,6 +184,18 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                             settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                             settings.useWideViewPort = true
                             settings.loadWithOverviewMode = true
+                            webViewClient = object : android.webkit.WebViewClient() {
+                                override fun shouldOverrideUrlLoading(
+                                    view: WebView,
+                                    request: android.webkit.WebResourceRequest,
+                                ): Boolean {
+                                    val target = ContentCatalog.itemIdForRelativeFile(
+                                        request.url.lastPathSegment.orEmpty(),
+                                    ) ?: return false
+                                    activeId = target
+                                    return true
+                                }
+                            }
                             loadDataWithBaseURL(
                                 "https://local.hamyar/", html!!, "text/html", "utf-8", null,
                             )

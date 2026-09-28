@@ -135,10 +135,11 @@ object MediaVault {
             dataKey = SecretKeySpec(raw, "AES")
             return dataKey!!
         }
-        // ساخت کلید داده‌ی تازه + پوشاندن با Keystore (یا ذخیره‌ی مستقیم در بدترین حالت).
+        // fail-closed: کلید داده هرگز Base64 خام روی دیسک ذخیره نمی‌شود. اگر
+        // Android Keystore در دسترس نیست، دانلود امن شروع نمی‌شود.
         val bytes = ByteArray(32).also { SecureRandom().nextBytes(it) }
-        val wrapped = runCatching { wrapWithKeystore(bytes) }.getOrNull()
-        prefs.edit().putString(WRAPPED_KEY, wrapped ?: Base64.encodeToString(bytes, Base64.NO_WRAP)).apply()
+        val wrapped = wrapWithKeystore(bytes)
+        prefs.edit().putString(WRAPPED_KEY, wrapped).apply()
         dataKey = SecretKeySpec(bytes, "AES")
         return dataKey!!
     }

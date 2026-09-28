@@ -1,5 +1,7 @@
 package com.hamyareman.ir.ui.update
 
+import com.hamyareman.ir.BuildConfig
+
 /**
  * منطقِ خالصِ «کانالِ آپدیت» — آگاه از Android و `org.json` نیست تا در تست‌های
  * JVM (بدونِ Robolectric) اجرا شود.
@@ -30,6 +32,12 @@ data class UpdateInfo(
     val sha256: String = "",
     val notes: List<String> = emptyList(),
     val chan: String = "stable",
+    /** applicationId مقصد؛ مانع پیشنهاد APK پایهٔ دیگر می‌شود. */
+    val packageName: String = "",
+    /** شناسهٔ پایهٔ مقصد، مثل grade9. */
+    val gradeId: String = "",
+    /** SHA-256 گواهی امضای APK (عمومی است، secret نیست). */
+    val signingSha256: String = "",
     /** درصدِ کاربرانی که این پیام را می‌بینند (۱..۱۰۰). */
     val rollout: Int = 100,
 )
@@ -43,8 +51,8 @@ sealed interface UpdateDecision {
 
 object UpdatePlan {
 
-    /** شناسهٔ ردیفِ تنظیمات در جدولِ `app_state` (هم برای خواندن هم نوشتن). */
-    const val ROW_ID = "app_release"
+    /** ردیف مستقل همان flavor؛ مثال: app_release_grade9. */
+    val ROW_ID: String get() = BuildConfig.UPDATE_ROW_ID
 
     /** کانالِ این بیلد. نسخه‌های `chan` دیگر (مثلاً `beta`) روی این بیلد کاری ندارند. */
     const val CHANNEL = "stable"
@@ -62,8 +70,18 @@ object UpdatePlan {
         sha256 = str(json, "sha256"),
         notes = arr(json, "notes"),
         chan = str(json, "chan").ifBlank { CHANNEL },
+        packageName = str(json, "packageName"),
+        gradeId = str(json, "gradeId"),
+        signingSha256 = str(json, "signingSha256"),
         rollout = num(json, "rollout").toInt().let { if (it <= 0) 100 else it.coerceAtMost(100) },
     )
+
+    /**
+     * payload قدیمی/اشتباه یا مربوط به پایهٔ دیگر هرگز به مرحلهٔ دانلود نمی‌رسد.
+     * عمداً fail-closed است: نبود packageName/gradeId نیز ناسازگار محسوب می‌شود.
+     */
+    fun isCompatible(info: UpdateInfo, packageName: String, gradeId: String): Boolean =
+        info.packageName == packageName && info.gradeId == gradeId
 
     /**
      * تصمیم بر پایهٔ `versionCode` فعلی و «سطلِ» رول‌آوتِ این نصب.
