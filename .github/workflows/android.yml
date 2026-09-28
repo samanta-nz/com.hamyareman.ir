@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# یک جاب، فقط نهمِ دیباگ — بدون ادمین/R8/lint/تست تکراری تا سهمیهٔ Actions زود تمام نشود.
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  android:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+      - run: ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace
+      - name: نام‌گذاری APK
+        run: |
+          set -e
+          shopt -s nullglob globstar
+          src=$(echo apps/hamyar-app/build/outputs/apk/**/*.apk | awk '{print $1}')
+          test -n "$src" && test -f "$src"
+          mkdir -p dist
+          cp -f "$src" dist/hamyar-1.97.apk
+          ls -l dist/hamyar-1.97.apk
+      - name: انتشارِ APK روی Release (ci-apk)
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh release view ci-apk >/dev/null 2>&1 || \
+            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم." || true
+          gh release upload ci-apk dist/hamyar-1.97.apk --clobber
+          gh release view ci-apk
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: hamyar-1.97-debug
+          path: dist/hamyar-1.97.apk
+          if-no-files-found: error
+          retention-days: 3

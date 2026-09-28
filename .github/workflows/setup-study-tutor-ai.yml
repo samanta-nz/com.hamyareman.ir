@@ -1,0 +1,113 @@
+name: Setup study-tutor AI (Prompt 04)
+
+# قدم ۲ی پرامپت ۰۴ — یک‌جا: فانکشن study-tutor + متغیرهای AI + تست دود.
+# الگو: deploy-prompt-04.yml (همان env و همان سبک idempotent)
+#
+# پیش‌نیازها (یک‌بار):
+#   • secret گیت‌هاب APPWRITE_API_KEY → کلید Appwrite با اسکوپ‌های tables.write + documents.write + functions.write
+#   • secret گیت‌هاب AI_API_KEY        → کلید ارائه‌دهنده‌ی مدل (همان کلیدی که ai-companion دارد)
+#
+# ترتیب درست کارها (مهم):
+#   ۱) متغیرهای AI ست می‌شوند   ۲) فانکشن دیپلوی می‌شود (متغیرها با دیپلوی جدید فعال می‌شوند)
+#   ۳) اجرای آزمایشی: اگر مدل جواب داد، همه‌چیز آماده است.
+#
+# بعد از این ورک‌فلو، اپ می‌تواند دکمه‌ی «رفع اشکال با هوش مصنوعی» را در آزمون مطالعه استفاده کند.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ai_model:
+        description: 'مدل ارائه‌دهنده — همان که در ai-companion کار می‌کند (مثال: qwen3.8-flash)'
+        required: false
+        default: 'qwen3.8-flash'
+        type: string
+      ai_endpoint:
+        description: 'آدرس chat/completions — خالی = پیش‌فرض سازگار با OpenAI'
+        required: false
+        default: ''
+        type: string
+      run_smoke:
+        description: 'بعد از دیپلوی، یک سوال آزمایشی اجرا شود؟'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  setup:
+    name: study-tutor AI setup (vars + deploy + smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      AI_API_KEY: ${{ secrets.AI_API_KEY }}
+      AI_MODEL: ${{ github.event.inputs.ai_model }}
+      AI_ENDPOINT: ${{ github.event.inputs.ai_endpoint }}
+      # پلن رایگان Appwrite سقف functions دارد؛ حالت study-tutor داخل ai-companion است.
+      STUDY_FUNCTION_ID: ai-companion
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: archive/backend/seed/package-lock.json
+
+      - name: 📦 نصب وابستگی‌ها
+        working-directory: archive/backend/seed
+        run: npm ci
+
+      - name: 🧼 نرمال‌سازی کلیدها (بدون whitespace)
+        run: |
+          echo "APPWRITE_API_KEY=$(printf '%s' "$APPWRITE_API_KEY" | tr -d '[:space:]')" >> "$GITHUB_ENV"
+          echo "AI_API_KEY=$(printf '%s' "$AI_API_KEY" | tr -d '[:space:]')" >> "$GITHUB_ENV"
+
+      - name: 🔑 سلامت کلید Appwrite (با خود SDK)
+        working-directory: archive/backend/seed
+        run: node check-appwrite-key.js functions
+
+      - name: 🧩 گام ۱/۳ — ست‌کردن متغیرهای AI روی فانکشن
+        working-directory: archive/backend/seed
+        run: |
+          echo "▶ اجرای set-study-tutor-ai.js vars ..."
+          node set-study-tutor-ai.js vars
+          echo "✅ متغیرها ست شدند."
+
+      - name: 🚀 گام ۲/۳ — دیپلوی فانکشن (متغیرها با دیپلوی تازه فعال می‌شوند)
+        working-directory: archive/backend/seed
+        run: |
+          echo "▶ اجرای deploy-prompt-04-study-tutor.js ..."
+          node deploy-prompt-04-study-tutor.js
+          echo "✅ دیپلوی فانکشن تمام شد."
+
+      - name: 🧪 گام ۳/۳ — اجرای آزمایشی (smoke test)
+        if: github.event.inputs.run_smoke != 'false'
+        working-directory: archive/backend/seed
+        run: |
+          echo "▶ اجرای set-study-tutor-ai.js smoke ..."
+          node set-study-tutor-ai.js smoke
+
+      - name: ✅ تأیید نهایی
+        if: always()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════"
+          echo "  📋 خلاصه‌ی setup فانکشن study-tutor"
+          echo "═══════════════════════════════════════"
+          echo "  endpoint: $APPWRITE_ENDPOINT"
+          echo "  project:  $APPWRITE_PROJECT_ID"
+          echo "  model:    ${AI_MODEL:-پیش‌فرض فانکشن}"
+          echo "  endpoint-ai: ${AI_ENDPOINT:-پیش‌فرض سازگار با OpenAI}"
+          echo ""
+          echo "  اگر گام smoke سبز شد → دکمه‌ی «رفع اشکال با هوش مصنوعی» در"
+          echo "  صفحه‌ی مطالعه فعال است. (آفلاین بدون آن کامل می‌ماند)"
+          echo "═══════════════════════════════════════"

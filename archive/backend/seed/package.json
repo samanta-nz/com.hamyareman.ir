@@ -1,0 +1,13 @@
+{
+  "name": "zahra-content-seed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "واردکردن محتوای کاتالوگ (آشپزی، درس، آزمون، نقشه‌ی راه، ایده‌ی نقاشی، ورزش) در Appwrite",
+  "scripts": {
+    "seed": "node import.js",
+    "seed:dry": "node import.js --dry-run"
+  },
+  "dependencies": {
+    "node-appwrite": "^18.0.0"
+  }
+}

@@ -1,0 +1,43 @@
+name: Sync Appwrite → Arvan
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "آپلود مجدد حتی اگر حجم یکی باشد"
+        type: boolean
+        default: false
+      skip_pdf:
+        description: "PDF نفرست"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install --quiet requests boto3
+      - name: Sync to Arvan
+        env:
+          APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+          APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
+          APPWRITE_BUCKET_ID: 6aa1eaae00303400117b
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+          ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
+          ARVAN_REGION: ir-thr-at1
+          ARVAN_BUCKET: hamyar-e-man
+        run: |
+          FLAGS=""
+          if [ "${{ inputs.force }}" = "true" ]; then FLAGS="$FLAGS --force"; fi
+          if [ "${{ inputs.skip_pdf }}" = "true" ]; then FLAGS="$FLAGS --skip-pdf"; fi
+          python3 scripts/sync_appwrite_to_arvan.py $FLAGS

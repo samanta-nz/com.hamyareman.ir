@@ -1,0 +1,10 @@
+{
+  "name": "daily-checkin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "خلاصه‌ی روزانه‌ی opt-in برای پدر (فقط داده‌های قابل اشتراک)",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^15.0.0"
+  }
+}

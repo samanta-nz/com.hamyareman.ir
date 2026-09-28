@@ -1,0 +1,61 @@
+name: Upload lesson PDFs (Prompt 05 ops)
+
+# آپلود PDF کتاب درس‌ها به باکت wellness-media (ساختار استاندارد — پوشه‌ی PDF/ هر درس).
+#  - fileId = نام کامل فایل (C905_E01-L01_BOOK.pdf) — نمایشگر اپ از همین الگو URL می‌سازد.
+#  - Idempotent: فایل موجود skip؛ --force برای آپلود مجدد.
+#  - صفر بایتی‌ها skip می‌شوند (فعلاً فقط R01 فصل ۱ ریاضی).
+# اسکوپ لازم در APPWRITE_API_KEY: storage.write + files.read
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'فهرست کن، آپلود نکن (تست)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      book:
+        description: 'فقط یک کتاب (مثلاً C905) — خالی = همه'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  upload:
+    name: upload lesson PDFs to wellness-media
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      APPWRITE_BUCKET_ID: 6aa1eaae00303400117b
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 نصب وابستگی‌ها
+        working-directory: archive/backend/seed
+        run: npm ci
+
+      - name: 🔑 سلامت کلید برای باکت (با خود SDK)
+        working-directory: archive/backend/seed
+        run: node check-appwrite-key.js storage
+
+      - name: 📕 آپلود PDF درس‌ها
+        working-directory: archive/backend/seed
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          echo "▶ node upload-lesson-pdfs.js $ARGS"
+          node upload-lesson-pdfs.js $ARGS

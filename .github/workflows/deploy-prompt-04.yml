@@ -1,0 +1,104 @@
+name: Deploy Prompt 04 (study progress + study-tutor)
+
+# اجرای دستی deploy پرامپت ۰۴ روی Appwrite production.
+# الگو: deploy-prompt-02.yml / deploy-prompt-03.yml (همان envها، همان secrets، idempotent)
+#  - گام ۱: migration جدول study_progress (ایده‌امپوتنت — اگر بود دست نمی‌زند)
+#  - گام ۲: دیپلوی فانکشن study-tutor (tar + آپلود + فعال‌سازی + انتظار تا ready)
+# هر دو گام را می‌توان جداگانه با ورودی‌ها رد کرد.
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_migration:
+        description: 'اگر true، migration جدول study_progress را اجرا نکن'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      skip_function:
+        description: 'اگر true، دیپلوی فانکشن study-tutor را انجام نده'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  deploy:
+    name: deploy study (migrate study_progress + study-tutor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      APPWRITE_DATABASE_ID: ZahraDB
+      # فانکشن study-tutor روی ai-companion سوار شده (سقف پلن رایگان).
+      STUDY_FUNCTION_ID: ai-companion
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: archive/backend/seed/package-lock.json
+
+      - name: 📦 نصب وابستگی‌ها
+        working-directory: archive/backend/seed
+        run: npm ci
+
+      - name: 🧼 نرمال‌سازی کلیدها (بدون whitespace)
+        run: |
+          echo "APPWRITE_API_KEY=$(printf '%s' "$APPWRITE_API_KEY" | tr -d '[:space:]')" >> "$GITHUB_ENV"
+
+      - name: 🔑 سلامت کلید API (با خود SDK)
+        working-directory: archive/backend/seed
+        run: node check-appwrite-key.js tables
+
+      - name: 🗄 گام ۱/۲ — Migration جدول study_progress
+        if: github.event.inputs.skip_migration != 'true'
+        working-directory: archive/backend/seed
+        run: |
+          echo "▶ اجرای migrate-prompt-04-study-progress.js ..."
+          node migrate-prompt-04-study-progress.js
+          echo "✅ Migration تمام شد."
+
+      - name: 🚀 گام ۲/۲ — دیپلوی فانکشن study-tutor
+        if: github.event.inputs.skip_function != 'true'
+        working-directory: archive/backend/seed
+        run: |
+          echo "▶ اجرای deploy-prompt-04-study-tutor.js ..."
+          node deploy-prompt-04-study-tutor.js
+          echo "✅ دیپلوی فانکشن تمام شد."
+
+      - name: ✅ تأیید نهایی
+        if: always()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════"
+          echo "  📋 خلاصه‌ی deploy پرامپت ۰۴"
+          echo "═══════════════════════════════════════"
+          echo "  endpoint: $APPWRITE_ENDPOINT"
+          echo "  project:  $APPWRITE_PROJECT_ID"
+          echo "  database: $APPWRITE_DATABASE_ID"
+          echo ""
+          if [ "${{ github.event.inputs.skip_migration }}" != "true" ]; then
+            echo "  ✅ migration: اجرا شد (study_progress — userId/packId/srsState/attempts/updatedAtIso)"
+          else
+            echo "  ⏭ migration: رد شد"
+          fi
+          if [ "${{ github.event.inputs.skip_function }}" != "true" ]; then
+            echo "  ✅ study-tutor: دیپلوی شد (رفع اشکال مفهومی — کلید سمت سرور، بدون ذخیره‌ی متن)"
+            echo "     ⚠️ متغیرهای AI_API_KEY / AI_MODEL را در کنسول › Functions › study-tutor › Variables چک کن."
+          else
+            echo "  ⏭ study-tutor: رد شد"
+          fi
+          echo "═══════════════════════════════════════"

@@ -1,0 +1,45 @@
+# Local machine and secret configuration
+local.properties
+secrets.properties
+**/secrets.properties
+apps/hamyar-admin/secrets.properties
+
+# Android/Gradle generated output
+.gradle/
+**/build/
+.kotlin/
+
+# IDE files
+.idea/
+*.iml
+.DS_Store
+
+# Keep the distributable APK in version control
+!artifacts/
+!artifacts/hamyar-app-debug.apk
+
+# پرامپت ۰۲: تصاویر مرجع تولیدی (هر کدام ~300KB، ۴۳ حرکت ≈ ۱۲MB)
+# فقط منبع پرامپت و metadata در git نگه داشته می‌شود.
+artifacts/wellness-references/yoga/*.jpg
+artifacts/wellness-references/yoga/*.png
+artifacts/wellness-references/exercise/*.jpg
+artifacts/wellness-references/exercise/*.png
+artifacts/wellness-references/breathing/*.jpg
+artifacts/wellness-references/breathing/*.png
+artifacts/wellness-references/learning/*.jpg
+artifacts/wellness-references/learning/*.png
+!artifacts/wellness-references/.gitkeep
+!artifacts/wellness-references/prompts/
+
+# Node dependencies (deploy با npm ci نصب می‌کند)
+node_modules/
+
+# کلید خصوصی GitHub App — فقط لوکال، هرگز کامیت نشود
+github-app-private-key.pem
+.git-setup.sh
+
+# ابزارهای محلیِ توسعه (نه بخشی از بیلد اپ)
+node_modules/
+/package.json
+/package-lock.json
+__pycache__/

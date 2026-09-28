@@ -1,0 +1,218 @@
+# انتشارِ نسخه از راه دور — «کانالِ آپدیتِ همیار من»
+#
+# این ورک‌فلو سه کار می‌کند:
+#   ۱. APK را می‌سازد (دیباگ یا ریلیزِ R8).
+#   ۲. فایل را در **ریپوی عمومیِ انتشار** به‌عنوان Release Asset می‌گذارد.
+#   ۳. ردیفِ `app_release` در جدولِ `app_state` را به‌روز می‌کند ⇒ اپ خودش پیام
+#      آپدیت را نشان می‌دهد (توصیه‌ای یا اجباری، با رول‌آوتِ دلخواه).
+#
+# بدونِ هیچ توکنی داخلِ اپ: ریپوی اصلی خصوصی می‌ماند و ریپوی انتشار فقط فایلِ APK
+# را دارد (دانلودِ انتشارها در گیت‌هاب بی‌احراز هویت کار می‌کند).
+#
+# چیزهایی که یک‌بار باید تنظیم شوند (Settings → Secrets and variables → Actions):
+#   • secret  RELEASES_TOKEN      : توکنِ دقیق‌محدوده با دسترسی Contents: Read and write
+#                                   **فقط روی ریپوی عمومیِ انتشار** (نه روی این ریپو).
+#   • secret  APPWRITE_API_KEY    : کلیدِ Appwrite با دسترسی نوشتنِ ردیف‌ها.
+#   • variable RELEASES_REPO      : مثل `Aydinnza/hamyar-releases`
+#                                   (یا هر بار در ورودیِ releases_repo بدهید).
+#
+# استفادهٔ بی‌خطر (dry-run): `publish = false` بگذارید تا فقط فایل ساخته و payload
+# چاپ شود؛ هیچ چیزی روی ریپوی عمومی و سرور نوشته نمی‌شود.
+
+name: Publish update
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'versionCode این بیلد (مثلاً 68)'
+        required: true
+      version_name:
+        description: 'نامِ خوانای نسخه (مثلاً 1.67)'
+        required: true
+      variant:
+        description: 'کدام APK منتشر شود؟'
+        type: choice
+        options: [release, debug]
+        default: release
+      publish:
+        description: 'اعلام به کاربران؟ (false = فقط ساخت و چاپِ payload)'
+        type: choice
+        options: ['false', 'true']
+        default: 'false'
+      min_code:
+        description: 'کمتر از این versionCode → آپدیتِ اجباری (0 = هرگز)'
+        default: '0'
+      rollout:
+        description: 'درصدِ کاربرانی که پیام را می‌بینند (1..100)'
+        default: '100'
+      notes:
+        description: 'یادداشت‌های نسخه، جداشده با |'
+        default: ''
+      releases_repo:
+        description: 'ریپوی عمومیِ انتشار (خالی = از variable RELEASES_REPO)'
+        default: ''
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - name: ساختِ APK
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.variant }}" = "release" ]; then
+            ./gradlew :hamyar-app:assembleRelease --stacktrace
+            DIR=apps/hamyar-app/build/outputs/apk/release
+          else
+            ./gradlew :hamyar-app:assembleDebug --stacktrace
+            DIR=apps/hamyar-app/build/outputs/apk/debug
+          fi
+          APK=$(ls -1 "$DIR"/*.apk | head -1)
+          echo "APK=$APK" >> "$GITHUB_ENV"
+          echo "ASSET_NAME=hamyar-${{ inputs.version_name }}.apk" >> "$GITHUB_ENV"
+
+      - name: اندازه و هش
+        run: |
+          set -euo pipefail
+          SIZE=$(stat -c%s "$APK")
+          SHA=$(sha256sum "$APK" | cut -d' ' -f1)
+          echo "SIZE=$SIZE" >> "$GITHUB_ENV"
+          echo "SHA=$SHA" >> "$GITHUB_ENV"
+          {
+            echo "### APK ساخته شد"
+            echo "- فایل: \`$APK\`"
+            echo "- حجم: $(( SIZE / 1048576 )) مگابایت ($SIZE بایت)"
+            echo "- sha256: \`$SHA\`"
+            echo "- نسخه: ${{ inputs.version_name }} (کد ${{ inputs.version_code }}) — variant: ${{ inputs.variant }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          ls -la "$APK"
+
+      - name: نگه‌داشتنِ APK به‌عنوان آرتیفکتِ ران
+        uses: actions/upload-artifact@v4
+        with:
+          name: hamyar-${{ inputs.version_name }}-${{ inputs.variant }}-apk
+          path: ${{ env.APK }}
+          retention-days: 30
+
+      - name: آپلود در ریپوی عمومیِ انتشار
+        if: inputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          REPO_INPUT: ${{ inputs.releases_repo }}
+          REPO_VAR: ${{ vars.RELEASES_REPO }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::secret با نام RELEASES_TOKEN تنظیم نشده است."
+            exit 1
+          fi
+          REPO="${REPO_INPUT:-${REPO_VAR:-}}"
+          if [ -z "$REPO" ]; then
+            echo "::error::ریپوی انتشار مشخص نیست (variable RELEASES_REPO یا ورودیِ releases_repo)."
+            exit 1
+          fi
+          TAG="v${{ inputs.version_name }}"
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$REPO" \
+              --title "همیار من ${{ inputs.version_name }}" \
+              --notes "نسخهٔ ${{ inputs.version_name }} (کد ${{ inputs.version_code }})"
+          fi
+          gh release upload "$TAG" "$APK#$ASSET_NAME" --repo "$REPO" --clobber
+          URL="https://github.com/$REPO/releases/download/$TAG/$ASSET_NAME"
+          echo "URL=$URL" >> "$GITHUB_ENV"
+          echo "REPO=$REPO" >> "$GITHUB_ENV"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "🔗 $URL" >> "$GITHUB_STEP_SUMMARY"
+          # پیش از اعلام به کاربران، مطمئن شویم فایل واقعاً عمومی و در دسترس است.
+          CODE=$(curl -sIL -o /dev/null -w '%{http_code}' "$URL" || echo 000)
+          echo "بررسیِ لینکِ عمومی: HTTP $CODE"
+          case "$CODE" in
+            200|302|303) ;;
+            *) echo "::error::لینکِ دانلود در دسترس نیست (HTTP $CODE) — اعلام انجام نشد."; exit 1 ;;
+          esac
+
+      - name: اعلام از سرور (ردیفِ app_release)
+        if: inputs.publish == 'true'
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6a9d59e3002751cc3ea8' }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          MIN_CODE: ${{ inputs.min_code }}
+          ROLLOUT: ${{ inputs.rollout }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APPWRITE_API_KEY:-}" ]; then
+            echo "::error::secret با نام APPWRITE_API_KEY تنظیم نشده است."
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os, time, urllib.request
+
+          key = os.environ['APPWRITE_API_KEY']
+          project = os.environ.get('APPWRITE_PROJECT_ID') or '6a9d59e3002751cc3ea8'
+          base = 'https://fra.cloud.appwrite.io/v1'
+          notes = [n.strip() for n in os.environ.get('NOTES', '').split('|') if n.strip()]
+          payload = {
+              'latest': int(os.environ['VERSION_CODE']),
+              'name': os.environ['VERSION_NAME'],
+              'min': int(os.environ.get('MIN_CODE', '0') or 0),
+              'url': os.environ['URL'],
+              'size': int(os.environ['SIZE']),
+              'sha256': os.environ['SHA'],
+              'chan': 'stable',
+              'rollout': max(1, min(100, int(os.environ.get('ROLLOUT', '100') or 100))),
+              'notes': notes,
+          }
+          body = json.dumps({
+              'data': {
+                  'userId': 'global',
+                  'key': 'app_release',
+                  'payload': json.dumps(payload, ensure_ascii=False, separators=(',', ':')),
+                  'updatedAt': int(time.time() * 1000),
+              },
+              'permissions': ['read("users")'],
+          }, ensure_ascii=False).encode()
+
+          req = urllib.request.Request(
+              f'{base}/databases/ZahraDB/collections/app_state/documents/app_release',
+              data=body, method='PATCH')
+          req.add_header('X-Appwrite-Project', project)
+          req.add_header('X-Appwrite-Key', key)
+          req.add_header('Content-Type', 'application/json')
+          with urllib.request.urlopen(req, timeout=60) as r:
+              print('سرور به‌روز شد:', r.status)
+          print(json.dumps(payload, ensure_ascii=False, indent=2))
+          PY
+
+      - name: خلاصهٔ پایان
+        if: always()
+        run: |
+          {
+            echo ""
+            echo "### نتیجه"
+            if [ "${{ inputs.publish }}" = "true" ]; then
+              echo "- فایل منتشر و ردیفِ سرور به‌روز شد."
+            else
+              echo "- حالتِ آزمایشی (publish=false): فقط ساخته شد. برای اعلام، همین ورک‌فلو را با publish=true اجرا کنید."
+              echo "- payload آماده (باید در ردیفِ \`app_release\` بنشیند):"
+              echo '```json'
+              printf '{"latest":%s,"name":"%s","min":%s,"url":"<لینکِ عمومیِ APK>","size":%s,"chan":"stable","rollout":%s}\n' \
+                "${{ inputs.version_code }}" "${{ inputs.version_name }}" "${{ inputs.min_code }}" "${SIZE:-0}" "${{ inputs.rollout }}"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

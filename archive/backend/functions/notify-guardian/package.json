@@ -1,0 +1,10 @@
+{
+  "name": "notify-guardian",
+  "version": "1.0.0",
+  "private": true,
+  "description": "هشدار «کمک می‌خوام» به پدر با اختیار سرور + شماره‌های اضطراری",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^15.0.0"
+  }
+}
