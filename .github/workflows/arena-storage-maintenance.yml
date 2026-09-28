@@ -29,7 +29,20 @@ jobs:
           python-version: '3.12'
 
       - name: Compile and test grade-aware app
-        run: ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace
+        run: |
+          set +e
+          ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace > /tmp/compile.log 2>&1
+          code=$?
+          if [ "$code" -ne 0 ]; then
+            mkdir -p docs/maintenance/latest
+            tail -n 500 /tmp/compile.log > docs/maintenance/latest/compile-failure.log
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/maintenance/latest/compile-failure.log
+            git commit -m "Store maintenance compile failure"
+            git push origin HEAD:arena/01a0ea05-com-hamyareman-ir
+          fi
+          exit "$code"
 
       - name: Install maintenance dependencies
         run: pip install --quiet requests boto3 cryptography
@@ -148,7 +161,10 @@ jobs:
           cp -f maintenance-output/result.json docs/maintenance/latest/result.json 2>/dev/null || true
           cp -f maintenance-output/mirror-verification.json docs/maintenance/latest/mirror-verification.json 2>/dev/null || true
           cp -f audit-output/summary.md docs/maintenance/latest/audit-summary.md 2>/dev/null || true
-          git add -A maintenance-handshake docs/maintenance/latest
+          git add -A docs/maintenance/latest
+          if git ls-files maintenance-handshake | grep -q .; then
+            git add -A maintenance-handshake
+          fi
           if ! git diff --cached --quiet; then
             git commit -m "Store storage maintenance verification"
             git push origin HEAD:arena/01a0ea05-com-hamyareman-ir
