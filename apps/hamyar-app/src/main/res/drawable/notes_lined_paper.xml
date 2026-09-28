@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- دفتر ۸خط — وکتور/SVG برای «ثبت نکات درسی». خط‌ها هر ۲۴ واحد؛ متن روی خط می‌نشیند. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="236dp"
+    android:viewportWidth="360"
+    android:viewportHeight="236">
+    <!-- کاغذ -->
+    <path
+        android:fillColor="#FFFBEB"
+        android:pathData="M16,8c0,-4.4 3.6,-8 8,-8h312c4.4,0 8,3.6 8,8v220c0,4.4 -3.6,8 -8,8H24c-4.4,0 -8,-3.6 -8,-8z" />
+    <!-- قاب دور دفتر -->
+    <path
+        android:pathData="M16,8c0,-4.4 3.6,-8 8,-8h312c4.4,0 8,3.6 8,8v220c0,4.4 -3.6,8 -8,8H24c-4.4,0 -8,-3.6 -8,-8z"
+        android:strokeWidth="2.4"
+        android:strokeColor="#F59E0B"
+        android:fillColor="#00000000" />
+    <!-- خط‌های دفتر (۸ خط) -->
+    <path
+        android:pathData="M20,44h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,68h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,92h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,116h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,140h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,164h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,188h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M20,212h320"
+        android:strokeWidth="1.4"
+        android:strokeColor="#93C5FD"
+        android:fillColor="#00000000" />
+    <!-- خط قرمزِ حاشیه -->
+    <path
+        android:pathData="M40,8v220"
+        android:strokeWidth="1.2"
+        android:strokeColor="#FCA5A5"
+        android:fillColor="#00000000" />
+</vector>

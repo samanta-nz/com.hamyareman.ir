@@ -1,0 +1,9 @@
+{
+  "name": "zahra-functions-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "تست منطق توابع سرور با SDK ساختگی (بدون شبکه، بدون نصب وابستگی)",
+  "scripts": {
+    "test": "node run-tests.js"
+  }
+}

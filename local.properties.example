@@ -1,0 +1,14 @@
+# این فایل را به local.properties کپی کنید (local.properties در git نیست).
+# مسیر SDK اندروید (Android Studio خودش می‌سازد):
+# sdk.dir=/Users/you/Library/Android/sdk
+
+# --- Appwrite ---
+# ⚠️ از ۱۴۰۴/۰۶ مقادیر پیش‌فرض داخل apps/hamyar-app/build.gradle.kts سخت‌کد شده‌اند
+# (پروژه 6a9d59e3002751cc3ea8 — endpoint fra). این فایل فقط برای override محلی است.
+# حالت سرور با همین پیش‌فرض‌ها فعال است؛ بدون این فایل هم اپ به همان پروژه وصل می‌شود.
+# کنسول Appwrite › Project › Overview › Project ID
+appwrite.projectId=6a9d59e3002751cc3ea8
+# منطقه‌ی پروژه: fra / nyc / sgp / sydney
+appwrite.endpoint=https://fra.cloud.appwrite.io/v1
+# نام دیتابیسی که با `appwrite push tablesDB` ساخته می‌شود
+appwrite.databaseId=main_db

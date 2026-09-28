@@ -1,0 +1,1280 @@
+{
+ "packs": [
+  {
+   "packId": "C901_L01",
+   "dash": "C901-L01",
+   "title": "درسِ اول: این جهان راه است و ما راهی و مَرکَب، خوی ماست (۱۴)",
+   "authoredAudio": "C901_L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C901_L02",
+   "dash": "C901-L02",
+   "title": "درسِ دوم: بود روشنگر راه سعادت، جو خورشید فروزان قرآن است (۲۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L03",
+   "dash": "C901-L03",
+   "title": "درسِ سوم: در صراط مستقیم ای دل کسی گمراه نیست (۳۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L04",
+   "dash": "C901-L04",
+   "title": "درسِ چهارم: یک میوه از درخت غرور، آن تمسخر است (۴۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L05",
+   "dash": "C901-L05",
+   "title": "درسِ پنجم: بهشت حق، جزای متّقین است (۵۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L06",
+   "dash": "C901-L06",
+   "title": "درسِ ششم: عدالت‌خواه و عادل چون خدا باش (۶۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L07",
+   "dash": "C901-L07",
+   "title": "درسِ هفتم: خدا با حکمت و میزان، رسولان را دهد یاری (۶۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L08",
+   "dash": "C901-L08",
+   "title": "درسِ هشتم: تجارت با خدا، کسبی است پرسود (۷۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L09",
+   "dash": "C901-L09",
+   "title": "درسِ نهم: سفر زندگی ما ز خدا تا به خداست (۸۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L10",
+   "dash": "C901-L10",
+   "title": "درسِ دهم: رتّل القرآن ترتیلاً، ندای رحمت است (۹۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C901_L11",
+   "dash": "C901-L11",
+   "title": "درسِ یازدهم: به آسمان و کوه‌ها چرا نظر نمی‌کنی؟! (۱۰۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E01-L01",
+   "dash": "C902-E01-L01",
+   "title": "درس ۱ - تو را چگونه بشناسم؟ (۱۱)",
+   "authoredAudio": "C902_E01-L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C902_E01-L02",
+   "dash": "C902-E01-L02",
+   "title": "درس ۲ - در پناه ایمان (۲۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E02-L01",
+   "dash": "C902-E02-L01",
+   "title": "درس ۳ - راهنمایان الهی (۳۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E02-L02",
+   "dash": "C902-E02-L02",
+   "title": "درس ۴ - خورشید پنهان (۴۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E02-L03",
+   "dash": "C902-E02-L03",
+   "title": "درس ۵ - رهبری در دوران غیبت (۵۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E03-L01",
+   "dash": "C902-E03-L01",
+   "title": "درس ۶ - وضو، غسل و تیمم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E03-L02",
+   "dash": "C902-E03-L02",
+   "title": "درس ۷ - احکام نماز",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E04-L01",
+   "dash": "C902-E04-L01",
+   "title": "درس ۸ - همدلی و همراهی",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E05-L01",
+   "dash": "C902-E05-L01",
+   "title": "درس ۹ - انقلاب اسلامی ایران",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E05-L02",
+   "dash": "C902-E05-L02",
+   "title": "درس ۱۰ - مسئولیت همگانی",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E05-L03",
+   "dash": "C902-E05-L03",
+   "title": "درس ۱۱ - انفاق",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C902_E05-L04",
+   "dash": "C902-E05-L04",
+   "title": "درس ۱۲ - جهاد",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E01-L01",
+   "dash": "C903-E01-L01",
+   "title": "درس ۱ - آفرینش همه تنبیه خداوند دل است (۱۲)",
+   "authoredAudio": "C903_E01-L01-1_AUDIO.mp3"
+  },
+  {
+   "packId": "C903_E01-L02",
+   "dash": "C903-E01-L02",
+   "title": "حکایت: سفر (۱۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E01-L03",
+   "dash": "C903-E01-L03",
+   "title": "درس ۲ - عجایب صنعِ حق تعالی (۱۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E01-L04",
+   "dash": "C903-E01-L04",
+   "title": "شعرخوانی: پرواز (۲۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E02-L01",
+   "dash": "C903-E02-L01",
+   "title": "درس ۳ - مثل آیینه، کار و شایستگی (۲۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E02-L02",
+   "dash": "C903-E02-L02",
+   "title": "حکایت: باغبان نیک‌اندیش (۲۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E02-L03",
+   "dash": "C903-E02-L03",
+   "title": "درس ۴ - هم‌نشین (۳۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E02-L04",
+   "dash": "C903-E02-L04",
+   "title": "روان‌خوانی: دریچه‌های شکوفایی (۳۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E03-L01",
+   "dash": "C903-E03-L01",
+   "title": "درس ۵ - درس آزاد (۴۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E03-L02",
+   "dash": "C903-E03-L02",
+   "title": "حکایت (۴۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E03-L03",
+   "dash": "C903-E03-L03",
+   "title": "شعرخوانی (۴۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E04-L01",
+   "dash": "C903-E04-L01",
+   "title": "درس ۶ - آداب زندگانی (۴۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E04-L02",
+   "dash": "C903-E04-L02",
+   "title": "حکایت: شو، خطرکن! (۵۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E04-L03",
+   "dash": "C903-E04-L03",
+   "title": "درس ۷ - پرتو امید (۵۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E04-L04",
+   "dash": "C903-E04-L04",
+   "title": "درس ۸ - همزیستی با مام میهن (۵۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E04-L05",
+   "dash": "C903-E04-L05",
+   "title": "شعرخوانی: دوراندیشی (۶۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E05-L01",
+   "dash": "C903-E05-L01",
+   "title": "درس ۹ - راز موفقیت",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E05-L02",
+   "dash": "C903-E05-L02",
+   "title": "درس ۱۰ - آرشی دیگر",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E05-L03",
+   "dash": "C903-E05-L03",
+   "title": "حکایت: نیک‌رایان",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E05-L04",
+   "dash": "C903-E05-L04",
+   "title": "درس ۱۱ - زن پارسا",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E05-L05",
+   "dash": "C903-E05-L05",
+   "title": "روان‌خوانی: دروازه‌ای به آسمان",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E06-L01",
+   "dash": "C903-E06-L01",
+   "title": "درس ۱۲ - پیام‌آور رحمت",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E06-L02",
+   "dash": "C903-E06-L02",
+   "title": "حکایت: سیرت سلمان",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E06-L03",
+   "dash": "C903-E06-L03",
+   "title": "درس ۱۳ - آشنای غریبان",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E06-L04",
+   "dash": "C903-E06-L04",
+   "title": "درس ۱۴ - پیدای پنهان",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E06-L05",
+   "dash": "C903-E06-L05",
+   "title": "شعرخوانی: بُوَد قدر تو افزون از مالیک",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E07-L01",
+   "dash": "C903-E07-L01",
+   "title": "درس ۱۵ - درس آزاد",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E07-L02",
+   "dash": "C903-E07-L02",
+   "title": "روان‌خوانی",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E08-L01",
+   "dash": "C903-E08-L01",
+   "title": "درس ۱۶ - آرزو",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E08-L02",
+   "dash": "C903-E08-L02",
+   "title": "درس ۱۷ - شازده کوچولو",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C903_E08-L03",
+   "dash": "C903-E08-L03",
+   "title": "روان‌خوانی: دو نقاش",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L01",
+   "dash": "C904-L01",
+   "title": "درس اول - نظام ذهنی «پرورده» و «بند» بنویسیم",
+   "authoredAudio": "C904_L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C904_L02",
+   "dash": "C904-L02",
+   "title": "درس دوم - واژه‌ها را بشناسیم، گزینش کنیم و به کار بگیریم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L03",
+   "dash": "C904-L03",
+   "title": "درس سوم - نوع زبان نوشته را انتخاب کنیم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L04",
+   "dash": "C904-L04",
+   "title": "درس چهارم - فضا و رنگ نوشته را تغییر دهیم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L05",
+   "dash": "C904-L05",
+   "title": "درس پنجم - نوشته را به خوش آغاز کنیم؛ زیبا به پایان ببریم و نیکو نام‌گذاری کنیم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L06",
+   "dash": "C904-L06",
+   "title": "درس ششم - قالبی برای نوشتن برگزینیم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L07",
+   "dash": "C904-L07",
+   "title": "درس هفتم - وسعت و عمق نوشته را بیشتر کنیم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C904_L08",
+   "dash": "C904-L08",
+   "title": "درس هشتم - نوشته را ویرایش کنیم",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E01-EXAM",
+   "dash": "C905-E01-EXAM",
+   "title": "",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E01-L01",
+   "dash": "C905-E01-L01",
+   "title": "درس اول: معرفی مجموعه (۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E01-L02",
+   "dash": "C905-E01-L02",
+   "title": "درس دوم: مجموعه‌های برابر و نمایش مجموعه‌ها (۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E01-L03",
+   "dash": "C905-E01-L03",
+   "title": "درس سوم: اجتماع، اشتراک و تفاضلِ مجموعه‌ها (۱۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E01-L04",
+   "dash": "C905-E01-L04",
+   "title": "درس چهارم: مجموعه‌ها و احتمال (۱۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E02-L01",
+   "dash": "C905-E02-L01",
+   "title": "درس اول: عددهای گویا (۱۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E02-L02",
+   "dash": "C905-E02-L02",
+   "title": "درس دوم: عددهای حقیقی (۲۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E02-L03",
+   "dash": "C905-E02-L03",
+   "title": "درس سوم: قدر مطلق و محاسبهٔ تقریبی (۲۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E03-L01",
+   "dash": "C905-E03-L01",
+   "title": "درس اول: استدلال (۳۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E03-L02",
+   "dash": "C905-E03-L02",
+   "title": "درس دوم: آشنایی با اثبات در هندسه (۳۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E03-L03",
+   "dash": "C905-E03-L03",
+   "title": "درس سوم: هم‌نهشتی مثلث‌ها (۴۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E03-L04",
+   "dash": "C905-E03-L04",
+   "title": "درس چهارم: حل مسئله در هندسه (۴۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E03-L05",
+   "dash": "C905-E03-L05",
+   "title": "درس پنجم: شکل‌های متشابه (۵۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E04-L01",
+   "dash": "C905-E04-L01",
+   "title": "درس اول: توان صحیح (۶۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E04-L02",
+   "dash": "C905-E04-L02",
+   "title": "درس دوم: نماد علمی (۶۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E04-L03",
+   "dash": "C905-E04-L03",
+   "title": "درس سوم: ریشه‌گیری (۶۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E04-L04",
+   "dash": "C905-E04-L04",
+   "title": "درس چهارم: جمع و تفریق رادیکال‌ها (۷۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E05-L01",
+   "dash": "C905-E05-L01",
+   "title": "درس اول: عبارت‌های جبری و مفهوم اتحاد (۷۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E05-L02",
+   "dash": "C905-E05-L02",
+   "title": "درس دوم: چند اتحاد دیگر، تجزیه و کاربردها (۸۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E05-L03",
+   "dash": "C905-E05-L03",
+   "title": "درس سوم: نابرابری‌ها و نامعادله‌ها (۹۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E06-L01",
+   "dash": "C905-E06-L01",
+   "title": "درس اول: معادلهٔ خط (۹۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E06-L02",
+   "dash": "C905-E06-L02",
+   "title": "درس دوم: شیب خط و عرض از مبدأ (۱۰۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E06-L03",
+   "dash": "C905-E06-L03",
+   "title": "درس سوم: دستگاه معادله‌های خطی (۱۰۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E07-L01",
+   "dash": "C905-E07-L01",
+   "title": "درس اول: معرفی و ساده‌کردن عبارت‌های گویا (۱۱۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E07-L02",
+   "dash": "C905-E07-L02",
+   "title": "درس دوم: محاسبات عبارت‌های گویا (۱۱۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E07-L03",
+   "dash": "C905-E07-L03",
+   "title": "درس سوم: تقسیم چندجمله‌ای‌ها (۱۲۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E08-L01",
+   "dash": "C905-E08-L01",
+   "title": "درس اول: حجم و مساحت کره (۱۳۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E08-L02",
+   "dash": "C905-E08-L02",
+   "title": "درس دوم: حجم هرم و مخروط (۱۳۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C905_E08-L03",
+   "dash": "C905-E08-L03",
+   "title": "درس سوم: سطح و حجم (۱۴۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E01-L01",
+   "dash": "C906-E01-L01",
+   "title": "فصل اول: مواد و نقش آن‌ها در زندگی (۱)",
+   "authoredAudio": "C906_E01-L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C906_E02-L01",
+   "dash": "C906-E02-L01",
+   "title": "فصل دوم: رفتار اتم‌ها با یکدیگر (۱۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E03-L01",
+   "dash": "C906-E03-L01",
+   "title": "فصل سوم: به‌دنبال محیطی بهتر برای زندگی (۲۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E04-L01",
+   "dash": "C906-E04-L01",
+   "title": "فصل چهارم: حرکت چیست؟ (۳۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E05-L01",
+   "dash": "C906-E05-L01",
+   "title": "فصل پنجم: نیرو (۵۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E06-L01",
+   "dash": "C906-E06-L01",
+   "title": "فصل ششم: زمین ساخت ورقه‌ای (۶۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E07-L01",
+   "dash": "C906-E07-L01",
+   "title": "فصل هفتم: آثاری از گذشته زمین (۷۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E08-L01",
+   "dash": "C906-E08-L01",
+   "title": "فصل هشتم: فشار و آثار آن (۸۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E09-L01",
+   "dash": "C906-E09-L01",
+   "title": "فصل نهم: ماشین‌ها (۹۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E10-L01",
+   "dash": "C906-E10-L01",
+   "title": "فصل دهم: نگاهی به فضا (۱۰۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E11-L01",
+   "dash": "C906-E11-L01",
+   "title": "فصل یازدهم: گوناگونی جانداران (۱۲۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E12-L01",
+   "dash": "C906-E12-L01",
+   "title": "فصل دوازدهم: دنیای گیاهان (۱۳۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E13-L01",
+   "dash": "C906-E13-L01",
+   "title": "فصل سیزدهم: جانوران بی‌مهره (۱۴۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E14-L01",
+   "dash": "C906-E14-L01",
+   "title": "فصل چهاردهم: جانوران مهره‌دار (۱۵۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C906_E15-L01",
+   "dash": "C906-E15-L01",
+   "title": "فصل پانزدهم: باهم‌زیستن (۱۶۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E01-L01",
+   "dash": "C907-E01-L01",
+   "title": "درس ۱ - زمین، مهد زیبای انسان‌ها (۲)",
+   "authoredAudio": "C907_E01-L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C907_E01-L02",
+   "dash": "C907-E01-L02",
+   "title": "درس ۲ - حرکات زمین (۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E02-L01",
+   "dash": "C907-E02-L01",
+   "title": "درس ۳ - چهرۀ زمین (۱۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E02-L02",
+   "dash": "C907-E02-L02",
+   "title": "درس ۴ - آب فراوان، هوای پاک (۲۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E03-L01",
+   "dash": "C907-E03-L01",
+   "title": "درس ۵ - پراکندگی زیست‌بوم‌های جهان (۳۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E03-L02",
+   "dash": "C907-E03-L02",
+   "title": "درس ۶ - زیست‌بوم‌ها در خطرند (۳۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E04-L01",
+   "dash": "C907-E04-L01",
+   "title": "درس ۷ - جمعیت جهان (۴۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E04-L02",
+   "dash": "C907-E04-L02",
+   "title": "درس ۸ - بی‌عدالتی و نابرابری در جهان (۴۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E05-L01",
+   "dash": "C907-E05-L01",
+   "title": "درس ۹ - ایرانی متحد و یکپارچه (۵۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E05-L02",
+   "dash": "C907-E05-L02",
+   "title": "درس ۱۰ - اوضاع اجتماعی، اقتصادی، علمی و فرهنگی ایران در عصر صفوی (۶۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E06-L01",
+   "dash": "C907-E06-L01",
+   "title": "درس ۱۱ - تلاش برای حفظ استقلال و اتحاد سیاسی ایران (۶۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E06-L02",
+   "dash": "C907-E06-L02",
+   "title": "درس ۱۲ - در جست‌وجوی پیشرفت و رهایی از سلطۀ خارجی (۷۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E07-L01",
+   "dash": "C907-E07-L01",
+   "title": "درس ۱۳ - نهضت مشروطه (۸۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E07-L02",
+   "dash": "C907-E07-L02",
+   "title": "درس ۱۴ - ایران در دوران حکومت پهلوی (۸۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E08-L01",
+   "dash": "C907-E08-L01",
+   "title": "درس ۱۵ - انقلاب اسلامی ایران (۹۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E08-L02",
+   "dash": "C907-E08-L02",
+   "title": "درس ۱۶ - ایران در دوران پس از پیروزی انقلاب اسلامی (۱۰۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E09-L01",
+   "dash": "C907-E09-L01",
+   "title": "درس ۱۷ - فرهنگ (۱۱۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E09-L02",
+   "dash": "C907-E09-L02",
+   "title": "درس ۱۸ - هویت (۱۲۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E10-L01",
+   "dash": "C907-E10-L01",
+   "title": "درس ۱۹ - ارزش‌ها و کارکردهای خانواده (۱۳۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E10-L02",
+   "dash": "C907-E10-L02",
+   "title": "درس ۲۰ - آرامش در خانواده (۱۳۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E11-L01",
+   "dash": "C907-E11-L01",
+   "title": "درس ۲۱ - نهاد حکومت (۱۴۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E11-L02",
+   "dash": "C907-E11-L02",
+   "title": "درس ۲۲ - حقوق و تکالیف شهروندی (۱۵۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E12-L01",
+   "dash": "C907-E12-L01",
+   "title": "درس ۲۳ - بهره‌وری چیست؟ (۱۵۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C907_E12-L02",
+   "dash": "C907-E12-L02",
+   "title": "درس ۲۴ - اقتصاد و بهره‌وری (۱۶۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E01-L01",
+   "dash": "C908-E01-L01",
+   "title": "درس اول: فضا و عمق (۳)",
+   "authoredAudio": "C908_E01-L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C908_E01-L02",
+   "dash": "C908-E01-L02",
+   "title": "درس دوم: نور و حجم (۱۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E01-L03",
+   "dash": "C908-E01-L03",
+   "title": "درس سوم: ابزارهای ترسیم (۲۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E01-L04",
+   "dash": "C908-E01-L04",
+   "title": "درس چهارم: تعریف و کاربردهای طراحی (۳۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E02-L01",
+   "dash": "C908-E02-L01",
+   "title": "درس اول: نگاشتار (گرافیک) و تبلیغات (۳۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E02-L02",
+   "dash": "C908-E02-L02",
+   "title": "درس دوم: اعلان و صفحه‌آرایی (۴۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E02-L03",
+   "dash": "C908-E02-L03",
+   "title": "درس سوم: نگاشتار (گرافیک) محیطی (۵۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E03-L01",
+   "dash": "C908-E03-L01",
+   "title": "درس اول: عکس‌های ترکیبی (۵۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E03-L02",
+   "dash": "C908-E03-L02",
+   "title": "درس دوم: عکاسی روایی (۶۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E03-L03",
+   "dash": "C908-E03-L03",
+   "title": "درس سوم: گرایش‌های عکاسی (۶۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E04-L01",
+   "dash": "C908-E04-L01",
+   "title": "درس اول: نحوهٔ تراشیدن قلم و قالب‌های اجرایی خوشنویسی (۷۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E04-L02",
+   "dash": "C908-E04-L02",
+   "title": "درس دوم: معرفی خط نستعلیق و مشق سطرنویسی (۸۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E04-L03",
+   "dash": "C908-E04-L03",
+   "title": "درس سوم: معرفی خط شکسته نستعلیق و مشق دوسطری‌نویسی (۹۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E04-L04",
+   "dash": "C908-E04-L04",
+   "title": "درس چهارم: گرایش‌های هنری با بیان خوشنویسی و مشق دفتری‌نویسی (۹۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E05-L01",
+   "dash": "C908-E05-L01",
+   "title": "درس اول: چهارلنگه (۱۰۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E05-L02",
+   "dash": "C908-E05-L02",
+   "title": "درس دوم: گره هشت و چهارلنگه (۱۱۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E05-L03",
+   "dash": "C908-E05-L03",
+   "title": "درس سوم: بته (بته‌جقه) (۱۱۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E06-L01",
+   "dash": "C908-E06-L01",
+   "title": "درس اول: جلدسازی سنتی (زیرالکی با روش لایه‌های کاغذ) (۱۲۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E06-L02",
+   "dash": "C908-E06-L02",
+   "title": "درس دوم: جعبه‌سازی روغنی (زیرالکی با روش نوار کاغذ) (۱۲۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E06-L03",
+   "dash": "C908-E06-L03",
+   "title": "درس سوم: اشیای روغنی (زیرالکی روی چوب) (۱۳۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E07-L01",
+   "dash": "C908-E07-L01",
+   "title": "درس اول: درویش‌دوزی (۱۳۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E07-L02",
+   "dash": "C908-E07-L02",
+   "title": "درس دوم: زرتشتی‌دوزی (۱۴۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E07-L03",
+   "dash": "C908-E07-L03",
+   "title": "درس سوم: پته‌دوزی (۱۴۴)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E08-L01",
+   "dash": "C908-E08-L01",
+   "title": "درس اول: آواهای قومی (مردمی) (۱۵۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E08-L02",
+   "dash": "C908-E08-L02",
+   "title": "درس دوم: ردیف دستگاهی ایران (۱۵۶)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E08-L03",
+   "dash": "C908-E08-L03",
+   "title": "درس سوم: آواهای دینی ایران (۱۶۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E08-L04",
+   "dash": "C908-E08-L04",
+   "title": "درس چهارم: وزن و ریتم در آواهای ایرانی (۱۶۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E08-L05",
+   "dash": "C908-E08-L05",
+   "title": "درس پنجم: شکل (فرم) و گونه (ژانر)های آوایی (۱۷۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E09-L01",
+   "dash": "C908-E09-L01",
+   "title": "درس اول: کارگردانی و انتخاب نمایشنامه (۱۷۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E09-L02",
+   "dash": "C908-E09-L02",
+   "title": "درس دوم: انتخاب بازیگر و خواندن متن (۱۸۰)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C908_E09-L03",
+   "dash": "C908-E09-L03",
+   "title": "درس سوم: حرکت و چیدمان روی صحنه (۱۸۲)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L01",
+   "dash": "C909-L01",
+   "title": "اَلدَّرْسُ الْأَوَّلُ: مُراجَعَةُ دُروسِ الصَّفِّ السّابِعِ وَ الثّامِنِ (١١)",
+   "authoredAudio": "C909_L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C909_L02",
+   "dash": "C909-L02",
+   "title": "اَلدَّرْسُ الثّانی: اَلْعُبورُ الْآمِنُ (٢١)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L03",
+   "dash": "C909-L03",
+   "title": "اَلدَّرْسُ الثّالِثُ: جِسْرُ الصَّداقَةِ (٣٧)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L04",
+   "dash": "C909-L04",
+   "title": "اَلدَّرْسُ الرّابِعُ: اَلصَّبْرُ مِفْتاحُ الْفَرَجِ (٤٩)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L05",
+   "dash": "C909-L05",
+   "title": "اَلدَّرْسُ الْخامِسُ: اَلرَّجاءُ (٦١)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L06",
+   "dash": "C909-L06",
+   "title": "اَلدَّرْسُ السّادِسُ: تَغْییرُ الْحَیاةِ (٧٥)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L07",
+   "dash": "C909-L07",
+   "title": "اَلدَّرْسُ السّابِعُ: ثَمَرَةُ الْجِدِّ (٨٧)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L08",
+   "dash": "C909-L08",
+   "title": "اَلدَّرْسُ الثّامِنُ: حِوارٌ بَیْنَ الزّائِرِ وَ سائِقِ سَیّارَةِ الْأُجْرَةِ (٩٩)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L09",
+   "dash": "C909-L09",
+   "title": "اَلدَّرْسُ التّاسِعُ: نُصوصٌ حَوْلَ الصِّحَّةِ (١١١)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C909_L10",
+   "dash": "C909-L10",
+   "title": "اَلدَّرْسُ الْعاشِرُ: رِسالَةُ الشَّهیدِ سُلَیْمانی (١٢٥)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L01",
+   "dash": "C910-L01",
+   "title": "Lesson 1 - Personality",
+   "authoredAudio": "C910_L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C910_L02",
+   "dash": "C910-L02",
+   "title": "Lesson 2 - Travel",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L03",
+   "dash": "C910-L03",
+   "title": "Review 1",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L04",
+   "dash": "C910-L04",
+   "title": "Lesson 3 - Festivals and Ceremonies",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L05",
+   "dash": "C910-L05",
+   "title": "Lesson 4 - Services",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L06",
+   "dash": "C910-L06",
+   "title": "Review 2",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L07",
+   "dash": "C910-L07",
+   "title": "Lesson 5 - Media",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L08",
+   "dash": "C910-L08",
+   "title": "Lesson 6 - Health and Injuries",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C910_L09",
+   "dash": "C910-L09",
+   "title": "Review 3",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C911_L01",
+   "dash": "C911-L01",
+   "title": "Lesson 1 - Personality (شخصیت)",
+   "authoredAudio": "C911_L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C911_L02",
+   "dash": "C911-L02",
+   "title": "Lesson 2 - Travel (سفر)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C911_L03",
+   "dash": "C911-L03",
+   "title": "Lesson 3 - Festivals and Ceremonies (جشن‌ها و مراسم)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C911_L04",
+   "dash": "C911-L04",
+   "title": "Lesson 4 - Services (خدمات)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C911_L05",
+   "dash": "C911-L05",
+   "title": "Lesson 5 - Media (رسانه)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C911_L06",
+   "dash": "C911-L06",
+   "title": "Lesson 6 - Health and Injuries (سلامت و آسیب‌ها)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E01-L01",
+   "dash": "C917-E01-L01",
+   "title": "پودمان ۱: الگوریتم (۳)",
+   "authoredAudio": "C917_E01-L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C917_E01-L02",
+   "dash": "C917-E01-L02",
+   "title": "پودمان ۲: ترسیم با رایانه (۱۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E01-L03",
+   "dash": "C917-E01-L03",
+   "title": "پودمان ۳: ساز و کارهای حرکتی (۲۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E01-L04",
+   "dash": "C917-E01-L04",
+   "title": "پودمان ۴: برنامه‌نویسی پایتون (۳) (۳۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E01-L05",
+   "dash": "C917-E01-L05",
+   "title": "پودمان ۵: هدایت تحصیلی - حرفه‌ای (۵۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E02-L01",
+   "dash": "C917-E02-L01",
+   "title": "پودمان ۶: برق (۷۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E02-L02",
+   "dash": "C917-E02-L02",
+   "title": "پودمان ۷: تأسیسات مکانیکی (۸۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E02-L03",
+   "dash": "C917-E02-L03",
+   "title": "پودمان ۸: عمران (۱۰۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E02-L04",
+   "dash": "C917-E02-L04",
+   "title": "پودمان ۹: خودرو (۱۱۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E02-L05",
+   "dash": "C917-E02-L05",
+   "title": "پودمان ۱۰: پایش رشد و تکامل کودک (۱۲۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C917_E02-L06",
+   "dash": "C917-E02-L06",
+   "title": "پودمان ۱۱: صنایع دستی (برجسته‌کاری روی فلز مس) (۱۴۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L01",
+   "dash": "C941-L01",
+   "title": "درس ۱ - شروع یک ماجرا (۱۵)",
+   "authoredAudio": "C941_L01_AUDIO.mp3"
+  },
+  {
+   "packId": "C941_L02",
+   "dash": "C941-L02",
+   "title": "درس ۲ - توطئه‌ای به نام بازی (۲۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L03",
+   "dash": "C941-L03",
+   "title": "درس ۳ - کاروان سرنوشت (۴۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L04",
+   "dash": "C941-L04",
+   "title": "درس ۴ - فرار به سوی خدا (۵۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L05",
+   "dash": "C941-L05",
+   "title": "درس ۵ - مهمانی رسوایی (۶۸)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L06",
+   "dash": "C941-L06",
+   "title": "درس ۶ - پیروزی تأمل‌برانگیز (۸۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L07",
+   "dash": "C941-L07",
+   "title": "درس ۷ - کلاس توحید در زندان (۹۵)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L08",
+   "dash": "C941-L08",
+   "title": "درس ۸ - رؤیای سرنوشت‌ساز (۱۰۹)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L09",
+   "dash": "C941-L09",
+   "title": "درس ۹ - اسیری که امیر شد (۱۲۱)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L10",
+   "dash": "C941-L10",
+   "title": "درس ۱۰ - دیدارها تازه می‌شود (۱۳۷)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L11",
+   "dash": "C941-L11",
+   "title": "درس ۱۱ - ماجرای ظرف قیمتی (۱۵۳)",
+   "authoredAudio": ""
+  },
+  {
+   "packId": "C941_L12",
+   "dash": "C941-L12",
+   "title": "درس ۱۲ - پایان یک ماجرا (۱۶۹)",
+   "authoredAudio": ""
+  }
+ ],
+ "c903_extra_rows": [
+  {
+   "id": "C903_001",
+   "title": "ستایش: به نام خداوند جان و خرد (۹)"
+  },
+  {
+   "id": "C903_041",
+   "title": "نیایش: بیا تا برآریم دستی ز دل"
+  },
+  {
+   "id": "C903_042",
+   "title": "واژه‌نامه"
+  },
+  {
+   "id": "C903_043",
+   "title": "اعلام؛ اشخاص و آثار"
+  },
+  {
+   "id": "C903_044",
+   "title": "کتاب‌نامه"
+  }
+ ]
+}

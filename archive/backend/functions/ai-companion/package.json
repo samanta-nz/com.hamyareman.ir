@@ -1,0 +1,10 @@
+{
+  "name": "ai-companion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "لایه‌ی AI «همراه زهرا» — proxy سمت سرور؛ کلید مدل هرگز در اپ نیست + ورود native گوگل (mode=google-auth)",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^15.0.0"
+  }
+}

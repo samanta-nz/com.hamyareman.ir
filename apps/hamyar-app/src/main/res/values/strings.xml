@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">همیار من</string>
+    <string name="app_subtitle">یه جای امن برای روزای تو</string>
+    <string name="notif_channel_messages">پیام‌های حرف دل</string>
+    <string name="notif_channel_calls">تماس با بابا</string>
+    <string name="notif_channel_reminders">یادآورهای ملایم</string>
+    <string name="notif_channel_weekly">خلاصه‌ی هفتگی</string>
+    <string name="notif_channel_sync">همگام‌سازی</string>
+</resources>

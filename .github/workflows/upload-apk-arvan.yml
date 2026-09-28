@@ -1,0 +1,56 @@
+name: Upload APK to Arvan
+
+on:
+  workflow_dispatch:
+    inputs:
+      asset:
+        description: "نام فایل در ci-apk"
+        required: true
+        default: "hamyar-1.96.apk"
+
+jobs:
+  upload:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: دریافت APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh release download ci-apk --repo infobehzad/com.hamyareman.ir \
+            --pattern "${{ inputs.asset }}" --dir dist
+          test -f "dist/${{ inputs.asset }}"
+      - name: آپلود به باکت ایرانی
+        env:
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+          ASSET: ${{ inputs.asset }}
+        run: |
+          pip install --quiet boto3
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import boto3
+          from botocore.config import Config
+          name = os.environ["ASSET"]
+          data = Path("dist", name).read_bytes()
+          s3 = boto3.client(
+              "s3",
+              aws_access_key_id=os.environ["ARVAN_ACCESS_KEY"],
+              aws_secret_access_key=os.environ["ARVAN_SECRET_KEY"],
+              endpoint_url="https://s3.ir-thr-at1.arvanstorage.ir",
+              region_name="ir-thr-at1",
+              config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
+                            connect_timeout=20, read_timeout=180, retries={"max_attempts": 3}),
+          )
+          extra = {"ContentType": "application/vnd.android.package-archive"}
+          try:
+              s3.put_object(Bucket="hamyar-e-man", Key=name, Body=data, ACL="public-read", **extra)
+          except Exception:
+              s3.put_object(Bucket="hamyar-e-man", Key=name, Body=data, **extra)
+          print("arvan ok", name, len(data))
+          PY

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  VIBRATE یک مجوز normal است (بدون درخواست از کاربر) و فقط برای لرزشِ زنگِ
+  تماس ورودی استفاده می‌شود.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.VIBRATE" />
+</manifest>

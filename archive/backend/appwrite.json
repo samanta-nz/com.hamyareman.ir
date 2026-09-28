@@ -1,0 +1,1647 @@
+{
+ "projectId": "REPLACE_WITH_YOUR_PROJECT_ID",
+ "projectName": "Hamyar Platform",
+ "endpoint": "https://fra.cloud.appwrite.io/v1",
+ "_comment": [
+  "این فایل نقطه‌ی شروع است، نه منبع حقیقت نهایی.",
+  "بعد از ساخت پروژه در کنسول Appwrite، بهترین کار این است که:",
+  "  1) appwrite login  و  appwrite init  (پروژه را انتخاب کن)",
+  "  2) جدول‌ها/باکت‌ها را طبق جدول زیر در کنسول بسازی یا با appwrite push tables بفرستی",
+  "  3) appwrite pull tables  را اجرا کنی تا همین فایل با وضعیت واقعی پروژه بازنویسی شود.",
+  "نام‌های $id دقیقاً همان‌هایی هستند که در shared/core-common/TableIds.kt آمده‌اند."
+ ],
+ "tablesDB": [
+  {
+   "$id": "profiles",
+   "databaseId": "main_db",
+   "name": "پروفایل‌ها",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "userId",
+     "type": "string",
+     "size": 64,
+     "required": true,
+     "key": "profileUserId"
+    },
+    {
+     "$id": "app",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "zahra"
+    },
+    {
+     "$id": "displayName",
+     "type": "string",
+     "size": 128,
+     "required": false
+    },
+    {
+     "$id": "createdAtMs",
+     "type": "integer",
+     "required": false
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "profileUserIdIdx",
+     "type": "unique",
+     "attributes": [
+      "userId"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "user_settings",
+   "databaseId": "main_db",
+   "name": "تنظیمات کاربر",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "userId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "weeklyOptIn",
+     "type": "boolean",
+     "required": false,
+     "default": false
+    },
+    {
+     "$id": "quietStart",
+     "type": "integer",
+     "required": false,
+     "default": 22
+    },
+    {
+     "$id": "quietEnd",
+     "type": "integer",
+     "required": false,
+     "default": 7
+    },
+    {
+     "$id": "themeMode",
+     "type": "string",
+     "size": 16,
+     "required": false,
+     "default": "system"
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "settingsUserIdIdx",
+     "type": "unique",
+     "attributes": [
+      "userId"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "pairing_codes",
+   "databaseId": "main_db",
+   "name": "کدهای پیوند",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [],
+   "_note": "دسترسی فقط از راه تابع pairing (با کلید سرور). کلاینت مستقیم نمی‌خواند/نمی‌نویسد.",
+   "columns": [
+    {
+     "$id": "code",
+     "type": "string",
+     "size": 6,
+     "required": true
+    },
+    {
+     "$id": "createdBy",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "usedBy",
+     "type": "string",
+     "size": 64,
+     "required": false
+    },
+    {
+     "$id": "status",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "active"
+    },
+    {
+     "$id": "expiresAtMs",
+     "type": "integer",
+     "required": true
+    },
+    {
+     "$id": "createdAtMs",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "codeIdx",
+     "type": "key",
+     "attributes": [
+      "code"
+     ]
+    },
+    {
+     "$id": "createdByIdx",
+     "type": "key",
+     "attributes": [
+      "createdBy"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "father_links",
+   "databaseId": "main_db",
+   "name": "پیوند زهرا و پدر",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [],
+   "_note": "سطرها را فقط تابع pairing می‌سازد؛ خواندن برای هر دو طرف پیوند مجاز است.",
+   "columns": [
+    {
+     "$id": "zahraId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "fatherId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "partnerName",
+     "type": "string",
+     "size": 128,
+     "required": false
+    },
+    {
+     "$id": "status",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "active"
+    },
+    {
+     "$id": "linkedAt",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "linkZahraIdx",
+     "type": "key",
+     "attributes": [
+      "zahraId"
+     ]
+    },
+    {
+     "$id": "linkFatherIdx",
+     "type": "key",
+     "attributes": [
+      "fatherId"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "father_messages",
+   "databaseId": "main_db",
+   "name": "حرف دل",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "messageId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "type",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "TEXT"
+    },
+    {
+     "$id": "direction",
+     "type": "string",
+     "size": 16,
+     "required": true
+    },
+    {
+     "$id": "text",
+     "type": "string",
+     "size": 4096,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "mediaRef",
+     "type": "string",
+     "size": 256,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "durationMs",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "createdAtMs",
+     "type": "integer",
+     "required": true
+    },
+    {
+     "$id": "toUserId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "msgCreatedIdx",
+     "type": "key",
+     "attributes": [
+      "createdAtMs"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "album_items",
+   "databaseId": "main_db",
+   "name": "آلبوم خاطرات مشترک",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "itemId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 128,
+     "required": true
+    },
+    {
+     "$id": "note",
+     "type": "string",
+     "size": 512,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "addedBy",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "ZAHRA"
+    },
+    {
+     "$id": "addedById",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "ownerId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "mediaRef",
+     "type": "string",
+     "size": 256,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "approved",
+     "type": "boolean",
+     "required": true,
+     "default": false
+    },
+    {
+     "$id": "createdAtMs",
+     "type": "integer",
+     "required": true,
+     "default": 0
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "owner_created",
+     "type": "key",
+     "status": "available",
+     "columns": [
+      "ownerId",
+      "createdAtMs"
+     ]
+    }
+   ],
+   "_note": "آلبوم خاطرات مشترک زهرا و پدر. زهرا مالک است (ownerId)؛ هر خاطره‌ای که پدر اضافه کند approved=false می‌ماند تا زهرا تأیید کند. رسانه‌ها در باکت father-album."
+  },
+  {
+   "$id": "call_sessions",
+   "databaseId": "main_db",
+   "name": "جلسات تماس",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "callId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "kind",
+     "type": "string",
+     "size": 8,
+     "required": true,
+     "default": "AUDIO"
+    },
+    {
+     "$id": "fromUserId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "toUserId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "fromLabel",
+     "type": "string",
+     "size": 128,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "status",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "ringing"
+    },
+    {
+     "$id": "startedAt",
+     "type": "integer",
+     "required": true
+    },
+    {
+     "$id": "endedAt",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "callToIdx",
+     "type": "key",
+     "attributes": [
+      "toUserId",
+      "status"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "call_signals",
+   "databaseId": "main_db",
+   "name": "سیگنالینگ تماس",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "_note": "ردیف‌های کوتاه‌عمر (offer/answer/ice). پیشنهاد: پاک‌سازی روزانه با cron.",
+   "columns": [
+    {
+     "$id": "callId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "fromUserId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "toUserId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "type",
+     "type": "string",
+     "size": 8,
+     "required": true
+    },
+    {
+     "$id": "payload",
+     "type": "string",
+     "size": 65535,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "createdAtMs",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "signalCallIdx",
+     "type": "key",
+     "attributes": [
+      "callId",
+      "createdAtMs"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "weekly_summaries",
+   "databaseId": "main_db",
+   "name": "خلاصه‌ی هفتگی",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "weekStartIso",
+     "type": "string",
+     "size": 10,
+     "required": true
+    },
+    {
+     "$id": "userId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "fatherId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "waterDays",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "routineDays",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "exerciseMinutes",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "badges",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "note",
+     "type": "string",
+     "size": 2048,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "createdAtMs",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "weeklyIdx",
+     "type": "key",
+     "attributes": [
+      "userId",
+      "weekStartIso"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "routine_blocks",
+   "databaseId": "main_db",
+   "name": "بلوک‌های روتین",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "dayIso",
+     "type": "string",
+     "size": 10,
+     "required": true
+    },
+    {
+     "$id": "blockId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 128,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "done",
+     "type": "boolean",
+     "required": false,
+     "default": false
+    },
+    {
+     "$id": "ownerId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "water_logs",
+   "databaseId": "main_db",
+   "name": "گزارش آب",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "dayIso",
+     "type": "string",
+     "size": 10,
+     "required": true
+    },
+    {
+     "$id": "glasses",
+     "type": "integer",
+     "required": true,
+     "default": 0
+    },
+    {
+     "$id": "ownerId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "exercise_logs",
+   "databaseId": "main_db",
+   "name": "گزارش ورزش",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "dayIso",
+     "type": "string",
+     "size": 10,
+     "required": true
+    },
+    {
+     "$id": "exerciseId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "minutes",
+     "type": "integer",
+     "required": true,
+     "default": 0
+    },
+    {
+     "$id": "ownerId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "badges",
+   "databaseId": "main_db",
+   "name": "نشان‌ها",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "columns": [
+    {
+     "$id": "badgeId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "ownerId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "earnedAtMs",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "lessons",
+   "databaseId": "main_db",
+   "name": "درس‌ها",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "_note": "محتوای عمومی آموزشی؛ فقط با کلید سرور نوشته می‌شود. پرامپت ۰۱: ستون‌های media/video و audio اضافه شد. پرامپت ۰۵: ستون‌های bookCode, lessonNumber, hasVideo, hasAudio, chapterMarkers اضافه شد.",
+   "columns": [
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 256,
+     "required": true
+    },
+    {
+     "$id": "subject",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "grade",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "body",
+     "type": "string",
+     "size": 65535,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "bookCode",
+     "type": "string",
+     "size": 16,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "bookTitleFa",
+     "type": "string",
+     "size": 128,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "subjectOrder",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "lessonNumber",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "lessonTitleFa",
+     "type": "string",
+     "size": 256,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "hasVideo",
+     "type": "boolean",
+     "required": false,
+     "default": false
+    },
+    {
+     "$id": "hasAudio",
+     "type": "boolean",
+     "required": false,
+     "default": false
+    },
+    {
+     "$id": "videoUrl",
+     "type": "string",
+     "size": 1024,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "audioUrl",
+     "type": "string",
+     "size": 1024,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "chapterMarkers",
+     "type": "string",
+     "size": 8192,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "flashcardSetId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "questionBankId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "examRangeGroup",
+     "type": "string",
+     "size": 32,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "prerequisiteSummaryId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "lessonsBookCodeIdx",
+     "type": "key",
+     "attributes": [
+      "bookCode",
+      "lessonNumber"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "lesson_media_progress",
+   "databaseId": "main_db",
+   "name": "پیشرفت رسانه‌ی درس",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "_note": "پرامپت ۰۱: حافظه‌ی پیشرفت پلیر ویدیو/صوت. یک سطر به ازای هر (userId+bookCode+lessonId+mediaType). viewHistory و seekJumps به‌صورت آرایه‌ی JSON-رشته‌ای ذخیره می‌شوند (append در سمت سرور).",
+   "columns": [
+    {
+     "$id": "userId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "bookCode",
+     "type": "string",
+     "size": 16,
+     "required": true
+    },
+    {
+     "$id": "lessonId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "mediaType",
+     "type": "string",
+     "size": 8,
+     "required": true,
+     "default": "video"
+    },
+    {
+     "$id": "lastPositionSec",
+     "type": "double",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "durationSec",
+     "type": "double",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "playbackSpeed",
+     "type": "double",
+     "required": false,
+     "default": 1
+    },
+    {
+     "$id": "isCompleted",
+     "type": "boolean",
+     "required": false,
+     "default": false
+    },
+    {
+     "$id": "viewCount",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "lastViewedAtIso",
+     "type": "string",
+     "size": 32,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "viewHistory",
+     "type": "string",
+     "size": 16384,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "seekJumps",
+     "type": "string",
+     "size": 16384,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "updatedAtIso",
+     "type": "string",
+     "size": 32,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "progressUserLessonIdx",
+     "type": "unique",
+     "attributes": [
+      "userId",
+      "bookCode",
+      "lessonId",
+      "mediaType"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "quizzes",
+   "databaseId": "main_db",
+   "name": "آزمون‌ها",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "columns": [
+    {
+     "$id": "lessonId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "question",
+     "type": "string",
+     "size": 1024,
+     "required": true
+    },
+    {
+     "$id": "choices",
+     "type": "string",
+     "size": 4096,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "answerIndex",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "recipes",
+   "databaseId": "main_db",
+   "name": "آشپزی",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "columns": [
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 256,
+     "required": true
+    },
+    {
+     "$id": "ingredients",
+     "type": "string",
+     "size": 8192,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "steps",
+     "type": "string",
+     "size": 8192,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "minutes",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "servings",
+     "type": "integer",
+     "required": false,
+     "default": 2
+    },
+    {
+     "$id": "difficulty",
+     "type": "string",
+     "size": 32,
+     "required": false,
+     "default": "آسان"
+    },
+    {
+     "$id": "tip",
+     "type": "string",
+     "size": 512,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "exercises",
+   "databaseId": "main_db",
+   "name": "ورزش‌ها",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "columns": [
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 256,
+     "required": true
+    },
+    {
+     "$id": "category",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "minutes",
+     "type": "integer",
+     "required": false,
+     "default": 10
+    },
+    {
+     "$id": "steps",
+     "type": "string",
+     "size": 8192,
+     "required": false,
+     "default": "[]"
+    },
+    {
+     "$id": "note",
+     "type": "string",
+     "size": 512,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "learning_nodes",
+   "databaseId": "main_db",
+   "name": "گره‌های یادگیری",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "columns": [
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 256,
+     "required": true
+    },
+    {
+     "$id": "track",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "orderIndex",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "prerequisiteId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "art_prompts",
+   "databaseId": "main_db",
+   "name": "ایده‌های نقاشی",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "columns": [
+    {
+     "$id": "title",
+     "type": "string",
+     "size": 256,
+     "required": true
+    },
+    {
+     "$id": "prompt",
+     "type": "string",
+     "size": 2048,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "moodTag",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "$id": "wellness_moves",
+   "databaseId": "main_db",
+   "name": "حرکات سلامتی",
+   "enabled": true,
+   "rowSecurity": false,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "_note": "پرامپت ۰۲: کاتالوگ کامل حرکات یوگا/ورزش/تنفس/یادگیری. شامل referenceImageUrl و audioCueId برای فایل‌های صوتی و تصویری در Storage. نوشتن فقط با کلید سرور.",
+   "columns": [
+    {
+     "$id": "category",
+     "type": "string",
+     "size": 16,
+     "required": true,
+     "default": "yoga"
+    },
+    {
+     "$id": "titleFa",
+     "type": "string",
+     "size": 128,
+     "required": true
+    },
+    {
+     "$id": "slug",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "level",
+     "type": "integer",
+     "required": false,
+     "default": 1
+    },
+    {
+     "$id": "durationSec",
+     "type": "integer",
+     "required": false,
+     "default": 60
+    },
+    {
+     "$id": "reps",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "instructionsFa",
+     "type": "string",
+     "size": 2048,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "audioCueId",
+     "type": "string",
+     "size": 64,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "referenceImageUrl",
+     "type": "string",
+     "size": 1024,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "referenceImagePromptTemplate",
+     "type": "string",
+     "size": 4096,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "orderIndex",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "tags",
+     "type": "string",
+     "size": 512,
+     "required": false,
+     "default": "[]"
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "moveSlugIdx",
+     "type": "unique",
+     "attributes": [
+      "slug"
+     ]
+    },
+    {
+     "$id": "moveCategoryIdx",
+     "type": "key",
+     "attributes": [
+      "category",
+      "orderIndex"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "sketch_references",
+   "databaseId": "main_db",
+   "name": "مرجع‌های نقاشی",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "_note": "پرامپت ۰۲: گالری مرجع‌های سیاه‌قلم تولیدشده برای هر کاربر. هر سطر متعلق به یک کاربر است و شامل URL تصویر، موضوع، و سطح مهارت.",
+   "columns": [
+    {
+     "$id": "userId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "subject",
+     "type": "string",
+     "size": 32,
+     "required": true
+    },
+    {
+     "$id": "level",
+     "type": "integer",
+     "required": true
+    },
+    {
+     "$id": "titleFa",
+     "type": "string",
+     "size": 128,
+     "required": false,
+     "default": ""
+    },
+    {
+     "$id": "imageUrl",
+     "type": "string",
+     "size": 1024,
+     "required": true
+    },
+    {
+     "$id": "generatedAtIso",
+     "type": "string",
+     "size": 32,
+     "required": true
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "sketchUserIdx",
+     "type": "key",
+     "attributes": [
+      "userId",
+      "generatedAtIso"
+     ]
+    }
+   ]
+  },
+  {
+   "$id": "wellness_logs",
+   "databaseId": "main_db",
+   "name": "گزارش جلسه‌ی سلامتی",
+   "enabled": true,
+   "rowSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ],
+   "_note": "پرامپت ۰۲: ثبت هر جلسه‌ی انجام‌شده (یوگا/ورزش/تنفس/یادگیری) به تفکیک تاریخ.",
+   "columns": [
+    {
+     "$id": "userId",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "moveSlug",
+     "type": "string",
+     "size": 64,
+     "required": true
+    },
+    {
+     "$id": "category",
+     "type": "string",
+     "size": 16,
+     "required": true
+    },
+    {
+     "$id": "dayIso",
+     "type": "string",
+     "size": 10,
+     "required": true
+    },
+    {
+     "$id": "secondsSpent",
+     "type": "integer",
+     "required": false,
+     "default": 0
+    },
+    {
+     "$id": "completed",
+     "type": "boolean",
+     "required": false,
+     "default": false
+    }
+   ],
+   "indexes": [
+    {
+     "$id": "wellnessLogUserDayIdx",
+     "type": "key",
+     "attributes": [
+      "userId",
+      "dayIso"
+     ]
+    }
+   ]
+  }
+ ],
+ "buckets": [
+  {
+   "$id": "heart-to-heart-media",
+   "name": "رسانه‌ی حرف دل",
+   "enabled": true,
+   "maximumFileSize": 10485760,
+   "fileSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ]
+  },
+  {
+   "$id": "avatars",
+   "name": "آواتارها",
+   "enabled": true,
+   "maximumFileSize": 2097152,
+   "fileSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ]
+  },
+  {
+   "$id": "father-album",
+   "name": "آلبوم مشترک پدر",
+   "enabled": true,
+   "maximumFileSize": 10485760,
+   "fileSecurity": true,
+   "permissions": [
+    "create(\"users\")"
+   ]
+  },
+  {
+   "$id": "zahra-private",
+   "name": "خصوصی زهرا",
+   "enabled": true,
+   "maximumFileSize": 10485760,
+   "fileSecurity": true,
+   "permissions": []
+  },
+  {
+   "$id": "wellness-media",
+   "name": "رسانه‌ی سلامتی",
+   "enabled": true,
+   "maximumFileSize": 5242880,
+   "fileSecurity": true,
+   "permissions": [
+    "read(\"any\")"
+   ],
+   "_note": "پرامپت ۰۲: تصاویر مرجع و فایل‌های صوتی راهنما برای حرکات یوگا/ورزش/تنفس و مرجع‌های سیاه‌قلم. read=any چون محتوا عمومی است."
+  }
+ ],
+ "functions": [
+  {
+   "$id": "user-bootstrap",
+   "name": "user-bootstrap",
+   "runtime": "node-20.0",
+   "path": "functions/user-bootstrap",
+   "entrypoint": "src/main.js",
+   "timeout": 15,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "any"
+   ],
+   "events": [],
+   "schedule": ""
+  },
+  {
+   "$id": "pairing",
+   "name": "pairing",
+   "runtime": "node-20.0",
+   "path": "functions/pairing",
+   "entrypoint": "src/main.js",
+   "timeout": 15,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": ""
+  },
+  {
+   "$id": "weekly-summary",
+   "name": "weekly-summary",
+   "runtime": "node-20.0",
+   "path": "functions/weekly-summary",
+   "entrypoint": "src/main.js",
+   "timeout": 30,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": "0 20 * * 5"
+  },
+  {
+   "$id": "ai-companion",
+   "name": "ai-companion",
+   "runtime": "node-20.0",
+   "path": "functions/ai-companion",
+   "entrypoint": "src/main.js",
+   "timeout": 30,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": "",
+   "_env": {
+    "AI_API_KEY": "کلید ارائه‌دهنده — فقط در متغیرهای محیطی کنسول؛ هرگز در ریپو",
+    "AI_ENDPOINT": "پیش‌فرض https://api.openai.com/v1/chat/completions (سازگار با OpenAI)",
+    "AI_MODELS": "مثال: qwen3.8-flash,glm-5.3-flash,mimo-v2.5,hy3 — اولی استفاده می‌شود",
+    "AI_MODEL": "اگر باشد بر AI_MODELS اولویت دارد",
+    "AI_MAX_TOKENS": "پیش‌فرض 400",
+    "AI_TEMPERATURE": "پیش‌فرض 0.6"
+   },
+   "_note": "لایه‌ی AI همراه زهرا + حالت study-tutor (پرامپت ۰۴، mode=study-tutor): کلید در اپ نیست؛ پیام بحران به مدل نمی‌رود؛ متن ذخیره/لاگ نمی‌شود. (پلن رایگان سقف functions داشت — به‌جای فانکشن جدید، mode اضافه شد.)"
+  },
+  {
+   "$id": "notify-guardian",
+   "name": "notify-guardian",
+   "runtime": "node-20.0",
+   "path": "functions/notify-guardian",
+   "entrypoint": "src/main.js",
+   "timeout": 15,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": ""
+  },
+  {
+   "$id": "lesson-of-the-day",
+   "name": "lesson-of-the-day",
+   "runtime": "node-20.0",
+   "path": "functions/lesson-of-the-day",
+   "entrypoint": "src/main.js",
+   "timeout": 15,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "any"
+   ],
+   "events": [],
+   "schedule": ""
+  },
+  {
+   "$id": "catalog-digest",
+   "name": "catalog-digest",
+   "runtime": "node-20.0",
+   "path": "functions/catalog-digest",
+   "entrypoint": "src/main.js",
+   "timeout": 20,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "any"
+   ],
+   "events": [],
+   "schedule": ""
+  },
+  {
+   "$id": "daily-checkin",
+   "name": "daily-checkin",
+   "runtime": "node-20.0",
+   "path": "functions/daily-checkin",
+   "entrypoint": "src/main.js",
+   "timeout": 20,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": "0 21 * * *"
+  },
+  {
+   "$id": "album-consent",
+   "name": "album-consent",
+   "runtime": "node-20.0",
+   "path": "functions/album-consent",
+   "entrypoint": "src/main.js",
+   "timeout": 15,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": ""
+  },
+  {
+   "$id": "generate-sketch-reference",
+   "name": "generate-sketch-reference",
+   "runtime": "node-20.0",
+   "path": "functions/generate-sketch-reference",
+   "entrypoint": "src/main.js",
+   "timeout": 60,
+   "enabled": true,
+   "logging": true,
+   "execute": [
+    "users"
+   ],
+   "events": [],
+   "schedule": "",
+   "_env": {
+    "IMAGE_GEN_API_KEY": "کلید سرویس تولید تصویر (Gemini/DALL-E/Replicate). اختیاری؛ بدون آن تابع یک URL ثابت برمی‌گرداند.",
+    "IMAGE_GEN_ENDPOINT": "پیش‌فرض https://generativelanguage.googleapis.com/v1beta/models (Gemini)",
+    "WELLNESS_BUCKET_ID": "wellness-media"
+   },
+   "_note": "پرامپت ۰۲: تولید تصویر مرجع سیاه‌قلم برای تمرین نقاشی. ورودی: { subject, level }. خروجی: URL تصویر سیاه‌وسفید برای کپی با مداد."
+  }
+ ]
+}

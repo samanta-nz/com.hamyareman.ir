@@ -1,0 +1,8 @@
+{
+  "name": "study-tutor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "لایه‌ی AI «معلم خصوصی» مطالعه — رفع اشکال مفهومی؛ آفلاین بدون آن کامل است",
+  "main": "src/main.js",
+  "dependencies": {}
+}

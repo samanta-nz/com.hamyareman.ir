@@ -1,0 +1,101 @@
+# کپی APKِ ci-apk به ریپوی عمومی و اعلام روی سرور — بدون ساخت دوباره.
+name: Ship CI APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        required: true
+      version_name:
+        required: true
+      min_code:
+        default: '0'
+      rollout:
+        default: '100'
+      notes:
+        default: ''
+
+jobs:
+  ship:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: دریافت APK از ci-apk
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh release download ci-apk --repo infobehzad/com.hamyareman.ir \
+            --pattern "hamyar-${{ inputs.version_name }}.apk" --dir dist
+          APK="dist/hamyar-${{ inputs.version_name }}.apk"
+          test -f "$APK"
+          echo "APK=$APK" >> "$GITHUB_ENV"
+          echo "ASSET_NAME=hamyar-${{ inputs.version_name }}.apk" >> "$GITHUB_ENV"
+          echo "SIZE=$(stat -c%s "$APK")" >> "$GITHUB_ENV"
+          echo "SHA=$(sha256sum "$APK" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: آپلود در ریپوی عمومی
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          set -euo pipefail
+          REPO="${{ vars.RELEASES_REPO }}"
+          test -n "$REPO"
+          TAG="v${{ inputs.version_name }}"
+          gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$REPO" \
+              --title "همیار من ${{ inputs.version_name }}" \
+              --notes "نسخهٔ ${{ inputs.version_name }}"
+          gh release upload "$TAG" "$APK#$ASSET_NAME" --repo "$REPO" --clobber
+          URL="https://github.com/$REPO/releases/download/$TAG/$ASSET_NAME"
+          echo "URL=$URL" >> "$GITHUB_ENV"
+          CODE=$(curl -sIL -o /dev/null -w '%{http_code}' "$URL" || echo 000)
+          case "$CODE" in 200|302|303) ;; *) echo "HTTP $CODE"; exit 1 ;; esac
+
+      - name: اعلام از سرور
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6a9d59e3002751cc3ea8' }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          MIN_CODE: ${{ inputs.min_code }}
+          ROLLOUT: ${{ inputs.rollout }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time, urllib.request
+          notes = [n.strip() for n in os.environ.get('NOTES', '').split('|') if n.strip()]
+          payload = {
+              'latest': int(os.environ['VERSION_CODE']),
+              'name': os.environ['VERSION_NAME'],
+              'min': int(os.environ.get('MIN_CODE', '0') or 0),
+              'url': os.environ['URL'],
+              'size': int(os.environ['SIZE']),
+              'sha256': os.environ['SHA'],
+              'chan': 'stable',
+              'rollout': max(1, min(100, int(os.environ.get('ROLLOUT', '100') or 100))),
+              'notes': notes,
+          }
+          body = json.dumps({
+              'data': {
+                  'userId': 'global',
+                  'key': 'app_release',
+                  'payload': json.dumps(payload, ensure_ascii=False, separators=(',', ':')),
+                  'updatedAt': int(time.time() * 1000),
+              },
+              'permissions': ['read("users")'],
+          }, ensure_ascii=False).encode()
+          req = urllib.request.Request(
+              'https://fra.cloud.appwrite.io/v1/databases/ZahraDB/collections/app_state/documents/app_release',
+              data=body, method='PATCH')
+          req.add_header('X-Appwrite-Project', os.environ.get('APPWRITE_PROJECT_ID') or '6a9d59e3002751cc3ea8')
+          req.add_header('X-Appwrite-Key', os.environ['APPWRITE_API_KEY'])
+          req.add_header('Content-Type', 'application/json')
+          with urllib.request.urlopen(req, timeout=60) as r:
+              print('سرور', r.status)
+          print(json.dumps(payload, ensure_ascii=False, indent=2))
+          PY

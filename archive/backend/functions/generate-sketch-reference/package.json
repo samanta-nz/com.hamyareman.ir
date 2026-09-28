@@ -1,0 +1,10 @@
+{
+  "name": "generate-sketch-reference",
+  "version": "1.0.0",
+  "private": true,
+  "description": "پرامپت ۰۲: تولید تصویر مرجع سیاه‌قلم برای تمرین نقاشی",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^15.0.0"
+  }
+}

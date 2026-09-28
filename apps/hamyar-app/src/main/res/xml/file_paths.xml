@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  مسیرهایی که FileProvider اجازه‌ی اشتراکشان را دارد:
+  فقط حافظه‌ی موقت اپ برای رسانه‌های «حرف دل» (ویس/عکس/فایل).
+-->
+<paths>
+    <cache-path name="heart" path="heart/" />
+    <cache-path name="voice" path="voice/" />
+    <cache-path name="font_themes" path="font_themes/" />
+    <files-path name="private_media" path="media/" />
+    <files-path name="notes_gallery" path="notes_gallery/" />
+    <!-- کانالِ آپدیت: APKِ دانلودشده تا نصب‌کنندهٔ سیستم بتواند بخواندش -->
+    <external-files-path name="updates" path="updates/" />
+    <!-- APKِ آپدیت حالا داخلِ حافظهٔ خودِ اپ دانلود می‌شود (همیشه قابلِ خواندن برای نصب) -->
+    <files-path name="updates_internal" path="updates/" />
+</paths>

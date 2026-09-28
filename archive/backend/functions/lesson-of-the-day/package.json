@@ -1,0 +1,10 @@
+{
+  "name": "lesson-of-the-day",
+  "version": "1.0.0",
+  "private": true,
+  "description": "انتخاب درس امروز با ترتیب و پیش‌نیازهای سمت سرور",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^15.0.0"
+  }
+}
