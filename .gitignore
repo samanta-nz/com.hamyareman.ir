@@ -4,6 +4,9 @@ secrets.properties
 **/secrets.properties
 apps/hamyar-admin/secrets.properties
 
+# Imported operational credentials and helper scripts; keep local only
+/Hidden Files/
+
 # Android/Gradle generated output
 .gradle/
 **/build/
