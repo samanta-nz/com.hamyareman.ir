@@ -25,7 +25,7 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools platforms;android-37 build-tools;36.0.0'
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: never
@@ -34,6 +34,8 @@ jobs:
           set -euo pipefail
           python3 -m py_compile scripts/*.py
           python3 scripts/validate_grade_architecture.py
+      - name: Verify all 260 public URLs selected by the app
+        run: python3 scripts/verify_public_content.py --workers 20
       - name: Test common logic, lint grade nine, and assemble all nine APKs
         run: |
           ./gradlew \
