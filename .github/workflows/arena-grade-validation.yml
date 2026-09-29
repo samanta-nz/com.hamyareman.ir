@@ -47,12 +47,29 @@ jobs:
           retention-days: 7
       - name: Test common logic, lint grade nine, and assemble all nine APKs
         run: |
+          set +e
           ./gradlew \
             :core-common:testDebugUnitTest \
             :hamyar-app:testP09DebugUnitTest \
             :hamyar-app:lintP09Debug \
             :hamyar-app:assembleDebug \
-            --stacktrace
+            --stacktrace 2>&1 | tee /tmp/grade-gradle.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            {
+              echo '### Gradle failure tail'
+              echo '```text'
+              tail -n 350 /tmp/grade-gradle.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            grep -E '^(e: |FAILURE:|\* What went wrong:|> Task .*FAILED|.*: error:)' /tmp/grade-gradle.log \
+              | tail -n 30 \
+              | while IFS= read -r line; do
+                  line=${line//'%'/'%25'}; line=${line//$'\r'/'%0D'}; line=${line//$'\n'/'%0A'}
+                  echo "::error title=Gradle validation::$line"
+                done
+          fi
+          exit "$code"
       - name: Verify every packaged application ID and signer
         run: |
           set -euo pipefail
