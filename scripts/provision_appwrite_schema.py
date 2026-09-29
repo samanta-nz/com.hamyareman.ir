@@ -320,6 +320,12 @@ def normalize_baseline() -> list[dict[str, Any]]:
         else:
             table["$permissions"] = USER_CREATE
             table["rowSecurity"] = True
+        # بعضی snapshotهای قدیمی `$id` و `key` متفاوت دارند. API ستون را با
+        # `key` می‌سازد، پس references ایندکس نیز باید به همان key نرمال شوند.
+        column_keys = {str(c.get("$id")): str(c.get("key") or c.get("$id")) for c in table.get("columns", [])}
+        for index in table.get("indexes", []):
+            field = "attributes" if index.get("attributes") is not None else "columns"
+            index[field] = [column_keys.get(str(value), str(value)) for value in index.get(field, [])]
         result.append(table)
     return result
 
