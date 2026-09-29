@@ -69,34 +69,19 @@ def put_file(
     metadata: dict[str, str],
     acl: str | None = None,
 ) -> None:
-    """Upload with a presigned fixed-length PUT.
-
-    Recent botocore versions wrap request bodies with AWS checksum/chunked
-    extensions that Arvan rejects as ``InvalidArgument``. Presigning keeps SigV4
-    authentication while requests sends an ordinary fixed-length HTTP body.
-    """
+    """Upload one fixed-size bytes body, avoiding chunked streaming extensions."""
+    payload = source.read_bytes()
     params: dict[str, Any] = {
         "Bucket": bucket,
         "Key": key,
         "ContentType": content_type,
         "CacheControl": cache_control,
         "Metadata": metadata,
-    }
-    headers = {
-        "Content-Type": content_type,
-        "Cache-Control": cache_control,
-        "Content-Length": str(source.stat().st_size),
-        **{f"x-amz-meta-{name}": value for name, value in metadata.items()},
+        "ContentLength": len(payload),
     }
     if acl:
         params["ACL"] = acl
-        headers["x-amz-acl"] = acl
-    url = s3.generate_presigned_url("put_object", Params=params, ExpiresIn=900)
-    with source.open("rb") as body:
-        response = requests.put(url, data=body, headers=headers, timeout=(20, 300))
-    if response.status_code not in range(200, 300):
-        detail = response.text.replace("\n", " ").replace("\r", " ")[:500]
-        raise RuntimeError(f"presigned PUT HTTP {response.status_code}: {detail}")
+    s3.put_object(Body=payload, **params)
 
 
 def preflight_put_headers(s3: Any, bucket: str) -> None:
@@ -122,19 +107,22 @@ def preflight_put_headers(s3: Any, bucket: str) -> None:
         ),
     ]
     results: list[str] = []
-    for index, (label, extras, headers) in enumerate(variants):
+    for index, (label, extras, _headers) in enumerate(variants):
         key = f"{root}-{index}"
-        params = {"Bucket": bucket, "Key": key, **extras}
-        url = s3.generate_presigned_url("put_object", Params=params, ExpiresIn=300)
-        response = requests.put(url, data=b"x", headers=headers, timeout=(20, 60))
-        results.append(f"{label}={response.status_code}")
-        if response.status_code in range(200, 300):
+        params = {"Bucket": bucket, "Key": key, "ContentLength": 1, **extras}
+        try:
+            s3.put_object(Body=b"x", **params)
+            result = "ok"
+        except Exception as exc:
+            result = error_label(exc).replace(",", ";")
+        results.append(f"{label}={result}")
+        if result == "ok":
             try:
                 s3.delete_object(Bucket=bucket, Key=key)
             except Exception:
                 pass
     print("S3 one-byte PUT preflight " + ", ".join(results))
-    if not all(item.endswith("=200") for item in results):
+    if not all(item.endswith("=ok") for item in results):
         raise RuntimeError("S3 PUT header preflight failed: " + ", ".join(results))
 
 
