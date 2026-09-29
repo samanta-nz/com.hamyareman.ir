@@ -9,6 +9,7 @@ import com.hamyareman.ir.R
 object EmbeddedFonts {
 
     const val W_THIN = "thin"
+    const val W_LIGHT = "light"
     const val W_REGULAR = "regular"
     const val W_BOLD = "bold"
 
@@ -18,11 +19,13 @@ object EmbeddedFonts {
         val group: String,
         val resId: Int,
         val thinRes: Int = resId,
+        val lightRes: Int = thinRes,
         val regularRes: Int = resId,
         val boldRes: Int = resId,
         val defaultWeight: String = W_REGULAR,
     ) {
-        val hasRealWeights: Boolean get() = thinRes != regularRes || boldRes != regularRes
+        val hasRealWeights: Boolean get() =
+            thinRes != regularRes || lightRes != regularRes || boldRes != regularRes
     }
 
     val catalog: List<Face> = listOf(
@@ -38,6 +41,7 @@ object EmbeddedFonts {
             "وزیرمتن",
             R.font.vazirmatn_regular,
             thinRes = R.font.vazirmatn_thin,
+            lightRes = R.font.vazirmatn_light,
             regularRes = R.font.vazirmatn_regular,
             boldRes = R.font.vazirmatn_bold,
         ),
@@ -55,7 +59,7 @@ object EmbeddedFonts {
     private val aliases = mapOf(
         "vazirmatn_thin" to ("vazirmatn" to W_THIN),
         "vazirmatn_extralight" to ("vazirmatn" to W_THIN),
-        "vazirmatn_light" to ("vazirmatn" to W_THIN),
+        "vazirmatn_light" to ("vazirmatn" to W_LIGHT),
         "vazirmatn_regular" to ("vazirmatn" to W_REGULAR),
         "vazirmatn_medium" to ("vazirmatn" to W_REGULAR),
         "vazirmatn_semibold" to ("vazirmatn" to W_BOLD),
@@ -69,19 +73,22 @@ object EmbeddedFonts {
     private val cache = mutableMapOf<String, FontFamily>()
 
     fun normalizeWeight(w: String?): String = when (w?.lowercase()?.trim()) {
-        "thin", "light", "extralight", "نازک" -> W_THIN
+        "thin", "extralight", "نازک" -> W_THIN
+        "light", "سبک" -> W_LIGHT
         "bold", "semibold", "extrabold", "black", "ضخیم" -> W_BOLD
         else -> W_REGULAR
     }
 
     fun fontWeight(w: String?): FontWeight = when (normalizeWeight(w)) {
         W_THIN -> FontWeight.Thin
+        W_LIGHT -> FontWeight.Light
         W_BOLD -> FontWeight.Bold
         else -> FontWeight.Normal
     }
 
     fun weightLabel(w: String?): String = when (normalizeWeight(w)) {
         W_THIN -> "نازک"
+        W_LIGHT -> "سبک"
         W_BOLD -> "ضخیم"
         else -> "معمولی"
     }
@@ -124,6 +131,7 @@ object EmbeddedFonts {
             if (face.hasRealWeights) {
                 FontFamily(
                     Font(face.thinRes, FontWeight.Thin),
+                    Font(face.lightRes, FontWeight.Light),
                     Font(face.regularRes, FontWeight.Normal),
                     Font(face.boldRes, FontWeight.Bold),
                 )

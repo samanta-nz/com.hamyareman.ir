@@ -482,6 +482,8 @@ class MainActivity : FragmentActivity() {
         super.onPause()
         // شروع شمارندهٔ پس‌زمینه؛ قفل فوری قبلی باعث می‌شد انتخاب‌های ۳۰ث/۱د/۵د بی‌اثر باشند.
         (application as HamyarApplication).container.lock.onBackgrounded()
+        // فضای امن policy و نشست مستقل دارد؛ فقط حالت «قفل صفحه» اینجا بسته می‌شود.
+        com.hamyareman.ir.ui.safespace.SafeSpaceSession.onAppBackgrounded(this)
     }
 
     /** خروج از حساب — صفحه‌ی ورود دوباره نشان داده می‌شود. */

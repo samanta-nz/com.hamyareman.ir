@@ -127,6 +127,16 @@ fun HomeScreen(nav: NavController) {
     val row2Time = toPersianDigits("%d:%02d".format(h12, time.minute)) + " $period"
     val row2Greg = "${time.year}/${gregMonth[time.monthValue - 1]}/${time.dayOfMonth}"
     val holiday = CalendarOccasions.dashboardLine(ctx, jalali)
+    val weekendNotice = when (time.dayOfWeek) {
+        java.time.DayOfWeek.FRIDAY -> "جمعه تعطیل هفتگی" to Color(0xFFB91C1C)
+        java.time.DayOfWeek.THURSDAY -> "پنجشنبه تعطیلی مدرسه" to Color(0xFF1D4ED8)
+        else -> null
+    }
+    val occasionSize = (AppTypography.d3Date.size.value - 3f).coerceAtLeast(8f).sp
+    val occasionFont = com.hamyareman.ir.ui.appearance.EmbeddedFonts.family(
+        "vazirmatn",
+        com.hamyareman.ir.ui.appearance.EmbeddedFonts.W_BOLD,
+    )
     val who = StudentProfileState.firstName.ifBlank { "دوست من" }
 
     Scaffold(floatingActionButton = {
@@ -175,12 +185,23 @@ fun HomeScreen(nav: NavController) {
                                         fontSize = AppTypography.d5Gregorian.size,
                                     )
                                 }
+                                weekendNotice?.let { (label, color) ->
+                                    Text(
+                                        label,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontFamily = occasionFont,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = occasionSize,
+                                        color = color,
+                                    )
+                                }
                                 if (!holiday.isNullOrBlank()) {
                                     Text(
                                         holiday,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        fontFamily = AppTypography.d3Date.family, fontWeight = AppTypography.d3Date.weight,
-                                        fontSize = AppTypography.d3Date.size,
+                                        fontFamily = occasionFont,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = occasionSize,
                                         color = MaterialTheme.colorScheme.primary,
                                     )
                                 }

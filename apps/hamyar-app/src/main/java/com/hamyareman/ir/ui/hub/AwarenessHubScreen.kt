@@ -85,6 +85,19 @@ private val SelfQuestions = listOf(
     "الان، همین لحظه، چه چیزی می‌تواند حالت را یک درجه بهتر کند؟",
 )
 
+private data class SelfReflection(val date: String, val question: String, val answer: String)
+
+private fun readSelfReflections(store: LocalStore): List<SelfReflection> = runCatching {
+    val root = JSONObject(store.getString("self_answers", "{}"))
+    buildList {
+        root.keys().forEach { date ->
+            val item = root.optJSONObject(date) ?: return@forEach
+            val answer = item.optString("answer")
+            if (answer.isNotBlank()) add(SelfReflection(date, item.optString("question"), answer))
+        }
+    }.sortedByDescending { it.date }
+}.getOrDefault(emptyList())
+
 private fun dailySelfQuestion(date: LocalDate): String {
     val size = SelfQuestions.size
     val epoch = date.toEpochDay()
@@ -108,6 +121,7 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
     val dateKey = remember(today) { today.toString() }
     val question = remember(today) { dailySelfQuestion(today) }
     var answer by remember(dateKey) { mutableStateOf(store.getString("self_answer_$dateKey", "")) }
+    var reflections by remember { mutableStateOf(readSelfReflections(store)) }
     var notice by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(dateKey) {
@@ -124,6 +138,7 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
                 val local = runCatching { JSONObject(store.getString("self_answers", "{}")) }.getOrDefault(JSONObject())
                 remote.keys().forEach { key -> if (!local.has(key)) local.put(key, remote.get(key)) }
                 store.putString("self_answers", local.toString())
+                reflections = readSelfReflections(store)
             }
         }
     }
@@ -147,6 +162,7 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
                         val all = runCatching { JSONObject(store.getString("self_answers", "{}")) }.getOrDefault(JSONObject())
                         all.put(dateKey, JSONObject().put("question", question).put("answer", answer))
                         store.putString("self_answers", all.toString())
+                        reflections = readSelfReflections(store)
                         scope.launch {
                             val uid = container.auth.cachedUserId()
                                 ?: runCatching { container.auth.currentUserId() }.getOrNull().orEmpty()
@@ -161,6 +177,22 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
                         }
                     }
                     notice?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
+                }
+            }
+            if (reflections.isNotEmpty()) {
+                Text("پاسخ‌های قبلی من", style = MaterialTheme.typography.titleMedium)
+                reflections.forEach { reflection ->
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                com.hamyareman.ir.platform.core.common.toPersianDigits(reflection.date),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(reflection.question, style = MaterialTheme.typography.titleSmall)
+                            Text(reflection.answer, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
                 }
             }
         },

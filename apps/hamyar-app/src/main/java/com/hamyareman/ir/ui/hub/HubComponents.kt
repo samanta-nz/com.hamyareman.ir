@@ -128,6 +128,8 @@ data class HubCoverTile(
     val title: String,
     val subtitle: String,
     val onClick: () -> Unit,
+    /** نسبت عرض به ارتفاعِ خود تصویر؛ کاورهای عادی مربع و حرکت‌ها افقی‌اند. */
+    val imageAspectRatio: Float = 1f,
 )
 
 @Composable
@@ -155,12 +157,14 @@ private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String)
                 Image(
                     bitmap = cover,
                     contentDescription = tile.title,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                    // تصاویر حرکات با نسبت واقعی خود نمایش داده می‌شوند؛ crop فقط نقش
+                    // محافظ را برای کاورهای مربعی دارد و بدن/حرکت را قطع نمی‌کند.
+                    contentScale = ContentScale.Fit,
                 )
             } else {
                 Box(
-                    Modifier.fillMaxWidth().aspectRatio(1f),
+                    Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(tile.title.take(1), style = MaterialTheme.typography.headlineLarge)

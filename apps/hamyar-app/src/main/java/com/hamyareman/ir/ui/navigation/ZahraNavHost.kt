@@ -32,6 +32,7 @@ import com.hamyareman.ir.ui.ailearning.AiLearningHomeScreen
 import com.hamyareman.ir.ui.appearance.AppearanceScreen
 import com.hamyareman.ir.ui.art.ArtGalleryScreen
 import com.hamyareman.ir.ui.art.DailyArtPromptScreen
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicScreen
 import com.hamyareman.ir.ui.calmdown.BreathingScreen
 import com.hamyareman.ir.ui.calmdown.CalmMenuScreen
 import com.hamyareman.ir.ui.calmdown.JournalScreen
@@ -62,10 +63,15 @@ import com.hamyareman.ir.ui.learning.LessonScreen
 import com.hamyareman.ir.ui.learning.PlacementTestScreen
 import com.hamyareman.ir.ui.learning.RoadmapScreen
 import com.hamyareman.ir.ui.more.MoreScreen
+import com.hamyareman.ir.ui.more.AboutScreen
+import com.hamyareman.ir.ui.more.ContactScreen
 import com.hamyareman.ir.ui.recipes.RecipeDetailScreen
 import com.hamyareman.ir.ui.recipes.RecipesScreen
 import com.hamyareman.ir.ui.routine.RoutineScreen
+import com.hamyareman.ir.ui.safespace.DiaryScreen
 import com.hamyareman.ir.ui.safespace.HelplinesScreen
+import com.hamyareman.ir.ui.safespace.NotebooksScreen
+import com.hamyareman.ir.ui.safespace.SafeContentGuard
 import com.hamyareman.ir.ui.safespace.SafeSpaceScreen
 import com.hamyareman.ir.ui.safespace.SafeFreeWritingScreen
 import com.hamyareman.ir.ui.study.SecureMediaGalleryScreen
@@ -106,6 +112,10 @@ fun ZahraNavHost() {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
+    val navContext = LocalContext.current
+    LaunchedEffect(route) {
+        com.hamyareman.ir.ui.safespace.SafeSpaceSession.onRouteChanged(navContext, route)
+    }
     // لمس اعلان پخش → صفحه‌ی تدریس همان درس (قانون: صوت فقط در صفحه‌ی تدریس پخش می‌شود؛
     // پس بعد از لود شدن همان صفحه، پخش خودکار از TeachAudioBar شروع می‌شود).
     val sleepDestination = com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination
@@ -185,6 +195,8 @@ fun ZahraNavHost() {
                     onHelplines = { nav.navigate(Screen.Helplines.route) })
             }
             composable(Screen.More.route) { MoreScreen(nav) }
+            composable(Screen.About.route) { AboutScreen { nav.popBackStack() } }
+            composable(Screen.Contact.route) { ContactScreen { nav.popBackStack() } }
             composable(Screen.HealthHub.route) { HealthHubScreen(nav) }
             composable(Screen.Academy.route) { AcademyHubScreen(nav) }
             composable(Screen.AcademySoon.route) { AcademySoonScreen() }
@@ -234,6 +246,7 @@ fun ZahraNavHost() {
             composable(Screen.TomorrowPrep.route) { TomorrowPrepScreen { nav.popBackStack() } }
             composable(Screen.SleepNight.route) { com.hamyareman.ir.ui.study.SleepNightScreen { nav.popBackStack() } }
             composable(Screen.SleepBreath.route) { com.hamyareman.ir.ui.study.SleepBreathScreen { nav.popBackStack() } }
+            composable(Screen.BackgroundMusic.route) { BackgroundMusicScreen { nav.popBackStack() } }
             composable(Screen.Meds.route) { MedsScreen { nav.popBackStack() } }
             composable(Screen.SleepLog.route) { SleepLogScreen { nav.popBackStack() } }
             composable(Screen.ReadingCorner.route) { ReadingCornerScreen { nav.popBackStack() } }
@@ -269,14 +282,40 @@ fun ZahraNavHost() {
                     title = com.hamyareman.ir.ui.tools.toolTitle(id),
                     onBack = { nav.popBackStack() })
             }
-            composable(Screen.Journal.route) { JournalScreen { nav.popBackStack() } }
+            composable(Screen.Journal.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Journal.route) { inclusive = true } }
+                }) { JournalScreen { nav.popBackStack() } }
+            }
             composable(Screen.GratitudeJournal.route) { GratitudeJournalScreen { nav.popBackStack() } }
             composable(Screen.Breath.route) { BreathingScreen { nav.popBackStack() } }
             composable(Screen.Routine.route) { RoutineScreen { nav.popBackStack() } }
             composable(Screen.SafeSpace.route) { SafeSpaceScreen(nav) }
-            composable(Screen.SafeFreeWriting.route) { SafeFreeWritingScreen { nav.popBackStack() } }
-            composable(Screen.SecureGallery.route) { SecureMediaGalleryScreen { nav.popBackStack() } }
-            composable(Screen.Writing.route) { WritingPromptScreen { nav.popBackStack() } }
+            composable(Screen.Diary.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Diary.route) { inclusive = true } }
+                }) { DiaryScreen { nav.popBackStack() } }
+            }
+            composable(Screen.Notebooks.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Notebooks.route) { inclusive = true } }
+                }) { NotebooksScreen { nav.popBackStack() } }
+            }
+            composable(Screen.SafeFreeWriting.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.SafeFreeWriting.route) { inclusive = true } }
+                }) { SafeFreeWritingScreen { nav.popBackStack() } }
+            }
+            composable(Screen.SecureGallery.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.SecureGallery.route) { inclusive = true } }
+                }) { SecureMediaGalleryScreen { nav.popBackStack() } }
+            }
+            composable(Screen.Writing.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Writing.route) { inclusive = true } }
+                }) { WritingPromptScreen { nav.popBackStack() } }
+            }
             composable(Screen.Helplines.route) { HelplinesScreen { nav.popBackStack() } }
             composable(Screen.Library.route) { LibraryScreen { nav.popBackStack() } }
             composable(Screen.Audiobook.route) { AudiobookScreen { nav.popBackStack() } }

@@ -156,7 +156,12 @@ private fun FloaterSlotRow(
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf(EmbeddedFonts.W_THIN, EmbeddedFonts.W_REGULAR, EmbeddedFonts.W_BOLD).forEach { w ->
+                listOf(
+                    EmbeddedFonts.W_THIN,
+                    EmbeddedFonts.W_LIGHT,
+                    EmbeddedFonts.W_REGULAR,
+                    EmbeddedFonts.W_BOLD,
+                ).forEach { w ->
                     FilterChip(
                         selected = EmbeddedFonts.normalizeWeight(choice.weight) == w,
                         onClick = { onWeight(w) },

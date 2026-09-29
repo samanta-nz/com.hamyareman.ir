@@ -132,12 +132,9 @@ object CalendarOccasions {
     fun allOn(ctx: Context, j: JalaliDate.Jalali, lunarOffset: Int = CalendarPrefs.lunarOffset(ctx)): List<Occasion> {
         val iso = JalaliDate.toGregorianIso(j) ?: return emptyList()
         val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: return emptyList()
-        val extra = when (date.dayOfWeek) {
-            DayOfWeek.FRIDAY -> listOf(Occasion("جمعه", OccasionKind.OFFICIAL, true))
-            DayOfWeek.THURSDAY -> listOf(Occasion("تعطیلی مدرسه", OccasionKind.OFFICIAL, true))
-            else -> emptyList()
-        }
-        return extra + matching(ctx, date, lunarOffset).flatMap { e ->
+        // پنجشنبه/جمعه فقط «وضعیت هفته» هستند، نه مناسبت تقویمی. متن رنگی
+        // آن‌ها مستقیماً در داشبورد ساخته می‌شود و وارد فهرست مناسبت‌ها نمی‌شود.
+        return matching(ctx, date, lunarOffset).flatMap { e ->
             val base = Occasion(e.title, e.kind, e.holiday)
             if (e.holiday) listOf(Occasion(e.title, OccasionKind.OFFICIAL, true), base) else listOf(base)
         }
@@ -180,16 +177,7 @@ object CalendarOccasions {
                 }
                 if (kinds.any { it in enabled }) out += d to e
             }
-            // جمعه و تعطیلی مدرسه همیشه ردیف مستقل دارند؛ حتی اگر هیچ مناسبت
-            // دیگری ثبت نشده باشد یا همان روز مناسبت دیگری هم وجود داشته باشد.
-            if (OccasionKind.OFFICIAL in enabled) {
-                val synthetic = when (date.dayOfWeek) {
-                    DayOfWeek.FRIDAY -> CalEvent("تعطیل رسمی", "جمعه", true)
-                    DayOfWeek.THURSDAY -> CalEvent("تعطیل مدرسه", "تعطیلی مدرسه", true)
-                    else -> null
-                }
-                if (synthetic != null && matched.none { it.title == synthetic.title }) out += d to synthetic
-            }
+            // روز خالی پنجشنبه/جمعه عمداً به «مناسبات این ماه» تزریق نمی‌شود.
         }
         return out
     }

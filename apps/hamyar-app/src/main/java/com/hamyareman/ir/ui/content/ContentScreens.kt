@@ -3,7 +3,9 @@ package com.hamyareman.ir.ui.content
 import android.annotation.SuppressLint
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -100,6 +101,7 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
                         title = item.title,
                         subtitle = ContentCatalog.tileSubtitle(item),
                         onClick = { onOpen(item.id) },
+                        imageAspectRatio = ContentCatalog.coverAspectRatio(item),
                     )
                 },
                 slotId = "hub.content.item",
@@ -162,61 +164,73 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         }
     }
 
-    // نمایش HTML تمام‌صفحه است؛ فقط نوار ناوبری پایینِ اپ بیرون این صفحه می‌ماند.
-    Column(Modifier.fillMaxSize()) {
+    // میزبان Android/WebView در تمام جابه‌جایی‌های «قبلی/بعدی» یک نمونهٔ ثابت می‌ماند؛
+    // فقط سند بعدی داخل همان میزبان بار می‌شود و state/native lifecycle از نو ساخته نمی‌شود.
+    Box(Modifier.fillMaxSize()) {
+        if (item != null) {
+            AndroidView(
+                factory = { c ->
+                    WebView(c).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.setSupportZoom(true)
+                        settings.builtInZoomControls = true
+                        settings.displayZoomControls = false
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                        settings.useWideViewPort = true
+                        settings.loadWithOverviewMode = true
+                        webViewClient = object : android.webkit.WebViewClient() {
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView,
+                                request: android.webkit.WebResourceRequest,
+                            ): Boolean {
+                                val target = ContentCatalog.itemIdForRelativeFile(
+                                    request.url.lastPathSegment.orEmpty(),
+                                ) ?: return false
+                                activeId = target
+                                return true
+                            }
+
+                            override fun onPageFinished(view: WebView, url: String) {
+                                view.bindManagedMediaLifecycle()
+                            }
+                        }
+                        installManagedMediaLifecycle()
+                        webRef[0] = this
+                    }
+                },
+                update = { view ->
+                    val payload = html
+                    if (payload != null && view.tag != activeId) {
+                        view.tag = activeId
+                        view.loadDataWithBaseURL(
+                            "https://local.hamyar/", payload, "text/html", "utf-8", null,
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+                onRelease = {
+                    it.stopManagedMedia()
+                    if (webRef[0] === it) webRef[0] = null
+                    it.destroy()
+                },
+            )
+        }
         when {
             error != null -> Column(
-                Modifier.fillMaxSize().padding(24.dp),
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
                 androidx.compose.material3.TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
             }
-            html == null -> com.hamyareman.ir.ui.study.HtmlPercentLoader(progress)
-            else -> key(activeId, html) {
-                AndroidView(
-                    factory = { c ->
-                        WebView(c).apply {
-                            settings.javaScriptEnabled = true
-                            settings.domStorageEnabled = true
-                            settings.setSupportZoom(true)
-                            settings.builtInZoomControls = true
-                            settings.displayZoomControls = false
-                            settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-                            settings.useWideViewPort = true
-                            settings.loadWithOverviewMode = true
-                            webViewClient = object : android.webkit.WebViewClient() {
-                                override fun shouldOverrideUrlLoading(
-                                    view: WebView,
-                                    request: android.webkit.WebResourceRequest,
-                                ): Boolean {
-                                    val target = ContentCatalog.itemIdForRelativeFile(
-                                        request.url.lastPathSegment.orEmpty(),
-                                    ) ?: return false
-                                    activeId = target
-                                    return true
-                                }
-
-                                override fun onPageFinished(view: WebView, url: String) {
-                                    view.bindManagedMediaLifecycle()
-                                }
-                            }
-                            installManagedMediaLifecycle()
-                            webRef[0] = this
-                            loadDataWithBaseURL(
-                                "https://local.hamyar/", html!!, "text/html", "utf-8", null,
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                    onRelease = {
-                        it.stopManagedMedia()
-                        if (webRef[0] === it) webRef[0] = null
-                        it.destroy()
-                    },
-                )
+            html == null -> Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            ) {
+                com.hamyareman.ir.ui.study.HtmlPercentLoader(progress)
             }
+            else -> Unit
         }
     }
 }

@@ -14,8 +14,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,15 +46,17 @@ private data class SafeSection(val emoji: String, val title: String, val subtitl
 /** فضای امن فقط پس از PIN یا بیومتریک باز می‌شود و هیچ محتوایی پیش از احراز نمایش نمی‌دهد. */
 @Composable
 fun SafeSpaceScreen(nav: NavController) {
-    val container = LocalAppContainer.current
+    val context = LocalContext.current
     val activity = LocalActivity.current as? FragmentActivity
-    var unlocked by remember { mutableStateOf(false) }
+    val safeLock = remember { SafeSpaceSession.lock(context) }
+    val safeBiometric = remember { SafeSpaceSession.biometric(context) }
+    var unlocked by remember { mutableStateOf(SafeSpaceSession.isUnlocked(context)) }
     var pin by remember { mutableStateOf("") }
     var confirmation by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
-    val needsSetup = !container.lock.hasPin()
+    val needsSetup = !safeLock.hasPin()
 
-    if (!unlocked) {
+    if (!unlocked || !SafeSpaceSession.isUnlocked(context)) {
         Column(Modifier.fillMaxSize()) {
             AppTopBar("فضای امن", { nav.popBackStack() })
             Column(
@@ -60,13 +64,17 @@ fun SafeSpaceScreen(nav: NavController) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    if (needsSetup) "برای محافظت از هر چهار بخش، یک PIN برنامه بساز." else "برای دیدن بخش‌های خصوصی، قفل برنامه را باز کن.",
+                    if (needsSetup) {
+                        "برای فضای امن یک PIN مستقل بساز؛ این PIN با قفل خودِ برنامه فرق دارد."
+                    } else {
+                        "برای دیدن بخش‌های خصوصی، قفل مستقل فضای امن را باز کن."
+                    },
                     style = MaterialTheme.typography.titleMedium,
                 )
                 OutlinedTextField(
                     value = pin,
                     onValueChange = { pin = it.filter(Char::isDigit).take(8); error = null },
-                    label = { Text(if (needsSetup) "PIN جدید" else "PIN فعلی") },
+                    label = { Text(if (needsSetup) "PIN جدید فضای امن" else "PIN فضای امن") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
@@ -76,7 +84,7 @@ fun SafeSpaceScreen(nav: NavController) {
                     OutlinedTextField(
                         value = confirmation,
                         onValueChange = { confirmation = it.filter(Char::isDigit).take(8); error = null },
-                        label = { Text("تکرار PIN") },
+                        label = { Text("تکرار PIN مستقل") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
@@ -87,23 +95,31 @@ fun SafeSpaceScreen(nav: NavController) {
                     if (needsSetup) {
                         error = when {
                             pin != confirmation -> "تکرار PIN یکسان نیست."
-                            else -> container.lock.validatePin(pin)
+                            else -> safeLock.validatePin(pin)
                         }
-                        if (error == null && container.lock.setPin(pin)) unlocked = true
-                    } else if (container.lock.verify(pin)) {
+                        if (error == null && safeLock.setPin(pin)) {
+                            SafeSpaceSession.markUnlocked()
+                            unlocked = true
+                        }
+                    } else if (safeLock.verify(pin)) {
+                        SafeSpaceSession.markUnlocked()
                         unlocked = true
                     } else {
-                        error = "PIN درست نیست."
+                        error = "PIN فضای امن درست نیست."
                     }
                 }
-                if (!needsSetup && activity != null && container.biometric.shouldOffer(activity)) {
+                if (!needsSetup && activity != null && safeBiometric.shouldOffer(activity)) {
                     OutlinedButton(
                         onClick = {
                             BiometricPromptRunner.show(
                                 activity = activity,
                                 title = "فضای امن",
-                                subtitle = "با اثر انگشت یا چهره وارد شو",
-                                onSuccess = { container.lock.markUnlocked(); unlocked = true; error = null },
+                                subtitle = "ورود مستقل با اثر انگشت یا چهره",
+                                onSuccess = {
+                                    SafeSpaceSession.markUnlocked()
+                                    unlocked = true
+                                    error = null
+                                },
                                 onError = { error = it },
                             )
                         },
@@ -117,17 +133,62 @@ fun SafeSpaceScreen(nav: NavController) {
     }
 
     val sections = listOf(
-        SafeSection("💌", "دل‌نوشت", "نوشته‌ها و حس‌های شخصی", Screen.Journal.route),
-        SafeSection("📓", "دفترچه من", "دفتر خط‌دار و جزوه‌های شخصی", Screen.Pdf.route),
+        SafeSection("📕", "دفتر خاطرات", "جلد دلخواه، تاریخ شمسی و ورق‌زدن راست‌به‌چپ", Screen.Diary.route),
+        SafeSection("📓", "دفترچه‌های من", "دفتر خط‌دار با صفحه‌بندی خودکار", Screen.Notebooks.route),
         SafeSection("✍️", "رونوشت آزاد", "نوشتن آزاد و خصوصی", Screen.SafeFreeWriting.route),
-        SafeSection("🔐", "آلبوم شخصی", "عکس، ویدیو و صوت خصوصی", Screen.SecureGallery.route),
+        SafeSection("🔐", "آلبوم شخصی", "نمایش تمام‌صفحهٔ عکس، ویدیو و صوت", Screen.SecureGallery.route),
     )
+    var policy by remember { mutableStateOf(SafeSpaceSession.policy(context)) }
+    var biometricEnabled by remember { mutableStateOf(safeBiometric.isEnabled()) }
     Column(Modifier.fillMaxSize()) {
         AppTopBar("فضای امن", { nav.popBackStack() })
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("قفل مستقل فضای امن", style = MaterialTheme.typography.titleMedium)
+                    SafeExitPolicy.entries.forEach { option ->
+                        FilterChip(
+                            selected = policy == option,
+                            onClick = {
+                                policy = option
+                                SafeSpaceSession.setPolicy(context, option)
+                            },
+                            label = { Text(option.titleFa) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    androidx.compose.foundation.layout.Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("ورود با اثر انگشت/چهره")
+                        Switch(
+                            checked = biometricEnabled,
+                            onCheckedChange = { enabled ->
+                                if (safeBiometric.setEnabled(enabled, context)) {
+                                    biometricEnabled = enabled
+                                    error = null
+                                } else {
+                                    error = "بیومتریک دستگاه آماده نیست؛ PIN مستقل همچنان فعال است."
+                                }
+                            },
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            SafeSpaceSession.forceLock()
+                            unlocked = false
+                            pin = ""
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("قفل فوری فضای امن") }
+                    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                }
+            }
             sections.forEach { section ->
                 Card(
                     Modifier.fillMaxWidth().clickable { nav.layerTo(section.route) },

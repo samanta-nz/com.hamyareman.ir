@@ -1,6 +1,5 @@
 package com.hamyareman.ir.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -19,10 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +27,8 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hamyareman.ir.R
+import coil.compose.AsyncImage
+import com.hamyareman.ir.ui.appearance.EmbeddedFonts
 import kotlinx.coroutines.launch
 
 /**
@@ -60,10 +58,10 @@ fun LinedNotebookInput(
             .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
             .border(2.dp, Color(0xFFF59E0B), RoundedCornerShape(16.dp)),
     ) {
-        Image(
-            painter = painterResource(R.drawable.notes_lined_paper),
+        AsyncImage(
+            model = "file:///android_asset/diary/page-lined.jpg",
             contentDescription = null,
-            modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = 180f },
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds,
         )
         BasicTextField(
@@ -73,8 +71,9 @@ fun LinedNotebookInput(
                 scope.launch { if (scroll.maxValue > 0) scroll.animateScrollTo(scroll.maxValue) }
             },
             textStyle = TextStyle(
+                fontFamily = EmbeddedFonts.family("vazirmatn"),
                 fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Normal,
                 lineHeight = lineSp,
                 color = Color(0xFF1E3A5F),
                 textAlign = TextAlign.Right,
@@ -87,7 +86,7 @@ fun LinedNotebookInput(
             cursorBrush = SolidColor(Color(0xFF1E3A5F)),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 6.dp)
+                .padding(start = 18.dp, end = 46.dp, top = 6.dp, bottom = 6.dp)
                 .verticalScroll(scroll),
         )
     }

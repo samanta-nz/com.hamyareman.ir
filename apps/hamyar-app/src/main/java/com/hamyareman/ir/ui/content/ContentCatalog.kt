@@ -134,10 +134,10 @@ object ContentCatalog {
     private val academyCovers = listOf(
         "sk-speed", "sk-hand", "sk-type", "sk-cornell", "sk-summary",
         "sk-debate", "sk-fallacy", "sk-present", "sk-voice", "sk-email", "sk-listen",
-        "sk-math", "sk-palace", "sk-lateral", "sk-friend", "sk-feel", "sk-bias",
-        "sk-resilience", "sk-plan", "sk-habit", "sk-desk", "sk-win", "sk-ai-what",
+        "sk-math", "sk-palace", "sk-lateral", "sk-chain", "sk-feel", "hyp-reframe",
+        "sk-resilience", "sk-plan", "sk-habit", "sk-desk", "sk-digital", "sk-ai-what",
         "sk-search", "sk-privacy", "sk-fake", "sk-team", "sk-conflict", "sk-no",
-        "sk-budget", "sk-need", "sk-storm", "sk-everyday", "mu-staff",
+        "sk-budget", "sk-need", "sk-storm", "sk-create", "sk-music",
     )
 
     fun coverId(item: ContentItem): String {
@@ -146,11 +146,23 @@ object ContentCatalog {
             if (number != null) return academyCovers.getOrElse(number - 1) { item.id }
         }
         return when (item.cat) {
-            "yoga" -> "hl-yoga"
-            "sport" -> "hl-exercise"
+            // سی تصویر تأییدشده بر اساس نام/شناسهٔ همان حرکت داخل APK هستند.
+            "yoga" -> item.id.takeIf { it.startsWith("yga-") } ?: "hl-yoga"
+            "sport" -> item.id.takeIf { it.startsWith("spo-") } ?: "hl-exercise"
             "breath" -> "cl-breath"
             else -> item.id
         }
+    }
+
+    /** نسبت واقعی تصاویر منوی یوگا/ورزش؛ HTML و تصاویر داخل آن دست‌نخورده‌اند. */
+    fun coverAspectRatio(item: ContentItem): Float = when (item.cat) {
+        "sport" -> 1120f / 751f
+        "yoga" -> if (item.id in setOf("yga-01", "yga-02", "yga-03", "yga-05", "yga-06")) {
+            1120f / 751f
+        } else {
+            1120f / 625f
+        }
+        else -> 1f
     }
 
     fun tileSubtitle(item: ContentItem): String = when (item.cat) {

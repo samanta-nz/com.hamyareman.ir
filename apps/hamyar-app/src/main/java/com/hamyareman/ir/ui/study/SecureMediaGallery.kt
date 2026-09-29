@@ -3,11 +3,8 @@ package com.hamyareman.ir.ui.study
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.media.MediaPlayer
 import android.net.Uri
 import android.webkit.MimeTypeMap
-import android.widget.MediaController
-import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -22,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -33,6 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -201,18 +201,8 @@ private fun SecureMediaViewer(
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 when {
                     item.mime.startsWith("image/") -> ZoomableSecureImage(item.path, revision)
-                    item.mime.startsWith("video/") -> AndroidView(
-                        factory = { context ->
-                            VideoView(context).apply {
-                                setVideoURI(Uri.fromFile(File(item.path)))
-                                setMediaController(MediaController(context).also { it.setAnchorView(this) })
-                                setOnPreparedListener { it.isLooping = false; start() }
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                        onRelease = { it.stopPlayback() },
-                    )
-                    else -> SecureAudioPlayer(item)
+                    item.mime.startsWith("video/") -> SecureMedia3Player(item, video = true)
+                    else -> SecureMedia3Player(item, video = false)
                 }
             }
             Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -269,17 +259,53 @@ private fun ZoomableSecureImage(path: String, revision: Int) {
 }
 
 @Composable
-private fun SecureAudioPlayer(item: SecureMediaItem) {
+private fun SecureMedia3Player(item: SecureMediaItem, video: Boolean) {
     val context = LocalContext.current
-    var playing by remember { mutableStateOf(false) }
-    val player = remember(item.path) { MediaPlayer.create(context, Uri.fromFile(File(item.path))) }
-    DisposableEffect(player) { onDispose { runCatching { player?.release() } } }
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("🎧", style = MaterialTheme.typography.displayLarge)
+    val playback = remember(item.path) {
+        com.hamyareman.ir.platform.feature.playback.PlaybackController(context)
+    }
+    val state by playback.state.collectAsState()
+
+    LaunchedEffect(item.path) {
+        if (playback.connect()) {
+            playback.setMedia(Uri.fromFile(File(item.path)).toString(), item.name)
+        }
+    }
+    DisposableEffect(playback) {
+        // سرویس Media3 مشترک است، اما رسانهٔ خصوصی فقط تا وقتی نمایشگر آلبوم باز است مجاز است.
+        com.hamyareman.ir.platform.feature.playback.TeachGate.enter()
+        onDispose {
+            runCatching { playback.stop() }
+            playback.release()
+            com.hamyareman.ir.platform.feature.playback.TeachGate.exit()
+        }
+    }
+
+    Column(
+        Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        if (video) {
+            AndroidView(
+                factory = { ctx ->
+                    androidx.media3.ui.PlayerView(ctx).apply {
+                        useController = true
+                        player = playback.asPlayer()
+                    }
+                },
+                update = { it.player = playback.asPlayer() },
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                onRelease = { it.player = null },
+            )
+        } else {
+            Text("🎧", style = MaterialTheme.typography.displayLarge)
+        }
+        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         OutlinedButton(onClick = {
-            if (player?.isPlaying == true) { player.pause(); playing = false }
-            else { player?.start(); playing = true }
-        }) { Text(if (playing) "مکث" else "پخش") }
+            com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
+            if (state.playing) playback.pause() else playback.play()
+        }) { Text(if (state.playing) "مکث" else "پخش") }
     }
 }
 

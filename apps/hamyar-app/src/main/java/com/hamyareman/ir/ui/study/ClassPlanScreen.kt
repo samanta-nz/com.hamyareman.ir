@@ -526,20 +526,7 @@ private fun ShamsiCalendarSection() {
         }
         Text("مناسبات این ماه", fontWeight = FontWeight.Bold)
         val monthOcc = com.hamyareman.ir.ui.home.CalendarOccasions.monthOccasions(ctx, year, month, dim, offset)
-        (1..dim).forEach { d ->
-            val iso = JalaliDate.toGregorianIso(JalaliDate.Jalali(year, month, d)) ?: return@forEach
-            val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: return@forEach
-            when (SchoolShift.dayIndex(date)) {
-                7 -> Text(
-                    toPersianDigits("$d ${JalaliDate.monthName(month)}") + " — جمعه — تعطیل رسمی",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF9F1239))
-                6 -> Text(
-                    toPersianDigits("$d ${JalaliDate.monthName(month)}") + " — پنجشنبه — تعطیل مدرسه",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF1D4ED8))
-            }
-        }
+        // پنجشنبه و جمعهٔ بدون رویداد واقعی در «مناسبات این ماه» ردیف ندارند.
         monthOcc.distinctBy { it.first to it.second.title }.forEach { (d, e) ->
             val mark = if (e.holiday) " — تعطیل رسمی" else ""
             Text(
