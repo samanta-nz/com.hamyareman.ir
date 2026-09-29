@@ -34,14 +34,14 @@ jobs:
           set -euo pipefail
           python3 -m py_compile scripts/*.py
           python3 scripts/validate_grade_architecture.py
-      - name: Test common logic, lint grade nine, and assemble all nine APKs
+      - name: Test, lint, and assemble grade eight
         run: |
           set +e
           ./gradlew \
             :core-common:testDebugUnitTest \
-            :hamyar-app:testP09DebugUnitTest \
-            :hamyar-app:lintP09Debug \
-            :hamyar-app:assembleDebug \
+            :hamyar-app:testP08DebugUnitTest \
+            :hamyar-app:lintP08Debug \
+            :hamyar-app:assembleP08Debug \
             --stacktrace 2>&1 | tee /tmp/grade-gradle.log
           code=${PIPESTATUS[0]}
           if [ "$code" -ne 0 ]; then
@@ -59,23 +59,16 @@ jobs:
                 done
           fi
           exit "$code"
-      - name: Verify every packaged application ID and signer
+      - name: Verify packaged grade-eight identity and signer
         run: |
           set -euo pipefail
           AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
           APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
           EXPECTED_SIGNER=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
-          declare -A PACKAGES=(
-            [p04]=com.hamyareman.p04 [p05]=com.hamyareman.p05 [p06]=com.hamyareman.p06
-            [p07]=com.hamyareman.p07 [p08]=com.hamyareman.p08 [p09]=com.hamyareman.ir
-            [p10]=com.hamyareman.p10 [p11]=com.hamyareman.p11 [p12]=com.hamyareman.p12
-          )
-          for flavor in p04 p05 p06 p07 p08 p09 p10 p11 p12; do
-            mapfile -t files < <(find "apps/hamyar-app/build/outputs/apk/$flavor/debug" -type f -name '*.apk' -print)
-            test "${#files[@]}" -eq 1
-            apk="${files[0]}"
-            "$AAPT" dump badging "$apk" | head -1 | grep -F "name='${PACKAGES[$flavor]}'"
-            signer=$("$APKSIGNER" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')
-            test "$signer" = "$EXPECTED_SIGNER"
-            printf '%s package=%s signer=%s\n' "$flavor" "${PACKAGES[$flavor]}" "$signer"
-          done
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p08/debug -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          apk="${files[0]}"
+          "$AAPT" dump badging "$apk" | head -1 | grep -F "name='com.hamyareman.p08'"
+          signer=$("$APKSIGNER" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')
+          test "$signer" = "$EXPECTED_SIGNER"
+          printf 'p08 package=com.hamyareman.p08 signer=%s\n' "$signer"

@@ -26,7 +26,12 @@ data class UpdateInfo(
     val name: String = "",
     /** پایین‌تر از این `versionCode` آپدیت **اجباری** می‌شود؛ `0` = هیچ‌وقت. */
     val min: Int = 0,
+    /** URL قدیمی/عمومی؛ برای payloadهای قبلی fallback منبع خارجی است. */
     val url: String = "",
+    /** APK روی Appwrite برای حالت خارجی. */
+    val externalUrl: String = "",
+    /** همان APK روی آروان برای حالت ایرانی. */
+    val internalUrl: String = "",
     /** حجمِ تقریبیِ فایل (بایت) برای نمایش؛ `0` = نامعلوم. */
     val size: Long = 0L,
     /** هشِ فایلِ APK؛ خالی = سرور هش نداده (بررسی به نصب‌کنندهٔ سیستم واگذار می‌شود). */
@@ -67,6 +72,8 @@ object UpdatePlan {
         name = str(json, "name"),
         min = num(json, "min").toInt(),
         url = str(json, "url"),
+        externalUrl = str(json, "externalUrl"),
+        internalUrl = str(json, "internalUrl"),
         size = num(json, "size"),
         sha256 = str(json, "sha256"),
         notes = arr(json, "notes"),
@@ -91,7 +98,9 @@ object UpdatePlan {
      * نمی‌شود (پس انتشارِ ردیفِ ناقص بی‌خطر است).
      */
     fun decisionFor(current: Int, info: UpdateInfo, bucket: Int = 0): UpdateDecision {
-        if (info.latest <= 0 || info.url.isBlank()) return UpdateDecision.None
+        if (info.latest <= 0 || (info.url.isBlank() && info.externalUrl.isBlank() && info.internalUrl.isBlank())) {
+            return UpdateDecision.None
+        }
         if (info.chan != CHANNEL) return UpdateDecision.None
         if (current >= info.latest) return UpdateDecision.None
         if (info.rollout < 100 && bucket >= info.rollout) return UpdateDecision.None

@@ -3,6 +3,7 @@ package com.hamyareman.ir.ui.study
 import android.content.Context
 import com.hamyareman.ir.ui.net.NetState
 import com.hamyareman.ir.ui.net.ResilientHttp
+import com.hamyareman.ir.ui.net.awaitOnlineBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException

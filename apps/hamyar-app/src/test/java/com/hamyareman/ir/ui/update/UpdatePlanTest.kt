@@ -62,6 +62,16 @@ class UpdatePlanTest {
     }
 
     @Test
+    fun `dual server urls are parsed and can force an update without legacy url`() {
+        val info = UpdatePlan.parse(
+            """{"latest":100,"min":100,"externalUrl":"https://appwrite/x.apk","internalUrl":"https://arvan/x.apk"}""",
+        )
+        assertEquals("https://appwrite/x.apk", info.externalUrl)
+        assertEquals("https://arvan/x.apk", info.internalUrl)
+        assertTrue(UpdatePlan.decisionFor(99, info) is UpdateDecision.Forced)
+    }
+
+    @Test
     fun `older or equal app with optional min shows the dialog`() {
         val info = UpdatePlan.parse(full)
         assertTrue(UpdatePlan.decisionFor(66, info) is UpdateDecision.Optional)

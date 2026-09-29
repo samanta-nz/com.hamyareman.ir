@@ -173,7 +173,7 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
         downloading = true
         progress = ApkProgress(0, info.size, 0)
         scope.launch {
-            val f = ApkUpdate.download(ctx, info.url) { p -> progress = p }
+            val f = ApkUpdate.download(ctx, UpdateSource.candidates(info)) { p -> progress = p }
             downloading = false
             when {
                 f == null -> note = "دانلود کامل نشد؛ اینترنت را چک کن و دوباره بزن (از همان‌جا ادامه می‌دهد)."
@@ -339,7 +339,7 @@ fun UpdateCheckCard() {
                     status = null
                     scope.launch {
                         val info = UpdateChecker.refresh(ctx, container.tables)
-                        if (info == null || info.url.isBlank() || info.latest <= 0) {
+                        if (info == null || UpdateSource.candidates(info).isEmpty() || info.latest <= 0) {
                             status = "الان نتوانستم از سرور بپرسم؛ بعداً دوباره امتحان کن."
                         } else if (info.latest <= BuildConfig.VERSION_CODE) {
                             status = "همین نسخه را داری؛ «" + UpdatePlan.versionLabel(info) +

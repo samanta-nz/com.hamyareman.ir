@@ -85,42 +85,50 @@ object ApkUpdate {
      */
     suspend fun download(
         ctx: Context,
-        url: String,
+        urls: List<String>,
         onProgress: (ApkProgress) -> Unit,
     ): File? = withContext(Dispatchers.IO) {
+        val origins = urls.filter(String::isNotBlank).distinct()
+        if (origins.isEmpty()) return@withContext null
         val target = file(ctx)
         val tmp = part(ctx)
         runCatching { target.delete() }
-        if (!tmp.exists()) runCatching { tmp.delete() }
 
         var total = 0L
         var start = if (tmp.exists()) tmp.length() else 0L
         var speed = 0L
-        var attempts = 0
         var lastReport = 0L
         var windowBytes = 0L
         var windowStart = System.currentTimeMillis()
+        var completed = false
 
-        try {
-            while (attempts < 60) {
-                if (total > 0 && start >= total) break
+        origins@ for (url in origins) {
+            var attempts = 0
+            while (attempts < 7) {
+                if (total > 0 && start >= total) {
+                    completed = true
+                    break@origins
+                }
+                var conn: java.net.HttpURLConnection? = null
                 try {
                     val range = if (start > 0) "bytes=$start-" else null
-                    val conn = ResilientHttp.openOnline(ctx, url, range, connectMs = 15_000, readMs = 25_000)
-                    val code = conn.responseCode
+                    val active = ResilientHttp.openOnline(ctx, url, range, connectMs = 15_000, readMs = 25_000)
+                    conn = active
+                    val code = active.responseCode
                     if (code !in 200..299) error("HTTP $code")
-                    // سرور رنج را نادیده گرفت (۲۰۰): از صفر و روی فایلِ تازه.
+                    // origin دوم می‌تواند Range را نادیده بگیرد؛ در آن حالت فایل
+                    // نیمه‌کاره حذف و همان APK از صفر نوشته می‌شود.
                     if (start > 0 && code == 200) {
                         tmp.delete()
                         start = 0
                     }
-                    val cl = conn.contentLengthLong
+                    val cl = active.contentLengthLong
                     if (cl > 0) total = if (code == 206) start + cl else cl
 
                     RandomAccessFile(tmp, "rw").use { raf ->
                         raf.seek(start)
                         raf.setLength(start)
-                        conn.inputStream.use { input ->
+                        active.inputStream.use { input ->
                             val buf = ByteArray(64 * 1024)
                             while (true) {
                                 val n = input.read(buf)
@@ -142,26 +150,27 @@ object ApkUpdate {
                             }
                         }
                     }
-                    runCatching { conn.disconnect() }
-                    if (total > 0 && start < total) {
-                        // تماس قطع شد ولی سرور خطا نداد؛ همان‌جا دوباره وصل شو.
-                        attempts++
-                        delay(400)
-                        continue
+                    if (total <= 0 || start >= total) {
+                        completed = true
+                        break@origins
                     }
-                    break
-                } catch (t: Throwable) {
                     attempts++
+                    delay(400)
+                } catch (error: Throwable) {
+                    // خطای قطعی 4xx (از جمله سهمیهٔ 402) فوراً به origin بعدی
+                    // می‌رود؛ خطای گذرا روی همان origin تا هفت بار retry می‌شود.
+                    attempts = if (error.message.orEmpty().startsWith("HTTP 4")) 7 else attempts + 1
                     if (!NetState.isOnline(ctx)) NetState.awaitOnline(ctx)
-                    delay((400L * attempts).coerceAtMost(4000L))
+                    if (attempts < 7) delay((400L * attempts).coerceAtMost(4000L))
+                } finally {
+                    runCatching { conn?.disconnect() }
                 }
             }
-        } catch (t: Throwable) {
-            return@withContext null
         }
 
-        if (total > 0 && start < total) return@withContext null
-        if (start <= 1024L * 100L) return@withContext null
+        if (!completed || (total > 0 && start < total) || start <= 1024L * 100L) {
+            return@withContext null
+        }
         runCatching { onProgress(ApkProgress(start, if (total > 0) total else start, speed)) }
         if (!tmp.renameTo(target)) {
             runCatching {
@@ -171,6 +180,12 @@ object ApkUpdate {
         }
         target
     }
+
+    suspend fun download(
+        ctx: Context,
+        url: String,
+        onProgress: (ApkProgress) -> Unit,
+    ): File? = download(ctx, listOf(url), onProgress)
 
     /** sha256 یک فایل. */
     fun sha256Of(f: File): String? = runCatching {

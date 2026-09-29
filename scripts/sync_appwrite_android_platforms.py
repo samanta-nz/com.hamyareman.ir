@@ -77,6 +77,8 @@ def create_release_row(grade_id: str, package_name: str) -> None:
         "name": "",
         "min": 0,
         "url": "",
+        "externalUrl": "",
+        "internalUrl": "",
         "size": 0,
         "sha256": "",
         "chan": "stable",
