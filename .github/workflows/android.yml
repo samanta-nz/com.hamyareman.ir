@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, arena/01a0ea05-com-hamyareman-ir]
   workflow_dispatch:
 
 # یک جاب، فقط نهمِ دیباگ — بدون ادمین/R8/lint/تست تکراری تا سهمیهٔ Actions زود تمام نشود.
@@ -26,7 +26,19 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: never
-      - run: ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace
+      - name: Build, test and report compiler diagnostics
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace 2>&1 | tee /tmp/gradle-build.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            grep -E '(^e: | error: |FAILURE:|What went wrong|Execution failed for task)' /tmp/gradle-build.log \
+              | tail -n 40 \
+              | while IFS= read -r line; do echo "::error::$line"; done
+          fi
+          exit "$code"
       - name: نام‌گذاری و اعتبارسنجی APK نهم
         run: |
           set -euo pipefail
