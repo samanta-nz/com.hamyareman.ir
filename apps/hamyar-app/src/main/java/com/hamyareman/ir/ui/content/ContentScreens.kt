@@ -39,9 +39,9 @@ private fun faNum(n: Int): String =
 @Composable
 fun ContentHubScreen(onBack: () -> Unit, onCategory: (String) -> Unit) {
     val ctx = LocalContext.current
-    remember { ContentCatalog.load(ctx) }
+    val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val gender = StudentProfileState.gender
-    val cats = remember(gender) { ContentCatalog.categoriesFor(gender) }
+    val cats = remember(gender) { catalog.categoriesFor(gender) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         AppTopBar("محتوای همیار", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -77,10 +77,10 @@ fun ContentHubScreen(onBack: () -> Unit, onCategory: (String) -> Unit) {
 @Composable
 fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> Unit) {
     val ctx = LocalContext.current
-    remember { ContentCatalog.load(ctx) }
-    val meta = remember(cat) { ContentCatalog.categories().firstOrNull { it.id == cat } }
+    val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
+    val meta = remember(cat) { catalog.categories().firstOrNull { it.id == cat } }
     val gender = StudentProfileState.gender
-    val items = remember(cat, gender) { ContentCatalog.itemsOf(cat, gender) }
+    val items = remember(cat, gender) { catalog.itemsOf(cat, gender) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         AppTopBar(meta?.title ?: "محتوا", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -119,8 +119,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     var progress by remember(activeId) { mutableStateOf(0) }
     var sourceLabel by remember(activeId) { mutableStateOf("") }
     var retry by remember(activeId) { mutableStateOf(0) }
-    remember { ContentCatalog.load(ctx) }
-    val item = ContentCatalog.item(activeId)
+    val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
+    val item = catalog.item(activeId)
 
     LaunchedEffect(activeId, retry) {
         val current = item
