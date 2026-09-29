@@ -37,10 +37,26 @@ jobs:
       - run: pip install --quiet requests appwrite
       - name: Copy only missing encrypted HTML and install the media key
         run: |
-          set -euo pipefail
-          python3 scripts/sync_html_to_hm_bckt.py | tee /tmp/hm-bckt-sync.log
-          summary=$(tail -n 1 /tmp/hm-bckt-sync.log)
-          summary=${summary//'%'/'%25'}
-          summary=${summary//$'\r'/'%0D'}
-          summary=${summary//$'\n'/'%0A'}
-          echo "::notice title=HM_BCKT HTML sync::$summary"
+          set +e
+          python3 scripts/sync_html_to_hm_bckt.py --fail-fast 2>&1 | tee /tmp/hm-bckt-sync.log
+          code=${PIPESTATUS[0]}
+          {
+            echo '## HM_BCKT HTML sync'
+            echo '```text'
+            tail -n 80 /tmp/hm-bckt-sync.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          grep '^ERROR ' /tmp/hm-bckt-sync.log | head -n 20 | while IFS= read -r line; do
+            line=${line//'%'/'%25'}
+            line=${line//$'\r'/'%0D'}
+            line=${line//$'\n'/'%0A'}
+            echo "::error title=HM_BCKT HTML sync::$line"
+          done
+          summary=$(grep '^{' /tmp/hm-bckt-sync.log | tail -n 1)
+          if [ -n "$summary" ]; then
+            summary=${summary//'%'/'%25'}
+            summary=${summary//$'\r'/'%0D'}
+            summary=${summary//$'\n'/'%0A'}
+            echo "::notice title=HM_BCKT HTML sync::$summary"
+          fi
+          exit "$code"

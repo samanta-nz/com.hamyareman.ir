@@ -168,6 +168,7 @@ def install_media_key(encoded: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=0, help="diagnostic cap; zero mirrors all HTML")
+    parser.add_argument("--fail-fast", action="store_true", help="stop after the first file failure")
     args = parser.parse_args()
     if not TARGET_KEY:
         raise SystemExit("APPWRITE_API_KEY is required")
@@ -230,12 +231,22 @@ def main() -> int:
                 uploaded += 1
                 print(f"[{number}/{len(entries)}] UPLOAD {fid} size={size}", flush=True)
             except Exception as exc:
-                failures.append(f"{fid}:{type(exc).__name__}:{str(exc)[:160]}")
+                detail = f"{fid}:{type(exc).__name__}:{str(exc)[:300]}"
+                failures.append(detail)
                 print(f"[{number}/{len(entries)}] FAIL {fid} {type(exc).__name__}", flush=True)
+                print("ERROR " + detail, flush=True)
             finally:
                 local.unlink(missing_ok=True)
+            if failures and args.fail_fast:
+                break
 
-    media_key = install_media_key(obtain_media_key())
+    try:
+        media_key = install_media_key(obtain_media_key())
+    except Exception as exc:
+        detail = f"media-key:{type(exc).__name__}:{str(exc)[:300]}"
+        failures.append(detail)
+        media_key = "failed"
+        print("ERROR " + detail, flush=True)
     final = list_target_files()
     verified = 0
     for item in entries:
