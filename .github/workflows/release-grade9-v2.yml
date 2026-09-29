@@ -51,6 +51,19 @@ jobs:
       - name: Install release tooling
         run: pip install --quiet requests boto3
 
+      - name: Require complete external HTML and decoding key before release
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_BUCKET_ID: 6abb564d00155cc56d65
+        run: |
+          set -euo pipefail
+          python3 scripts/audit_hm_bckt.py --output /tmp/hm-bckt-release-audit | tee /tmp/hm-bckt-release.json
+          summary=$(tail -n 1 /tmp/hm-bckt-release.json)
+          echo "$summary" | grep -F '"html":"168/168"'
+          echo "$summary" | grep -F '"publicHtml":"168/168"'
+          echo "$summary" | grep -F '"hmk1":"168/168"'
+          echo "$summary" | grep -F '"mediaKey":true'
+
       - name: Select the canonical Google Web audience
         env:
           CONFIGURED_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID || vars.GOOGLE_WEB_CLIENT_ID }}
