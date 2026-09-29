@@ -404,7 +404,7 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
             try { HtmlMediaKey.fetch(ctx, container.tables) } catch (_: Throwable) {}
             runCatching {
                 if (!MediaVault.isVerified(ctx, fid)) {
-                    MediaVault.downloadEncrypted(ctx, StudyMedia.viewUrl(fid), fid) { _, _ -> }
+                    MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(fid), fid) { _, _ -> }
                     if (MediaVault.isVerified(ctx, fid)) {
                         MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
                     }

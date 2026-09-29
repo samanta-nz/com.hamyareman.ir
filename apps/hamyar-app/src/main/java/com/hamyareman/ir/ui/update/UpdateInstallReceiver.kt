@@ -18,6 +18,12 @@ class UpdateInstallReceiver : BroadcastReceiver() {
 
     @Suppress("DEPRECATION")
     override fun onReceive(context: Context, intent: Intent) {
+        // حتی اگر نصب از مسیر ACTION_VIEW انجام شده باشد و callback نشست نداشته
+        // باشیم، سیستم پس از جایگزینی همین بسته این broadcast را می‌فرستد.
+        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            ApkUpdate.cleanupAfterSuccessfulInstall(context)
+            return
+        }
         if (intent.action != ApkUpdate.ACTION_RESULT) return
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
         if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {

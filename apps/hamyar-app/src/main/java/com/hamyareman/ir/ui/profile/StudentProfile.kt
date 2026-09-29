@@ -27,13 +27,32 @@ enum class GradeLevel(val id: String, val fa: String, val num: Int) {
 }
 
 /**
- * نگاشت کتاب → پایه از روی کد کتاب (`C905` → نهم، `C10xx` → دهم).
- * اگر کد شناخته نشود، کتاب در هیچ پایه‌ی دیگری دیده نمی‌شود مگر همین اپ.
+ * نگاشت کتاب → پایه از روی کد رسمی کتاب.
+ *
+ * دو قالب در داده‌ها داریم:
+ * - `C905` → پایهٔ ۹ (قالب کوتاه فعلی کتاب‌های نهم)
+ * - `C110…` / `C111…` / `C112…` → پایهٔ ۱۰/۱۱/۱۲ (کد رسمی متوسطهٔ دوم)
+ *
+ * تطبیق سادهٔ دو رقم اول، `C110…` را اشتباهاً یازدهم تشخیص می‌داد. این تابع
+ * عمداً فقط الگوهای قطعی را می‌پذیرد؛ کد ناشناخته متعلق به edition جاری است.
  */
 fun gradeOfBook(bookCode: String): GradeLevel {
-    val m = Regex("^C(1[0-2]|[1-9])").find(bookCode.trim())
-    val n = m?.groupValues?.get(1)?.toIntOrNull()
-    return GradeLevel.byNum(n) ?: AppEdition.grade
+    val digits = Regex("^C(\\d+)", RegexOption.IGNORE_CASE)
+        .find(bookCode.trim())
+        ?.groupValues
+        ?.getOrNull(1)
+        .orEmpty()
+    val grade = when {
+        digits.length >= 6 && digits.startsWith("110") -> 10
+        digits.length >= 6 && digits.startsWith("111") -> 11
+        digits.length >= 6 && digits.startsWith("112") -> 12
+        digits.startsWith("10") -> 10
+        digits.startsWith("11") -> 11
+        digits.startsWith("12") -> 12
+        digits.firstOrNull()?.digitToIntOrNull() in 4..9 -> digits.first().digitToInt()
+        else -> null
+    }
+    return GradeLevel.byNum(grade) ?: AppEdition.grade
 }
 
 /**
@@ -118,8 +137,10 @@ object StudentProfileState {
 
     fun applyLauncherIcon(ctx: Context, genderId: String) {
         val pm = ctx.packageManager
-        val boy = android.content.ComponentName(ctx, "com.hamyareman.ir.LauncherBoy")
-        val girl = android.content.ComponentName(ctx, "com.hamyareman.ir.LauncherGirl")
+        // aliasهای Manifest زیر applicationId هر flavor ساخته می‌شوند؛ استفاده از
+        // package ثابت نهم باعث می‌شد تغییر آیکون در اپ‌های پایهٔ دیگر بی‌اثر باشد.
+        val boy = android.content.ComponentName(ctx.packageName, "${ctx.packageName}.LauncherBoy")
+        val girl = android.content.ComponentName(ctx.packageName, "${ctx.packageName}.LauncherGirl")
         val useGirl = genderId.equals("girl", ignoreCase = true)
         val enabled = android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED
         val disabled = android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED

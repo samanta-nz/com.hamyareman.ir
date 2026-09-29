@@ -222,6 +222,27 @@ object MediaVault {
     }
 
     /**
+     * FASTEST: origin برنده و سپس origin دوم؛ EXTERNAL/INTERNAL: فقط همان سرور.
+     * URL موفق برای نمایش/ثبت diagnostics برگردانده می‌شود.
+     */
+    fun downloadEncrypted(
+        ctx: Context,
+        urls: List<String>,
+        cacheKey: String,
+        onProgress: (Long, Long) -> Unit,
+    ): String {
+        require(urls.isNotEmpty()) { "برای این فایل نشانی سرور وجود ندارد." }
+        val failures = mutableListOf<String>()
+        for (url in urls.distinct()) {
+            val result = runCatching { downloadEncrypted(ctx, url, cacheKey, onProgress) }
+            if (result.isSuccess) return url
+            failures += (result.exceptionOrNull()?.message ?: "خطای نامشخص")
+            delete(ctx, cacheKey)
+        }
+        throw java.io.IOException(failures.joinToString(" | "))
+    }
+
+    /**
      * گزارشِ تُنُکِ پیشرفت: دستِ‌کم هر ۵۱۲KB یا هر ۲۰۰ms (نه هر تکهٔ شبکه) تا
      * بازترکیبِ صفحه گلوگاهِ دانلود نشود. [lastBytes] و [lastTime] گزارشِ قبلی‌اند.
      */

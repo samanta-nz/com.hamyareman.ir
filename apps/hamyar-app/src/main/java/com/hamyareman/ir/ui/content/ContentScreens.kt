@@ -40,8 +40,8 @@ private fun faNum(n: Int): String =
 fun ContentHubScreen(onBack: () -> Unit, onCategory: (String) -> Unit) {
     val ctx = LocalContext.current
     remember { ContentCatalog.load(ctx) }
-    val cats = remember { ContentCatalog.categories() }
     val gender = StudentProfileState.gender
+    val cats = remember(gender) { ContentCatalog.categoriesFor(gender) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         AppTopBar("محتوای همیار", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -104,8 +104,9 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 }
 
 /**
- * نمایش یک صفحهٔ HTML از کاتالوگ: انتخاب سرور → دریافت → باز کردن HMK1 → WebView.
- * اگر سرورِ انتخاب‌شده جواب نداد، سرور دیگر را هم امتحان می‌کند.
+ * نمایش HTML: انتخاب دقیق سرور → cache رمز → HMK1 → WebView.
+ * فقط حالت «سریع‌ترین» هنگام خطای origin برنده، origin دوم را امتحان می‌کند؛
+ * حالت‌های دستی هرگز بی‌صدا به سرور دیگر منتقل نمی‌شوند.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable

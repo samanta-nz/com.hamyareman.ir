@@ -1,6 +1,7 @@
 package com.hamyareman.ir.ui.content
 
 import android.content.Context
+import com.hamyareman.ir.ui.profile.AppEdition
 import org.json.JSONObject
 
 /** یک دستهٔ محتوا (آموزشگاه، یوگا، …). */
@@ -96,13 +97,25 @@ object ContentCatalog {
 
     fun categories(): List<ContentCat> = cats
 
-    /** آیتم‌های یک دسته (فقط HTML برای فهرست) با اعمال جنسیت. */
+    private fun belongsToEdition(item: ContentItem): Boolean {
+        val lab = Regex("^lab-(\\d{2})-").find(item.id) ?: return true
+        return lab.groupValues[1].toIntOrNull() == AppEdition.grade.num
+    }
+
+    /** آیتم‌های یک دسته با قفل هم‌زمان پایه و جنسیت همین APK. */
     fun itemsOf(cat: String, gender: String): List<ContentItem> =
         itemsById.values
-            .filter { it.cat == cat && it.kind == "html" && (it.gender == "all" || it.gender == gender) }
+            .filter {
+                it.cat == cat && it.kind == "html" && belongsToEdition(it) &&
+                    (it.gender == "all" || it.gender == gender)
+            }
             .sortedBy { it.id }
 
-    fun item(id: String): ContentItem? = itemsById[id]
+    /** دستهٔ خالیِ پایهٔ دیگر اصلاً به‌صورت کاشیِ قابل کلیک نمایش داده نمی‌شود. */
+    fun categoriesFor(gender: String): List<ContentCat> =
+        cats.filter { itemsOf(it.id, gender).isNotEmpty() }
+
+    fun item(id: String): ContentItem? = itemsById[id]?.takeIf(::belongsToEdition)
 
     /** نگاشت همهٔ payloadهای عمومی Appwrite ← کلید قطعی و اتمیک آروان. */
     fun keyFor(fileId: String): String? = mirrorKeys[fileId]

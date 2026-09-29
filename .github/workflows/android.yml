@@ -27,15 +27,25 @@ jobs:
         with:
           cache-cleanup: never
       - run: ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace
-      - name: نام‌گذاری APK
+      - name: نام‌گذاری و اعتبارسنجی APK نهم
         run: |
-          set -e
-          shopt -s nullglob globstar
-          src=$(echo apps/hamyar-app/build/outputs/apk/**/*.apk | awk '{print $1}')
-          test -n "$src" && test -f "$src"
+          set -euo pipefail
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          src="${files[0]}"
+          BADGING="$($ANDROID_HOME/build-tools/36.0.0/aapt dump badging "$src" | head -1)"
+          echo "$BADGING" | grep -F "name='com.hamyareman.ir'"
+          SIGNING_SHA="$($ANDROID_HOME/build-tools/36.0.0/apksigner verify --print-certs "$src" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED_SIGNING_SHA=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          test "$SIGNING_SHA" = "$EXPECTED_SIGNING_SHA"
+          VERSION_NAME=$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<<"$BADGING")
+          VERSION_NAME=${VERSION_NAME%-debug}
+          test -n "$VERSION_NAME"
           mkdir -p dist
-          cp -f "$src" dist/hamyar-1.97.apk
-          ls -l dist/hamyar-1.97.apk
+          ASSET="hamyar-grade9-${VERSION_NAME}-debug.apk"
+          cp -f "$src" "dist/$ASSET"
+          echo "ASSET=$ASSET" >> "$GITHUB_ENV"
+          ls -l "dist/$ASSET"
       - name: انتشارِ APK روی Release (ci-apk)
         if: success()
         env:
@@ -44,12 +54,12 @@ jobs:
           set -e
           gh release view ci-apk >/dev/null 2>&1 || \
             gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم." || true
-          gh release upload ci-apk dist/hamyar-1.97.apk --clobber
+          gh release upload ci-apk "dist/$ASSET" --clobber
           gh release view ci-apk
       - uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: hamyar-1.97-debug
-          path: dist/hamyar-1.97.apk
+          name: hamyar-grade9-debug
+          path: dist/${{ env.ASSET }}
           if-no-files-found: error
           retention-days: 3

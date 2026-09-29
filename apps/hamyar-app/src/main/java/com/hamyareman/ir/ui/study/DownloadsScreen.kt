@@ -83,10 +83,10 @@ import com.hamyareman.ir.ui.net.ResilientHttp
  */
 
 private fun pdfCacheFile(ctx: android.content.Context, fileId: String): File =
-    File(File(ctx.filesDir, "media/pdf-cache").apply { mkdirs() }, fileId)
+    StudyPdfCache.file(ctx, fileId)
 
 private fun pdfCached(ctx: android.content.Context, fileId: String): Boolean =
-    pdfCacheFile(ctx, fileId).let { it.exists() && it.length() > 1024 }
+    StudyPdfCache.isValid(pdfCacheFile(ctx, fileId))
 
 /** ارقام با عرض ثابت (۴ رقم، مکمل صفر) — با تغییر عدد، کل متن جابه‌جا نمی‌شود. */
 private fun fixNum(n: Int): String = toPersianDigits(n.toString()).padStart(4, '۰')
@@ -102,9 +102,6 @@ private fun mbFixed(bytes: Long): String =
 private val numStyle: TextStyle
     @Composable get() = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum")
 
-/** فایل روی سرور وجود ندارد (HTTP 404). */
-private class NotFoundOnServer : Exception("404")
-
 /** حجم فایل سرور با درخواست HEAD — برای «X از Y مگابایت» (کش در حافظه‌ی پروسه). */
 private val remoteSizeCache = mutableMapOf<String, Long>()
 
@@ -112,12 +109,17 @@ private fun headSizeBlocking(fileId: String): Long {
     remoteSizeCache[fileId]?.let { return it }
     val remoteId = StudyMedia.resolveFileId(fileId)
     return try {
-        // اتصالِ مقاوم: HEAD گاهی به خطای گذرا می‌خورد؛ این‌جا تا سه بار تلاش می‌شود.
-        val conn = ResilientHttp.open(StudyMedia.viewUrl(remoteId), connectMs = 10000, readMs = 10000, attempts = 3)
-        val len = if (conn.responseCode in 200..299) conn.contentLengthLong else -1L
-        conn.disconnect()
+        var found = -1L
+        for (url in StudyMedia.candidateUrls(remoteId)) {
+            val len = runCatching {
+                val conn = ResilientHttp.open(url, connectMs = 10000, readMs = 10000, attempts = 3)
+                try { if (conn.responseCode in 200..299) conn.contentLengthLong else -1L }
+                finally { conn.disconnect() }
+            }.getOrDefault(-1L)
+            if (len > 0) { found = len; break }
+        }
         // -2 یعنی «سرور ندارد/ناموفق» — همیشه کش می‌شود تا پروب بی‌نهایت نشود
-        val cached = if (len > 0) len else -2L
+        val cached = if (found > 0) found else -2L
         remoteSizeCache[fileId] = cached
         cached
     } catch (e: Exception) {
@@ -126,57 +128,9 @@ private fun headSizeBlocking(fileId: String): Long {
     }
 }
 
-/** دانلود PDF به کش مشترک تدریس — ۴۰۴ تفکیک می‌شود. */
+/** دانلود PDF به کش مشترک همهٔ صفحه‌ها؛ resume/fallback/اعتبارسنجی متمرکز است. */
 private fun downloadPdfBlocking(ctx: android.content.Context, fileId: String, onProgress: (Int) -> Unit) {
-    val target = pdfCacheFile(ctx, fileId)
-    val tmp = File(target.parentFile, "$fileId.part")
-    val url = StudyMedia.viewUrl(StudyMedia.resolveFileId(fileId))
-    var attempt = 0
-    // تغییرِ شبکه/پروکسی وسطِ دانلود، این فایل را نیمه‌کاره رها نمی‌کند: تا چند بار
-    // با «Range: bytes=<مانده>-» از همان‌جا ادامه می‌دهیم و اگر اینترنت نبود صبر می‌کنیم.
-    while (attempt <= 6) {
-        val done = if (tmp.exists()) tmp.length() else 0L
-        try {
-            val conn = ResilientHttp.open(
-                url,
-                range = if (done > 0) "bytes=$done-" else null,
-                connectMs = 15000,
-                readMs = 30000,
-                attempts = 3,
-            )
-            if (conn.responseCode == 404) throw NotFoundOnServer()
-            if (conn.responseCode !in 200..299) throw java.io.IOException("HTTP ${conn.responseCode}")
-            if (done > 0 && conn.responseCode == 200) tmp.delete()
-            val total = conn.contentLengthLong.let { if (it > 0 && done > 0) it + done else it }
-            java.io.FileOutputStream(tmp, done > 0 && conn.responseCode == 206).use { out ->
-                conn.inputStream.use { input ->
-                    val buf = ByteArray(64 * 1024)
-                    var read: Int
-                    var written = done
-                    while (input.read(buf).also { read = it } > 0) {
-                        out.write(buf, 0, read)
-                        written += read
-                        if (total > 0) onProgress(((written * 100) / total).toInt())
-                    }
-                }
-            }
-            runCatching { conn.disconnect() }
-            if (total > 0 && tmp.length() < total) { attempt++; continue }
-            break
-        } catch (e: NotFoundOnServer) {
-            throw e
-        } catch (e: Exception) {
-            attempt++
-            if (attempt > 6) throw e
-            if (!NetState.isOnline(ctx)) NetState.awaitOnlineBlocking(ctx)
-            runCatching { Thread.sleep((400L * attempt).coerceAtMost(3000L)) }
-        }
-    }
-    val ok = tmp.length() > 1024 && runCatching {
-        tmp.inputStream().use { val h = ByteArray(5); it.read(h); String(h) == "%PDF-" }
-    }.getOrDefault(false)
-    if (!ok) { tmp.delete(); throw java.io.IOException("ناقص") }
-    if (!tmp.renameTo(target)) { tmp.copyTo(target, overwrite = true); tmp.delete() }
+    val target = StudyPdfCache.obtain(ctx, fileId, onProgress)
     remoteSizeCache[fileId] = target.length()
 }
 
@@ -217,7 +171,7 @@ private fun DownloadsScreenInner(onBack: () -> Unit) {
                 if (asPdf) downloadPdfBlocking(ctx, fileId) { busy[key] = it }
                 else {
                     val remoteId = StudyMedia.resolveFileId(fileId)
-                    MediaVault.downloadEncrypted(ctx, StudyMedia.viewUrl(remoteId), cacheKey) { p, t -> busy[key] = if (t > 0) ((p * 100) / t).toInt() else 0 }
+                    MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(remoteId), cacheKey) { p, t -> busy[key] = if (t > 0) ((p * 100) / t).toInt() else 0 }
                 }
             }
             tick++
@@ -227,8 +181,6 @@ private fun DownloadsScreenInner(onBack: () -> Unit) {
             runCatching {
                 MediaFreshness.rememberDownload(ctx, key, fileId, cacheKey, asPdf)
             }
-        } catch (e: NotFoundOnServer) {
-            store.putString("dl404_$fileId", "1")
         } catch (e: Exception) {
             netErr[key] = true
         } finally {

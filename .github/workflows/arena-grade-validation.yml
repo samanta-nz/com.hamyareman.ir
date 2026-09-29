@@ -1,0 +1,64 @@
+name: Arena grade architecture validation
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arena-grade-validation
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Validate grade hardening')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+      - name: Validate static identity and mirrored assets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/*.py
+          python3 scripts/validate_grade_architecture.py
+      - name: Test common logic, lint grade nine, and assemble all nine APKs
+        run: |
+          ./gradlew \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:lintP09Debug \
+            :hamyar-app:assembleDebug \
+            --stacktrace
+      - name: Verify every packaged application ID and signer
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          EXPECTED_SIGNER=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          declare -A PACKAGES=(
+            [p04]=com.hamyareman.p04 [p05]=com.hamyareman.p05 [p06]=com.hamyareman.p06
+            [p07]=com.hamyareman.p07 [p08]=com.hamyareman.p08 [p09]=com.hamyareman.ir
+            [p10]=com.hamyareman.p10 [p11]=com.hamyareman.p11 [p12]=com.hamyareman.p12
+          )
+          for flavor in p04 p05 p06 p07 p08 p09 p10 p11 p12; do
+            mapfile -t files < <(find "apps/hamyar-app/build/outputs/apk/$flavor/debug" -type f -name '*.apk' -print)
+            test "${#files[@]}" -eq 1
+            apk="${files[0]}"
+            "$AAPT" dump badging "$apk" | head -1 | grep -F "name='${PACKAGES[$flavor]}'"
+            signer=$("$APKSIGNER" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')
+            test "$signer" = "$EXPECTED_SIGNER"
+            printf '%s package=%s signer=%s\n' "$flavor" "${PACKAGES[$flavor]}" "$signer"
+          done

@@ -32,9 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.LocalAppContainer
-import java.io.File
-import com.hamyareman.ir.ui.net.NetState
-import com.hamyareman.ir.ui.net.ResilientHttp
 import java.util.LinkedHashMap
 
 /**
@@ -42,9 +39,6 @@ import java.util.LinkedHashMap
  * دانلود و روی گوشی کش می‌شود (filesDir — بدون کش سرور)، با PdfRenderer
  * بومی اندروید صفحه‌به‌صفحه رندر می‌شود (lazy + LRU).
  */
-private const val PDF_ENDPOINT = "https://fra.cloud.appwrite.io/v1"
-private const val PDF_PROJECT = "6a9d59e3002751cc3ea8"
-private const val PDF_BUCKET = "6aa1eaae00303400117b"
 
 private sealed class PdfState {
     data object Idle : PdfState()
@@ -76,8 +70,6 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
 
     var state by remember(fileId) { mutableStateOf<PdfState>(PdfState.Idle) }
     val pageCache = remember(fileId) { PageCache() }
-    var renderer by remember(fileId) { mutableStateOf<PdfRenderer?>(null) }
-    val renderLock = remember(fileId) { Any() }
 
     LaunchedEffect(fileId) {
         if (fileId.isBlank()) {
@@ -85,89 +77,21 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
             return@LaunchedEffect
         }
         try {
-            val cacheDir = File(ctx.filesDir, "media/pdf-cache").apply { mkdirs() }
-            val target = File(cacheDir, fileId)
-            val part = File(cacheDir, "$fileId.part")
-            fun looksLikePdf(file: File): Boolean = runCatching {
-                if (!file.isFile || file.length() < 1024L) return@runCatching false
-                val headerOk = file.inputStream().use { input ->
-                    val magic = ByteArray(5)
-                    input.read(magic) == 5 && String(magic, Charsets.US_ASCII) == "%PDF-"
-                }
-                val tailSize = minOf(file.length(), 4096L).toInt()
-                val tail = ByteArray(tailSize)
-                java.io.RandomAccessFile(file, "r").use { raf ->
-                    raf.seek(file.length() - tailSize)
-                    raf.readFully(tail)
-                }
-                headerOk && String(tail, Charsets.ISO_8859_1).contains("%%EOF")
-            }.getOrDefault(false)
-            if (target.exists() && !looksLikePdf(target)) target.delete()
-            if (!target.exists()) {
-                state = PdfState.Downloading(0)
-                val url = StudyMedia.viewUrl(StudyMedia.resolveFileId(fileId))
-                // دانلودِ مقاوم: اگر شبکه/پروکسی وسطِ راه عوض شود، به‌جای شکستن، از
-                // همان‌جا ادامه می‌دهد (تا ۶ تلاش، با صبر برای برگشتنِ اینترنت).
-                var attempt = 0
-                var finished = false
-                while (attempt <= 6 && !finished) {
-                    val done0 = if (part.exists()) part.length() else 0L
-                    val resume = done0 > 1024
-                    try {
-                        val conn = ResilientHttp.open(
-                            url,
-                            range = if (resume) "bytes=$done0-" else null,
-                            connectMs = 15000,
-                            readMs = 30000,
-                            attempts = 3,
-                        )
-                        if (conn.responseCode !in 200..299) {
-                            state = PdfState.Error("دانلود ناموفق بود (کد ${conn.responseCode}). اینترنت یا باکت را بررسی کنید.")
-                            return@LaunchedEffect
-                        }
-                        if (resume && conn.responseCode == 200) part.delete()
-                        val partial = resume && conn.responseCode == 206
-                        val total = conn.contentLengthLong.let {
-                            if (it > 0 && partial) it + part.length() else it
-                        }
-                        java.io.FileOutputStream(part, partial).use { out ->
-                            conn.inputStream.use { input ->
-                                val buf = ByteArray(64 * 1024)
-                                var read: Int
-                                var done = if (partial) part.length() else 0L
-                                while (input.read(buf).also { read = it } > 0) {
-                                    out.write(buf, 0, read)
-                                    done += read
-                                    if (total > 0) {
-                                        val pct = ((done * 100) / total).toInt()
-                                        if (state is PdfState.Downloading && (state as PdfState.Downloading).progressPct != pct) {
-                                            state = PdfState.Downloading(pct)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        runCatching { conn.disconnect() }
-                        finished = total <= 0 || part.length() >= total
-                    } catch (t: Throwable) {
-                        attempt++
-                        if (attempt > 6) throw t
-                        if (!NetState.isOnline(ctx)) NetState.awaitOnline(ctx)
-                        runCatching { Thread.sleep((400L * attempt).coerceAtMost(3000L)) }
+            state = PdfState.Downloading(0)
+            val target = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                StudyPdfCache.obtain(ctx, fileId) { pct ->
+                    if ((state as? PdfState.Downloading)?.progressPct != pct) {
+                        state = PdfState.Downloading(pct)
                     }
                 }
-                require(finished && looksLikePdf(part)) { "دانلود PDF ناقص یا نامعتبر است." }
-                if (!part.renameTo(target)) {
-                    part.copyTo(target, overwrite = true)
-                    part.delete()
-                }
-                require(looksLikePdf(target)) { "PDF نهایی معتبر نیست." }
             }
             state = PdfState.Downloading(100)
-            val fd = ParcelFileDescriptor.open(target, ParcelFileDescriptor.MODE_READ_ONLY)
-            val r = PdfRenderer(fd)
-            synchronized(renderLock) { renderer = r }
-            state = PdfState.Ready(r.pageCount)
+            val pageCount = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val fd = ParcelFileDescriptor.open(target, ParcelFileDescriptor.MODE_READ_ONLY)
+                val probe = PdfRenderer(fd)
+                try { probe.pageCount } finally { probe.close() }
+            }
+            state = PdfState.Ready(pageCount)
         } catch (e: Exception) {
             state = PdfState.Error(e.message ?: "خطای ناشناخته در باز کردن PDF")
         }

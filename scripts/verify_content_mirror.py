@@ -39,6 +39,22 @@ def main() -> int:
     endpoint = os.getenv("APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
     aw_bucket = os.getenv("APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
 
+    def public_status(url: str) -> int:
+        # Some Appwrite/S3-compatible routes reject or mishandle HEAD even though
+        # the exact GET path used by the app is healthy. Probe one byte instead.
+        try:
+            with requests.get(
+                url,
+                headers={"Range": "bytes=0-0", "Accept-Encoding": "identity"},
+                stream=True,
+                timeout=(10, 45),
+            ) as response:
+                if response.status_code in range(200, 300):
+                    next(response.iter_content(1), b"")
+                return response.status_code
+        except requests.RequestException:
+            return 0
+
     def check(entry):
         file_id, key = entry["id"], entry["key"]
         expected = int(appwrite.get(file_id, {}).get("sizeOriginal") or -1)
@@ -48,14 +64,12 @@ def main() -> int:
             sha = bool((head.get("Metadata") or {}).get("sha256"))
         except Exception:
             actual, sha = -1, False
-        arvan_status = requests.head(
+        arvan_status = public_status(
             public_base + "/" + "/".join(quote(part, safe="") for part in key.split("/")),
-            timeout=(10, 30),
-        ).status_code
-        appwrite_status = requests.head(
+        )
+        appwrite_status = public_status(
             f"{endpoint}/storage/buckets/{aw_bucket}/files/{quote(file_id, safe='')}/view?project={project}",
-            timeout=(10, 30),
-        ).status_code
+        )
         return {
             "id": file_id,
             "key": key,

@@ -1,17 +1,22 @@
-name: Upload APK to Arvan
+name: Upload grade APK to Arvan atomically
 
 on:
   workflow_dispatch:
     inputs:
+      grade_id:
+        description: 'کانال APK'
+        type: choice
+        options: [grade4, grade5, grade6, grade7, grade8, grade9, grade10, grade11, grade12]
+        default: grade9
       asset:
-        description: "نام فایل در ci-apk"
+        description: 'نام دقیق فایل در release ci-apk'
         required: true
-        default: "hamyar-1.96.apk"
+        default: 'hamyar-grade9-1.98-debug.apk'
 
 jobs:
   upload:
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
@@ -21,36 +26,58 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          gh release download ci-apk --repo infobehzad/com.hamyareman.ir \
-            --pattern "${{ inputs.asset }}" --dir dist
-          test -f "dist/${{ inputs.asset }}"
-      - name: آپلود به باکت ایرانی
+          gh release download ci-apk --repo "$GITHUB_REPOSITORY" --pattern "${{ inputs.asset }}" --dir dist
+          test -s "dist/${{ inputs.asset }}"
+
+      - name: staging → verify → atomic copy → public verify
         env:
           ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
           ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
           ASSET: ${{ inputs.asset }}
+          GRADE_ID: ${{ inputs.grade_id }}
         run: |
-          pip install --quiet boto3
+          set -euo pipefail
+          pip install --quiet boto3 requests
           python3 - <<'PY'
-          import os
+          import hashlib,os,uuid
           from pathlib import Path
-          import boto3
+          from urllib.parse import quote
+          import boto3,requests
           from botocore.config import Config
-          name = os.environ["ASSET"]
-          data = Path("dist", name).read_bytes()
-          s3 = boto3.client(
-              "s3",
-              aws_access_key_id=os.environ["ARVAN_ACCESS_KEY"],
-              aws_secret_access_key=os.environ["ARVAN_SECRET_KEY"],
-              endpoint_url="https://s3.ir-thr-at1.arvanstorage.ir",
-              region_name="ir-thr-at1",
-              config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
-                            connect_timeout=20, read_timeout=180, retries={"max_attempts": 3}),
-          )
-          extra = {"ContentType": "application/vnd.android.package-archive"}
+
+          path=Path('dist',os.environ['ASSET']); size=path.stat().st_size
+          digest=hashlib.sha256()
+          with path.open('rb') as source:
+              for chunk in iter(lambda:source.read(1024*1024),b''): digest.update(chunk)
+          sha=digest.hexdigest()
+          final=f"apk/{os.environ['GRADE_ID']}/{path.name}"
+          staging=f".staging/apk/{uuid.uuid4().hex}/{path.name}"
+          bucket='hamyar-e-man'
+          s3=boto3.client('s3',aws_access_key_id=os.environ['ARVAN_ACCESS_KEY'],
+              aws_secret_access_key=os.environ['ARVAN_SECRET_KEY'],endpoint_url='https://s3.ir-thr-at1.arvanstorage.ir',
+              region_name='ir-thr-at1',config=Config(signature_version='s3v4',s3={'addressing_style':'path'},
+              connect_timeout=20,read_timeout=240,retries={'max_attempts':8,'mode':'adaptive'}))
           try:
-              s3.put_object(Bucket="hamyar-e-man", Key=name, Body=data, ACL="public-read", **extra)
-          except Exception:
-              s3.put_object(Bucket="hamyar-e-man", Key=name, Body=data, **extra)
-          print("arvan ok", name, len(data))
+              s3.upload_file(str(path),bucket,staging,ExtraArgs={'ContentType':'application/vnd.android.package-archive',
+                  'CacheControl':'no-store','Metadata':{'sha256':sha,'grade':os.environ['GRADE_ID']}})
+              staged=s3.head_object(Bucket=bucket,Key=staging)
+              if int(staged.get('ContentLength') or -1)!=size or (staged.get('Metadata') or {}).get('sha256')!=sha:
+                  raise RuntimeError('staging verification failed')
+              args={'Bucket':bucket,'Key':final,'CopySource':{'Bucket':bucket,'Key':staging},
+                  'MetadataDirective':'REPLACE','ContentType':'application/vnd.android.package-archive',
+                  'CacheControl':'public, max-age=3600, must-revalidate',
+                  'Metadata':{'sha256':sha,'grade':os.environ['GRADE_ID']}}
+              try: s3.copy_object(ACL='public-read',**args)
+              except Exception:
+                  s3.copy_object(**args); s3.put_object_acl(Bucket=bucket,Key=final,ACL='public-read')
+              result=s3.head_object(Bucket=bucket,Key=final)
+              if int(result.get('ContentLength') or -1)!=size or (result.get('Metadata') or {}).get('sha256')!=sha:
+                  raise RuntimeError('final verification failed')
+              url='https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir/'+ '/'.join(quote(x,safe='') for x in final.split('/'))
+              response=requests.head(url,timeout=(15,60))
+              if response.status_code not in range(200,300): raise RuntimeError(f'public HTTP {response.status_code}')
+              print('published atomically',final,size,sha)
+          finally:
+              try: s3.delete_object(Bucket=bucket,Key=staging)
+              except Exception: pass
           PY

@@ -26,8 +26,17 @@ object StudyMedia {
      * نشانی دوآدرسی: طبق «تنظیمات سرور» از سرور ایرانی (کلید catalog.json) یا Appwrite.
      * فایل‌های بدون کلید داخلی (آواتار، ویدیو، سفارشی‌ها) همیشه خارجی می‌مانند.
      */
+    fun candidateUrls(fileId: String): List<String> {
+        val key = ContentCatalog.keyFor(fileId)
+        // avatar/receipt و payloadهای عملیاتی public mirror نیستند؛ برای آن‌ها
+        // Appwrite تنها مبدأ مجاز است. محتوای manifest در حالت دستی دقیقاً یک
+        // origin و در FASTEST برنده سپس fallback دارد.
+        return if (key == null) listOf(externalUrl(fileId))
+        else ServerResolver.candidates(fileId, key)
+    }
+
     fun viewUrl(fileId: String): String =
-        ServerResolver.pick(fileId, ContentCatalog.keyFor(fileId))
+        candidateUrls(fileId).firstOrNull() ?: externalUrl(fileId)
 
     fun candidateIds(fileId: String): List<String> {
         if (fileId.isBlank()) return emptyList()

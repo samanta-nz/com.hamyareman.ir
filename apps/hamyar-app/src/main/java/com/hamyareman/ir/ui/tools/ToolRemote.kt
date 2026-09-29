@@ -25,7 +25,13 @@ object ToolRemote {
 
     fun fileId(toolId: String): String {
         val id = toolId.trim().lowercase().replace('_', '-')
-        return if (toolId in labs) "lab-${gradeToken()}-$id.html" else "tool-$id.html"
+        return if (id in labs) "lab-${gradeToken()}-$id.html" else "tool-$id.html"
+    }
+
+    /** آیا HTML همین ابزار برای edition این پایه در manifest دو سرور وجود دارد؟ */
+    fun isAvailable(toolId: String): Boolean {
+        val id = fileId(toolId)
+        return ContentCatalog.keyFor(id) != null
     }
 
     private fun plainDir(ctx: Context) = File(ctx.cacheDir, "hamyar-tools-plain").apply { mkdirs() }

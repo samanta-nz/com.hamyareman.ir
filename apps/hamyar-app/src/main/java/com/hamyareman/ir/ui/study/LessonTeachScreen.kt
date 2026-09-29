@@ -79,8 +79,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.Locale
 import kotlin.math.abs
 
@@ -223,6 +221,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     var durMs by remember { mutableLongStateOf(0L) }
     var loadedKey by remember { mutableStateOf<String?>(null) }
     var loadedLocal by remember { mutableStateOf(false) }
+    var loadedRemoteIndex by remember { mutableIntStateOf(0) }
 
     var activeIdx by remember {
         mutableIntStateOf(store.getString("teach_${packId}_track", "0").toIntOrNull()?.coerceIn(0, tracks.size - 1) ?: 0)
@@ -276,12 +275,12 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         }
     }
 
-    // خطایِ منبعِ محلی ⇒ یک‌بار تلاشِ بی‌صدا از سرور، برای همان ترک.
-    val serverRetried = remember { mutableStateOf(setOf<String>()) }
+    fun remoteUris(t: TeachTrack): List<String> =
+        StudyMedia.candidateUrls(StudyMedia.resolveFileId(t.fileId))
 
-    fun uriFor(t: TeachTrack, preferLocal: Boolean): String =
+    fun uriFor(t: TeachTrack, preferLocal: Boolean, remoteIndex: Int = 0): String =
         if (preferLocal && MediaVault.isVerified(context, t.cacheKey)) MediaVault.localUrl(context, t.cacheKey)
-        else StudyMedia.viewUrl(StudyMedia.resolveFileId(t.fileId))
+        else remoteUris(t).let { it.getOrElse(remoteIndex) { it.first() } }
 
     DisposableEffect(packId) {
         val p = ExoPlayer.Builder(context)
@@ -327,16 +326,23 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
 
             override fun onPlayerError(error: PlaybackException) {
                 val key = loadedKey ?: return
-                if (!loadedLocal || key in serverRetried.value) return
                 val t = tracks.firstOrNull { it.cacheKey == key } ?: return
-                serverRetried.value = serverRetried.value + key
+                val urls = remoteUris(t)
+                val next = if (loadedLocal) 0 else loadedRemoteIndex + 1
+                if (next !in urls.indices) {
+                    note = "پخش از سرور انتخاب‌شده ممکن نشد."
+                    return
+                }
+                val resumeAt = p.currentPosition.coerceAtLeast(posMs)
                 scope.launch {
-                    val uri = withContext(Dispatchers.IO) { uriFor(t, preferLocal = false) }
                     runCatching {
                         loadedLocal = false
-                        p.setMediaItem(MediaItem.Builder().setUri(uri).setMediaId(key).build())
+                        loadedRemoteIndex = next
+                        p.setMediaItem(MediaItem.Builder().setUri(urls[next]).setMediaId(key).build())
+                        if (resumeAt > 0) p.seekTo(resumeAt)
                         p.prepare()
                         p.playWhenReady = true
+                        if (next > 0) note = "پخش از سرور دوم ادامه پیدا کرد."
                     }
                 }
             }
@@ -371,6 +377,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         scope.launch {
             val uri = withContext(Dispatchers.IO) { uriFor(t, preferLocal = preferLocal) }
             loadedLocal = uri.startsWith("vault://")
+            loadedRemoteIndex = 0
             loadedKey = t.cacheKey
             lastSaveMs = 0L
             posMs = pos
@@ -578,7 +585,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                                     val remoteId = StudyMedia.resolveFileId(track.fileId)
                                     MediaVault.downloadEncrypted(
                                         context,
-                                        StudyMedia.viewUrl(remoteId),
+                                        StudyMedia.candidateUrls(remoteId),
                                         track.cacheKey,
                                     ) { done, total ->
                                         doneBytes = done
@@ -761,39 +768,10 @@ private class PdfUnavailable(message: String) : Exception(message)
 
 /** دانلود/اعتبارسنجی/بازکردن PDF — فقط روی IO صدا زده می‌شود. */
 private fun openTeachPdf(ctx: android.content.Context, fileId: String, onProgress: (Int) -> Unit): PdfRenderer {
-    val cacheDir = File(ctx.filesDir, "media/pdf-cache").apply { mkdirs() }
-    val target = File(cacheDir, fileId)
-    fun isValid(f: File) = f.length() > 1024 && runCatching {
-        f.inputStream().use { val h = ByteArray(5); it.read(h); String(h) == "%PDF-" }
-    }.getOrDefault(false)
-    if (!isValid(target)) {
-        target.delete()
-        val remoteId = StudyMedia.resolveFileId(fileId)
-        val conn = (URL(StudyMedia.viewUrl(remoteId)).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 15000; readTimeout = 30000; instanceFollowRedirects = true
-        }
-        conn.connect()
-        if (conn.responseCode !in 200..299) throw PdfUnavailable("دریافت PDF ممکن نشد (کد ${conn.responseCode}).")
-        val total = conn.contentLengthLong
-        val part = File(cacheDir, "$fileId.part")
-        conn.inputStream.use { input ->
-            java.io.FileOutputStream(part).use { out ->
-                val buf = ByteArray(64 * 1024)
-                var read: Int
-                var done = 0L
-                while (input.read(buf).also { read = it } > 0) {
-                    out.write(buf, 0, read); done += read
-                    if (total > 0) onProgress(((done * 100) / total).toInt())
-                }
-            }
-        }
-        if (!isValid(part)) {
-            part.delete()
-            throw PdfUnavailable("فایل PDF ناقص رسید؛ یک‌بار دیگر تلاش کن.")
-        }
-        if (!part.renameTo(target)) {
-            part.copyTo(target, overwrite = true); part.delete()
-        }
+    val target = try {
+        StudyPdfCache.obtain(ctx, fileId, onProgress)
+    } catch (error: Throwable) {
+        throw PdfUnavailable(error.message ?: "دریافت PDF ممکن نشد.")
     }
     val fd = ParcelFileDescriptor.open(target, ParcelFileDescriptor.MODE_READ_ONLY)
     return PdfRenderer(fd)

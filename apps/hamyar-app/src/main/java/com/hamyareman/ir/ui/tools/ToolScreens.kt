@@ -51,6 +51,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.profile.AppEdition
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -144,7 +145,7 @@ fun GeneralToolkitScreen(onBack: () -> Unit, onOpen: (String) -> Unit) = ToolHub
 @Composable
 fun MathToolkitScreen(onBack: () -> Unit, onOpen: (String) -> Unit) = ToolHubScreen(
     title = "جعبه‌ابزار ریاضی",
-    subtitle = "ماشین‌حساب‌های مهندسی برای تمرین‌های ریاضی نهم.",
+    subtitle = "ماشین‌حساب‌های مهندسی برای تمرین‌های ریاضی ${AppEdition.faShort}.",
     items = listOf(
         ToolCard("ti_nspire", "📐", "TI-Nspire CX II-T CAS", "ماشین‌حساب نموداری تگزاس اینسترومنتس"),
         ToolCard("casio991", "🔢", "CASIO fx-991CW", "کاسیو ClassWiz نسل CW")),

@@ -216,20 +216,31 @@ fun HomeScreen(nav: NavController) {
                 onOpenLeave = { nav.navigate(Screen.Leave.route) },
             )
 
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = HomeSide),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                ToolTile("🧰", "جعبه‌ابزار عمومی", Modifier.weight(1f)) { nav.navigate(Screen.GeneralToolkit.route) }
-                ToolTile("⚗️", "آزمایشگاه شیمی", Modifier.weight(1f)) { nav.navigate(Screen.ChemistryLab.route) }
-                ToolTile("🔬", "آزمایشگاه فیزیک", Modifier.weight(1f)) { nav.navigate(Screen.PhysicsLab.route) }
+            // آزمایشگاه فقط وقتی برای edition همین پایه فایل دوآدرسی واقعی دارد
+            // نمایش داده می‌شود؛ پایهٔ دیگر هرگز به آزمایشگاه نهم وصل نمی‌شود.
+            val toolTiles = buildList {
+                add(Triple("🧰", "جعبه‌ابزار عمومی", Screen.GeneralToolkit.route))
+                if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("chemistry")) {
+                    add(Triple("⚗️", "آزمایشگاه شیمی", Screen.ChemistryLab.route))
+                }
+                if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("physics")) {
+                    add(Triple("🔬", "آزمایشگاه فیزیک", Screen.PhysicsLab.route))
+                }
+                add(Triple("🧮", "جعبه‌ابزار ریاضی", Screen.MathToolkit.route))
+                if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("biology")) {
+                    add(Triple("🧬", "آزمایشگاه زیست‌شناسی", Screen.BiologyLab.route))
+                }
             }
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = HomeSide),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                ToolTile("🧮", "جعبه‌ابزار ریاضی", Modifier.weight(1f)) { nav.navigate(Screen.MathToolkit.route) }
-                ToolTile("🧬", "آزمایشگاه زیست‌شناسی", Modifier.weight(1f)) { nav.navigate(Screen.BiologyLab.route) }
+            toolTiles.chunked(3).forEach { row ->
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = HomeSide),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    row.forEach { tile ->
+                        ToolTile(tile.first, tile.second, Modifier.weight(1f)) { nav.navigate(tile.third) }
+                    }
+                    repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                }
             }
 
             HubCard(
