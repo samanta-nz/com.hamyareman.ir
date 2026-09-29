@@ -139,12 +139,15 @@ class WellnessCatalogTest {
     }
 
     @Test
-    fun `referenceImageUrl points to wellness-media bucket`() {
-        WellnessCatalog.all.forEach { move ->
+    fun `referenceImageUrl uses bundled approved yoga and exercise images`() {
+        (WellnessCatalog.yoga + WellnessCatalog.exercise).forEach { move ->
             assertTrue(
-                "move ${move.slug} باید referenceImageUrl غیرخالی داشته باشد",
-                move.referenceImageUrl.isNotBlank(),
+                "move ${move.slug} باید تصویر تأییدشدهٔ داخل برنامه داشته باشد، ولی url=${move.referenceImageUrl}",
+                move.referenceImageUrl.startsWith("file:///android_asset/practice-covers/"),
             )
+            assertTrue("move ${move.slug} باید تصویر JPG داشته باشد", move.referenceImageUrl.endsWith(".jpg"))
+        }
+        (WellnessCatalog.breathing + WellnessCatalog.learning).forEach { move ->
             assertTrue(
                 "move ${move.slug} باید به wellness-media اشاره کند، ولی url=${move.referenceImageUrl}",
                 move.referenceImageUrl.contains("wellness-media"),
