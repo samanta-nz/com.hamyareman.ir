@@ -25,20 +25,25 @@ def total_size(response: requests.Response) -> int:
 
 
 def probe(url: str, expected: int) -> dict[str, object]:
-    try:
-        with requests.get(
-            url,
-            headers={"Range": "bytes=0-7", "Accept-Encoding": "identity"},
-            stream=True,
-            timeout=(10, 45),
-            allow_redirects=True,
-        ) as response:
-            prefix = next(response.iter_content(8), b"")[:8]
-            size = total_size(response)
-            ok = response.status_code in range(200, 300) and prefix != b"" and size == expected
-            return {"ok": ok, "status": response.status_code, "size": size, "prefix": prefix.hex()}
-    except requests.RequestException as error:
-        return {"ok": False, "status": 0, "size": -1, "error": type(error).__name__}
+    last: dict[str, object] = {"ok": False, "status": 0, "size": -1}
+    for _ in range(3):
+        try:
+            with requests.get(
+                url,
+                headers={"Range": "bytes=0-7", "Accept-Encoding": "identity"},
+                stream=True,
+                timeout=(10, 45),
+                allow_redirects=True,
+            ) as response:
+                prefix = next(response.iter_content(8), b"")[:8]
+                size = total_size(response)
+                ok = response.status_code in range(200, 300) and prefix != b"" and size == expected
+                last = {"ok": ok, "status": response.status_code, "size": size, "prefix": prefix.hex()}
+                if ok:
+                    return last
+        except requests.RequestException as error:
+            last = {"ok": False, "status": 0, "size": -1, "error": type(error).__name__}
+    return last
 
 
 def check(entry: dict[str, object]) -> dict[str, object]:
@@ -76,6 +81,10 @@ def main() -> int:
     if args.output:
         Path(args.output).write_text(text + "\n")
     print(text)
+    for item in failed[:50]:
+        compact = json.dumps(item, ensure_ascii=False, separators=(",", ":"))
+        compact = compact.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::warning file=apps/hamyar-app/src/main/assets/content/server-map.json,title=public mirror probe::{compact}")
     return 1 if failed else 0
 
 
