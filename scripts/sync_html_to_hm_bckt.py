@@ -267,7 +267,9 @@ def main() -> int:
                     skipped += 1
                     print(f"[{number}/{len(entries)}] SKIP {fid} size={present.get('sizeOriginal')}", flush=True)
                     continue
-            local = temp_dir / fid
+            # Appwrite validates the uploaded filename extension independently of
+            # fileId. Catalog IDs such as `amz-01` intentionally have no suffix.
+            local = temp_dir / (fid if fid.lower().endswith((".html", ".htm", ".hmk1")) else fid + ".html")
             try:
                 with requests.get(
                     internal_url(key),
