@@ -280,7 +280,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
 
     fun uriFor(t: TeachTrack, preferLocal: Boolean, remoteIndex: Int = 0): String =
         if (preferLocal && MediaVault.isVerified(context, t.cacheKey)) MediaVault.localUrl(context, t.cacheKey)
-        else remoteUris(t).let { it.getOrElse(remoteIndex) { it.first() } }
+        else remoteUris(t).let { urls -> urls.getOrElse(remoteIndex) { urls.first() } }
 
     DisposableEffect(packId) {
         val p = ExoPlayer.Builder(context)

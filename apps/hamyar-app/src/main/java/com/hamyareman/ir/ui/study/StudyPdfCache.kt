@@ -1,6 +1,8 @@
 package com.hamyareman.ir.ui.study
 
 import android.content.Context
+import com.hamyareman.ir.ui.net.NetState
+import com.hamyareman.ir.ui.net.ResilientHttp
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -47,21 +49,22 @@ object StudyPdfCache {
                 val offset = part.takeIf { it.isFile }?.length() ?: 0L
                 var conn: java.net.HttpURLConnection? = null
                 try {
-                    conn = ResilientHttp.open(
+                    val active = ResilientHttp.open(
                         url,
                         range = if (offset > 0) "bytes=$offset-" else null,
                         connectMs = 15_000,
                         readMs = 30_000,
                         attempts = 3,
                     )
-                    val status = conn.responseCode
+                    conn = active
+                    val status = active.responseCode
                     if (status !in 200..299) throw IOException("HTTP $status")
                     val append = offset > 0 && status == 206
                     if (offset > 0 && !append) part.delete()
                     val base = if (append) offset else 0L
-                    val total = conn.contentLengthLong.let { if (it > 0) base + it else -1L }
+                    val total = active.contentLengthLong.let { if (it > 0) base + it else -1L }
                     FileOutputStream(part, append).use { output ->
-                        conn.inputStream.use { input ->
+                        active.inputStream.use { input ->
                             val buffer = ByteArray(64 * 1024)
                             var written = base
                             while (true) {
