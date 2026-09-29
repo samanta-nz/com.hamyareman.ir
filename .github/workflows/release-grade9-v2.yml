@@ -177,7 +177,7 @@ jobs:
           ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
           ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
         run: |
-          set -euo pipefail
+          set +e
           FINAL="apk/grade9/$ASSET"
           python3 scripts/publish_public_s3_object.py \
             --file "$APK" \
@@ -186,7 +186,22 @@ jobs:
             --public-url "$ARVAN_PUBLIC/$FINAL" \
             --content-type application/vnd.android.package-archive \
             --metadata grade=grade9 \
-            --metadata version="$VERSION_NAME"
+            --metadata version="$VERSION_NAME" 2>&1 | tee /tmp/arvan-apk-publish.log
+          code=${PIPESTATUS[0]}
+          {
+            echo '## APK internal-server publish'
+            echo '```text'
+            tail -n 100 /tmp/arvan-apk-publish.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" -ne 0 ]; then
+            line=$(tail -n 1 /tmp/arvan-apk-publish.log)
+            line=${line//'%'/'%25'}
+            line=${line//$'\r'/'%0D'}
+            line=${line//$'\n'/'%0A'}
+            echo "::error title=APK internal-server publish::$line"
+          fi
+          exit "$code"
 
       - name: Atomically announce forced version 2.1 in HM_DB
         env:
