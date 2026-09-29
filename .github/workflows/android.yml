@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, arena/01a0ea05-com-hamyareman-ir]
   workflow_dispatch:
 
 # یک جاب، فقط نهمِ دیباگ — بدون ادمین/R8/lint/تست تکراری تا سهمیهٔ Actions زود تمام نشود.
