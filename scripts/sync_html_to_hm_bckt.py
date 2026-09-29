@@ -283,13 +283,20 @@ def main() -> int:
                     raise RuntimeError("source is not an HMK1 envelope")
                 if present is not None:
                     storage.delete_file(bucket_id=TARGET_BUCKET, file_id=fid)
-                result = storage.create_file(
+                storage.create_file(
                     bucket_id=TARGET_BUCKET,
                     file_id=fid,
                     file=InputFile.from_path(str(local)),
                     permissions=[Permission.read(Role.any())],
                 )
-                actual = int(getattr(result, "size_original", 0) or 0)
+                encoded_id = urllib.parse.quote(fid, safe="")
+                metadata_response = requests.get(
+                    f"{TARGET_ENDPOINT}/storage/buckets/{TARGET_BUCKET}/files/{encoded_id}",
+                    headers=target_headers(),
+                    timeout=(20, 60),
+                )
+                metadata_response.raise_for_status()
+                actual = int(metadata_response.json().get("sizeOriginal") or 0)
                 if actual != size:
                     raise RuntimeError(f"target size mismatch {actual}/{size}")
                 status, wrapped = public_target_probe(fid)
