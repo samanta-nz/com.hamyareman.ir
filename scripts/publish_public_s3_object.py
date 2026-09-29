@@ -99,6 +99,45 @@ def put_file(
         raise RuntimeError(f"presigned PUT HTTP {response.status_code}: {detail}")
 
 
+def preflight_put_headers(s3: Any, bucket: str) -> None:
+    """Find unsupported PUT headers with five one-byte requests, not a full APK."""
+    root = f"staging-v2/preflight-{uuid.uuid4().hex}"
+    variants: list[tuple[str, dict[str, Any], dict[str, str]]] = [
+        ("minimal", {}, {}),
+        ("content-type", {"ContentType": "application/octet-stream"}, {"Content-Type": "application/octet-stream"}),
+        ("cache-control", {"CacheControl": "no-store"}, {"Cache-Control": "no-store"}),
+        ("metadata", {"Metadata": {"probe": "1"}}, {"x-amz-meta-probe": "1"}),
+        (
+            "combined",
+            {
+                "ContentType": "application/octet-stream",
+                "CacheControl": "no-store",
+                "Metadata": {"probe": "1"},
+            },
+            {
+                "Content-Type": "application/octet-stream",
+                "Cache-Control": "no-store",
+                "x-amz-meta-probe": "1",
+            },
+        ),
+    ]
+    results: list[str] = []
+    for index, (label, extras, headers) in enumerate(variants):
+        key = f"{root}-{index}"
+        params = {"Bucket": bucket, "Key": key, **extras}
+        url = s3.generate_presigned_url("put_object", Params=params, ExpiresIn=300)
+        response = requests.put(url, data=b"x", headers=headers, timeout=(20, 60))
+        results.append(f"{label}={response.status_code}")
+        if response.status_code in range(200, 300):
+            try:
+                s3.delete_object(Bucket=bucket, Key=key)
+            except Exception:
+                pass
+    print("S3 one-byte PUT preflight " + ", ".join(results))
+    if not all(item.endswith("=200") for item in results):
+        raise RuntimeError("S3 PUT header preflight failed: " + ", ".join(results))
+
+
 def public_probe(url: str, size: int) -> tuple[bool, str]:
     """Read at most one anonymous byte while also checking the total size."""
     try:
@@ -248,7 +287,8 @@ def main() -> int:
             )
 
     if not matched:
-        staging = f".staging/{uuid.uuid4().hex}/{args.key}"
+        preflight_put_headers(s3, args.bucket)
+        staging = f"staging-v2/{uuid.uuid4().hex}/{Path(args.key).name}"
         try:
             put_file(
                 s3,
