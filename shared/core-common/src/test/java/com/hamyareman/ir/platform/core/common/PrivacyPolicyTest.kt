@@ -40,8 +40,8 @@ class PrivacyPolicyTest {
     fun `server tables never include a private table`() {
         // جدول‌های خصوصی هیچ‌وقت در appwrite.json ساخته نمی‌شوند.
         assertEquals(5, PrivacyPolicy.neverSyncTables.size)
-        // v1.77: جدولِ `subscription_orders` (صف پرداخت/استرداد) ⇒ ۲۸ جدول.
-        assertEquals(28, TableIds.serverTables.size)
+        // نسخهٔ ۲٫۰: ۲۳ جدول پایه + ۷ جدول runtime.
+        assertEquals(30, TableIds.serverTables.size)
         assertTrue(TableIds.SUBSCRIPTION_ORDERS in TableIds.serverTables)
         assertTrue(TableIds.serverTables.none { PrivacyPolicy.isNeverSynced(it) })
         assertEquals(PrivacyPolicy.neverSyncTables, TableIds.deviceOnlyTables)

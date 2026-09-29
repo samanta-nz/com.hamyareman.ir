@@ -22,8 +22,9 @@ import requests
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MAP = ROOT / "apps/hamyar-app/src/main/assets/content/server-map.json"
-APPWRITE_ENDPOINT = os.getenv("APPWRITE_ENDPOINT", "https://fra.cloud.appwrite.io/v1").rstrip("/")
-APPWRITE_PROJECT = os.getenv("APPWRITE_PROJECT_ID", "6a9d59e3002751cc3ea8")
+# مبدأ صوت‌های قدیمی فقط هنگام نبود مقصد خوانده می‌شود؛ اپ runtime به آن وابسته نیست.
+APPWRITE_ENDPOINT = os.getenv("SOURCE_APPWRITE_ENDPOINT", "https://fra.cloud.appwrite.io/v1").rstrip("/")
+APPWRITE_PROJECT = os.getenv("SOURCE_APPWRITE_PROJECT_ID", "6a9d59e3002751cc3ea8")
 APPWRITE_BUCKET = os.getenv("APPWRITE_BUCKET_ID", "6aa1eaae00303400117b")
 ARVAN_ENDPOINT = os.getenv("ARVAN_ENDPOINT", "https://s3.ir-thr-at1.arvanstorage.ir")
 ARVAN_REGION = os.getenv("ARVAN_REGION", "ir-thr-at1")
@@ -56,42 +57,27 @@ def query(method: str, *values: Any) -> str:
 
 
 def appwrite_headers() -> dict[str, str]:
-    key = os.getenv("APPWRITE_API_KEY", "")
+    key = os.getenv("SOURCE_APPWRITE_API_KEY") or os.getenv("APPWRITE_API_KEY", "")
     if not key:
         raise RuntimeError("missing APPWRITE_API_KEY")
     return {
-        "X-Appwrite-Project": os.getenv("APPWRITE_PROJECT_ID", APPWRITE_PROJECT),
+        "X-Appwrite-Project": os.getenv("SOURCE_APPWRITE_PROJECT_ID", APPWRITE_PROJECT),
         "X-Appwrite-Key": key,
         "Accept-Encoding": "identity",
     }
 
 
-def list_appwrite() -> dict[str, dict[str, Any]]:
-    endpoint = os.getenv("APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
-    bucket = os.getenv("APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
-    output: dict[str, dict[str, Any]] = {}
-    offset = 0
-    total = None
-    while total is None or offset < total:
-        params = [("queries[]", query("limit", 100)), ("queries[]", query("offset", offset))]
-        response = requests.get(
-            f"{endpoint}/storage/buckets/{bucket}/files",
-            headers=appwrite_headers(),
-            params=params,
-            timeout=(20, 90),
-        )
-        response.raise_for_status()
-        payload = response.json()
-        rows = payload.get("files") or []
-        total = int(payload.get("total") or 0)
-        for row in rows:
-            output[str(row["$id"])] = row
-        if not rows:
-            break
-        offset += len(rows)
-    if total is not None and len(output) != total:
-        raise RuntimeError(f"incomplete Appwrite listing: {len(output)}/{total}")
-    return output
+def get_appwrite_file(file_id: str) -> dict[str, Any]:
+    """Fetch source metadata only after S3 HEAD proves an upload is needed."""
+    endpoint = os.getenv("SOURCE_APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
+    bucket = os.getenv("SOURCE_APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
+    response = requests.get(
+        f"{endpoint}/storage/buckets/{bucket}/files/{file_id}",
+        headers=appwrite_headers(),
+        timeout=(20, 90),
+    )
+    response.raise_for_status()
+    return response.json()
 
 
 def load_manifest(path: Path) -> list[dict[str, Any]]:
@@ -157,9 +143,9 @@ def hash_s3(s3: Any, key: str) -> str:
 
 
 def download_appwrite(file_id: str, destination: Path, expected_size: int) -> tuple[int, str]:
-    endpoint = os.getenv("APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
-    bucket = os.getenv("APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
-    project = os.getenv("APPWRITE_PROJECT_ID", APPWRITE_PROJECT)
+    endpoint = os.getenv("SOURCE_APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
+    bucket = os.getenv("SOURCE_APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
+    project = os.getenv("SOURCE_APPWRITE_PROJECT_ID", APPWRITE_PROJECT)
     url = f"{endpoint}/storage/buckets/{bucket}/files/{file_id}/view?project={project}"
     digest = hashlib.sha256()
     size = 0
@@ -239,59 +225,54 @@ def main() -> int:
     args = parser.parse_args()
 
     manifest = load_manifest(args.manifest)
-    appwrite = list_appwrite()
-    selected = [entry for entry in manifest if not args.only or entry["id"] in set(args.only)]
-    missing = [entry["id"] for entry in selected if entry["id"] not in appwrite]
-    if missing:
-        raise RuntimeError(f"manifest IDs absent from Appwrite: {missing}")
-    print(f"plan public files={len(selected)} bytes={sum(int(appwrite[e['id']].get('sizeOriginal') or 0) for e in selected)}")
+    only = set(args.only)
+    selected = [entry for entry in manifest if not only or entry["id"] in only]
+    if only and len(selected) != len(only):
+        found = {entry["id"] for entry in selected}
+        raise RuntimeError(f"unknown manifest IDs: {sorted(only - found)}")
+    print(f"plan public files={len(selected)} bytes={sum(int(e.get('size') or 0) for e in selected)}")
     if args.dry_run:
         for entry in selected:
-            print("DRY", entry["id"], "->", entry["key"])
+            print("DRY", entry["id"], "->", entry["key"], entry.get("size", 0))
         return 0
 
     s3 = s3_client()
-    published = skipped = repaired = failed = 0
+    published = skipped = failed = 0
     with tempfile.TemporaryDirectory(prefix="hamyar-mirror-") as temporary:
         work = Path(temporary)
         for index, entry in enumerate(selected, 1):
             file_id = entry["id"]
             key = entry["key"]
-            row = appwrite[file_id]
-            expected = int(row.get("sizeOriginal") or entry.get("size") or 0)
-            mime = row.get("mimeType") or entry.get("mime") or mimetypes.guess_type(file_id)[0] or "application/octet-stream"
+            manifest_size = int(entry.get("size") or 0)
             target_head = head(s3, key)
+            target_size = int((target_head or {}).get("ContentLength") or -1)
+            target_meta = {str(k).lower(): str(v) for k, v in ((target_head or {}).get("Metadata") or {}).items()}
+            # مهم: قبل از هر تماس با Appwrite قدیمی، وجود و اندازهٔ مقصد را بررسی کن.
+            # sha256 متادیتا (اگر موجود باشد) نیز ثبت می‌شود؛ برای فایل هم‌اندازه هیچ
+            # GET پرهزینه‌ای از هیچ‌کدام از دو سرویس انجام نمی‌دهیم.
+            if not args.force and target_head and manifest_size > 0 and target_size == manifest_size:
+                marker = target_meta.get("sha256") or str(target_head.get("ETag") or "").strip('"')
+                skipped += 1
+                print(f"[{index}/{len(selected)}] SKIP existing-size {file_id} -> {key} ({target_size}, hash={marker[:16] or 'etag-unavailable'})")
+                continue
             try:
+                # فقط فایل غایب/ناقص یک بار از مبدأ خوانده می‌شود؛ retry سطح برنامه نداریم.
+                row = get_appwrite_file(file_id)
+                expected = int(row.get("sizeOriginal") or manifest_size)
+                if manifest_size and expected != manifest_size:
+                    raise RuntimeError(f"source/manifest size mismatch {file_id}: {expected}/{manifest_size}")
+                mime = row.get("mimeType") or entry.get("mime") or mimetypes.guess_type(file_id)[0] or "application/octet-stream"
                 source = work / (hashlib.sha256(file_id.encode()).hexdigest() + ".bin")
                 size, source_sha = download_appwrite(file_id, source, expected)
-                metadata = {str(k).lower(): str(v) for k, v in ((target_head or {}).get("Metadata") or {}).items()}
-                if not args.force and target_head and int(target_head.get("ContentLength") or -1) == size:
-                    target_sha = metadata.get("sha256") or hash_s3(s3, key)
-                    if target_sha == source_sha:
-                        if metadata.get("sha256") != source_sha:
-                            copy_with_metadata(s3, key, key, size, source_sha, mime)
-                            repaired += 1
-                            print(f"[{index}/{len(selected)}] ACL/META {file_id} -> {key}")
-                        else:
-                            # Re-apply public read: fixes the eight formerly private HTMLs.
-                            try:
-                                s3.put_object_acl(Bucket=os.getenv("ARVAN_BUCKET", ARVAN_BUCKET), Key=key, ACL="public-read")
-                            except Exception:
-                                pass
-                            skipped += 1
-                            print(f"[{index}/{len(selected)}] SKIP {file_id} -> {key}")
-                        source.unlink(missing_ok=True)
-                        continue
                 atomic_publish(s3, source, key, size, source_sha, mime)
                 source.unlink(missing_ok=True)
                 published += 1
-                print(f"[{index}/{len(selected)}] OK {file_id} -> {key} ({size})")
+                print(f"[{index}/{len(selected)}] OK {file_id} -> {key} ({size}, sha256={source_sha})")
             except Exception as exc:
                 failed += 1
                 print(f"[{index}/{len(selected)}] FAIL {file_id}: {type(exc).__name__}: {str(exc)[:240]}")
-    print(f"done published={published} repaired={repaired} skipped={skipped} failed={failed}")
+    print(f"done published={published} skipped={skipped} failed={failed}")
     return 0 if failed == 0 else 1
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

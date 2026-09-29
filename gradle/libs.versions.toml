@@ -8,12 +8,14 @@ activityCompose = "1.13.0"
 composeBom = "2026.08.00"    # material3 1.4.0 / ui 1.12.0 / icons 1.7.8
 navigationCompose = "2.9.3"
 coroutines = "1.10.2"
-appwrite = "27.1.0"          # TablesDB (نه Collections)
+appwrite = "28.0.0"          # Native ID-token sessions + TablesDB
 webrtc = "1.3.10"
 datastore = "1.1.7"
 biometric = "1.1.0"           # آخرین نسخه‌ی پایدار androidx.biometric (بررسی‌شده از Google Maven)
 appcompat = "1.8.0"           # برای تم بیومتریک در API < 28 (dialog سازگاری)
 media3 = "1.11.0"             # پخش صوت در پس‌زمینه (کتاب صوتی)
+credentials = "1.6.0"
+googleid = "1.2.1"
 junit = "4.13.2"
 
 [libraries]
@@ -38,6 +40,9 @@ androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplaye
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 # Coil برای بارگذاری تصاویر مرجع (پرامپت ۰۲: ۴۳ تصویر در wellness)
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }

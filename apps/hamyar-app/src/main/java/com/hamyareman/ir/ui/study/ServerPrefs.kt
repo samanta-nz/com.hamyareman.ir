@@ -65,11 +65,11 @@ object ServerPrefs {
         }
     }
 
-    fun saveBenchmark(external: StoredProbe, internal: StoredProbe, fastest: Origin?) {
+    fun saveBenchmark(external: StoredProbe?, internal: StoredProbe, fastest: Origin?) {
         prefs?.edit()
-            ?.putBoolean(KEY_EXT_OK, external.ok)
-            ?.putLong(KEY_EXT_LATENCY, external.latencyMs)
-            ?.putLong(KEY_EXT_SPEED, external.bytesPerSecond)
+            ?.putBoolean(KEY_EXT_OK, external?.ok ?: false)
+            ?.putLong(KEY_EXT_LATENCY, external?.latencyMs ?: 0L)
+            ?.putLong(KEY_EXT_SPEED, external?.bytesPerSecond ?: 0L)
             ?.putBoolean(KEY_INT_OK, internal.ok)
             ?.putLong(KEY_INT_LATENCY, internal.latencyMs)
             ?.putLong(KEY_INT_SPEED, internal.bytesPerSecond)

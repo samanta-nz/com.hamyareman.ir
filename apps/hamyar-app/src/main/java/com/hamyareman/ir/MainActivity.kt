@@ -26,6 +26,7 @@ import com.hamyareman.ir.platform.core.security.AppLock
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.di.AppContainer
 import com.hamyareman.ir.ui.appearance.LocalUiPrefs
+import com.hamyareman.ir.ui.auth.GoogleNativeSignIn
 import com.hamyareman.ir.ui.auth.LoginScreen
 import com.hamyareman.ir.ui.navigation.ZahraNavHost
 import kotlinx.coroutines.launch
@@ -123,6 +124,7 @@ class MainActivity : FragmentActivity() {
             var loginLoading by remember { mutableStateOf(false) }
             var loginError by remember { mutableStateOf<String?>(null) }
             var loginNotice by remember { mutableStateOf<String?>(null) }
+            var verificationRequired by remember { mutableStateOf(false) }
 
             // v1.25 — «مرا به خاطر بسپار»: سشنِ معتبر = ورود مستقیم به اپ؛
             // صفحه‌ی لاگین فقط وقتی سشنی نیست. (قانون قدیمیِ «لاگین هر اجرا» حذف شد.)
@@ -230,80 +232,101 @@ class MainActivity : FragmentActivity() {
                                 loading = loginLoading,
                                 error = loginError,
                                 notice = loginNotice,
-                                onSignIn = { id, pw, rem ->
+                                verificationRequired = verificationRequired,
+                                onSignIn = { email, password ->
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.signInWithIdentifier(id, pw, rem)) {
+                                        when (val r = container.auth.signIn(email, password)) {
                                             is AppResult.Ok -> loggedIn.value = true
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onSignUp = { nm, em, un, pw, rem ->
+                                onSignUp = { name, email, password ->
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.signUpWithUsername(nm, em, un, pw, rem)) {
-                                            is AppResult.Ok -> loggedIn.value = true
-                                            is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
-                                        }
-                                    }
-                                },
-                                onRecover = { id ->
-                                    loginLoading = true; loginError = null; loginNotice = null
-                                    scope.launch {
-                                        when (val r = container.auth.requestRecovery(id)) {
+                                        when (val created = container.auth.signUp(name, email, password)) {
+                                            is AppResult.Err -> {
+                                                loginError = created.error.userMessage
+                                                loginLoading = false
+                                            }
                                             is AppResult.Ok -> {
-                                                loginNotice = "ایمیلِ بازیابی فرستاده شد. لینکِ داخلش را کپی کن و در اپ بچسبان."
+                                                verificationRequired = true
+                                                when (val sent = container.auth.requestEmailVerification()) {
+                                                    is AppResult.Ok -> loginNotice = "ایمیل تأیید فرستاده شد. لینک داخل ایمیل را کپی کن."
+                                                    is AppResult.Err -> loginNotice = "حساب ساخته شد. اگر ایمیل نرسید، «ارسال دوباره» را بزن."
+                                                }
+                                                loginLoading = false
+                                            }
+                                        }
+                                    }
+                                },
+                                onRecover = { email ->
+                                    loginLoading = true; loginError = null; loginNotice = null
+                                    scope.launch {
+                                        when (val r = container.auth.requestRecovery(email)) {
+                                            is AppResult.Ok -> {
+                                                loginNotice = "ایمیل بازیابی فرستاده شد. لینک داخل ایمیل یک ساعت اعتبار دارد."
                                                 loginLoading = false
                                             }
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onRecoverComplete = { link, pw ->
+                                onRecoverComplete = { link, password ->
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.completeRecovery(link, pw)) {
+                                        when (val r = container.auth.completeRecovery(link, password)) {
                                             is AppResult.Ok -> {
-                                                // لینکِ بازیابی فقط رمز را عوض می‌کند (سشن نمی‌سازد)؛
-                                                // کاربر با همان رمزِ تازه از فرمِ ورود وارد می‌شود.
-                                                loginNotice = "رمز عوض شد ✅ حالا با نام کاربری و رمز تازه وارد شو."
+                                                loginNotice = "رمز با موفقیت تغییر کرد؛ اکنون وارد حساب شو."
                                                 loginLoading = false
                                             }
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onSendOtp = { id ->
+                                onVerificationResend = {
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.sendOtp(id)) {
+                                        when (val r = container.auth.requestEmailVerification()) {
+                                            is AppResult.Ok -> { loginNotice = "ایمیل تأیید دوباره فرستاده شد."; loginLoading = false }
+                                            is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
+                                        }
+                                    }
+                                },
+                                onVerificationComplete = { link ->
+                                    loginLoading = true; loginError = null; loginNotice = null
+                                    scope.launch {
+                                        when (val r = container.auth.completeEmailVerification(link)) {
                                             is AppResult.Ok -> {
-                                                loginNotice = "کد ۶ رقمی به ایمیلت فرستاده شد (۱۵ دقیقه اعتبار دارد)."
-                                                loginLoading = false
+                                                verificationRequired = false
+                                                loggedIn.value = true
                                             }
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onSignInOtp = { code, rem ->
-                                    loginLoading = true; loginError = null; loginNotice = null
-                                    scope.launch {
-                                        when (val r = container.auth.signInWithOtp(code, rem)) {
-                                            is AppResult.Ok -> loggedIn.value = true
-                                            is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
-                                        }
-                                    }
+                                onVerificationContinue = {
+                                    verificationRequired = false
+                                    loggedIn.value = true
                                 },
                                 onGoogle = {
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.signInWithGoogle(activity)) {
+                                        val token = runCatching {
+                                            GoogleNativeSignIn.idToken(activity, BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                                        }.getOrElse {
+                                            loginError = it.message ?: "انتخاب حساب گوگل انجام نشد."
+                                            loginLoading = false
+                                            return@launch
+                                        }
+                                        when (val r = container.auth.signInWithGoogleIdToken(token)) {
                                             is AppResult.Ok -> loggedIn.value = true
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
-                                })
+                                },
+                            )
 
                             // ۱.۵) وارد شده ولی پروفایل دانش‌آموز ندارد → فرم ثبت‌نام (یک‌بار).
                             loggedIn.value == true && profileNeeded.value == true -> {

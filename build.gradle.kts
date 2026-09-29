@@ -39,11 +39,13 @@ fun appwriteConfig(propertyKey: String, envKey: String, default: String): String
 
 // این سه مقدار در build.gradle.kts هر دو اپ برای BuildConfig استفاده می‌شوند.
 extra["resolvedAppwriteEndpoint"] =
-    appwriteConfig("appwrite.endpoint", "APPWRITE_ENDPOINT", "https://fra.cloud.appwrite.io/v1")
+    appwriteConfig("appwrite.endpoint", "APPWRITE_ENDPOINT", "https://sgp.cloud.appwrite.io/v1")
 extra["resolvedAppwriteProjectId"] =
-    appwriteConfig("appwrite.projectId", "APPWRITE_PROJECT_ID", "")
+    appwriteConfig("appwrite.projectId", "APPWRITE_PROJECT_ID", "6abb134a002025222005")
 extra["resolvedAppwriteDatabaseId"] =
-    appwriteConfig("appwrite.databaseId", "APPWRITE_DATABASE_ID", "main_db")
+    appwriteConfig("appwrite.databaseId", "APPWRITE_DATABASE_ID", "6abb238d000d05730d10")
+extra["resolvedGoogleWebClientId"] =
+    appwriteConfig("google.webClientId", "GOOGLE_WEB_CLIENT_ID", "")
 
 if ((extra["resolvedAppwriteProjectId"] as String).isBlank()) {
     logger.lifecycle(

@@ -9,7 +9,7 @@ package com.hamyareman.ir.platform.core.common
  */
 object TableIds {
     /** نام دیتابیس — از `appwrite.databaseId` در local.properties می‌آید و این مقدار پیش‌فرض است. */
-    const val DATABASE = "ZahraDB"
+    const val DATABASE = "6abb238d000d05730d10"
 
     // --- هویت و پیوند ---
     const val PROFILES = "profiles"
@@ -77,17 +77,17 @@ object TableIds {
     const val WELLNESS_LOGS = "wellness_logs"
 
     /**
-     * همه‌ی جداولی که واقعاً در Appwrite ساخته می‌شوند
-     * (مطابق `backend/appwrite.json` — ۲۸ جدول؛ `subscription_orders` برای
-     * صف پرداخت/استرداد). شمارِ دقیق را `PrivacyPolicyTest` نگهبانی می‌کند.
+     * همه‌ی جداولی که واقعاً در Appwrite ساخته می‌شوند.
+     * snapshot تاریخی ۲۳ جدول دارد و provisioning نسخهٔ ۲٫۰ هفت جدول runtime را
+     * نیز می‌سازد؛ شمار دقیق را `PrivacyPolicyTest` نگهبانی می‌کند.
      */
     val serverTables: Set<String> = setOf(
-        PROFILES, USER_SETTINGS, FATHER_LINKS, PAIRING_CODES,
+        PROFILES, STUDENT_PROFILES, USER_SETTINGS, FATHER_LINKS, PAIRING_CODES,
         FATHER_MESSAGES, ALBUM_ITEMS, CALL_SESSIONS, CALL_SIGNALS,
         WEEKLY_SUMMARIES, ROUTINE_BLOCKS, WATER_LOGS, EXERCISE_LOGS, BADGES,
         LESSONS, QUIZZES, RECIPES, EXERCISES, LEARNING_NODES, ART_PROMPTS,
         LESSON_MEDIA_PROGRESS, WELLNESS_MOVES, SKETCH_REFERENCES, WELLNESS_LOGS,
-        STUDY_PROGRESS, LESSON_NOTES, APP_STATE, USERS, SUBSCRIPTION_ORDERS,
+        STUDY_PROGRESS, LESSON_NOTES, APP_STATE, USERS, SUBSCRIPTION_ORDERS, INSTALLMENTS,
     )
 
     /** جدول‌های «فقط روی دستگاه» — در سرور هیچ سطری ندارند و ساخته هم نمی‌شوند. */

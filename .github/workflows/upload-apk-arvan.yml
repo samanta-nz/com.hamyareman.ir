@@ -11,7 +11,7 @@ on:
       asset:
         description: 'نام دقیق فایل در release ci-apk'
         required: true
-        default: 'hamyar-grade9-1.98-debug.apk'
+        default: 'hamyar-grade9-2.0.apk'
 
 jobs:
   upload:

@@ -1,0 +1,307 @@
+name: Release Hamyar grade 9 v2.0
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-hamyar-grade9-v2
+  cancel-in-progress: false
+
+env:
+  APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+  APPWRITE_PROJECT_ID: 6abb134a002025222005
+  APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+  APPWRITE_DATABASE_NAME: HM_DB
+  GRADE_ID: grade9
+  PACKAGE: com.hamyareman.p09
+  VERSION_CODE: '200'
+  VERSION_NAME: '2.0'
+  ROW_ID: app_release_grade9
+  ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
+  ARVAN_REGION: ir-thr-at1
+  ARVAN_BUCKET: hamyar-e-man
+  ARVAN_PUBLIC: https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade nine 2.0')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install release tooling
+        run: pip install --quiet requests boto3
+
+      - name: Resolve Google Web client ID without exposing credentials
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          CONFIGURED_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          VARIABLE_GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          from urllib.parse import parse_qs, urlparse
+          import requests
+
+          value=(os.environ.get('CONFIGURED_GOOGLE_WEB_CLIENT_ID') or os.environ.get('VARIABLE_GOOGLE_WEB_CLIENT_ID') or '').strip()
+          endpoint=os.environ['APPWRITE_ENDPOINT'].rstrip('/')
+          project=os.environ['APPWRITE_PROJECT_ID']
+          key=os.environ.get('APPWRITE_API_KEY','').strip()
+          headers={'X-Appwrite-Project':project, 'X-Appwrite-Key':key} if key else {}
+
+          # Project API first: newer Appwrite versions can expose native public IDs.
+          if not value and key:
+              for path in ('/project/oauth2/google','/project/oauth2'):
+                  response=requests.get(endpoint+path,headers=headers,timeout=45)
+                  if not response.ok:
+                      continue
+                  data=response.json()
+                  candidates=[]
+                  def walk(node, parent=''):
+                      if isinstance(node,dict):
+                          provider=str(node.get('$id') or node.get('id') or node.get('provider') or parent).lower()
+                          for k,v in node.items():
+                              key_name=k.lower()
+                              if isinstance(v,str) and v.endswith('.apps.googleusercontent.com') and ('google' in provider or 'client' in key_name or 'native' in key_name):
+                                  candidates.append(v)
+                              else: walk(v,provider)
+                      elif isinstance(node,list):
+                          for item in node: walk(item,parent)
+                  walk(data)
+                  if candidates:
+                      value=candidates[0]
+                      break
+
+          # Browser provider client ID is public in Google's authorization Location.
+          if not value:
+              callback=f'appwrite-callback-{project}://oauth'
+              response=requests.get(
+                  endpoint+'/account/sessions/oauth2/google',
+                  params={'project':project,'success':callback,'failure':callback},
+                  allow_redirects=False,timeout=45,
+              )
+              location=response.headers.get('location','')
+              value=(parse_qs(urlparse(location).query).get('client_id') or [''])[0]
+
+          if not value.endswith('.apps.googleusercontent.com'):
+              raise SystemExit('GOOGLE_WEB_CLIENT_ID is unavailable; add it as a GitHub secret or repository variable')
+          print('::add-mask::'+value)
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write('GOOGLE_WEB_CLIENT_ID='+value+'\n')
+          Path('/tmp/google-client-id-ok').write_text('ok')
+          print('Google native client audience resolved')
+          PY
+
+      - name: Validate architecture, tests, lint and release build
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/*.py
+          python3 scripts/validate_grade_architecture.py
+          ./gradlew \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:lintP09Release \
+            :hamyar-app:assembleP09Release \
+            -PhamyarVersionCode="$VERSION_CODE" \
+            -PhamyarVersionName="$VERSION_NAME" \
+            -Pgoogle.webClientId="$GOOGLE_WEB_CLIENT_ID" \
+            --stacktrace
+
+      - name: Verify final APK identity, version and signer
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/release -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          APK="${files[0]}"
+          BADGING="$($ANDROID_HOME/build-tools/36.0.0/aapt dump badging "$APK" | head -1)"
+          echo "$BADGING" | grep -F "name='$PACKAGE'"
+          echo "$BADGING" | grep -F "versionCode='$VERSION_CODE'"
+          echo "$BADGING" | grep -F "versionName='$VERSION_NAME'"
+          SIGNING_SHA="$($ANDROID_HOME/build-tools/36.0.0/apksigner verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED_SIGNING_SHA=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          test "$SIGNING_SHA" = "$EXPECTED_SIGNING_SHA"
+          ASSET="hamyar-grade9-${VERSION_NAME}.apk"
+          mkdir -p dist
+          cp -f "$APK" "dist/$ASSET"
+          {
+            echo "APK=dist/$ASSET"
+            echo "ASSET=$ASSET"
+            echo "APK_SIZE=$(stat -c%s "dist/$ASSET")"
+            echo "APK_SHA=$(sha256sum "dist/$ASSET" | cut -d' ' -f1)"
+            echo "SIGNING_SHA=$SIGNING_SHA"
+          } >> "$GITHUB_ENV"
+
+      - name: Provision HM_DB schema (no historic data copy)
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${APPWRITE_API_KEY:-}"
+          python3 scripts/provision_appwrite_schema.py | tee /tmp/provision.log
+          grep -F '"tables":30' /tmp/provision.log
+
+      - name: Register the new grade-nine Android platform
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_appwrite_android_platforms.py --apply | tee /tmp/platforms.log
+          grep -F 'com.hamyareman.p09' /tmp/platforms.log
+
+      - name: Check and add only the four chapter-one audio files
+        env:
+          SOURCE_APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+          SOURCE_APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
+          SOURCE_APPWRITE_BUCKET_ID: 6aa1eaae00303400117b
+          SOURCE_APPWRITE_API_KEY: ${{ secrets.SOURCE_APPWRITE_API_KEY }}
+          APPWRITE_API_KEY: ${{ secrets.SOURCE_APPWRITE_API_KEY }}
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_appwrite_to_arvan.py \
+            --only ryazif01d01.mp3 \
+            --only ryazif01d02.mp3 \
+            --only ryazif01d03.mp3 \
+            --only ryazif01d04.mp3 | tee /tmp/audio-sync.log
+          test "$(grep -Ec 'SKIP existing-size|] OK ryazif' /tmp/audio-sync.log)" -eq 4
+
+      - name: Publish APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="grade9-v$VERSION_NAME"
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "همیار من نهم $VERSION_NAME" \
+              --notes "نسخه ۲٫۰ همیار من نهم — ورود استاندارد، Google Native و زیرساخت HM_DB."
+          gh release upload "$TAG" "$APK#$ASSET" --clobber
+          RELEASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$ASSET"
+          echo "RELEASE_URL=$RELEASE_URL" >> "$GITHUB_ENV"
+
+      - name: Publish APK to Arvan only when bytes differ
+        env:
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, uuid
+          import boto3
+          from botocore.config import Config
+
+          path=os.environ['APK']; size=int(os.environ['APK_SIZE']); sha=os.environ['APK_SHA']
+          bucket=os.environ['ARVAN_BUCKET']; final=f"apk/grade9/{os.environ['ASSET']}"
+          s3=boto3.client('s3',aws_access_key_id=os.environ['ARVAN_ACCESS_KEY'],
+              aws_secret_access_key=os.environ['ARVAN_SECRET_KEY'],endpoint_url=os.environ['ARVAN_ENDPOINT'],
+              region_name=os.environ['ARVAN_REGION'],config=Config(signature_version='s3v4',s3={'addressing_style':'path'},
+              connect_timeout=20,read_timeout=240,retries={'max_attempts':8,'mode':'adaptive'}))
+          try:
+              current=s3.head_object(Bucket=bucket,Key=final)
+          except Exception:
+              current=None
+          metadata={str(k).lower():str(v) for k,v in ((current or {}).get('Metadata') or {}).items()}
+          if current and int(current.get('ContentLength') or -1)==size and metadata.get('sha256')==sha:
+              print('SKIP identical APK',final,size,sha)
+          else:
+              staging=f'.staging/apk/{uuid.uuid4().hex}/{os.environ["ASSET"]}'
+              try:
+                  s3.upload_file(path,bucket,staging,ExtraArgs={'ContentType':'application/vnd.android.package-archive',
+                      'CacheControl':'no-store','Metadata':{'sha256':sha,'grade':'grade9','version':'2.0'}})
+                  staged=s3.head_object(Bucket=bucket,Key=staging)
+                  if int(staged.get('ContentLength') or -1)!=size: raise RuntimeError('staging size mismatch')
+                  args={'Bucket':bucket,'Key':final,'CopySource':{'Bucket':bucket,'Key':staging},
+                      'MetadataDirective':'REPLACE','ContentType':'application/vnd.android.package-archive',
+                      'CacheControl':'public, max-age=3600, must-revalidate',
+                      'Metadata':{'sha256':sha,'grade':'grade9','version':'2.0'}}
+                  try: s3.copy_object(ACL='public-read',**args)
+                  except Exception:
+                      s3.copy_object(**args); s3.put_object_acl(Bucket=bucket,Key=final,ACL='public-read')
+                  result=s3.head_object(Bucket=bucket,Key=final)
+                  if int(result.get('ContentLength') or -1)!=size or (result.get('Metadata') or {}).get('sha256')!=sha:
+                      raise RuntimeError('published APK verification failed')
+                  print('PUBLISHED APK',final,size,sha)
+              finally:
+                  try: s3.delete_object(Bucket=bucket,Key=staging)
+                  except Exception: pass
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write('ARVAN_APK_URL='+os.environ['ARVAN_PUBLIC']+'/'+final+'\n')
+          PY
+
+      - name: Atomically announce version 2.0 in HM_DB
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time
+          import requests
+          endpoint=os.environ['APPWRITE_ENDPOINT'].rstrip('/')
+          row=os.environ['ROW_ID']
+          url=f"{endpoint}/tablesdb/{os.environ['APPWRITE_DATABASE_ID']}/tables/app_state/rows/{row}"
+          headers={'X-Appwrite-Project':os.environ['APPWRITE_PROJECT_ID'],
+                   'X-Appwrite-Key':os.environ['APPWRITE_API_KEY'],'Content-Type':'application/json'}
+          current=requests.get(url,headers=headers,timeout=60)
+          current.raise_for_status()
+          old=json.loads(current.json().get('payload') or '{}')
+          latest=int(old.get('latest') or 0)
+          new=int(os.environ['VERSION_CODE'])
+          if latest > new: raise SystemExit(f'server version {latest} is newer than {new}')
+          payload={'latest':new,'name':os.environ['VERSION_NAME'],'min':0,
+              'url':os.environ['ARVAN_APK_URL'],'externalUrl':os.environ['RELEASE_URL'],
+              'internalUrl':os.environ['ARVAN_APK_URL'],'size':int(os.environ['APK_SIZE']),
+              'sha256':os.environ['APK_SHA'],'chan':'stable','rollout':100,
+              'notes':['ورود استاندارد با ایمیل و گوگل','زیرساخت جدید HM_DB','صوت‌های فصل اول ریاضی نهم'],
+              'packageName':os.environ['PACKAGE'],'gradeId':os.environ['GRADE_ID'],
+              'signingSha256':os.environ['SIGNING_SHA']}
+          body={'data':{'userId':'global','key':row,
+              'payload':json.dumps(payload,ensure_ascii=False,separators=(',',':')),
+              'updatedAt':int(time.time()*1000)},'permissions':['read("users")']}
+          response=requests.patch(url,headers=headers,json=body,timeout=60)
+          response.raise_for_status()
+          saved=json.loads(response.json().get('payload') or '{}')
+          assert saved['latest']==new and saved['packageName']==os.environ['PACKAGE']
+          print('ANNOUNCED',row,saved['name'],saved['latest'],saved['packageName'])
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hamyar-grade9-2.0-release
+          path: dist/*.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Release summary
+        if: success()
+        run: |
+          {
+            echo '## همیار من نهم ۲٫۰ منتشر شد'
+            echo "- package: \`$PACKAGE\`"
+            echo "- version: $VERSION_NAME ($VERSION_CODE)"
+            echo "- APK sha256: \`$APK_SHA\`"
+            echo "- Arvan: $ARVAN_APK_URL"
+            echo "- GitHub: $RELEASE_URL"
+            echo "- Appwrite: $APPWRITE_DATABASE_NAME / $ROW_ID"
+          } >> "$GITHUB_STEP_SUMMARY"

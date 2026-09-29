@@ -14,7 +14,7 @@ on:
         description: 'versionCode تازه؛ باید از آخرین نسخهٔ همان پایه بزرگ‌تر باشد'
         required: true
       version_name:
-        description: 'نام نسخه، مانند 1.98'
+        description: 'نام نسخه، مانند 2.0'
         required: true
       variant:
         description: 'نوع APK'
@@ -67,7 +67,7 @@ jobs:
             p06) GRADE_ID=grade6;  PACKAGE=com.hamyareman.p06; TASK=P06; FA=ششم ;;
             p07) GRADE_ID=grade7;  PACKAGE=com.hamyareman.p07; TASK=P07; FA=هفتم ;;
             p08) GRADE_ID=grade8;  PACKAGE=com.hamyareman.p08; TASK=P08; FA=هشتم ;;
-            p09) GRADE_ID=grade9;  PACKAGE=com.hamyareman.ir;  TASK=P09; FA=نهم ;;
+            p09) GRADE_ID=grade9;  PACKAGE=com.hamyareman.p09;  TASK=P09; FA=نهم ;;
             p10) GRADE_ID=grade10; PACKAGE=com.hamyareman.p10; TASK=P10; FA=دهم ;;
             p11) GRADE_ID=grade11; PACKAGE=com.hamyareman.p11; TASK=P11; FA=یازدهم ;;
             p12) GRADE_ID=grade12; PACKAGE=com.hamyareman.p12; TASK=P12; FA=دوازدهم ;;
@@ -85,7 +85,7 @@ jobs:
         if: inputs.publish == 'true'
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6a9d59e3002751cc3ea8' }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
           VERSION_CODE: ${{ inputs.version_code }}
         run: |
           set -euo pipefail
@@ -93,7 +93,7 @@ jobs:
           python3 - <<'PY'
           import json, os, urllib.error, urllib.request
           project=os.environ['APPWRITE_PROJECT_ID']; row=os.environ['ROW_ID']; new=int(os.environ['VERSION_CODE'])
-          url=f'https://fra.cloud.appwrite.io/v1/databases/ZahraDB/collections/app_state/documents/{row}'
+          url=f'https://sgp.cloud.appwrite.io/v1/tablesdb/6abb238d000d05730d10/tables/app_state/rows/{row}'
           req=urllib.request.Request(url,headers={'X-Appwrite-Project':project,'X-Appwrite-Key':os.environ['APPWRITE_API_KEY']})
           try:
               with urllib.request.urlopen(req,timeout=60) as response: doc=json.load(response)
@@ -117,12 +117,15 @@ jobs:
           VERSION_CODE: ${{ inputs.version_code }}
           VERSION_NAME: ${{ inputs.version_name }}
           VARIANT: ${{ inputs.variant }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID || vars.GOOGLE_WEB_CLIENT_ID }}
         run: |
           set -euo pipefail
+          test -n "${GOOGLE_WEB_CLIENT_ID:-}" || { echo "::error::GOOGLE_WEB_CLIENT_ID تنظیم نشده"; exit 1; }
           if [ "$VARIANT" = release ]; then BUILD=Release; else BUILD=Debug; fi
           ./gradlew ":hamyar-app:assemble${TASK}${BUILD}" \
             -PhamyarVersionCode="$VERSION_CODE" \
             -PhamyarVersionName="$VERSION_NAME" \
+            -Pgoogle.webClientId="$GOOGLE_WEB_CLIENT_ID" \
             --stacktrace
           mapfile -t apks < <(find apps/hamyar-app/build/outputs/apk -type f \
             -path "*/${{ inputs.grade }}/$VARIANT/*.apk" -print)
@@ -192,7 +195,7 @@ jobs:
         if: inputs.publish == 'true'
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6a9d59e3002751cc3ea8' }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
           VERSION_CODE: ${{ inputs.version_code }}
           VERSION_NAME: ${{ inputs.version_name }}
           MIN_CODE: ${{ inputs.min_code }}
@@ -216,7 +219,7 @@ jobs:
             'payload':json.dumps(payload,ensure_ascii=False,separators=(',',':')),
             'updatedAt':int(time.time()*1000),
           },'permissions':['read("any")']},ensure_ascii=False).encode()
-          url=f"https://fra.cloud.appwrite.io/v1/databases/ZahraDB/collections/app_state/documents/{os.environ['ROW_ID']}"
+          url=f"https://sgp.cloud.appwrite.io/v1/tablesdb/6abb238d000d05730d10/tables/app_state/rows/{os.environ['ROW_ID']}"
           req=urllib.request.Request(url,data=body,method='PATCH',headers={
             'X-Appwrite-Project':os.environ['APPWRITE_PROJECT_ID'],
             'X-Appwrite-Key':os.environ['APPWRITE_API_KEY'],'Content-Type':'application/json'})

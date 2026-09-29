@@ -16,7 +16,22 @@ from typing import Any
 
 import requests
 
-from sync_appwrite_to_arvan import APPWRITE_ENDPOINT, appwrite_headers, load_local_env
+APPWRITE_ENDPOINT = "https://sgp.cloud.appwrite.io/v1"
+
+
+def load_local_env() -> None:
+    return
+
+
+def appwrite_headers() -> dict[str, str]:
+    key = os.getenv("APPWRITE_API_KEY", "").strip()
+    if not key:
+        raise RuntimeError("missing APPWRITE_API_KEY")
+    return {
+        "X-Appwrite-Project": os.getenv("APPWRITE_PROJECT_ID", "6abb134a002025222005"),
+        "X-Appwrite-Key": key,
+    }
+
 
 PLATFORMS = [
     ("grade4", "همیار من - پایه چهارم", "com.hamyareman.p04"),
@@ -24,12 +39,12 @@ PLATFORMS = [
     ("grade6", "همیار من - پایه ششم", "com.hamyareman.p06"),
     ("grade7", "همیار من - پایه هفتم", "com.hamyareman.p07"),
     ("grade8", "همیار من - پایه هشتم", "com.hamyareman.p08"),
-    ("grade9", "همیار من - پایه نهم", "com.hamyareman.ir"),
+    ("grade9", "همیار من - پایه نهم", "com.hamyareman.p09"),
     ("grade10", "همیار من - پایه دهم", "com.hamyareman.p10"),
     ("grade11", "همیار من - پایه یازدهم", "com.hamyareman.p11"),
     ("grade12", "همیار من - پایه دوازدهم", "com.hamyareman.p12"),
 ]
-DATABASE_ID = os.getenv("APPWRITE_DATABASE_ID", "ZahraDB")
+DATABASE_ID = os.getenv("APPWRITE_DATABASE_ID", "6abb238d000d05730d10")
 COLLECTION_ID = "app_state"
 
 
@@ -52,7 +67,7 @@ def call(method: str, path: str, **kwargs: Any) -> dict[str, Any]:
 
 
 def release_path(row_id: str = "") -> str:
-    base = f"/databases/{DATABASE_ID}/collections/{COLLECTION_ID}/documents"
+    base = f"/tablesdb/{DATABASE_ID}/tables/{COLLECTION_ID}/rows"
     return base + (f"/{row_id}" if row_id else "")
 
 
@@ -92,14 +107,14 @@ def create_release_row(grade_id: str, package_name: str) -> None:
         "POST",
         release_path(),
         json={
-            "documentId": row_id,
+            "rowId": row_id,
             "data": {
                 "userId": "global",
                 "key": row_id,
                 "payload": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
                 "updatedAt": int(time.time() * 1000),
             },
-            "permissions": ['read("any")'],
+            "permissions": ['read("users")'],
         },
     )
 

@@ -14,7 +14,7 @@ EXPECTED = {
     "p06": ("grade6", "com.hamyareman.p06"),
     "p07": ("grade7", "com.hamyareman.p07"),
     "p08": ("grade8", "com.hamyareman.p08"),
-    "p09": ("grade9", "com.hamyareman.ir"),
+    "p09": ("grade9", "com.hamyareman.p09"),
     "p10": ("grade10", "com.hamyareman.p10"),
     "p11": ("grade11", "com.hamyareman.p11"),
     "p12": ("grade12", "com.hamyareman.p12"),

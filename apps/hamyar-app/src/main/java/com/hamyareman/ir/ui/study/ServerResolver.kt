@@ -42,7 +42,8 @@ object ServerResolver {
     @Volatile private var benchmarkStarted = false
     @Volatile private var lastTest: SelectionTest? = null
 
-    fun external(fileId: String): String = StudyMedia.externalUrl(fileId)
+    fun external(fileId: String): String =
+        ContentCatalog.keyFor(fileId)?.let(::internal).orEmpty()
 
     fun internal(key: String): String =
         ARVAN_PUBLIC + "/" + key.split("/").joinToString("/") {
@@ -117,33 +118,13 @@ object ServerResolver {
 
     suspend fun testSelection(mode: ServerPrefs.Mode = ServerPrefs.mode): SelectionTest =
         withContext(Dispatchers.IO) {
-            val urls = sampleUrls()
-            if (urls == null) return@withContext SelectionTest(mode = mode)
-            val result = when (mode) {
-                ServerPrefs.Mode.FASTEST -> coroutineScope {
-                    val ext = async { measure(ServerPrefs.Origin.EXTERNAL, urls.first) }
-                    val int = async { measure(ServerPrefs.Origin.INTERNAL, urls.second) }
-                    val e = ext.await()
-                    val i = int.await()
-                    val selected = faster(e, i)
-                    ServerPrefs.saveBenchmark(
-                        ServerPrefs.StoredProbe(e.ok, e.latencyMs, e.bytesPerSecond),
-                        ServerPrefs.StoredProbe(i.ok, i.latencyMs, i.bytesPerSecond),
-                        selected,
-                    )
-                    SelectionTest(mode, e, i, selected)
-                }
-                ServerPrefs.Mode.EXTERNAL -> {
-                    val e = measure(ServerPrefs.Origin.EXTERNAL, urls.first)
-                    SelectionTest(mode, external = e, selected = if (e.ok) ServerPrefs.Origin.EXTERNAL else null)
-                }
-                ServerPrefs.Mode.INTERNAL -> {
-                    val i = measure(ServerPrefs.Origin.INTERNAL, urls.second)
-                    SelectionTest(mode, internal = i, selected = if (i.ok) ServerPrefs.Origin.INTERNAL else null)
-                }
-            }
-            lastTest = result
-            result
+            val key = ContentCatalog.sampleHtmlKey()
+                ?: return@withContext SelectionTest(mode = mode)
+            // از نسخهٔ ۲٫۰ فقط یک origin عمومی داریم؛ هر تست دقیقاً یک Range کوچک می‌گیرد.
+            val probe = measure(ServerPrefs.Origin.INTERNAL, internal(key))
+            val selected = ServerPrefs.Origin.INTERNAL.takeIf { probe.ok }
+            ServerPrefs.saveBenchmark(null, ServerPrefs.StoredProbe(probe.ok, probe.latencyMs, probe.bytesPerSecond), selected)
+            SelectionTest(mode = mode, internal = probe, selected = selected).also { lastTest = it }
         }
 
     fun lastSelectionTest(): SelectionTest? = lastTest
@@ -159,31 +140,12 @@ object ServerResolver {
         if (!fresh) scope.launch { runCatching { testSelection(ServerPrefs.Mode.FASTEST) } }
     }
 
-    fun preferredOrigin(): ServerPrefs.Origin = when (ServerPrefs.mode) {
-        ServerPrefs.Mode.EXTERNAL -> ServerPrefs.Origin.EXTERNAL
-        ServerPrefs.Mode.INTERNAL -> ServerPrefs.Origin.INTERNAL
-        ServerPrefs.Mode.FASTEST -> ServerPrefs.fastestOrigin ?: ServerPrefs.Origin.EXTERNAL
-    }
+    fun preferredOrigin(): ServerPrefs.Origin = ServerPrefs.Origin.INTERNAL
 
-    /**
-     * ترتیب قطعی originها: در حالت‌های دستی fallback پنهان نداریم؛ FASTEST در
-     * صورت خطای برنده، origin دوم را امتحان می‌کند.
-     */
-    fun candidates(fileId: String, arvanKey: String?): List<String> = when (ServerPrefs.mode) {
-        ServerPrefs.Mode.EXTERNAL -> listOf(external(fileId))
-        ServerPrefs.Mode.INTERNAL -> arvanKey?.let { listOf(internal(it)) } ?: emptyList()
-        ServerPrefs.Mode.FASTEST -> {
-            if (arvanKey == null) {
-                listOf(external(fileId))
-            } else if (preferredOrigin() == ServerPrefs.Origin.INTERNAL) {
-                listOf(internal(arvanKey), external(fileId))
-            } else {
-                listOf(external(fileId), internal(arvanKey))
-            }
-        }
-    }
+    /** یک کلید عمومی دقیقاً یک URL آروان دارد؛ fallback پرمصرف Appwrite حذف شده است. */
+    fun candidates(fileId: String, arvanKey: String?): List<String> =
+        arvanKey?.let { listOf(internal(it)) }.orEmpty()
 
-    /** برای call-siteهای تک URL؛ فایل عملیاتیِ بدون mirror عمداً external می‌ماند. */
     fun pick(fileId: String, arvanKey: String?): String =
-        candidates(fileId, arvanKey).firstOrNull() ?: external(fileId)
+        candidates(fileId, arvanKey).firstOrNull().orEmpty()
 }

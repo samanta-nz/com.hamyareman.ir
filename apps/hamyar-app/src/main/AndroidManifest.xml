@@ -103,7 +103,7 @@
              می‌ربود؛ در نتیجه CallbackActivity کتابخانه‌ی Appwrite هرگز اجرا نمی‌شد
              و تبادل توکن معلق می‌ماند (اپ برای همیشه Loading).
              طبق مستند رسمی، اکتیویتی خودِ SDK با اسکیم appwrite-callback-<PROJECT_ID>
-             ثبت می‌شود. (SDK 27.1.0 در مانیفستش placeholder ندارد — بازرسی AAR شد.) -->
+             ثبت می‌شود. مسیر اصلی ورود ۲٫۰ native است؛ این callback فقط fallback SDK است. -->
         <activity
             android:name="io.appwrite.views.CallbackActivity"
             android:exported="true">
@@ -111,7 +111,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="appwrite-callback-6a9d59e3002751cc3ea8" />
+                <data android:scheme="appwrite-callback-${appwriteProjectId}" />
             </intent-filter>
         </activity>
 

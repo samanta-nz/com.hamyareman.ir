@@ -6,10 +6,10 @@ plugins {
 // مقدارهای Appwrite از ریشه‌ی پروژه می‌آیند (local.properties / متغیر محیطی / ‑P).
 // اگر projectId خالی باشد، اپ در «حالت محلی» بالا می‌آید و چیزی به سرور نمی‌فرستد.
 val appwriteEndpoint = findProperty("resolvedAppwriteEndpoint") as? String
-    ?: "https://fra.cloud.appwrite.io/v1"
-// پیش‌فرض سخت‌کد‌شده (پروژه‌ی «همیار من» در Appwrite Cloud — fra)؛ با local.properties قابل override.
-val appwriteProjectId = findProperty("resolvedAppwriteProjectId") as? String ?: "6a9d59e3002751cc3ea8"
-val appwriteDatabaseId = findProperty("resolvedAppwriteDatabaseId") as? String ?: "main_db"
+    ?: "https://sgp.cloud.appwrite.io/v1"
+val appwriteProjectId = findProperty("resolvedAppwriteProjectId") as? String ?: "6abb134a002025222005"
+val appwriteDatabaseId = findProperty("resolvedAppwriteDatabaseId") as? String ?: "6abb238d000d05730d10"
+val googleWebClientId = findProperty("resolvedGoogleWebClientId") as? String ?: ""
 
 android {
     namespace = "com.hamyareman.ir"
@@ -29,14 +29,12 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.hamyareman.ir"   // Platform ثبت‌شده در کنسول Appwrite
+        applicationId = "com.hamyareman.p09"
         minSdk = 26
         targetSdk = 36
-        // هر خروجی انتشار باید versionCode بزرگ‌تر از نسخهٔ قبلی همان پایه داشته
-        // باشد. workflow انتشار این دو مقدار را با -PhamyarVersionCode/Name override
-        // و با ردیف مستقل همان پایه روی سرور مقایسه می‌کند.
-        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 99
-        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "1.98"
+        // نسخهٔ عمومی پایهٔ نهم ۲٫۰؛ workflow انتشار می‌تواند این دو مقدار را override کند.
+        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 200
+        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.0"
         ndk {
             // فقط معماری‌های واقعیِ گوشی. x86/x86_64 (شبیه‌ساز) عمداً حذف‌اند:
             // کتابخانه‌ی بومیِ WebRTC برای هر معماری ~۶ تا ۱۲ مگابایت است و هر دو
@@ -50,11 +48,10 @@ android {
         manifestPlaceholders["appwriteProjectId"] = appwriteProjectId
         buildConfigField("String", "APPWRITE_PROJECT_NAME", "\"همیار من\"")
         buildConfigField("String", "APPWRITE_DATABASE_ID", "\"$appwriteDatabaseId\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
-    // نه اپ جدا (چهارم تا دوازدهم) روی یک موتور. نهم همان applicationId فعلی است
-    // تا نصب روی نسخه‌های قبلی بماند. بقیه‌ی پایه‌ها پکیج تازه‌اند و باید در
-    // کنسول Appwrite به‌عنوان Platform اندروید ثبت شوند.
+    // نه اپ جدا (چهارم تا دوازدهم) روی یک موتور؛ هر پایه applicationId مستقل دارد.
     flavorDimensions += listOf("grade")
     productFlavors {
         fun gradeApp(
@@ -79,7 +76,8 @@ android {
                 // کانال آپدیت هر پایه مستقل است؛ هیچ APK پایه‌ای به پایهٔ دیگر
                 // پیشنهاد یا نصب نمی‌شود.
                 buildConfigField("String", "UPDATE_ROW_ID", "\"app_release_$id\"")
-                resValue("string", "app_name", "همیار من - پایه $faShort")
+                val publicName = if (num == 9) "همیار من نهم" else "همیار من - پایه $faShort"
+                resValue("string", "app_name", publicName)
             }
         }
         gradeApp("p04", 4, "grade4", "چهارم", "۴", "com.hamyareman.p04", "Base-04")
@@ -87,7 +85,7 @@ android {
         gradeApp("p06", 6, "grade6", "ششم", "۶", "com.hamyareman.p06", "Base-06")
         gradeApp("p07", 7, "grade7", "هفتم", "۷", "com.hamyareman.p07", "Base-07")
         gradeApp("p08", 8, "grade8", "هشتم", "۸", "com.hamyareman.p08", "Base-08")
-        gradeApp("p09", 9, "grade9", "نهم", "۹", "com.hamyareman.ir", "Base-09", defaultFlavor = true)
+        gradeApp("p09", 9, "grade9", "نهم", "۹", "com.hamyareman.p09", "Base-09", defaultFlavor = true)
         gradeApp("p10", 10, "grade10", "دهم", "۱۰", "com.hamyareman.p10", "Base-10")
         gradeApp("p11", 11, "grade11", "یازدهم", "۱۱", "com.hamyareman.p11", "Base-11")
         gradeApp("p12", 12, "grade12", "دوازدهم", "۱۲", "com.hamyareman.p12", "Base-12")
@@ -161,6 +159,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     implementation(libs.coil.compose)
     // بیومتریک: androidx.biometric برای API<28 دیالوگ سازگاریِ AppCompat دارد، پس
     // تم اکتیویتی باید از Theme.AppCompat باشد و appcompat هم روی classpath باشد.

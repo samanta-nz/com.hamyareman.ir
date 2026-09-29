@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import io.appwrite.ID
 import io.appwrite.Permission
 import io.appwrite.Role
+import io.appwrite.enums.IdTokenProvider
 import io.appwrite.enums.OAuthProvider
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.services.Account
@@ -52,6 +53,7 @@ interface AuthService {
 
     suspend fun signUp(name: String, email: String, password: String): AppResult<AuthUser>
     suspend fun signIn(email: String, password: String): AppResult<AuthUser>
+    suspend fun signInWithGoogleIdToken(idToken: String): AppResult<AuthUser>
     suspend fun signInWithGoogle(activity: ComponentActivity): AppResult<AuthUser>
     suspend fun signInAsGuest(): AppResult<AuthUser>
     suspend fun logout(): AppResult<Unit>
@@ -91,6 +93,10 @@ interface AuthService {
 
     /** کامل‌کردنِ بازیابی با لینکِ داخلِ ایمیل (userId و secret از همان لینک خوانده می‌شود). */
     suspend fun completeRecovery(link: String, newPassword: String): AppResult<Unit>
+
+    /** ارسال و تکمیل تأیید ایمیل؛ صفحهٔ تأیید در UI از ثبت‌نام جداست. */
+    suspend fun requestEmailVerification(): AppResult<Unit>
+    suspend fun completeEmailVerification(link: String): AppResult<Unit>
 
     /** فرستادنِ کد ۶ رقمی یک‌بارمصرف به ایمیلِ همان نام کاربری/ایمیل. */
     suspend fun sendOtp(identifier: String): AppResult<Unit>
@@ -282,12 +288,19 @@ class AppwriteAuthService(
         return AppResult.Err(AppError.Auth("ورود مهمان حذف شده است. با نام کاربری یا ایمیل وارد شو."))
     }
 
-    /**
-     * ورود با گوگل (OAuth2): مرورگر/کروم‌تب باز می‌شود و برگشت با اسکیم
-     * `appwrite-callback-<PROJECT_ID>` به همین اپ می‌آید (intent-filter در Manifest).
-     * برگشت توسط SDK روی همان activity شنود می‌شود، پس [activity] باید همان
-     * اکتیویتیِ زنده‌ی فعلی باشد.
-     */
+    /** ورود native: Credential Manager توکن گوگل را می‌گیرد و Appwrite آن را اعتبارسنجی می‌کند. */
+    override suspend fun signInWithGoogleIdToken(idToken: String): AppResult<AuthUser> {
+        if (!provider.isConfigured) return AppResult.Ok(localUser)
+        if (idToken.isBlank()) return AppResult.Err(AppError.Validation("توکن ورود گوگل دریافت نشد."))
+        setRemember(true)
+        return runCatching {
+            runCatching { account.deleteSession("current") }
+            account.createIdTokenSession(provider = IdTokenProvider.GOOGLE, idToken = idToken)
+            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, it.value.email) }
+        }.getOrElse { AppResult.Err(mapAuth(it, "ورود امن با گوگل ناموفق بود.")) }
+    }
+
+    /** مسیر مرورگری قدیمی فقط برای سازگاری داخلی؛ UI نسخهٔ ۲٫۰ از native استفاده می‌کند. */
     override suspend fun signInWithGoogle(activity: ComponentActivity): AppResult<AuthUser> {
         if (!provider.isConfigured) return AppResult.Ok(localUser)
         setRemember(true)
@@ -394,6 +407,27 @@ class AppwriteAuthService(
             account.updateRecovery(userId = userId, secret = secret, password = newPassword)
             AppResult.Ok(Unit)
         }.getOrElse { AppResult.Err(mapAuth(it, "لینکِ بازیابی نامعتبر یا منقضی است (یک ساعت اعتبار دارد).")) }
+    }
+
+    override suspend fun requestEmailVerification(): AppResult<Unit> {
+        if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
+        return runCatching {
+            account.createVerification(url = VERIFY_URL)
+            AppResult.Ok(Unit)
+        }.getOrElse { AppResult.Err(mapAuth(it, "فرستادن ایمیل تأیید ناموفق بود.")) }
+    }
+
+    override suspend fun completeEmailVerification(link: String): AppResult<Unit> {
+        if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
+        val userId = extractParam(link, "userId")
+        val secret = extractParam(link, "secret")
+        if (userId.isNullOrBlank() || secret.isNullOrBlank()) {
+            return AppResult.Err(AppError.Validation("لینک کامل تأیید را از ایمیل کپی کن."))
+        }
+        return runCatching {
+            account.updateVerification(userId = userId, secret = secret)
+            AppResult.Ok(Unit)
+        }.getOrElse { AppResult.Err(mapAuth(it, "لینک تأیید نامعتبر یا منقضی است.")) }
     }
 
     override suspend fun sendOtp(identifier: String): AppResult<Unit> {
@@ -693,13 +727,9 @@ class AppwriteAuthService(
         const val KEY_USERNAME = "auth_username"
         const val KEY_OTP_UID = "auth_otp_uid"
 
-        /**
-         * نشانیِ لینکِ بازیابیِ رمز. Appwrite فقط نشانی‌هایی را قبول می‌کند که
-         * میزبانشان به‌عنوان یک پلتفرم در کنسول ثبت شده باشد (میزبانِ
-         * `hamyareman.ir` ثبت شده است). کاربر لینک را از ایمیل کپی و در اپ جای‌گذاری
-         * می‌کند؛ `userId` و `secret` از همان لینک خوانده می‌شود.
-         */
-        const val RECOVERY_URL = "https://hamyareman.ir/recovery"
+        /** Deep links متعلق به Android Platform پروژه؛ هیچ دامنهٔ غیرفعالی استفاده نمی‌شود. */
+        const val RECOVERY_URL = "appwrite-callback-6abb134a002025222005://recovery"
+        const val VERIFY_URL = "appwrite-callback-6abb134a002025222005://verify"
 
         private const val REFRESH_THROTTLE_MS = 5 * 60 * 1000L
         private val USERNAME_REGEX = Regex("^[a-z0-9_]{3,24}$")
