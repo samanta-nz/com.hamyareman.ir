@@ -117,10 +117,14 @@ jobs:
           VERSION_CODE: ${{ inputs.version_code }}
           VERSION_NAME: ${{ inputs.version_name }}
           VARIANT: ${{ inputs.variant }}
-          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID || vars.GOOGLE_WEB_CLIENT_ID }}
+          CONFIGURED_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID || vars.GOOGLE_WEB_CLIENT_ID }}
+          GOOGLE_WEB_CLIENT_ID: 548109780863-84ub4jlu08a436mfi0hmn252kge7gv61.apps.googleusercontent.com
         run: |
           set -euo pipefail
-          test -n "${GOOGLE_WEB_CLIENT_ID:-}" || { echo "::error::GOOGLE_WEB_CLIENT_ID تنظیم نشده"; exit 1; }
+          if [ -n "${CONFIGURED_GOOGLE_WEB_CLIENT_ID:-}" ] && \
+             [ "$CONFIGURED_GOOGLE_WEB_CLIENT_ID" != "$GOOGLE_WEB_CLIENT_ID" ]; then
+            echo "::warning::Ignoring stale GOOGLE_WEB_CLIENT_ID secret/variable"
+          fi
           if [ "$VARIANT" = release ]; then BUILD=Release; else BUILD=Debug; fi
           ./gradlew ":hamyar-app:assemble${TASK}${BUILD}" \
             -PhamyarVersionCode="$VERSION_CODE" \

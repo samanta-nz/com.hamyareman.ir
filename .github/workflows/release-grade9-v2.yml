@@ -51,70 +51,26 @@ jobs:
       - name: Install release tooling
         run: pip install --quiet requests boto3
 
-      - name: Resolve Google Web client ID without exposing credentials
+      - name: Select the canonical Google Web audience
         env:
-          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          CONFIGURED_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-          VARIABLE_GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
+          CONFIGURED_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID || vars.GOOGLE_WEB_CLIENT_ID }}
+          EXPECTED_GOOGLE_WEB_CLIENT_ID: 548109780863-84ub4jlu08a436mfi0hmn252kge7gv61.apps.googleusercontent.com
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          from urllib.parse import parse_qs, urlparse
-          import requests
+          if [ -n "${CONFIGURED_GOOGLE_WEB_CLIENT_ID:-}" ] && \
+             [ "$CONFIGURED_GOOGLE_WEB_CLIENT_ID" != "$EXPECTED_GOOGLE_WEB_CLIENT_ID" ]; then
+            echo "::warning::Ignoring stale GOOGLE_WEB_CLIENT_ID secret/variable; using the grade-nine Google project audience"
+          fi
+          echo "GOOGLE_WEB_CLIENT_ID=$EXPECTED_GOOGLE_WEB_CLIENT_ID" >> "$GITHUB_ENV"
+          echo 'Google native Web audience selected'
 
-          value=(os.environ.get('CONFIGURED_GOOGLE_WEB_CLIENT_ID') or os.environ.get('VARIABLE_GOOGLE_WEB_CLIENT_ID') or '').strip()
-          endpoint=os.environ['APPWRITE_ENDPOINT'].rstrip('/')
-          project=os.environ['APPWRITE_PROJECT_ID']
-          key=os.environ.get('APPWRITE_API_KEY','').strip()
-          headers={'X-Appwrite-Project':project, 'X-Appwrite-Key':key} if key else {}
-
-          # Project API first: newer Appwrite versions can expose native public IDs.
-          if not value and key:
-              for path in ('/project/oauth2/google','/project/oauth2'):
-                  response=requests.get(endpoint+path,headers=headers,timeout=45)
-                  if not response.ok:
-                      continue
-                  data=response.json()
-                  candidates=[]
-                  def walk(node, parent=''):
-                      if isinstance(node,dict):
-                          provider=str(node.get('$id') or node.get('id') or node.get('provider') or parent).lower()
-                          for k,v in node.items():
-                              key_name=k.lower()
-                              if isinstance(v,str) and v.endswith('.apps.googleusercontent.com') and ('google' in provider or 'client' in key_name or 'native' in key_name):
-                                  candidates.append(v)
-                              else: walk(v,provider)
-                      elif isinstance(node,list):
-                          for item in node: walk(item,parent)
-                  walk(data)
-                  if candidates:
-                      value=candidates[0]
-                      break
-
-          # Browser provider client ID is public in Google's authorization Location.
-          if not value:
-              callback=f'appwrite-callback-{project}://oauth'
-              response=requests.get(
-                  endpoint+'/account/sessions/oauth2/google',
-                  params={'project':project,'success':callback,'failure':callback},
-                  allow_redirects=False,timeout=45,
-              )
-              location=response.headers.get('location','')
-              value=(parse_qs(urlparse(location).query).get('client_id') or [''])[0]
-
-          if not value:
-              # Public Web audience already used by this repository's Google integration.
-              value='347554951220-gfvsc84d437nsl6jsg6u06aur5c0fsiu.apps.googleusercontent.com'
-          if not value.endswith('.apps.googleusercontent.com'):
-              raise SystemExit('GOOGLE_WEB_CLIENT_ID has an invalid format')
-          print('::add-mask::'+value)
-          with open(os.environ['GITHUB_ENV'],'a') as out:
-              out.write('GOOGLE_WEB_CLIENT_ID='+value+'\n')
-          Path('/tmp/google-client-id-ok').write_text('ok')
-          print('Google native client audience resolved')
-          PY
+      - name: Configure and verify Appwrite native Google audience
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_appwrite_google_native.py --apply | tee /tmp/google-native.log
+          grep -F '"nativeGoogle":"verified"' /tmp/google-native.log
 
       - name: Validate architecture, tests, lint and release build
         run: |
