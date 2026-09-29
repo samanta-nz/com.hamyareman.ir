@@ -85,6 +85,7 @@ jobs:
         run: |
           set -euo pipefail
           FINAL="apk/grade9/$ASSET"
+          set +e
           python3 scripts/publish_public_s3_object.py \
             --file "$APK" \
             --bucket "$ARVAN_BUCKET" \
@@ -92,7 +93,16 @@ jobs:
             --public-url "$ARVAN_PUBLIC/$FINAL" \
             --content-type application/vnd.android.package-archive \
             --metadata grade=grade9 \
-            --metadata version="$VERSION_NAME"
+            --metadata version="$VERSION_NAME" 2>&1 | tee /tmp/arvan-publish.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            tail -n 12 /tmp/arvan-publish.log | while IFS= read -r line; do
+              safe="${line//'%'/'%25'}"; safe="${safe//$'\r'/'%0D'}"; safe="${safe//$'\n'/'%0A'}"
+              echo "::error title=Arvan public APK::$safe"
+            done
+            exit "$status"
+          fi
 
       - name: Atomically announce version 2.0 in HM_DB
         env:
