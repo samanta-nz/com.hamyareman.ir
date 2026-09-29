@@ -3,8 +3,8 @@
 
 The object is first uploaded to a private staging key and verified. The final
 copy is requested with ``public-read``. Some S3-compatible providers support
-object ACLs only on upload (not CopyObject/PutObjectAcl), so a direct multipart
-upload to the final key is the last fallback; multipart completion is atomic.
+object ACLs only on upload (not CopyObject/PutObjectAcl), so a direct signed PUT
+to the final key is the last fallback; object replacement is atomic on success.
 No existing healthy public object is replaced when its size and SHA-256 match.
 """
 from __future__ import annotations
@@ -35,8 +35,8 @@ def sha256_file(path: Path) -> str:
 def error_label(exc: BaseException) -> str:
     if isinstance(exc, ClientError):
         error = exc.response.get("Error") or {}
-        return f"{error.get('Code', 'ClientError')}: {str(error.get('Message') or '')[:180]}"
-    return f"{type(exc).__name__}: {str(exc)[:180]}"
+        return f"{error.get('Code', 'ClientError')}: {str(error.get('Message') or '')[:500]}"
+    return f"{type(exc).__name__}: {str(exc)[:500]}"
 
 
 def head(s3: Any, bucket: str, key: str) -> dict[str, Any] | None:
@@ -57,6 +57,31 @@ def object_matches(row: dict[str, Any] | None, size: int, sha256: str) -> bool:
         and int(row.get("ContentLength") or -1) == size
         and metadata.get("sha256") == sha256
     )
+
+
+def put_file(
+    s3: Any,
+    source: Path,
+    bucket: str,
+    key: str,
+    content_type: str,
+    cache_control: str,
+    metadata: dict[str, str],
+    acl: str | None = None,
+) -> None:
+    """Single PUT avoids multipart extensions rejected by some S3-compatible APIs."""
+    params: dict[str, Any] = {
+        "Bucket": bucket,
+        "Key": key,
+        "ContentType": content_type,
+        "CacheControl": cache_control,
+        "Metadata": metadata,
+        "ContentLength": source.stat().st_size,
+    }
+    if acl:
+        params["ACL"] = acl
+    with source.open("rb") as body:
+        s3.put_object(Body=body, **params)
 
 
 def public_probe(url: str, size: int) -> tuple[bool, str]:
@@ -210,15 +235,14 @@ def main() -> int:
     if not matched:
         staging = f".staging/{uuid.uuid4().hex}/{args.key}"
         try:
-            s3.upload_file(
-                str(args.file),
+            put_file(
+                s3,
+                args.file,
                 args.bucket,
                 staging,
-                ExtraArgs={
-                    "ContentType": args.content_type,
-                    "CacheControl": "no-store",
-                    "Metadata": metadata,
-                },
+                args.content_type,
+                "no-store",
+                metadata,
             )
             staged = head(s3, args.bucket, staging)
             if not object_matches(staged, size, sha256):
@@ -241,20 +265,19 @@ def main() -> int:
                 print(f"staging cleanup warning: {error_label(exc)}")
 
     if not public:
-        # S3 multipart upload only becomes visible at completion, so this fallback
-        # remains atomic even though it targets the final object directly.
+        # A completed S3 PUT replaces the object atomically; a failed request does
+        # not expose a partially written APK at the final key.
         public = try_action(
-            "direct-multipart-public-read",
-            lambda: s3.upload_file(
-                str(args.file),
+            "direct-put-public-read",
+            lambda: put_file(
+                s3,
+                args.file,
                 args.bucket,
                 args.key,
-                ExtraArgs={
-                    "ACL": "public-read",
-                    "ContentType": args.content_type,
-                    "CacheControl": args.cache_control,
-                    "Metadata": metadata,
-                },
+                args.content_type,
+                args.cache_control,
+                metadata,
+                acl="public-read",
             ),
             public_url,
             size,
