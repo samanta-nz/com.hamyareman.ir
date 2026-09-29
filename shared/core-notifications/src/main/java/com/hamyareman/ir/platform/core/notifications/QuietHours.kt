@@ -91,6 +91,7 @@ object QuietHoursAutomation {
     private const val KEY_ACTIVE = "quiet_system_active"
     private const val KEY_PREVIOUS_FILTER = "quiet_previous_filter"
     private const val KEY_PREVIOUS_RINGER = "quiet_previous_ringer"
+    private const val KEY_PREVIOUS_ALARM_VOLUME = "quiet_previous_alarm_volume"
     private const val NOTIFICATION_ID = 0x5148
 
     fun manager(context: Context): QuietHoursManager =
@@ -143,14 +144,23 @@ object QuietHoursAutomation {
         val manager = ctx.getSystemService(NotificationManager::class.java)
         val audio = ctx.getSystemService(AudioManager::class.java)
         val granted = manager?.isNotificationPolicyAccessGranted == true
-        if (granted && !stateStore.getBool(KEY_ACTIVE, false)) {
-            stateStore.putInt(
-                KEY_PREVIOUS_FILTER,
-                manager?.currentInterruptionFilter ?: NotificationManager.INTERRUPTION_FILTER_ALL,
-            )
-            stateStore.putInt(KEY_PREVIOUS_RINGER, audio?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL)
+        if (granted) {
+            // مقدار قبلی فقط بار اول ذخیره می‌شود؛ اما حالت سکوت هر بار دوباره اعمال
+            // می‌شود تا reboot یا بازنشانی موقت سیستم بازه را بی‌اثر نکند.
+            if (!stateStore.getBool(KEY_ACTIVE, false)) {
+                stateStore.putInt(
+                    KEY_PREVIOUS_FILTER,
+                    manager?.currentInterruptionFilter ?: NotificationManager.INTERRUPTION_FILTER_ALL,
+                )
+                stateStore.putInt(KEY_PREVIOUS_RINGER, audio?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL)
+                stateStore.putInt(
+                    KEY_PREVIOUS_ALARM_VOLUME,
+                    audio?.getStreamVolume(AudioManager.STREAM_ALARM) ?: 0,
+                )
+            }
             runCatching { manager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE) }
             runCatching { audio?.ringerMode = AudioManager.RINGER_MODE_SILENT }
+            runCatching { audio?.setStreamVolume(AudioManager.STREAM_ALARM, 0, 0) }
             stateStore.putBool(KEY_ACTIVE, true)
         }
         showStatus(ctx, granted)
@@ -168,9 +178,11 @@ object QuietHoursAutomation {
                     NotificationManager.INTERRUPTION_FILTER_ALL,
                 )
                 runCatching { manager.setInterruptionFilter(previousFilter) }
-                val previousRinger = stateStore.getInt(KEY_PREVIOUS_RINGER, AudioManager.RINGER_MODE_NORMAL)
-                runCatching { audio?.ringerMode = previousRinger }
             }
+            val previousRinger = stateStore.getInt(KEY_PREVIOUS_RINGER, AudioManager.RINGER_MODE_NORMAL)
+            val previousAlarmVolume = stateStore.getInt(KEY_PREVIOUS_ALARM_VOLUME, 1)
+            runCatching { audio?.ringerMode = previousRinger }
+            runCatching { audio?.setStreamVolume(AudioManager.STREAM_ALARM, previousAlarmVolume, 0) }
             stateStore.putBool(KEY_ACTIVE, false)
         }
         NotificationManagerCompat.from(ctx).cancel(NOTIFICATION_ID)
