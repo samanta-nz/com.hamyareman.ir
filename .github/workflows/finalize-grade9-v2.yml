@@ -1,0 +1,165 @@
+name: Finalize Hamyar grade 9 v2.0
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+
+concurrency:
+  group: finalize-grade9-v2
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: startsWith(github.event.head_commit.message, 'Finalize grade nine 2.0')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
+      ARVAN_REGION: ir-thr-at1
+      ARVAN_BUCKET: hamyar-e-man
+      ARVAN_PUBLIC: https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir
+      TAG: grade9-v2.0
+      ASSET: hamyar-grade9-2.0.apk
+      PACKAGE: com.hamyareman.p09
+      VERSION_NAME: '2.0'
+      VERSION_CODE: '200'
+      ROW_ID: app_release_grade9
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install verification and publishing tools
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet boto3 requests
+          yes | sdkmanager 'build-tools;36.0.0' >/dev/null || true
+          test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/aapt"
+
+      - name: Download and re-verify the already published release APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/grade9-v2
+          gh release download "$TAG" --pattern "$ASSET" --dir /tmp/grade9-v2
+          APK="/tmp/grade9-v2/$ASSET"
+          test -s "$APK"
+          BADGING="$($ANDROID_HOME/build-tools/36.0.0/aapt dump badging "$APK" | head -1)"
+          echo "$BADGING" | grep -F "package: name='$PACKAGE'"
+          echo "$BADGING" | grep -F "versionCode='$VERSION_CODE'"
+          echo "$BADGING" | grep -F "versionName='$VERSION_NAME'"
+          $ANDROID_HOME/build-tools/36.0.0/apksigner verify --verbose --print-certs "$APK" >/tmp/apksigner.txt
+          grep -F 'Verified using v2 scheme (APK Signature Scheme v2): true' /tmp/apksigner.txt
+          SIGNING_SHA="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' /tmp/apksigner.txt | head -1)"
+          test -n "$SIGNING_SHA"
+          APK_SIZE="$(stat -c %s "$APK")"
+          APK_SHA="$(sha256sum "$APK" | cut -d' ' -f1)"
+          {
+            echo "APK=$APK"
+            echo "APK_SIZE=$APK_SIZE"
+            echo "APK_SHA=$APK_SHA"
+            echo "SIGNING_SHA=$SIGNING_SHA"
+            echo "RELEASE_URL=https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$ASSET"
+          } >> "$GITHUB_ENV"
+          echo "verified $PACKAGE $VERSION_NAME ($VERSION_CODE), size=$APK_SIZE, sha256=$APK_SHA"
+
+      - name: Repair/publish and anonymously verify the Arvan APK
+        env:
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          FINAL="apk/grade9/$ASSET"
+          python3 scripts/publish_public_s3_object.py \
+            --file "$APK" \
+            --bucket "$ARVAN_BUCKET" \
+            --key "$FINAL" \
+            --public-url "$ARVAN_PUBLIC/$FINAL" \
+            --content-type application/vnd.android.package-archive \
+            --metadata grade=grade9 \
+            --metadata version="$VERSION_NAME"
+
+      - name: Atomically announce version 2.0 in HM_DB
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time
+          import requests
+
+          endpoint = os.environ['APPWRITE_ENDPOINT'].rstrip('/')
+          row_id = os.environ['ROW_ID']
+          url = f"{endpoint}/tablesdb/{os.environ['APPWRITE_DATABASE_ID']}/tables/app_state/rows/{row_id}"
+          headers = {
+              'X-Appwrite-Project': os.environ['APPWRITE_PROJECT_ID'],
+              'X-Appwrite-Key': os.environ['APPWRITE_API_KEY'],
+              'Content-Type': 'application/json',
+          }
+          current = requests.get(url, headers=headers, timeout=60)
+          current.raise_for_status()
+          old = json.loads(current.json().get('payload') or '{}')
+          new = int(os.environ['VERSION_CODE'])
+          if int(old.get('latest') or 0) > new:
+              raise SystemExit(f"server version {old['latest']} is newer than {new}")
+          payload = {
+              'latest': new,
+              'name': os.environ['VERSION_NAME'],
+              'min': 0,
+              'url': os.environ['ARVAN_APK_URL'],
+              'externalUrl': os.environ['RELEASE_URL'],
+              'internalUrl': os.environ['ARVAN_APK_URL'],
+              'size': int(os.environ['APK_SIZE']),
+              'sha256': os.environ['APK_SHA'],
+              'chan': 'stable',
+              'rollout': 100,
+              'notes': [
+                  'ورود استاندارد با ایمیل و گوگل',
+                  'زیرساخت جدید HM_DB',
+                  'صوت‌های فصل اول ریاضی نهم',
+              ],
+              'packageName': os.environ['PACKAGE'],
+              'gradeId': 'grade9',
+              'signingSha256': os.environ['SIGNING_SHA'],
+          }
+          body = {
+              'data': {
+                  'userId': 'global',
+                  'key': row_id,
+                  'payload': json.dumps(payload, ensure_ascii=False, separators=(',', ':')),
+                  'updatedAt': int(time.time() * 1000),
+              },
+              'permissions': ['read("users")'],
+          }
+          response = requests.patch(url, headers=headers, json=body, timeout=60)
+          response.raise_for_status()
+          saved = json.loads(response.json().get('payload') or '{}')
+          assert saved['latest'] == new
+          assert saved['packageName'] == os.environ['PACKAGE']
+          assert saved['url'] == os.environ['ARVAN_APK_URL']
+          print('ANNOUNCED', row_id, saved['name'], saved['latest'], saved['packageName'])
+          PY
+
+      - name: Final summary
+        run: |
+          {
+            echo '## Hamyar grade 9 v2.0 finalized'
+            echo "- Package: $PACKAGE"
+            echo "- Version: $VERSION_NAME ($VERSION_CODE)"
+            echo "- GitHub: $RELEASE_URL"
+            echo "- Arvan: $ARVAN_APK_URL"
+            echo "- SHA-256: $APK_SHA"
+            echo "- HM_DB row: $ROW_ID"
+          } >> "$GITHUB_STEP_SUMMARY"

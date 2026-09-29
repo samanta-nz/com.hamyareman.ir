@@ -203,54 +203,21 @@ jobs:
           RELEASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$ASSET"
           echo "RELEASE_URL=$RELEASE_URL" >> "$GITHUB_ENV"
 
-      - name: Publish APK to Arvan only when bytes differ
+      - name: Publish and anonymously verify APK on Arvan
         env:
           ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
           ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import os, uuid
-          import boto3
-          from botocore.config import Config
-
-          path=os.environ['APK']; size=int(os.environ['APK_SIZE']); sha=os.environ['APK_SHA']
-          bucket=os.environ['ARVAN_BUCKET']; final=f"apk/grade9/{os.environ['ASSET']}"
-          s3=boto3.client('s3',aws_access_key_id=os.environ['ARVAN_ACCESS_KEY'],
-              aws_secret_access_key=os.environ['ARVAN_SECRET_KEY'],endpoint_url=os.environ['ARVAN_ENDPOINT'],
-              region_name=os.environ['ARVAN_REGION'],config=Config(signature_version='s3v4',s3={'addressing_style':'path'},
-              connect_timeout=20,read_timeout=240,retries={'max_attempts':8,'mode':'adaptive'}))
-          try:
-              current=s3.head_object(Bucket=bucket,Key=final)
-          except Exception:
-              current=None
-          metadata={str(k).lower():str(v) for k,v in ((current or {}).get('Metadata') or {}).items()}
-          if current and int(current.get('ContentLength') or -1)==size and metadata.get('sha256')==sha:
-              print('SKIP identical APK',final,size,sha)
-          else:
-              staging=f'.staging/apk/{uuid.uuid4().hex}/{os.environ["ASSET"]}'
-              try:
-                  s3.upload_file(path,bucket,staging,ExtraArgs={'ContentType':'application/vnd.android.package-archive',
-                      'CacheControl':'no-store','Metadata':{'sha256':sha,'grade':'grade9','version':'2.0'}})
-                  staged=s3.head_object(Bucket=bucket,Key=staging)
-                  if int(staged.get('ContentLength') or -1)!=size: raise RuntimeError('staging size mismatch')
-                  args={'Bucket':bucket,'Key':final,'CopySource':{'Bucket':bucket,'Key':staging},
-                      'MetadataDirective':'REPLACE','ContentType':'application/vnd.android.package-archive',
-                      'CacheControl':'public, max-age=3600, must-revalidate',
-                      'Metadata':{'sha256':sha,'grade':'grade9','version':'2.0'}}
-                  try: s3.copy_object(ACL='public-read',**args)
-                  except Exception:
-                      s3.copy_object(**args); s3.put_object_acl(Bucket=bucket,Key=final,ACL='public-read')
-                  result=s3.head_object(Bucket=bucket,Key=final)
-                  if int(result.get('ContentLength') or -1)!=size or (result.get('Metadata') or {}).get('sha256')!=sha:
-                      raise RuntimeError('published APK verification failed')
-                  print('PUBLISHED APK',final,size,sha)
-              finally:
-                  try: s3.delete_object(Bucket=bucket,Key=staging)
-                  except Exception: pass
-          with open(os.environ['GITHUB_ENV'],'a') as out:
-              out.write('ARVAN_APK_URL='+os.environ['ARVAN_PUBLIC']+'/'+final+'\n')
-          PY
+          FINAL="apk/grade9/$ASSET"
+          python3 scripts/publish_public_s3_object.py \
+            --file "$APK" \
+            --bucket "$ARVAN_BUCKET" \
+            --key "$FINAL" \
+            --public-url "$ARVAN_PUBLIC/$FINAL" \
+            --content-type application/vnd.android.package-archive \
+            --metadata grade=grade9 \
+            --metadata version="$VERSION_NAME"
 
       - name: Atomically announce version 2.0 in HM_DB
         env:
