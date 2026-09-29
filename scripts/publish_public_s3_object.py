@@ -140,6 +140,10 @@ def main() -> int:
         config=Config(
             signature_version="s3v4",
             s3={"addressing_style": "path"},
+            # Arvan's S3 API rejects the optional CRC32 request-checksum headers
+            # enabled by recent botocore releases. SigV4 still signs every request.
+            request_checksum_calculation="when_required",
+            response_checksum_validation="when_required",
             connect_timeout=20,
             read_timeout=240,
             retries={"max_attempts": 8, "mode": "adaptive"},

@@ -114,6 +114,8 @@ def s3_client():
         config=Config(
             signature_version="s3v4",
             s3={"addressing_style": "path"},
+            request_checksum_calculation="when_required",
+            response_checksum_validation="when_required",
             connect_timeout=20,
             read_timeout=240,
             retries={"max_attempts": 8, "mode": "adaptive"},
