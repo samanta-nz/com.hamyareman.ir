@@ -1,5 +1,6 @@
 package com.hamyareman.ir.ui.study
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,7 +74,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     val fileId = remember(packId) { StudyMedia.videoIds(packId).firstOrNull() ?: "${packId.replace("_", "-")}-V01.mp4" }
 
     // --- تمام‌صفحه: مخفی‌کردن نوار وضعیت/ناوبری تا وقتی صفحه باز است ---
-    val activity = remember { context as? android.app.Activity }
+    val activity = LocalActivity.current
     // v1.19: دکمه‌ی فول‌اسکرین خود پلیر — چرخش افقی و حذف کنترل‌های بالایی
     var fullscreen by remember { mutableStateOf(false) }
     val startedLandscape = remember {

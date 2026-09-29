@@ -1,7 +1,6 @@
 package com.hamyareman.ir.ui.tools
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.util.Log
 import android.webkit.ConsoleMessage
@@ -43,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -200,7 +200,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     val isLab = toolId == "chemistry" || toolId == "physics" || toolId == "biology"
     val isCalc = toolId == "ti_nspire" || toolId == "casio991" || toolId == "dj120d"
     val hideChrome = isLab || isCalc
-    val activity = ctx as? Activity
+    val activity = LocalActivity.current
     DisposableEffect(isLab) {
         if (!isLab) return@DisposableEffect onDispose { }
         val prev = activity?.requestedOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
