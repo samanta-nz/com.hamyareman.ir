@@ -270,8 +270,9 @@ private fun ZoomableSecureImage(path: String, revision: Int) {
 
 @Composable
 private fun SecureAudioPlayer(item: SecureMediaItem) {
+    val context = LocalContext.current
     var playing by remember { mutableStateOf(false) }
-    val player = remember(item.path) { MediaPlayer.create(LocalContext.current, Uri.fromFile(File(item.path))) }
+    val player = remember(item.path) { MediaPlayer.create(context, Uri.fromFile(File(item.path))) }
     DisposableEffect(player) { onDispose { runCatching { player?.release() } } }
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("🎧", style = MaterialTheme.typography.displayLarge)
