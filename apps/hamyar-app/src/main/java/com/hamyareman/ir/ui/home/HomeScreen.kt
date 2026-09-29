@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.toPersianDigits
+import com.hamyareman.ir.ui.hub.AutoShrinkTileText
 import com.hamyareman.ir.ui.hub.HubCard
 import com.hamyareman.ir.ui.hub.hubTo
 import com.hamyareman.ir.ui.navigation.Screen
@@ -242,13 +243,6 @@ fun HomeScreen(nav: NavController) {
                     repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
-
-            HubCard(
-                "📚", "محتوای همیار",
-                "آموزشگاه، یوگا، حرکات ورزشی و تنفس — منوی هر دسته",
-                Modifier.padding(horizontal = HomeSide),
-                slotId = "page.home.tile",
-            ) { nav.navigate(Screen.ContentHub.route) }
 
             Text(
                 "امروز",
@@ -457,7 +451,7 @@ internal fun SubscriptionChip(raw: String, onClick: () -> Unit = {}) {
 private fun ToolTile(emoji: String, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     androidx.compose.material3.Card(
         onClick = onClick,
-        modifier = modifier.height(104.dp),
+        modifier = modifier.height(73.dp),
         shape = RoundedCornerShape(18.dp),
         colors = androidx.compose.material3.CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -465,21 +459,22 @@ private fun ToolTile(emoji: String, label: String, modifier: Modifier = Modifier
         elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp),
+            Modifier.fillMaxSize().padding(horizontal = 3.dp, vertical = 5.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(emoji, fontSize = 26.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                label,
-                fontFamily = AppTypography.d8Tile.family, fontWeight = AppTypography.d8Tile.weight,
-                fontSize = AppTypography.d8Tile.size,
-                lineHeight = 17.sp,
-                textAlign = TextAlign.Center,
+            Text(emoji, fontSize = 20.sp)
+            Spacer(Modifier.height(2.dp))
+            AutoShrinkTileText(
+                text = label,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = AppTypography.d8Tile.family,
+                    fontWeight = AppTypography.d8Tile.weight,
+                    fontSize = AppTypography.d8Tile.size,
+                    lineHeight = 15.sp,
+                    textAlign = TextAlign.Center,
+                ),
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -489,20 +484,24 @@ private fun ToolTile(emoji: String, label: String, modifier: Modifier = Modifier
 private fun QuickTile(emoji: String, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     androidx.compose.material3.Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(96.dp),
+        modifier = modifier.fillMaxWidth().height(67.dp),
         colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     ) {
         Column(
-            Modifier.fillMaxSize().padding(12.dp),
+            Modifier.fillMaxSize().padding(8.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(emoji, style = MaterialTheme.typography.headlineMedium)
-            Text(
-                label,
-                style = MaterialTheme.typography.titleMedium,
-                fontFamily = AppTypography.d8Tile.family, fontWeight = AppTypography.d8Tile.weight, fontSize = AppTypography.d8Tile.size,
-                textAlign = TextAlign.Center,
+            Text(emoji, style = MaterialTheme.typography.headlineSmall)
+            AutoShrinkTileText(
+                text = label,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = AppTypography.d8Tile.family,
+                    fontWeight = AppTypography.d8Tile.weight,
+                    fontSize = AppTypography.d8Tile.size,
+                    textAlign = TextAlign.Center,
+                ),
+                maxLines = 2,
             )
         }
     }

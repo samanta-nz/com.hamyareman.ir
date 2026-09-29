@@ -51,6 +51,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.hub.AutoShrinkTileText
 import com.hamyareman.ir.ui.profile.AppEdition
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import kotlinx.coroutines.launch
@@ -104,24 +105,30 @@ fun ToolHubScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
                     Row(
-                        Modifier.fillMaxWidth().padding(16.dp),
+                        Modifier.fillMaxWidth().padding(11.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(item.emoji, fontSize = 28.sp)
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                item.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontFamily = AppTypography.cardTitle.family,
-                                fontWeight = AppTypography.cardTitle.weight,
-                                fontSize = AppTypography.cardTitle.size)
-                            Text(
-                                item.subtitle,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontFamily = AppTypography.cardSub.family,
-                                fontWeight = AppTypography.cardSub.weight,
-                                fontSize = AppTypography.cardSub.size)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(item.emoji, fontSize = 21.sp)
+                        Column(Modifier.weight(1f).height(50.dp)) {
+                            AutoShrinkTileText(
+                                text = item.title,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontFamily = AppTypography.cardTitle.family,
+                                    fontWeight = AppTypography.cardTitle.weight,
+                                    fontSize = AppTypography.cardTitle.size,
+                                ),
+                                maxLines = 1,
+                            )
+                            AutoShrinkTileText(
+                                text = item.subtitle,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontFamily = AppTypography.cardSub.family,
+                                    fontWeight = AppTypography.cardSub.weight,
+                                    fontSize = AppTypography.cardSub.size,
+                                ),
+                                maxLines = 2,
+                            )
                         }
                     }
                 }
@@ -185,11 +192,20 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     var loadErr by remember(toolId) { mutableStateOf<String?>(null) }
     LaunchedEffect(toolId) {
         loadErr = null
-        val local = runCatching { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ToolRemote.ensure(ctx, toolId) } }.getOrNull()
+        val local = runCatching {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
+                if (!keyReady) null else ToolRemote.ensure(ctx, toolId)
+            }
+        }.getOrNull()
         pageUrl = when {
             local != null -> "file://$local"
             else -> {
-                loadErr = "فایل از سرور انتخاب‌شده دریافت نشد؛ اتصال یا تنظیم منبع محتوا را بررسی کن."
+                loadErr = if (com.hamyareman.ir.ui.study.HtmlMediaKey.get(ctx) == null) {
+                    "کد بازگشایی محتوا دریافت نشد؛ دوباره وارد حساب شو."
+                } else {
+                    "فایل از سرور انتخاب‌شده دریافت نشد؛ اتصال یا تنظیم منبع محتوا را بررسی کن."
+                }
                 null
             }
         }
@@ -198,8 +214,6 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
         onDispose { ToolRemote.release(ctx, toolId) }
     }
     val isLab = toolId == "chemistry" || toolId == "physics" || toolId == "biology"
-    val isCalc = toolId == "ti_nspire" || toolId == "casio991" || toolId == "dj120d"
-    val hideChrome = isLab || isCalc
     val activity = LocalActivity.current
     DisposableEffect(isLab) {
         if (!isLab) return@DisposableEffect onDispose { }
@@ -238,8 +252,8 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
         if (uid.isNotBlank()) runCatching { ToolSaveStore.pull(ctx, container.tables, uid) }
         applySaved(webRef[0])
     }
+    // همهٔ ابزارهای HTML تمام‌صفحه‌اند؛ فقط نوار ناوبری پایین اپ دیده می‌شود.
     Column(Modifier.fillMaxSize()) {
-        if (!hideChrome) AppTopBar(title, onBack)
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             when {
                 pageUrl == null && loadErr != null -> Text(loadErr.orEmpty(), color = MaterialTheme.colorScheme.error)

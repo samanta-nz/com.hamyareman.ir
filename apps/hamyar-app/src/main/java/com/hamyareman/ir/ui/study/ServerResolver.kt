@@ -15,7 +15,10 @@ import kotlinx.coroutines.withContext
 /** انتخاب origin و سنجش واقعی latency + سرعت دریافت Range از هر دو سرور. */
 object ServerResolver {
 
-    const val ARVAN_PUBLIC = "https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir"
+    const val INTERNAL_PUBLIC = "https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir"
+    private const val EXTERNAL_ENDPOINT = "https://sgp.cloud.appwrite.io/v1"
+    private const val EXTERNAL_PROJECT = "6abb134a002025222005"
+    private const val EXTERNAL_BUCKET = "6abb564d00155cc56d65"
     private const val SAMPLE_BYTES = 256 * 1024
     private const val BENCHMARK_TTL_MS = 30L * 60L * 1000L
 
@@ -42,11 +45,16 @@ object ServerResolver {
     @Volatile private var benchmarkStarted = false
     @Volatile private var lastTest: SelectionTest? = null
 
-    fun external(fileId: String): String =
-        ContentCatalog.keyFor(fileId)?.let(::internal).orEmpty()
+    /** نشانی عمومی فایل در سرور خارجی؛ شناسهٔ فایل مستقل از مسیر مجازی کاتالوگ است. */
+    fun external(fileId: String): String {
+        if (fileId.isBlank()) return ""
+        val encoded = URLEncoder.encode(fileId, "UTF-8").replace("+", "%20")
+        return "$EXTERNAL_ENDPOINT/storage/buckets/$EXTERNAL_BUCKET/files/$encoded/view?project=$EXTERNAL_PROJECT"
+    }
 
+    /** نشانی همان payload در سرور داخلی، با مسیر مجازی پوشه‌بندی‌شده. */
     fun internal(key: String): String =
-        ARVAN_PUBLIC + "/" + key.split("/").joinToString("/") {
+        INTERNAL_PUBLIC + "/" + key.split("/").joinToString("/") {
             URLEncoder.encode(it, "UTF-8").replace("+", "%20")
         }
 
@@ -118,13 +126,28 @@ object ServerResolver {
 
     suspend fun testSelection(mode: ServerPrefs.Mode = ServerPrefs.mode): SelectionTest =
         withContext(Dispatchers.IO) {
-            val key = ContentCatalog.sampleHtmlKey()
-                ?: return@withContext SelectionTest(mode = mode)
-            // از نسخهٔ ۲٫۰ فقط یک origin عمومی داریم؛ هر تست دقیقاً یک Range کوچک می‌گیرد.
-            val probe = measure(ServerPrefs.Origin.INTERNAL, internal(key))
-            val selected = ServerPrefs.Origin.INTERNAL.takeIf { probe.ok }
-            ServerPrefs.saveBenchmark(null, ServerPrefs.StoredProbe(probe.ok, probe.latencyMs, probe.bytesPerSecond), selected)
-            SelectionTest(mode = mode, internal = probe, selected = selected).also { lastTest = it }
+            val urls = sampleUrls() ?: return@withContext SelectionTest(mode = mode)
+            val (externalProbe, internalProbe) = coroutineScope {
+                val ext = async { measure(ServerPrefs.Origin.EXTERNAL, urls.first) }
+                val int = async { measure(ServerPrefs.Origin.INTERNAL, urls.second) }
+                ext.await() to int.await()
+            }
+            val selected = when (mode) {
+                ServerPrefs.Mode.EXTERNAL -> ServerPrefs.Origin.EXTERNAL.takeIf { externalProbe.ok }
+                ServerPrefs.Mode.INTERNAL -> ServerPrefs.Origin.INTERNAL.takeIf { internalProbe.ok }
+                ServerPrefs.Mode.FASTEST -> faster(externalProbe, internalProbe)
+            }
+            ServerPrefs.saveBenchmark(
+                ServerPrefs.StoredProbe(externalProbe.ok, externalProbe.latencyMs, externalProbe.bytesPerSecond),
+                ServerPrefs.StoredProbe(internalProbe.ok, internalProbe.latencyMs, internalProbe.bytesPerSecond),
+                selected,
+            )
+            SelectionTest(
+                mode = mode,
+                external = externalProbe,
+                internal = internalProbe,
+                selected = selected,
+            ).also { lastTest = it }
         }
 
     fun lastSelectionTest(): SelectionTest? = lastTest
@@ -140,12 +163,33 @@ object ServerResolver {
         if (!fresh) scope.launch { runCatching { testSelection(ServerPrefs.Mode.FASTEST) } }
     }
 
-    fun preferredOrigin(): ServerPrefs.Origin = ServerPrefs.Origin.INTERNAL
+    fun preferredOrigin(): ServerPrefs.Origin = when (ServerPrefs.mode) {
+        ServerPrefs.Mode.EXTERNAL -> ServerPrefs.Origin.EXTERNAL
+        ServerPrefs.Mode.INTERNAL -> ServerPrefs.Origin.INTERNAL
+        ServerPrefs.Mode.FASTEST -> ServerPrefs.fastestOrigin ?: ServerPrefs.Origin.INTERNAL
+    }
 
-    /** یک کلید عمومی دقیقاً یک URL آروان دارد؛ fallback پرمصرف Appwrite حذف شده است. */
-    fun candidates(fileId: String, arvanKey: String?): List<String> =
-        arvanKey?.let { listOf(internal(it)) }.orEmpty()
+    /**
+     * حالت دستی فقط همان منبع را می‌گیرد. حالت سریع‌ترین، نتیجهٔ سنجش را اول و
+     * منبع دوم را fallback می‌گذارد؛ هر URL فقط یک بار امتحان می‌شود.
+     */
+    fun candidates(fileId: String, internalKey: String?): List<String> {
+        val externalUrl = external(fileId).takeIf { it.isNotBlank() }
+        val internalUrl = internalKey?.takeIf { it.isNotBlank() }?.let(::internal)
+        return when (ServerPrefs.mode) {
+            ServerPrefs.Mode.EXTERNAL -> listOfNotNull(externalUrl)
+            ServerPrefs.Mode.INTERNAL -> listOfNotNull(internalUrl)
+            ServerPrefs.Mode.FASTEST -> {
+                val preferred = preferredOrigin()
+                if (preferred == ServerPrefs.Origin.EXTERNAL) {
+                    listOfNotNull(externalUrl, internalUrl)
+                } else {
+                    listOfNotNull(internalUrl, externalUrl)
+                }
+            }
+        }.distinct()
+    }
 
-    fun pick(fileId: String, arvanKey: String?): String =
-        candidates(fileId, arvanKey).firstOrNull().orEmpty()
+    fun pick(fileId: String, internalKey: String?): String =
+        candidates(fileId, internalKey).firstOrNull().orEmpty()
 }

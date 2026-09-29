@@ -49,8 +49,11 @@ fun PracticeHubScreen(
                 HubCoverTile(
                     id = g.id,
                     title = g.title,
-                    subtitle = g.subtitle,
-                    onClick = { nav.layerTo(Screen.PracticeGroup.of(g.id)) },
+                    subtitle = if (g.id == "cl-breath") "تمرین‌های تنفسی تعاملی" else g.subtitle,
+                    onClick = {
+                        if (g.id == "cl-breath") nav.layerTo(Screen.ContentCategory.of("breath"))
+                        else nav.layerTo(Screen.PracticeGroup.of(g.id))
+                    },
                 )
             },
         )

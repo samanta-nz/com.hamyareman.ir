@@ -5,19 +5,16 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * نقشه‌ی رسانه‌های درس‌ها. نسخهٔ ۲٫۰ تمام payloadهای عمومی را مستقیماً از آروان
- * می‌خواند؛ Appwrite جدید فقط هویت/TablesDB است و مصرف پهنای‌باند محتوا ندارد.
- */
+/** نقشهٔ رسانه‌های کتاب و صوت روی سرور داخلی و شناسهٔ فضای ذخیره‌سازی جاری. */
 object StudyMedia {
-    const val BUCKET = "6aa1eaae00303400117b"
+    const val BUCKET = "6abb564d00155cc56d65"
 
     fun videoIds(packId: String): List<String> =
         listOf("${packId.replace("_", "-")}-V01.mp4")
 
-    /** محتوای عمومی هرگز از Appwrite خوانده نمی‌شود. */
-    fun externalUrl(fileId: String): String = ""
+    fun externalUrl(fileId: String): String = ServerResolver.external(fileId)
 
+    // نسخهٔ دوم فعلاً برای HTMLهای تعاملی است؛ کتاب و صوت مستقیماً از سرور داخلی می‌آیند.
     fun candidateUrls(fileId: String): List<String> =
         ContentCatalog.keyFor(fileId)?.let { listOf(ServerResolver.internal(it)) }.orEmpty()
 

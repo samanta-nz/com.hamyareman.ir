@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,7 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.navigation.NavController
 import com.hamyareman.ir.ui.AppTypography
@@ -71,12 +75,29 @@ fun HubCard(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(emoji, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontFamily = AppTypography.cardTitle.family, fontWeight = AppTypography.cardTitle.weight, fontSize = AppTypography.cardTitle.size)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = AppTypography.cardSub.family, fontWeight = AppTypography.cardSub.weight, fontSize = AppTypography.cardSub.size)
+        Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(emoji, style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.width(8.dp))
+            Column(Modifier.weight(1f).height(50.dp)) {
+                AutoShrinkTileText(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = AppTypography.cardTitle.family,
+                        fontWeight = AppTypography.cardTitle.weight,
+                        fontSize = AppTypography.cardTitle.size,
+                    ),
+                    maxLines = 1,
+                )
+                AutoShrinkTileText(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = AppTypography.cardSub.family,
+                        fontWeight = AppTypography.cardSub.weight,
+                        fontSize = AppTypography.cardSub.size,
+                    ),
+                    maxLines = 2,
+                )
             }
         }
     }
@@ -111,13 +132,14 @@ data class HubCoverTile(
 
 @Composable
 fun HubCoverGrid(tiles: List<HubCoverTile>, slotId: String = "hub.practice.item") {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-        tiles.chunked(2).forEach { pair ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                pair.forEach { tile ->
+    // سه ستون به‌جای دو ستون: عرض هر کاشی حدود ۳۰٪ کوچک‌تر می‌شود.
+    Column(verticalArrangement = Arrangement.spacedBy(7.dp), modifier = Modifier.fillMaxWidth()) {
+        tiles.chunked(3).forEach { rowTiles ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                rowTiles.forEach { tile ->
                     HubCoverCard(tile, Modifier.weight(1f), slotId)
                 }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
+                repeat(3 - rowTiles.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
@@ -144,27 +166,54 @@ private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String)
                     Text(tile.title.take(1), style = MaterialTheme.typography.headlineLarge)
                 }
             }
-            Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    tile.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 2,
-                    fontFamily = AppTypography.cardTitle.family,
-                    fontWeight = AppTypography.cardTitle.weight,
-                    fontSize = AppTypography.cardTitle.size,
+            // ارتفاع متن ثابت: یک سطر عنوان + دو سطر توضیح. فونت فقط کوچک می‌شود
+            // و برای متن کوتاه هرگز از اندازهٔ طراحی بزرگ‌تر نمی‌شود.
+            Column(
+                Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 7.dp, vertical = 5.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp),
+            ) {
+                AutoShrinkTileText(
+                    text = tile.title,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontFamily = AppTypography.cardTitle.family,
+                        fontWeight = AppTypography.cardTitle.weight,
+                        fontSize = AppTypography.cardTitle.size,
+                    ),
+                    maxLines = 1,
                 )
-                Text(
-                    tile.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
+                AutoShrinkTileText(
+                    text = tile.subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = AppTypography.cardSub.family,
+                        fontWeight = AppTypography.cardSub.weight,
+                        fontSize = AppTypography.cardSub.size,
+                    ),
                     maxLines = 2,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = AppTypography.cardSub.family,
-                    fontWeight = AppTypography.cardSub.weight,
-                    fontSize = AppTypography.cardSub.size,
                 )
             }
         }
     }
+}
+
+@Composable
+internal fun AutoShrinkTileText(
+    text: String,
+    style: TextStyle,
+    maxLines: Int,
+) {
+    var size by remember(text, style.fontSize, maxLines) { mutableStateOf(style.fontSize) }
+    Text(
+        text = text,
+        style = style.copy(fontSize = size),
+        maxLines = maxLines,
+        overflow = TextOverflow.Clip,
+        onTextLayout = { result ->
+            if ((result.didOverflowWidth || result.didOverflowHeight) && size.value > 8f) {
+                size = (size.value * 0.9f).coerceAtLeast(8f).sp
+            }
+        },
+    )
 }
 
 internal fun loadPracticeCover(ctx: android.content.Context, id: String) = runCatching {

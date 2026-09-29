@@ -27,6 +27,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
+import com.hamyareman.ir.ui.hub.HubCoverGrid
+import com.hamyareman.ir.ui.hub.HubCoverTile
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.study.SecureWebEffect
 import kotlinx.coroutines.Dispatchers
@@ -87,18 +89,17 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
             if (items.isEmpty()) {
                 Text("هنوز محتوایی برای این دسته نیست.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            items.forEach { it ->
-                Card(modifier = Modifier.fillMaxWidth(), onClick = { onOpen(it.id) }) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Text("📄")
-                        Text(it.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                    }
-                }
-            }
+            HubCoverGrid(
+                items.map { item ->
+                    HubCoverTile(
+                        id = ContentCatalog.coverId(item),
+                        title = item.title,
+                        subtitle = ContentCatalog.tileSubtitle(item),
+                        onClick = { onOpen(item.id) },
+                    )
+                },
+                slotId = "hub.content.item",
+            )
         }
     }
 }
@@ -112,12 +113,12 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 @Composable
 fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
+    val container = com.hamyareman.ir.LocalAppContainer.current
     SecureWebEffect()
     var activeId by remember(itemId) { mutableStateOf(itemId) }
     var html by remember(activeId) { mutableStateOf<String?>(null) }
     var error by remember(activeId) { mutableStateOf<String?>(null) }
     var progress by remember(activeId) { mutableStateOf(0) }
-    var sourceLabel by remember(activeId) { mutableStateOf("") }
     var retry by remember(activeId) { mutableStateOf(0) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
@@ -127,19 +128,22 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         html = null
         error = null
         progress = 0
-        sourceLabel = ""
         if (current == null) {
             error = "این فایل در کاتالوگ نیست."
             return@LaunchedEffect
         }
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val loaded = withContext(Dispatchers.IO) {
-            com.hamyareman.ir.ui.study.RemoteHtmlCache.load(ctx, current.aw, current.key) { done, total, source ->
-                if (total > 0) {
-                    val p = ((done * 100L) / total).toInt().coerceIn(0, 100)
-                    handler.post {
-                        progress = p
-                        sourceLabel = if (source == com.hamyareman.ir.ui.study.ServerPrefs.Origin.INTERNAL) "آروان" else "Appwrite"
+            val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
+            if (!keyReady) {
+                Result.failure(IllegalStateException("کد بازگشایی محتوا دریافت نشد؛ دوباره وارد حساب شو."))
+            } else {
+                com.hamyareman.ir.ui.study.RemoteHtmlCache.load(ctx, current.aw, current.key) { done, total, _ ->
+                    if (total > 0) {
+                        val p = ((done * 100L) / total).toInt().coerceIn(0, 100)
+                        handler.post {
+                            progress = p
+                        }
                     }
                 }
             }
@@ -147,22 +151,13 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         loaded.onSuccess {
             html = it.html
             progress = 100
-            sourceLabel = if (it.source == com.hamyareman.ir.ui.study.ServerPrefs.Origin.INTERNAL) "آروان" else "Appwrite"
         }.onFailure {
             error = it.message?.take(220) ?: "دریافت فایل از سرور انتخاب‌شده ممکن نشد."
         }
     }
 
+    // نمایش HTML تمام‌صفحه است؛ فقط نوار ناوبری پایینِ اپ بیرون این صفحه می‌ماند.
     Column(Modifier.fillMaxSize()) {
-        AppTopBar(item?.title ?: "محتوا", onBack)
-        if (sourceLabel.isNotBlank()) {
-            Text(
-                "منبع: $sourceLabel",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 3.dp),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         when {
             error != null -> Column(
                 Modifier.fillMaxSize().padding(24.dp),

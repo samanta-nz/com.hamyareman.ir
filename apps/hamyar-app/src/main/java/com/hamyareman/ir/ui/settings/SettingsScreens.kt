@@ -80,7 +80,7 @@ fun SettingsScreen(nav: NavController) {
             ) { nav.navigate(Screen.Reminders.route) }
             SectionCard(
                 "تنظیمات سرور",
-                "سرور محتوا (پیش‌فرض: سریع‌ترین — خارجی Appwrite — ایرانی آروان)، به‌علاوهٔ " +
+                "سرور محتوا (پیش‌فرض: سریع‌ترین — سرور خارجی — سرور داخلی)، به‌علاوهٔ " +
                     "حجمِ کش، صفِ ارسال، وضعیتِ اتصال و زمانِ آخرین همگام‌سازی — همگام‌سازی " +
                     "خودکار در پس‌زمینه انجام می‌شود، بدونِ دکمه.",
             ) { nav.navigate(Screen.Sync.route) }
@@ -583,9 +583,7 @@ fun SyncScreen(onBack: () -> Unit) {
             if (!container.isBackendConfigured) {
                 Card(Modifier.fillMaxWidth()) {
                     Text(
-                        "برای فعال‌شدن همگام‌سازی، در فایل local.properties مقادیر APPWRITE_PROJECT_ID، " +
-                            "APPWRITE_ENDPOINT و APPWRITE_DATABASE_ID را بگذار و اپ را دوباره بیلد کن. " +
-                            "جزئیات کامل در APPWRITE.md است.",
+                        "سرور خارجی در این نسخه در دسترس نیست. برای فعال‌شدن همگام‌سازی، نسخهٔ رسمی و به‌روز برنامه را نصب کن.",
                         Modifier.padding(12.dp),
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -622,7 +620,7 @@ private fun buildStatus(container: com.hamyareman.ir.di.AppContainer): String {
     val heartPending = container.heart.pendingCount()
     val last = container.sync.lastSyncAt()
     return buildString {
-        append(if (container.isBackendConfigured) "متصل به Appwrite" else "حالت محلی (بدون سرور)")
+        append(if (container.isBackendConfigured) "متصل به سرور خارجی" else "حالت محلی (بدون سرور خارجی)")
         append("\n")
         append(toPersianDigits("$pending قلم در صف همگام‌سازی"))
         append("\n")

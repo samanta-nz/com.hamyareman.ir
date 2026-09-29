@@ -1,4 +1,4 @@
-name: Release Hamyar grade 9 v2.0
+name: Release Hamyar grade 9 v2.1
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: release-hamyar-grade9-v2
+  group: release-hamyar-grade9-v2-1
   cancel-in-progress: false
 
 env:
@@ -20,8 +20,8 @@ env:
   APPWRITE_DATABASE_NAME: HM_DB
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
-  VERSION_CODE: '200'
-  VERSION_NAME: '2.0'
+  VERSION_CODE: '210'
+  VERSION_NAME: '2.1'
   ROW_ID: app_release_grade9
   ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
   ARVAN_REGION: ir-thr-at1
@@ -30,7 +30,7 @@ env:
 
 jobs:
   release:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade nine 2.0')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade nine 2.1')
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
@@ -154,7 +154,7 @@ jobs:
           TAG="grade9-v$VERSION_NAME"
           gh release view "$TAG" >/dev/null 2>&1 || \
             gh release create "$TAG" --target "$GITHUB_SHA" --title "همیار من نهم $VERSION_NAME" \
-              --notes "نسخه ۲٫۰ همیار من نهم — ورود استاندارد، Google Native و زیرساخت HM_DB."
+              --notes "نسخه ۲٫۱ همیار من نهم — محتوای تعاملی کامل، نمایش تمام‌صفحه و سرور دوم محتوا."
           gh release upload "$TAG" "$APK#$ASSET" --clobber
           RELEASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$ASSET"
           echo "RELEASE_URL=$RELEASE_URL" >> "$GITHUB_ENV"
@@ -175,7 +175,7 @@ jobs:
             --metadata grade=grade9 \
             --metadata version="$VERSION_NAME"
 
-      - name: Atomically announce version 2.0 in HM_DB
+      - name: Atomically announce forced version 2.1 in HM_DB
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
@@ -194,11 +194,11 @@ jobs:
           latest=int(old.get('latest') or 0)
           new=int(os.environ['VERSION_CODE'])
           if latest > new: raise SystemExit(f'server version {latest} is newer than {new}')
-          payload={'latest':new,'name':os.environ['VERSION_NAME'],'min':0,
+          payload={'latest':new,'name':os.environ['VERSION_NAME'],'min':new,
               'url':os.environ['ARVAN_APK_URL'],'externalUrl':os.environ['RELEASE_URL'],
               'internalUrl':os.environ['ARVAN_APK_URL'],'size':int(os.environ['APK_SIZE']),
               'sha256':os.environ['APK_SHA'],'chan':'stable','rollout':100,
-              'notes':['ورود استاندارد با ایمیل و گوگل','زیرساخت جدید HM_DB','صوت‌های فصل اول ریاضی نهم'],
+              'notes':['محتوای تعاملی کامل در جای اصلی','نمایش تمام‌صفحهٔ صفحه‌های تعاملی','سرور دوم محتوا و بهبود تقویم'],
               'packageName':os.environ['PACKAGE'],'gradeId':os.environ['GRADE_ID'],
               'signingSha256':os.environ['SIGNING_SHA']}
           body={'data':{'userId':'global','key':row,
@@ -214,7 +214,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hamyar-grade9-2.0-release
+          name: hamyar-grade9-2.1-release
           path: dist/*.apk
           if-no-files-found: warn
           retention-days: 30
@@ -223,7 +223,7 @@ jobs:
         if: success()
         run: |
           {
-            echo '## همیار من نهم ۲٫۰ منتشر شد'
+            echo '## همیار من نهم ۲٫۱ منتشر شد'
             echo "- package: \`$PACKAGE\`"
             echo "- version: $VERSION_NAME ($VERSION_CODE)"
             echo "- APK sha256: \`$APK_SHA\`"

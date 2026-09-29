@@ -20,7 +20,7 @@ object RemoteHtmlCache {
     data class Failure(val message: String)
 
     private fun sourceOf(url: String): ServerPrefs.Origin =
-        if (url.startsWith(ServerResolver.ARVAN_PUBLIC)) ServerPrefs.Origin.INTERNAL
+        if (url.startsWith(ServerResolver.INTERNAL_PUBLIC)) ServerPrefs.Origin.INTERNAL
         else ServerPrefs.Origin.EXTERNAL
 
     private fun digest(value: String): String = MessageDigest.getInstance("SHA-256")
@@ -53,10 +53,10 @@ object RemoteHtmlCache {
     fun load(
         ctx: Context,
         fileId: String,
-        arvanKey: String?,
+        internalKey: String?,
         onProgress: (downloaded: Long, total: Long, source: ServerPrefs.Origin) -> Unit = { _, _, _ -> },
     ): Result<Loaded> {
-        val candidates = ServerResolver.candidates(fileId, arvanKey)
+        val candidates = ServerResolver.candidates(fileId, internalKey)
         if (candidates.isEmpty()) {
             return Result.failure(IllegalStateException("این فایل روی سرور انتخاب‌شده نگاشت نشده است."))
         }

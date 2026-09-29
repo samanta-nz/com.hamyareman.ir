@@ -78,8 +78,8 @@ class AppContainer(context: Context) {
         if (appwrite.isConfigured) {
             CoroutineScope(Dispatchers.IO).launch {
                 runCatching { Account(appwrite.client).get() }
-                    .onSuccess { Log.i("AppwritePing", "اتصال Appwrite تأیید شد (پروژه: ${BuildConfig.APPWRITE_PROJECT_NAME})") }
-                    .onFailure { Log.w("AppwritePing", "Appwrite پاسخ داد: ${it.message}") }
+                    .onSuccess { Log.i("BackendPing", "اتصال سرور خارجی تأیید شد") }
+                    .onFailure { Log.w("BackendPing", "سرور خارجی پاسخ داد: ${it.message}") }
             }
         }
     }

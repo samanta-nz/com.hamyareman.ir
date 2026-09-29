@@ -130,6 +130,38 @@ object ContentCatalog {
 
     fun sampleHtmlKey(): String? = sampleHtmlItem()?.key
 
-    /** برای ابزارها: از روی شناسهٔ Appwrite (tool-*.html). */
+    /** جلد کاشی‌های آموزشگاه؛ شمارهٔ ۱ تا ۳۴ به جلد هم‌موضوع قبلی وصل می‌شود. */
+    private val academyCovers = listOf(
+        "sk-speed", "sk-hand", "sk-type", "sk-cornell", "sk-summary",
+        "sk-debate", "sk-fallacy", "sk-present", "sk-voice", "sk-email", "sk-listen",
+        "sk-math", "sk-palace", "sk-lateral", "sk-friend", "sk-feel", "sk-bias",
+        "sk-resilience", "sk-plan", "sk-habit", "sk-desk", "sk-win", "sk-ai-what",
+        "sk-search", "sk-privacy", "sk-fake", "sk-team", "sk-conflict", "sk-no",
+        "sk-budget", "sk-need", "sk-storm", "sk-everyday", "mu-staff",
+    )
+
+    fun coverId(item: ContentItem): String {
+        if (item.cat == "amozesh") {
+            val number = item.id.removePrefix("amz-").toIntOrNull()
+            if (number != null) return academyCovers.getOrElse(number - 1) { item.id }
+        }
+        return when (item.cat) {
+            "yoga" -> "hl-yoga"
+            "sport" -> "hl-exercise"
+            "breath" -> "cl-breath"
+            else -> item.id
+        }
+    }
+
+    fun tileSubtitle(item: ContentItem): String = when (item.cat) {
+        "amozesh" -> "آموزش تعاملی مهارت"
+        "yoga" -> "حرکت تعاملی با راهنمای کامل"
+        "sport" -> "تمرین تعاملی مرحله‌به‌مرحله"
+        "breath" -> "تمرین تنفسی تعاملی"
+        "lab" -> "آزمایشگاه تعاملی"
+        else -> "محتوای تعاملی"
+    }
+
+    /** برای ابزارها: از روی شناسهٔ فایل. */
     fun keyForOrNull(fileId: String): String? = keyFor(fileId)
 }

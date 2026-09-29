@@ -34,14 +34,14 @@ jobs:
           set -euo pipefail
           python3 -m py_compile scripts/*.py
           python3 scripts/validate_grade_architecture.py
-      - name: Test, lint, and assemble grade eight
+      - name: Test, lint, and assemble grade nine
         run: |
           set +e
           ./gradlew \
             :core-common:testDebugUnitTest \
-            :hamyar-app:testP08DebugUnitTest \
-            :hamyar-app:lintP08Debug \
-            :hamyar-app:assembleP08Debug \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:lintP09Debug \
+            :hamyar-app:assembleP09Debug \
             --stacktrace 2>&1 | tee /tmp/grade-gradle.log
           code=${PIPESTATUS[0]}
           if [ "$code" -ne 0 ]; then
@@ -59,16 +59,19 @@ jobs:
                 done
           fi
           exit "$code"
-      - name: Verify packaged grade-eight identity and signer
+      - name: Verify packaged grade-nine identity, version, and signer
         run: |
           set -euo pipefail
           AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
           APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
           EXPECTED_SIGNER=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
-          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p08/debug -type f -name '*.apk' -print)
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
           test "${#files[@]}" -eq 1
           apk="${files[0]}"
-          "$AAPT" dump badging "$apk" | head -1 | grep -F "name='com.hamyareman.p08'"
+          badging=$("$AAPT" dump badging "$apk" | head -1)
+          echo "$badging" | grep -F "name='com.hamyareman.p09'"
+          echo "$badging" | grep -F "versionCode='210'"
+          echo "$badging" | grep -F "versionName='2.1-debug'"
           signer=$("$APKSIGNER" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')
           test "$signer" = "$EXPECTED_SIGNER"
-          printf 'p08 package=com.hamyareman.p08 signer=%s\n' "$signer"
+          printf 'p09 package=com.hamyareman.p09 version=2.1 signer=%s\n' "$signer"

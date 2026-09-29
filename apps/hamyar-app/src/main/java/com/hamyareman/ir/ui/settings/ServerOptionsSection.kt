@@ -50,7 +50,7 @@ fun ServerOptionsSection() {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("منبع دانلود محتوا", style = MaterialTheme.typography.titleSmall)
             Text(
-                "کتاب‌ها، صداها و صفحه‌های دارای نسخهٔ دوم از کدام سرور دریافت شوند؟",
+                "صفحه‌های تعاملی دارای نسخهٔ دوم از کدام سرور دریافت شوند؟ کتاب‌ها و صداها از سرور داخلی می‌آیند.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -60,25 +60,25 @@ fun ServerOptionsSection() {
                 ServerPrefs.Mode.FASTEST, mode, ::setMode,
             )
             ServerOption(
-                "۲. سرور خارجی (Appwrite)",
-                "فقط Appwrite؛ خطا بی‌صدا به آروان منتقل نمی‌شود.",
+                "۲. سرور خارجی",
+                "فقط سرور خارجی؛ خطا بی‌صدا به سرور داخلی منتقل نمی‌شود.",
                 ServerPrefs.Mode.EXTERNAL, mode, ::setMode,
             )
             ServerOption(
-                "۳. سرور ایرانی (آروان)",
-                "فقط آروان؛ خطا بی‌صدا به Appwrite منتقل نمی‌شود.",
+                "۳. سرور داخلی",
+                "فقط سرور داخلی؛ خطا بی‌صدا به سرور خارجی منتقل نمی‌شود.",
                 ServerPrefs.Mode.INTERNAL, mode, ::setMode,
             )
 
             if (testing) {
                 Text("در حال سنجش واقعی اتصال و سرعت…", style = MaterialTheme.typography.labelSmall)
             } else {
-                result?.external?.let { ProbeLine("Appwrite", it) }
-                result?.internal?.let { ProbeLine("آروان", it) }
+                result?.external?.let { ProbeLine("سرور خارجی", it) }
+                result?.internal?.let { ProbeLine("سرور داخلی", it) }
                 if (mode == ServerPrefs.Mode.FASTEST) {
                     val selected = when (result?.selected) {
-                        ServerPrefs.Origin.EXTERNAL -> "Appwrite"
-                        ServerPrefs.Origin.INTERNAL -> "آروان"
+                        ServerPrefs.Origin.EXTERNAL -> "سرور خارجی"
+                        ServerPrefs.Origin.INTERNAL -> "سرور داخلی"
                         null -> "هیچ‌کدام"
                     }
                     Text("انتخاب فعلی: $selected", style = MaterialTheme.typography.labelMedium)

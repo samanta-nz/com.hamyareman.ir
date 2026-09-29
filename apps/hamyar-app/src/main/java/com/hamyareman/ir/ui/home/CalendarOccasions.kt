@@ -37,6 +37,7 @@ data class CalEvent(
 ) {
     val kind: OccasionKind
         get() = when (category) {
+            "تعطیل رسمی", "تعطیل مدرسه" -> OccasionKind.OFFICIAL
             "جهانی" -> OccasionKind.WORLD
             "مذهبی قمری" -> OccasionKind.RELIGIOUS
             "ملی باستانی ایرانی" -> OccasionKind.ANCIENT
@@ -131,9 +132,11 @@ object CalendarOccasions {
     fun allOn(ctx: Context, j: JalaliDate.Jalali, lunarOffset: Int = CalendarPrefs.lunarOffset(ctx)): List<Occasion> {
         val iso = JalaliDate.toGregorianIso(j) ?: return emptyList()
         val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: return emptyList()
-        val extra = if (date.dayOfWeek == DayOfWeek.FRIDAY)
-            listOf(Occasion("جمعه", OccasionKind.OFFICIAL, true))
-        else emptyList()
+        val extra = when (date.dayOfWeek) {
+            DayOfWeek.FRIDAY -> listOf(Occasion("جمعه", OccasionKind.OFFICIAL, true))
+            DayOfWeek.THURSDAY -> listOf(Occasion("تعطیلی مدرسه", OccasionKind.OFFICIAL, true))
+            else -> emptyList()
+        }
         return extra + matching(ctx, date, lunarOffset).flatMap { e ->
             val base = Occasion(e.title, e.kind, e.holiday)
             if (e.holiday) listOf(Occasion(e.title, OccasionKind.OFFICIAL, true), base) else listOf(base)
@@ -169,12 +172,23 @@ object CalendarOccasions {
         for (d in 1..dim) {
             val iso = JalaliDate.toGregorianIso(JalaliDate.Jalali(year, month, d)) ?: continue
             val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: continue
-            matching(ctx, date, lunarOffset).forEach { e ->
+            val matched = matching(ctx, date, lunarOffset)
+            matched.forEach { e ->
                 val kinds = buildList {
                     add(e.kind)
                     if (e.holiday) add(OccasionKind.OFFICIAL)
                 }
                 if (kinds.any { it in enabled }) out += d to e
+            }
+            // جمعه و تعطیلی مدرسه همیشه ردیف مستقل دارند؛ حتی اگر هیچ مناسبت
+            // دیگری ثبت نشده باشد یا همان روز مناسبت دیگری هم وجود داشته باشد.
+            if (OccasionKind.OFFICIAL in enabled) {
+                val synthetic = when (date.dayOfWeek) {
+                    DayOfWeek.FRIDAY -> CalEvent("تعطیل رسمی", "جمعه", true)
+                    DayOfWeek.THURSDAY -> CalEvent("تعطیل مدرسه", "تعطیلی مدرسه", true)
+                    else -> null
+                }
+                if (synthetic != null && matched.none { it.title == synthetic.title }) out += d to synthetic
             }
         }
         return out
