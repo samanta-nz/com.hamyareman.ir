@@ -63,12 +63,16 @@ def ensure_target_bucket(entries: list[dict[str, Any]]) -> None:
     allowed = list(dict.fromkeys(existing + required))
     required_size = max((int(item.get("size") or 0) for item in entries), default=0)
     maximum_size = max(int(current.get("maximumFileSize") or 0), required_size)
-    if allowed == existing and maximum_size == int(current.get("maximumFileSize") or 0):
+    if (
+        allowed == existing
+        and maximum_size == int(current.get("maximumFileSize") or 0)
+        and bool(current.get("fileSecurity"))
+    ):
         return
     body = {
         "name": current["name"],
         "permissions": current.get("$permissions") or [],
-        "fileSecurity": bool(current.get("fileSecurity", True)),
+        "fileSecurity": True,
         "enabled": bool(current.get("enabled", True)),
         "maximumFileSize": maximum_size,
         "allowedFileExtensions": allowed,
