@@ -52,6 +52,43 @@ def target_headers() -> dict[str, str]:
     return {"X-Appwrite-Project": TARGET_PROJECT, "X-Appwrite-Key": TARGET_KEY}
 
 
+def ensure_target_bucket(entries: list[dict[str, Any]]) -> None:
+    """Preserve current bucket policy while allowing the encrypted HTML suffixes."""
+    url = f"{TARGET_ENDPOINT}/storage/buckets/{TARGET_BUCKET}"
+    response = requests.get(url, headers=target_headers(), timeout=(20, 60))
+    response.raise_for_status()
+    current = response.json()
+    existing = [str(x).lower().lstrip(".") for x in (current.get("allowedFileExtensions") or [])]
+    required = ["html", "htm", "hmk1"]
+    allowed = list(dict.fromkeys(existing + required))
+    required_size = max((int(item.get("size") or 0) for item in entries), default=0)
+    maximum_size = max(int(current.get("maximumFileSize") or 0), required_size)
+    if allowed == existing and maximum_size == int(current.get("maximumFileSize") or 0):
+        return
+    body = {
+        "name": current["name"],
+        "permissions": current.get("$permissions") or [],
+        "fileSecurity": bool(current.get("fileSecurity", True)),
+        "enabled": bool(current.get("enabled", True)),
+        "maximumFileSize": maximum_size,
+        "allowedFileExtensions": allowed,
+        "compression": current.get("compression") or "none",
+        "encryption": bool(current.get("encryption", True)),
+        "antivirus": bool(current.get("antivirus", True)),
+    }
+    updated = requests.put(
+        url,
+        headers={**target_headers(), "Content-Type": "application/json"},
+        json=body,
+        timeout=(20, 90),
+    )
+    updated.raise_for_status()
+    print(
+        f"TARGET_BUCKET configured extensions={len(allowed)} maximumFileSize={maximum_size}",
+        flush=True,
+    )
+
+
 def list_target_files() -> dict[str, dict[str, Any]]:
     url = f"{TARGET_ENDPOINT}/storage/buckets/{TARGET_BUCKET}/files"
     found: dict[str, dict[str, Any]] = {}
@@ -114,25 +151,54 @@ def obtain_media_key() -> str:
         if len(raw) != 32:
             raise RuntimeError("HTML_MEDIA_KEY_B64 does not decode to 32 bytes")
         return supplied
-    if not SOURCE_KEY:
-        raise RuntimeError("neither HTML_MEDIA_KEY_B64 nor SOURCE_APPWRITE_API_KEY is available")
-    headers = {"X-Appwrite-Project": SOURCE_PROJECT, "X-Appwrite-Key": SOURCE_KEY}
+
     paths = [
         f"/tablesdb/{SOURCE_DATABASE}/tables/app_state/rows/html_media_key",
         f"/databases/{SOURCE_DATABASE}/collections/app_state/documents/html_media_key",
     ]
     errors: list[str] = []
-    for path in paths:
-        response = requests.get(SOURCE_ENDPOINT + path, headers=headers, timeout=(20, 60))
-        if response.status_code not in range(200, 300):
-            errors.append(str(response.status_code))
-            continue
-        payload = json.loads(response.json().get("payload") or "{}")
-        encoded = str(payload.get("b") or "")
-        raw = base64.b64decode(encoded, validate=True)
-        if len(raw) != 32:
-            raise RuntimeError("legacy HTML media-key row is malformed")
-        return encoded
+
+    def read_with(session: requests.Session, headers: dict[str, str], label: str) -> str | None:
+        for path in paths:
+            response = session.get(SOURCE_ENDPOINT + path, headers=headers, timeout=(20, 60))
+            if response.status_code not in range(200, 300):
+                errors.append(f"{label}-{response.status_code}")
+                continue
+            payload = json.loads(response.json().get("payload") or "{}")
+            encoded = str(payload.get("b") or "")
+            raw = base64.b64decode(encoded, validate=True)
+            if len(raw) != 32:
+                raise RuntimeError("legacy HTML media-key row is malformed")
+            return encoded
+        return None
+
+    if SOURCE_KEY:
+        with requests.Session() as source:
+            found = read_with(
+                source,
+                {"X-Appwrite-Project": SOURCE_PROJECT, "X-Appwrite-Key": SOURCE_KEY},
+                "key",
+            )
+            if found:
+                return found
+    else:
+        # The row intentionally grants read("users") because every signed-in app
+        # must decode HTML. If anonymous auth is enabled, an ephemeral source
+        # session can perform the same permitted read without an administrator key.
+        with requests.Session() as source:
+            auth_headers = {"X-Appwrite-Project": SOURCE_PROJECT, "Content-Type": "application/json"}
+            auth = source.post(
+                SOURCE_ENDPOINT + "/account/sessions/anonymous",
+                headers=auth_headers,
+                json={},
+                timeout=(20, 60),
+            )
+            if auth.status_code in range(200, 300):
+                found = read_with(source, {"X-Appwrite-Project": SOURCE_PROJECT}, "session")
+                if found:
+                    return found
+            else:
+                errors.append(f"anonymous-{auth.status_code}")
     raise RuntimeError("legacy HTML media-key row unavailable: " + ",".join(errors))
 
 
@@ -177,6 +243,7 @@ def main() -> int:
     entries = html_entries(root)
     if args.limit > 0:
         entries = entries[: args.limit]
+    ensure_target_bucket(entries)
     target = list_target_files()
     client = Client().set_endpoint(TARGET_ENDPOINT).set_project(TARGET_PROJECT).set_key(TARGET_KEY)
     storage = Storage(client)
