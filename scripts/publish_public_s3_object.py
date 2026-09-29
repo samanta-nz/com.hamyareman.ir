@@ -69,19 +69,34 @@ def put_file(
     metadata: dict[str, str],
     acl: str | None = None,
 ) -> None:
-    """Single PUT avoids multipart extensions rejected by some S3-compatible APIs."""
+    """Upload with a presigned fixed-length PUT.
+
+    Recent botocore versions wrap request bodies with AWS checksum/chunked
+    extensions that Arvan rejects as ``InvalidArgument``. Presigning keeps SigV4
+    authentication while requests sends an ordinary fixed-length HTTP body.
+    """
     params: dict[str, Any] = {
         "Bucket": bucket,
         "Key": key,
         "ContentType": content_type,
         "CacheControl": cache_control,
         "Metadata": metadata,
-        "ContentLength": source.stat().st_size,
+    }
+    headers = {
+        "Content-Type": content_type,
+        "Cache-Control": cache_control,
+        "Content-Length": str(source.stat().st_size),
+        **{f"x-amz-meta-{name}": value for name, value in metadata.items()},
     }
     if acl:
         params["ACL"] = acl
+        headers["x-amz-acl"] = acl
+    url = s3.generate_presigned_url("put_object", Params=params, ExpiresIn=900)
     with source.open("rb") as body:
-        s3.put_object(Body=body, **params)
+        response = requests.put(url, data=body, headers=headers, timeout=(20, 300))
+    if response.status_code not in range(200, 300):
+        detail = response.text.replace("\n", " ").replace("\r", " ")[:500]
+        raise RuntimeError(f"presigned PUT HTTP {response.status_code}: {detail}")
 
 
 def public_probe(url: str, size: int) -> tuple[bool, str]:
