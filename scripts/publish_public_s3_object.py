@@ -276,4 +276,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:
+        print(f"S3 publish failed: {error_label(exc)}", file=sys.stderr)
+        sys.exit(1)

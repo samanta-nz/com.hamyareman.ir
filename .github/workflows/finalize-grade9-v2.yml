@@ -97,10 +97,9 @@ jobs:
           status=${PIPESTATUS[0]}
           set -e
           if [ "$status" -ne 0 ]; then
-            tail -n 12 /tmp/arvan-publish.log | while IFS= read -r line; do
-              safe="${line//'%'/'%25'}"; safe="${safe//$'\r'/'%0D'}"; safe="${safe//$'\n'/'%0A'}"
-              echo "::error title=Arvan public APK::$safe"
-            done
+            line="$(tail -n 1 /tmp/arvan-publish.log)"
+            safe="${line//'%'/'%25'}"; safe="${safe//$'\r'/'%0D'}"; safe="${safe//$'\n'/'%0A'}"
+            echo "::error title=Arvan public APK::$safe"
             exit "$status"
           fi
 
