@@ -86,7 +86,7 @@ jobs:
           set -euo pipefail
           FINAL="apk/grade9/$ASSET"
           set +e
-          python3 scripts/publish_public_s3_object.py \
+          python3 -u scripts/publish_public_s3_object.py \
             --file "$APK" \
             --bucket "$ARVAN_BUCKET" \
             --key "$FINAL" \
