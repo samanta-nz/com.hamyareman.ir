@@ -333,31 +333,31 @@ class MainActivity : FragmentActivity() {
                                 var saving by remember { mutableStateOf(false) }
                                 var formError by remember { mutableStateOf<String?>(null) }
                                 var email by remember { mutableStateOf("") }
-                                var currentUsername by remember { mutableStateOf("") }
+                                var offerEmailPassword by remember { mutableStateOf(false) }
+                                var optionalPasswordSaved by remember { mutableStateOf(false) }
                                 LaunchedEffect(Unit) {
                                     val me = runCatching { container.auth.currentUser() }.getOrNull()
                                     email = me?.email.orEmpty()
-                                    currentUsername = me?.username?.ifBlank { null }
-                                        ?: runCatching { container.auth.currentUsername() }.getOrNull().orEmpty()
+                                    offerEmailPassword = container.auth.lastSignInWasGoogle()
                                 }
                                 com.hamyareman.ir.ui.profile.StudentProfileScreen(
                                     email = email,
                                     saving = saving,
                                     error = formError,
-                                    currentUsername = currentUsername,
-                                    onSubmit = { fn, ln, age, birthDate, grade, phone, gender, province, county, city, un, pw ->
+                                    offerEmailPassword = offerEmailPassword,
+                                    onSubmit = { fn, ln, age, birthDate, grade, phone, gender, province, county, city, pw ->
                                         saving = true; formError = null
                                         scope.launch {
-                                            // v1.65 — نام کاربریِ یکتا (+ رمز برای حسابِ گوگلی) پیش از
-                                            // ثبتِ پروفایل ذخیره می‌شود تا ورودِ بعدی بدونِ گوگل/اینترنت ممکن شود.
-                                            if (un.isNotBlank() && un != currentUsername) {
-                                                val r = container.auth.saveUsername(un, pw.ifBlank { null }, null)
-                                                if (r is AppResult.Err) {
-                                                    formError = r.error.userMessage
+                                            // ورود ایمیلی از قبل رمز دارد. فقط برای حسابی که با Google
+                                            // وارد شده، رمز اختیاری روی همان ایمیل ثبت می‌شود.
+                                            if (pw.isNotBlank() && !optionalPasswordSaved) {
+                                                val result = container.auth.setPasswordForCurrentEmail(pw)
+                                                if (result is AppResult.Err) {
+                                                    formError = result.error.userMessage
                                                     saving = false
                                                     return@launch
                                                 }
-                                                currentUsername = un
+                                                optionalPasswordSaved = true
                                             }
                                             val uid = container.auth.currentUserId().orEmpty()
                                             val ok = com.hamyareman.ir.ui.profile.StudentProfileRepo.save(

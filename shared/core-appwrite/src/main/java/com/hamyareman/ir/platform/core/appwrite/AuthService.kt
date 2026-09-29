@@ -86,6 +86,12 @@ interface AuthService {
         currentPassword: String? = null,
     ): AppResult<String>
 
+    /** برای حسابی که با Google ساخته شده، یک رمز اختیاری روی همان ایمیل می‌گذارد. */
+    suspend fun setPasswordForCurrentEmail(newPassword: String): AppResult<Unit>
+
+    /** روش آخرین ورود موفق؛ برای فرم پروفایل یک‌باره روی نصب مجدد هم نگه داشته می‌شود. */
+    fun lastSignInWasGoogle(): Boolean
+
     suspend fun currentUsername(): String?
 
     /** فرستادنِ ایمیلِ بازیابیِ رمز به آدرسِ همین نام کاربری/ایمیل. */
@@ -226,7 +232,7 @@ class AppwriteAuthService(
             runCatching { account.deleteSession("current") }
             account.create(userId = ID.unique(), email = email, password = password, name = name)
             account.createEmailPasswordSession(email = email, password = password)
-            afterSession()
+            afterSession().also { if (it is AppResult.Ok) markAuthMethod(google = false) }
         }.getOrElse { AppResult.Err(mapAuth(it, "رمز یا ایمیل نامعتبر است.", "این ایمیل قبلاً ثبت شده.")) }
     }
 
@@ -250,7 +256,12 @@ class AppwriteAuthService(
         return runCatching {
             runCatching { account.deleteSession("current") }
             account.createEmailPasswordSession(email = email, password = password)
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = false)
+                    adoptUsername(it.value.id, email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "نام کاربری/ایمیل یا رمز عبور درست نیست.")) }
     }
 
@@ -276,6 +287,7 @@ class AppwriteAuthService(
             account.createEmailPasswordSession(email = email, password = password)
             val res = afterSession()
             if (res is AppResult.Ok) {
+                markAuthMethod(google = false)
                 publishUsername(res.value.id, u, email)
                 store?.putString(KEY_USERNAME, u)
                 remember(res.value.copy(username = u))
@@ -296,7 +308,12 @@ class AppwriteAuthService(
         return runCatching {
             runCatching { account.deleteSession("current") }
             account.createIdTokenSession(provider = IdTokenProvider.GOOGLE, idToken = idToken)
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, it.value.email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = true)
+                    adoptUsername(it.value.id, it.value.email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "ورود امن با گوگل ناموفق بود.")) }
     }
 
@@ -311,7 +328,12 @@ class AppwriteAuthService(
             // تمام می‌کنیم تا OAuth همیشه از صفر شروع کند و هر اکانت گوگل، کاربر خودش را بسازد.
             runCatching { account.deleteSession("current") }
             account.createOAuth2Session(activity = activity, provider = OAuthProvider.GOOGLE)
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, it.value.email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = true)
+                    adoptUsername(it.value.id, it.value.email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "ورود با گوگل ناموفق بود.")) }
     }
 
@@ -364,6 +386,30 @@ class AppwriteAuthService(
         store?.putString(KEY_USERNAME, u)
         remember(me.copy(username = u))
         return AppResult.Ok(u)
+    }
+
+    override suspend fun setPasswordForCurrentEmail(newPassword: String): AppResult<Unit> {
+        if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
+        val password = newPassword.trim()
+        if (password.isEmpty()) return AppResult.Ok(Unit)
+        if (password.length < 8) {
+            return AppResult.Err(AppError.Validation("رمز باید حداقل ۸ کاراکتر باشد."))
+        }
+        return runCatching {
+            // حسابی که با Google ساخته شده رمز قبلی ندارد؛ Appwrite در این حالت
+            // oldPassword را اختیاری می‌داند و رمز روی همان ایمیل حساب ثبت می‌شود.
+            account.updatePassword(password)
+            AppResult.Ok(Unit)
+        }.getOrElse {
+            AppResult.Err(mapAuth(it, "ثبت رمز برای این ایمیل انجام نشد؛ از بازیابی رمز استفاده کن."))
+        }
+    }
+
+    override fun lastSignInWasGoogle(): Boolean =
+        store?.getString(KEY_AUTH_METHOD) == AUTH_METHOD_GOOGLE
+
+    private fun markAuthMethod(google: Boolean) {
+        store?.putString(KEY_AUTH_METHOD, if (google) AUTH_METHOD_GOOGLE else AUTH_METHOD_EMAIL)
     }
 
     override suspend fun currentUsername(): String? {
@@ -455,7 +501,12 @@ class AppwriteAuthService(
         return runCatching {
             runCatching { account.deleteSession("current") }
             account.createSession(userId = uid, secret = otp.trim())
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, it.value.email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = false)
+                    adoptUsername(it.value.id, it.value.email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "کد یک‌بارمصرف درست نیست یا منقضی شده.")) }
     }
 
@@ -643,7 +694,7 @@ class AppwriteAuthService(
     }
 
     private fun forgetRole() {
-        store?.remove(KEY_ROLE, KEY_USER_ID, KEY_PROFILE, KEY_USERNAME, KEY_REMEMBER, KEY_OTP_UID)
+        store?.remove(KEY_ROLE, KEY_USER_ID, KEY_PROFILE, KEY_USERNAME, KEY_REMEMBER, KEY_OTP_UID, KEY_AUTH_METHOD)
     }
 
     /** نقش کش‌شده برای نمایش فوری UI قبل از رسیدن پاسخ سرور. */
@@ -726,6 +777,9 @@ class AppwriteAuthService(
         const val KEY_REMEMBER = "auth_remember"
         const val KEY_USERNAME = "auth_username"
         const val KEY_OTP_UID = "auth_otp_uid"
+        const val KEY_AUTH_METHOD = "auth_method"
+        private const val AUTH_METHOD_GOOGLE = "google"
+        private const val AUTH_METHOD_EMAIL = "email"
 
         /** Deep links متعلق به Android Platform پروژه؛ هیچ دامنهٔ غیرفعالی استفاده نمی‌شود. */
         const val RECOVERY_URL = "appwrite-callback-6abb134a002025222005://recovery"
