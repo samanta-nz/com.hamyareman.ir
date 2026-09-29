@@ -1,7 +1,7 @@
 package com.hamyareman.ir.ui.profile
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
 class GradeEditionTest {
 
