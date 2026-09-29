@@ -177,6 +177,13 @@ def main() -> int:
 
     names = [str(f.get("name") or "") for f in files]
     folder_fields = sorted({k for f in files for k in f if "folder" in k.lower() or "path" in k.lower()})
+    native_folders = [str(f.get("folder") or "").strip("/") for f in files]
+    native_folders = [value for value in native_folders if value]
+    virtual_directories = Counter(
+        path.rsplit("/", 1)[0] if "/" in path else "(root)"
+        for path in expected.values()
+        if path
+    )
     public_ok = sum(1 for r in html_results if r.get("public", {}).get("status") in (200, 206))
     hmk_ok = sum(1 for r in html_results if r.get("authenticated", {}).get("hmk1"))
     present_html = sum(1 for r in html_results if r.get("present", True))
@@ -191,9 +198,13 @@ def main() -> int:
         },
         "folderSupport": {
             "apiFolderOrPathFields": folder_fields,
+            "nativeFolderValues": dict(Counter(native_folders)),
+            "filesAtNativeRoot": len(files) - len(native_folders),
             "directoryLikeNames": sum('/' in n for n in names),
+            "catalogVirtualDirectories": dict(sorted(virtual_directories.items())),
             "conclusion": (
-                "native-metadata" if folder_fields else
+                "native-folders-in-use" if native_folders else
+                "native-folder-field-root-only" if folder_fields else
                 "directory-like-file-names" if any('/' in n for n in names) else
                 "flat-storage"
             ),

@@ -289,11 +289,13 @@ def main() -> int:
                     raise RuntimeError("source is not an HMK1 envelope")
                 if present is not None:
                     storage.delete_file(bucket_id=TARGET_BUCKET, file_id=fid)
+                logical_folder = key.rsplit("/", 1)[0] if "/" in key else None
                 storage.create_file(
                     bucket_id=TARGET_BUCKET,
                     file_id=fid,
                     file=InputFile.from_path(str(local)),
                     permissions=[Permission.read(Role.any())],
+                    folder=logical_folder,
                 )
                 encoded_id = urllib.parse.quote(fid, safe="")
                 metadata_response = requests.get(
@@ -337,7 +339,7 @@ def main() -> int:
             verified += 1
     summary = {
         "bucket": TARGET_BUCKET,
-        "folderModel": "flat-with-catalog-virtual-paths",
+        "folderModel": "native-root-with-catalog-virtual-paths",
         "expectedHtml": len(entries),
         "verifiedHtml": verified,
         "uploaded": uploaded,

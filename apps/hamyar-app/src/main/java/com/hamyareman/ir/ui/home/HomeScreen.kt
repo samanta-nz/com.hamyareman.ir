@@ -445,7 +445,7 @@ internal fun SubscriptionChip(raw: String, onClick: () -> Unit = {}) {
 
 /**
  * کارتِ کم‌عرضِ داشبورد برای جعبه‌ابزارها — چهار عدد در یک ردیف؛
- * متن دو خط می‌شکند و در ارتفاعِ ثابت وسط‌چین می‌ماند.
+ * عنوان همیشه یک سطر است و فقط برای جا شدن کوچک می‌شود.
  */
 @Composable
 private fun ToolTile(emoji: String, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -474,7 +474,7 @@ private fun ToolTile(emoji: String, label: String, modifier: Modifier = Modifier
                     lineHeight = 15.sp,
                     textAlign = TextAlign.Center,
                 ),
-                maxLines = 2,
+                maxLines = 1,
             )
         }
     }
@@ -501,7 +501,7 @@ private fun QuickTile(emoji: String, label: String, modifier: Modifier = Modifie
                     fontSize = AppTypography.d8Tile.size,
                     textAlign = TextAlign.Center,
                 ),
-                maxLines = 2,
+                maxLines = 1,
             )
         }
     }

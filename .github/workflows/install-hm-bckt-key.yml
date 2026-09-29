@@ -1,0 +1,43 @@
+name: Install HM_BCKT media key once
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    if: startsWith(github.event.head_commit.message, 'Install HM_BCKT media key')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_BUCKET_ID: 6abb564d00155cc56d65
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      INTERNAL_CONTENT_PUBLIC: https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet requests appwrite
+      - name: Install the supplied media key without exposing it
+        run: |
+          set -euo pipefail
+          key_file=/tmp/07-html-media-key.bin
+          trap 'shred -u "$key_file" 2>/dev/null || rm -f "$key_file"' EXIT
+          git fetch --quiet --depth=1 origin main
+          git show origin/main:.github/workflows/07-html-media-key.bin > "$key_file"
+          test "$(stat -c%s "$key_file")" -eq 32
+          HTML_MEDIA_KEY_B64=$(base64 -w0 "$key_file")
+          echo "::add-mask::$HTML_MEDIA_KEY_B64"
+          export HTML_MEDIA_KEY_B64
+          python3 scripts/sync_html_to_hm_bckt.py --fail-fast | tee /tmp/hm-bckt-key-install.log
+          tail -n 1 /tmp/hm-bckt-key-install.log | grep -F '"verifiedHtml":168'
+          tail -n 1 /tmp/hm-bckt-key-install.log | grep -E '"mediaKey":"(created|updated|unchanged)"'

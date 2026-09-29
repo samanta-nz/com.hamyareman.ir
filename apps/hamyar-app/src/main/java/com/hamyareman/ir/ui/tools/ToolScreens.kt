@@ -105,11 +105,11 @@ fun ToolHubScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
                     Row(
-                        Modifier.fillMaxWidth().padding(11.dp),
+                        Modifier.fillMaxWidth().padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(item.emoji, fontSize = 21.sp)
-                        Column(Modifier.weight(1f).height(50.dp)) {
+                        horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                        Text(item.emoji, fontSize = 20.sp)
+                        Column(Modifier.weight(1f).height(46.dp)) {
                             AutoShrinkTileText(
                                 text = item.title,
                                 style = MaterialTheme.typography.titleMedium.copy(

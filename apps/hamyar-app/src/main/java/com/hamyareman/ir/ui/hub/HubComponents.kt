@@ -75,10 +75,10 @@ fun HubCard(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(emoji, style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.width(8.dp))
-            Column(Modifier.weight(1f).height(50.dp)) {
+            Spacer(Modifier.width(7.dp))
+            Column(Modifier.weight(1f).height(46.dp)) {
                 AutoShrinkTileText(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
