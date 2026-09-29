@@ -203,15 +203,10 @@ def main() -> int:
         aws_access_key_id=access,
         aws_secret_access_key=secret,
         endpoint_url=endpoint,
-        region_name=region,
+        # Follow Arvan's documented boto3 setup: use the provider endpoint
+        # with botocore's default signing region/addressing selection. Keep only
+        # checksum compatibility and conservative transport controls here.
         config=Config(
-            signature_version="s3v4",
-            # The internal provider accepts HEAD with path-style addressing but
-            # rejects PUT with an empty InvalidArgument. Virtual-host style is
-            # required for writes to this bucket.
-            s3={"addressing_style": "virtual"},
-            # Arvan's S3 API rejects the optional CRC32 request-checksum headers
-            # enabled by recent botocore releases. SigV4 still signs every request.
             request_checksum_calculation="when_required",
             response_checksum_validation="when_required",
             connect_timeout=20,

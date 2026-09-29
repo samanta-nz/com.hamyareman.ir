@@ -1,4 +1,4 @@
-name: Finalize Hamyar grade 9 v2.0
+name: Finalize Hamyar grade 9 v2.1
 
 on:
   push:
@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   finalize:
-    if: startsWith(github.event.head_commit.message, 'Finalize grade nine 2.0')
+    if: startsWith(github.event.head_commit.message, 'Finalize grade nine 2.1')
     runs-on: ubuntu-22.04
     timeout-minutes: 25
     permissions:
@@ -23,11 +23,11 @@ jobs:
       ARVAN_REGION: ir-thr-at1
       ARVAN_BUCKET: hamyar-e-man
       ARVAN_PUBLIC: https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir
-      TAG: grade9-v2.0
-      ASSET: hamyar-grade9-2.0.apk
+      TAG: grade9-v2.1
+      ASSET: hamyar-grade9-2.1.apk
       PACKAGE: com.hamyareman.p09
-      VERSION_NAME: '2.0'
-      VERSION_CODE: '200'
+      VERSION_NAME: '2.1'
+      VERSION_CODE: '210'
       ROW_ID: app_release_grade9
 
     steps:
@@ -78,7 +78,60 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "verified $PACKAGE $VERSION_NAME ($VERSION_CODE), size=$APK_SIZE, sha256=$APK_SHA"
 
-      - name: Repair/publish and anonymously verify the Arvan APK
+      - name: Verify an APK imported through the Arvan panel before any upload
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import os
+
+          import requests
+
+          expected_size = int(os.environ['APK_SIZE'])
+          expected_sha = os.environ['APK_SHA'].lower()
+          final = f"apk/grade9/{os.environ['ASSET']}"
+          url = f"{os.environ['ARVAN_PUBLIC'].rstrip('/')}/{final}"
+          valid = False
+          detail = 'not checked'
+          try:
+              head = requests.head(
+                  url,
+                  headers={'Accept-Encoding': 'identity'},
+                  allow_redirects=True,
+                  timeout=(20, 60),
+              )
+              remote_size = int(head.headers.get('Content-Length') or -1)
+              detail = f'HTTP {head.status_code}, size={remote_size}'
+              if head.status_code == 200 and remote_size == expected_size:
+                  digest = hashlib.sha256()
+                  downloaded = 0
+                  with requests.get(
+                      url,
+                      headers={'Accept-Encoding': 'identity'},
+                      stream=True,
+                      allow_redirects=True,
+                      timeout=(20, 240),
+                  ) as response:
+                      response.raise_for_status()
+                      for chunk in response.iter_content(1024 * 1024):
+                          if chunk:
+                              downloaded += len(chunk)
+                              digest.update(chunk)
+                  remote_sha = digest.hexdigest()
+                  valid = downloaded == expected_size and remote_sha == expected_sha
+                  detail = f'size={downloaded}, sha256={remote_sha}'
+          except (requests.RequestException, ValueError) as exc:
+              detail = f'{type(exc).__name__}: {str(exc)[:300]}'
+
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f"ARVAN_ALREADY_VALID={'true' if valid else 'false'}\n")
+              if valid:
+                  output.write(f'ARVAN_APK_URL={url}\n')
+          print(f'Arvan panel import valid={valid} ({detail})')
+          PY
+
+      - name: Repair/publish the Arvan APK only when exact bytes are absent
+        if: env.ARVAN_ALREADY_VALID != 'true'
         env:
           ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
           ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
@@ -103,7 +156,43 @@ jobs:
             exit "$status"
           fi
 
-      - name: Atomically announce version 2.0 in HM_DB
+      - name: Verify complete public Arvan bytes after S3 publishing
+        if: env.ARVAN_ALREADY_VALID != 'true'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import os
+
+          import requests
+
+          url = os.environ['ARVAN_APK_URL']
+          expected_size = int(os.environ['APK_SIZE'])
+          expected_sha = os.environ['APK_SHA'].lower()
+          digest = hashlib.sha256()
+          downloaded = 0
+          with requests.get(
+              url,
+              headers={'Accept-Encoding': 'identity'},
+              stream=True,
+              allow_redirects=True,
+              timeout=(20, 240),
+          ) as response:
+              response.raise_for_status()
+              for chunk in response.iter_content(1024 * 1024):
+                  if chunk:
+                      downloaded += len(chunk)
+                      digest.update(chunk)
+          remote_sha = digest.hexdigest()
+          if downloaded != expected_size or remote_sha != expected_sha:
+              raise SystemExit(
+                  f'Arvan byte verification failed: size={downloaded}/{expected_size}, '
+                  f'sha256={remote_sha}/{expected_sha}'
+              )
+          print(f'ARVAN VERIFIED size={downloaded} sha256={remote_sha} url={url}')
+          PY
+
+      - name: Atomically announce forced version 2.1 in HM_DB
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
@@ -129,7 +218,7 @@ jobs:
           payload = {
               'latest': new,
               'name': os.environ['VERSION_NAME'],
-              'min': 0,
+              'min': new,
               'url': os.environ['ARVAN_APK_URL'],
               'externalUrl': os.environ['RELEASE_URL'],
               'internalUrl': os.environ['ARVAN_APK_URL'],
@@ -138,9 +227,9 @@ jobs:
               'chan': 'stable',
               'rollout': 100,
               'notes': [
-                  'ورود استاندارد با ایمیل و گوگل',
-                  'زیرساخت جدید HM_DB',
-                  'صوت‌های فصل اول ریاضی نهم',
+                  'انتقال کامل محتوای آموزشی نهم',
+                  'نمایش تمام‌صفحه ابزارها و محتوای عمومی',
+                  'بهبود تقویم، کاشی‌ها و انتخاب سرور',
               ],
               'packageName': os.environ['PACKAGE'],
               'gradeId': 'grade9',
@@ -167,7 +256,7 @@ jobs:
       - name: Final summary
         run: |
           {
-            echo '## Hamyar grade 9 v2.0 finalized'
+            echo '## Hamyar grade 9 v2.1 finalized'
             echo "- Package: $PACKAGE"
             echo "- Version: $VERSION_NAME ($VERSION_CODE)"
             echo "- GitHub: $RELEASE_URL"
