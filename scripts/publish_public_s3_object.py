@@ -206,7 +206,10 @@ def main() -> int:
         region_name=region,
         config=Config(
             signature_version="s3v4",
-            s3={"addressing_style": "path"},
+            # The internal provider accepts HEAD with path-style addressing but
+            # rejects PUT with an empty InvalidArgument. Virtual-host style is
+            # required for writes to this bucket.
+            s3={"addressing_style": "virtual"},
             # Arvan's S3 API rejects the optional CRC32 request-checksum headers
             # enabled by recent botocore releases. SigV4 still signs every request.
             request_checksum_calculation="when_required",

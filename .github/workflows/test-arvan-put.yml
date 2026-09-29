@@ -1,0 +1,53 @@
+name: Test internal object-store PUT
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+
+permissions:
+  contents: read
+
+jobs:
+  test-put:
+    if: startsWith(github.event.head_commit.message, 'Test internal object PUT')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet boto3
+      - name: Put, verify, and delete one byte
+        env:
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, uuid
+          import boto3
+          from botocore.config import Config
+          bucket='hamyar-e-man'
+          key='.staging/arena-put-test-'+uuid.uuid4().hex
+          client=boto3.client(
+              's3',
+              aws_access_key_id=os.environ['ARVAN_ACCESS_KEY'],
+              aws_secret_access_key=os.environ['ARVAN_SECRET_KEY'],
+              endpoint_url='https://s3.ir-thr-at1.arvanstorage.ir',
+              region_name='ir-thr-at1',
+              config=Config(
+                  signature_version='s3v4',
+                  s3={'addressing_style':'virtual'},
+                  request_checksum_calculation='when_required',
+                  response_checksum_validation='when_required',
+              ),
+          )
+          try:
+              client.put_object(Bucket=bucket, Key=key, Body=b'x', ContentLength=1)
+              row=client.head_object(Bucket=bucket, Key=key)
+              assert int(row['ContentLength']) == 1
+              print('VIRTUAL_HOST_PUT_OK size=1')
+          finally:
+              try: client.delete_object(Bucket=bucket, Key=key)
+              except Exception: pass
+          PY
