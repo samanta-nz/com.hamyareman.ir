@@ -1,0 +1,38 @@
+name: Audit HM_BCKT content bucket
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Audit HM_BCKT')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_BUCKET_ID: 6abb564d00155cc56d65
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet requests
+      - name: Read-only bucket, folder, HTML and media-key audit
+        run: python3 scripts/audit_hm_bckt.py --output hm-bckt-audit
+      - name: Publish summary
+        if: always()
+        run: cat hm-bckt-audit/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hm-bckt-audit
+          path: hm-bckt-audit/
+          retention-days: 14
