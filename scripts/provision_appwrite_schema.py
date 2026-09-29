@@ -208,7 +208,9 @@ class Provisioner:
                 found = columns[key]
                 expected = "float" if column.get("type") == "double" else column.get("type")
                 actual = "float" if found.get("type") == "double" else found.get("type")
-                if expected != actual:
+                string_types = {"string", "varchar", "text", "mediumtext", "longtext"}
+                compatible = expected == actual or (expected == "string" and actual in string_types)
+                if not compatible:
                     raise RuntimeError(f"schema mismatch {table_id}.{key}: {actual} != {expected}")
                 self.existing += 1
                 continue
@@ -236,7 +238,12 @@ class Provisioner:
 
     def create_column(self, table_id: str, column: dict[str, Any]) -> None:
         kind = str(column.get("type"))
+        # Varchar-like columns count against MariaDB's row-size budget (UTF-8 may
+        # consume four bytes per character). Large JSON/body fields belong in
+        # LONGTEXT and remain ordinary Kotlin Strings to clients.
         endpoint_kind = {"double": "float"}.get(kind, kind)
+        if endpoint_kind == "string" and int(column.get("size") or 255) > 2048:
+            endpoint_kind = "longtext"
         body: dict[str, Any] = {
             "key": self.column_key(column),
             "required": bool(column.get("required", False)),
