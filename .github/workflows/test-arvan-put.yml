@@ -17,15 +17,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install --quiet boto3
+      - run: pip install --quiet boto3 requests
       - name: Test documented signing variants with one byte
         env:
           ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
           ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
         run: |
           python3 - <<'PY'
-          import os, uuid
+          import base64, hashlib, os, uuid
           import boto3
+          import requests
           from botocore.config import Config
           from botocore.exceptions import ClientError
           endpoint='https://s3.ir-thr-at1.arvanstorage.ir'
@@ -62,7 +63,42 @@ jobs:
               finally:
                   try: client.delete_object(Bucket=bucket, Key=key)
                   except Exception: pass
+          # The provider's Go example signs Content-MD5 explicitly.
+          client=boto3.client(**common)
+          key='.staging/arena-put-test-content-md5-'+uuid.uuid4().hex
+          try:
+              md5=base64.b64encode(hashlib.md5(b'x').digest()).decode()
+              client.put_object(Bucket=bucket, Key=key, Body=b'x', ContentMD5=md5)
+              assert int(client.head_object(Bucket=bucket, Key=key)['ContentLength']) == 1
+              success.append('content-md5')
+              print('PUT_TEST content-md5=ok')
+          except Exception as exc:
+              err=(exc.response.get('Error') or {}) if isinstance(exc, ClientError) else {}
+              detail=f"{err.get('Code',type(exc).__name__)}:{err.get('Message',str(exc))}"
+              print(f'::warning title=PUT test content-md5::{detail}')
+          finally:
+              try: client.delete_object(Bucket=bucket, Key=key)
+              except Exception: pass
+
+          # Arvan's current Python documentation recommends presigned multipart POST.
+          key='.staging/arena-put-test-presigned-post-'+uuid.uuid4().hex
+          try:
+              signed=client.generate_presigned_post(bucket, key, ExpiresIn=300)
+              response=requests.post(
+                  signed['url'], data=signed['fields'], files={'file':('probe.bin',b'x')}, timeout=60,
+              )
+              if response.status_code not in (200, 201, 204):
+                  raise RuntimeError(f'HTTP {response.status_code}: {response.text[:200]}')
+              assert int(client.head_object(Bucket=bucket, Key=key)['ContentLength']) == 1
+              success.append('presigned-post')
+              print('PUT_TEST presigned-post=ok')
+          except Exception as exc:
+              print(f'::warning title=PUT test presigned-post::{type(exc).__name__}:{str(exc)[:240]}')
+          finally:
+              try: client.delete_object(Bucket=bucket, Key=key)
+              except Exception: pass
+
           if not success:
-              raise SystemExit('all documented PUT signing variants failed')
+              raise SystemExit('all documented PUT and POST signing variants failed')
           print('PUT_TEST_SUCCESS=' + ','.join(success))
           PY
