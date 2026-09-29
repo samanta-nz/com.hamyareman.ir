@@ -293,7 +293,7 @@ private fun SignInForm(
         shape = RoundedCornerShape(14.dp),
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_google_g),
+            painter = painterResource(R.drawable.google_g_2025),
             contentDescription = "Google",
             modifier = Modifier.size(24.dp),
         )
