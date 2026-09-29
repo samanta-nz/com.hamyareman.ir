@@ -31,6 +31,10 @@ import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.study.SecureWebEffect
+import com.hamyareman.ir.ui.study.ManagedWebMediaEffect
+import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -114,7 +118,9 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
+    val webRef = remember { arrayOfNulls<WebView>(1) }
     SecureWebEffect()
+    ManagedWebMediaEffect { webRef[0] }
     var activeId by remember(itemId) { mutableStateOf(itemId) }
     var html by remember(activeId) { mutableStateOf<String?>(null) }
     var error by remember(activeId) { mutableStateOf<String?>(null) }
@@ -191,13 +197,24 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                                     activeId = target
                                     return true
                                 }
+
+                                override fun onPageFinished(view: WebView, url: String) {
+                                    view.bindManagedMediaLifecycle()
+                                }
                             }
+                            installManagedMediaLifecycle()
+                            webRef[0] = this
                             loadDataWithBaseURL(
                                 "https://local.hamyar/", html!!, "text/html", "utf-8", null,
                             )
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
+                    onRelease = {
+                        it.stopManagedMedia()
+                        if (webRef[0] === it) webRef[0] = null
+                        it.destroy()
+                    },
                 )
             }
         }

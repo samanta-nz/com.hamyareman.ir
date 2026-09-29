@@ -53,11 +53,7 @@ fun MoreScreen(nav: NavController) {
         QuietModeCard()
 
         HubCard("👤", "پروفایل من", "مشخصات من، مدرسه، عکس و وضعیت اشتراک", slotId = "hub.more.item.user-profile") { nav.hubTo(Screen.UserProfile.route) }
-        HubCard("🎨", "ظاهر", "تم رنگی و اندازهٔ نوشته", slotId = "hub.more.item.appearance") { nav.hubTo(Screen.Appearance.route) }
-        HubCard("⚙️", "تنظیمات", "حریم، قفل، کش و همگام‌سازی خودکار", slotId = "hub.more.item.settings") { nav.hubTo(Screen.Settings.route) }
-
-        // بررسیِ دستیِ آپدیت (کانالِ آپدیت: تنظیمات روی سرور، فایل در مخزنِ عمومی).
-        UpdateCheckCard()
+        HubCard("⚙️", "تنظیمات", "تم برنامه، قفل، یادآورها و تنظیمات سرور", slotId = "hub.more.item.settings") { nav.hubTo(Screen.Settings.route) }
 
         Text(
             "همیار من — نسخه‌ی " + com.hamyareman.ir.BuildConfig.VERSION_NAME,

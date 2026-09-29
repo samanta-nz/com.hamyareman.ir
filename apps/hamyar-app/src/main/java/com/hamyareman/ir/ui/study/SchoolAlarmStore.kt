@@ -16,10 +16,8 @@ object SchoolAlarmStore {
         val crescendo: Boolean = false,
         val wakeMH: Int = 6, val wakeMM: Int = 30,
         val busMH: Int = 6, val busMM: Int = 45,
-        val schoolMH: Int = 7, val schoolMM: Int = 30,
         val wakeNH: Int = 11, val wakeNM: Int = 30,
         val busNH: Int = 11, val busNM: Int = 45,
-        val schoolNH: Int = 12, val schoolNM: Int = 0,
         val sleepMH: Int = 21, val sleepMM: Int = 30,
         val sleepNH: Int = 23, val sleepNM: Int = 0)
 
@@ -51,10 +49,8 @@ object SchoolAlarmStore {
             crescendo = s.getBool("alarm_crescendo", false),
             wakeMH = s.getInt("wake_m_h", wh), wakeMM = s.getInt("wake_m_m", wm),
             busMH = s.getInt("bus_m_h", 6), busMM = s.getInt("bus_m_m", 45),
-            schoolMH = s.getInt("school_m_h", snap.morningHour), schoolMM = s.getInt("school_m_m", snap.morningMinute),
             wakeNH = s.getInt("wake_n_h", nh), wakeNM = s.getInt("wake_n_m", nm),
             busNH = s.getInt("bus_n_h", 11), busNM = s.getInt("bus_n_m", 45),
-            schoolNH = s.getInt("school_n_h", snap.noonHour), schoolNM = s.getInt("school_n_m", snap.noonMinute),
             sleepMH = s.getInt("sleep_m_h", smh), sleepMM = s.getInt("sleep_m_m", smm),
             sleepNH = s.getInt("sleep_n_h", snh), sleepNM = s.getInt("sleep_n_m", snm))
     }
@@ -67,10 +63,8 @@ object SchoolAlarmStore {
         s.putBool("alarm_crescendo", p.crescendo)
         s.putInt("wake_m_h", p.wakeMH); s.putInt("wake_m_m", p.wakeMM)
         s.putInt("bus_m_h", p.busMH); s.putInt("bus_m_m", p.busMM)
-        s.putInt("school_m_h", p.schoolMH); s.putInt("school_m_m", p.schoolMM)
         s.putInt("wake_n_h", p.wakeNH); s.putInt("wake_n_m", p.wakeNM)
         s.putInt("bus_n_h", p.busNH); s.putInt("bus_n_m", p.busNM)
-        s.putInt("school_n_h", p.schoolNH); s.putInt("school_n_m", p.schoolNM)
         s.putInt("sleep_m_h", p.sleepMH); s.putInt("sleep_m_m", p.sleepMM)
         s.putInt("sleep_n_h", p.sleepNH); s.putInt("sleep_n_m", p.sleepNM)
         val snap = ClassPlanStore.load(ctx)
@@ -93,18 +87,19 @@ object SchoolAlarmStore {
         fun up(id: String, title: String, body: String, h: Int, m: Int) {
             reminders.upsert(Reminder(id, title, body, h, m, channel = ch, enabled = true))
         }
+        // اعلان «حضور در مدرسه» حذف شده است؛ فقط آماده‌شدن، سرویس و دعوت خواب می‌مانند.
+        reminders.remove(SCHOOL_M)
+        reminders.remove(SCHOOL_N)
         if (shift == Shift.MORNING) {
-            listOf(WAKE_N, BUS_N, SCHOOL_N).forEach { reminders.remove(it) }
-            up(WAKE_M, "بیدار شو — شیفت صبح", "شیفت صبح است؛ برای مدرسه آماده شو.", p.wakeMH, p.wakeMM)
-            up(BUS_M, "حضور در سرویس مدرسه", "وقت سرویس صبح است.", p.busMH, p.busMM)
-            up(SCHOOL_M, "حضور در مدرسه", "زنگ ورود صبح.", p.schoolMH, p.schoolMM)
-            up(SLEEP, "دعوت به خواب آرام", "وقت خواب شیفت صبح است. برای آرامش قبل خواب لمس کن.", p.sleepMH, p.sleepMM)
+            listOf(WAKE_N, BUS_N).forEach { reminders.remove(it) }
+            up(WAKE_M, "آماده‌شدن برای شیفت صبح", "زمان آماده‌شدن برای مدرسه است.", p.wakeMH, p.wakeMM)
+            up(BUS_M, "سرویس مدرسه", "زمان حضور در سرویس صبح است.", p.busMH, p.busMM)
+            up(SLEEP, "دعوت به خواب", "وقت یک خواب آرام است؛ یکی از تمرین‌های پیش از خواب را انتخاب کن.", p.sleepMH, p.sleepMM)
         } else {
-            listOf(WAKE_M, BUS_M, SCHOOL_M).forEach { reminders.remove(it) }
-            up(WAKE_N, "آلارم آماده شدن شیفت ظهر", "حوالی ظهر است؛ برای شیفت ظهر آماده شو.", p.wakeNH, p.wakeNM)
-            up(BUS_N, "حضور در سرویس مدرسه", "وقت سرویس ظهر است.", p.busNH, p.busNM)
-            up(SCHOOL_N, "حضور در مدرسه", "زنگ ورود ظهر.", p.schoolNH, p.schoolNM)
-            up(SLEEP, "دعوت به خواب آرام", "وقت خواب شیفت ظهر است. برای آرامش قبل خواب لمس کن.", p.sleepNH, p.sleepNM)
+            listOf(WAKE_M, BUS_M).forEach { reminders.remove(it) }
+            up(WAKE_N, "آماده‌شدن برای شیفت ظهر", "زمان آماده‌شدن برای مدرسه است.", p.wakeNH, p.wakeNM)
+            up(BUS_N, "سرویس مدرسه", "زمان حضور در سرویس ظهر است.", p.busNH, p.busNM)
+            up(SLEEP, "دعوت به خواب", "وقت یک خواب آرام است؛ یکی از تمرین‌های پیش از خواب را انتخاب کن.", p.sleepNH, p.sleepNM)
         }
     }
 }

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,6 +33,7 @@ import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.core.designsystem.SectionCard
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.navigation.Screen
+import com.hamyareman.ir.ui.components.LinedNotebookInput
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -155,6 +158,67 @@ fun JournalScreen(onBack: () -> Unit) {
             InlineButton("بازگشت") { onBack() }
         }
     }
+}
+
+private const val GRATITUDE_KEY = "gratitude_journal_entries"
+
+@Composable
+fun GratitudeJournalScreen(onBack: () -> Unit) {
+    val container = LocalAppContainer.current
+    var text by remember { mutableStateOf("") }
+    var entries by remember { mutableStateOf(readEncryptedEntries(container.store, GRATITUDE_KEY)) }
+    var notice by remember { mutableStateOf<String?>(null) }
+
+    Column(Modifier.fillMaxSize()) {
+        AppTopBar("دفترچه شکرگزاری", onBack)
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text("امروز بابت چه چیزی—even کوچک—قدردانی می‌کنی؟", style = MaterialTheme.typography.titleMedium)
+            LinedNotebookInput(text, { text = it })
+            PrimaryButton("ذخیره در دفترچه") {
+                if (text.isBlank()) {
+                    notice = "اول یک جمله بنویس."
+                } else {
+                    val next = listOf(
+                        JournalEntry(UUID.randomUUID().toString(), System.currentTimeMillis(), container.encryptor.encrypt(text.trim())),
+                    ) + entries
+                    writeEncryptedEntries(container.store, GRATITUDE_KEY, next)
+                    entries = next
+                    text = ""
+                    notice = "در دفترچه شکرگزاری ذخیره شد."
+                }
+            }
+            notice?.let { Text(it, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall) }
+            entries.forEach { entry ->
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(JalaliDate.stampFa(entry.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(container.encryptor.decrypt(entry.cipher).orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun readEncryptedEntries(store: LocalStore, key: String): List<JournalEntry> = runCatching {
+    val array = JSONArray(store.getString(key, "[]"))
+    buildList {
+        for (i in 0 until array.length()) {
+            val row = array.getJSONObject(i)
+            add(JournalEntry(row.optString("id"), row.optLong("createdAt"), row.optString("cipher")))
+        }
+    }.sortedByDescending { it.createdAt }
+}.getOrDefault(emptyList())
+
+private fun writeEncryptedEntries(store: LocalStore, key: String, entries: List<JournalEntry>) {
+    val array = JSONArray()
+    entries.forEach { entry ->
+        array.put(JSONObject().put("id", entry.id).put("createdAt", entry.createdAt).put("cipher", entry.cipher))
+    }
+    store.putString(key, array.toString())
 }
 
 @Composable

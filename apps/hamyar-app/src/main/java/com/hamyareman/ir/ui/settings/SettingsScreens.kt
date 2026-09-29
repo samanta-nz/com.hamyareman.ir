@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.PrivacyPolicy
 import com.hamyareman.ir.platform.core.common.toPersianDigits
@@ -39,6 +40,7 @@ import com.hamyareman.ir.platform.core.designsystem.SectionCard
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
 import com.hamyareman.ir.platform.core.notifications.Reminder
+import com.hamyareman.ir.platform.core.notifications.QuietHoursAutomation
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
 import com.hamyareman.ir.LocalAppContainer
@@ -67,31 +69,21 @@ fun SettingsScreen(nav: NavController) {
         AppTopBar("تنظیمات") { nav.popBackStack() }
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SectionCard(
-                "حریم خصوصی",
-                "چه چیزی هرگز از این دستگاه بیرون نمی‌رود.",
-            ) { nav.navigate(Screen.Privacy.route) }
+                "تم برنامه",
+                "رنگ، حالت روشن یا تاریک و اندازهٔ نوشته.",
+            ) { nav.navigate(Screen.Appearance.route) }
             SectionCard(
-                "قفل اپ",
-                if (container.lock.isEnabled()) "روشن — PIN لازم است." else "خاموش — با PIN محافظت کن.",
+                "قفل برنامه",
+                if (container.lock.isEnabled()) "فعال — ورود با PIN یا بیومتریک." else "غیرفعال — برای محافظت فعالش کن.",
             ) { nav.navigate(Screen.Lock.route) }
             SectionCard(
                 "یادآورها و ساعات سکوت",
-                "یادآورهای ملایم + بازه‌ی بی‌اعلان شبانه.",
+                "مدیریت یادآورها و یک بازهٔ سکوت روزانه.",
             ) { nav.navigate(Screen.Reminders.route) }
             SectionCard(
                 "تنظیمات سرور",
-                "سرور محتوا (پیش‌فرض: سریع‌ترین — سرور خارجی — سرور داخلی)، به‌علاوهٔ " +
-                    "حجمِ کش، صفِ ارسال، وضعیتِ اتصال و زمانِ آخرین همگام‌سازی — همگام‌سازی " +
-                    "خودکار در پس‌زمینه انجام می‌شود، بدونِ دکمه.",
+                "تنظیمات سرورها و همگام‌سازی و کش گوشی.",
             ) { nav.navigate(Screen.Sync.route) }
-            SectionCard(
-                "تم",
-                "پیش‌فرض «استیج عروسکی»؛ در حالت شب خودکار تیره می‌شود.",
-            ) { }
-            SectionCard(
-                "نقش حساب",
-                "نقش از Labelهای سرور می‌آید: ${container.role.label}",
-            ) { }
         }
     }
 }
@@ -159,17 +151,19 @@ fun AppLockScreen(onBack: () -> Unit) {
     val activity = context as? FragmentActivity
     val bioStatus = remember { bio.status(context) }
     var bioState by remember { mutableStateOf(bio.isEnabled()) }
+    var currentPin by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
-    val hasPin = lock.hasPin()
+    var timeoutMs by remember { mutableStateOf(lock.autoLockTimeoutMs()) }
+    var hasPin by remember { mutableStateOf(lock.hasPin()) }
 
     Column(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        AppTopBar("قفل اپ", onBack)
+        AppTopBar("قفل برنامه", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 "PIN با PBKDF2 و ۱۲۰٬۰۰۰ تکرار هش می‌شود و هرگز به‌شکل خام ذخیره نمی‌شود. " +
@@ -177,6 +171,17 @@ fun AppLockScreen(onBack: () -> Unit) {
                     "جای PIN را نمی‌گیرد.",
                 style = MaterialTheme.typography.bodySmall,
             )
+            if (hasPin) {
+                OutlinedTextField(
+                    value = currentPin,
+                    onValueChange = { currentPin = it.filter(Char::isDigit).take(8) },
+                    label = { Text("PIN فعلی") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             OutlinedTextField(
                 value = pin,
                 onValueChange = { pin = it.filter(Char::isDigit).take(8) },
@@ -198,38 +203,53 @@ fun AppLockScreen(onBack: () -> Unit) {
             PrimaryButton(if (hasPin) "تغییر PIN" else "فعال‌کردن قفل") {
                 val invalid = lock.validatePin(pin)
                 when {
+                    hasPin && !lock.verify(currentPin) -> message = "PIN فعلی درست نیست."
                     invalid != null -> message = invalid
-                    pin != confirm -> message = "دو بار یکسان وارد کن."
+                    pin != confirm -> message = "تکرار PIN با PIN جدید یکسان نیست."
                     else -> {
+                        val changingExistingPin = hasPin
                         lock.setPin(pin)
+                        hasPin = true
+                        currentPin = ""
                         pin = ""
                         confirm = ""
-                        message = "قفل فعال شد. از این بعد برای ورود PIN لازم است."
+                        message = if (changingExistingPin) "PIN با موفقیت تغییر کرد." else "قفل برنامه فعال شد."
                     }
                 }
             }
             if (hasPin) {
                 PrimaryButton("غیرفعال‌کردن قفل") {
-                    lock.clearPin()
-                    bio.clear() // بیومتریک بدون PIN معنی ندارد
-                    bioState = false
-                    message = "قفل خاموش شد."
+                    if (!lock.verify(currentPin)) {
+                        message = "برای غیرفعال‌کردن، PIN فعلی را وارد کن."
+                    } else {
+                        lock.clearPin()
+                        bio.clear()
+                        hasPin = false
+                        currentPin = ""
+                        bioState = false
+                        message = "قفل برنامه غیرفعال شد."
+                    }
                 }
             }
 
             Spacer(Modifier.height(8.dp))
             Text("قفل خودکار بعد از", style = MaterialTheme.typography.titleSmall)
             Text(
-                "الان: ${toPersianDigits((lock.autoLockTimeoutMs() / 1000).toString())} ثانیه",
+                "زمان فعلی: " + when (timeoutMs) {
+                    30_000L -> "۳۰ ثانیه"
+                    60_000L -> "۱ دقیقه"
+                    300_000L -> "۵ دقیقه"
+                    else -> toPersianDigits((timeoutMs / 1000).toString()) + " ثانیه"
+                },
                 style = MaterialTheme.typography.bodySmall,
             )
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                InlineButton("۳۰ ثانیه", Modifier.weight(1f)) { lock.setAutoLockTimeout(30_000) }
-                InlineButton("۱ دقیقه", Modifier.weight(1f)) { lock.setAutoLockTimeout(60_000) }
-                InlineButton("۵ دقیقه", Modifier.weight(1f)) { lock.setAutoLockTimeout(300_000) }
+                InlineButton("۳۰ ثانیه", Modifier.weight(1f)) { timeoutMs = 30_000; lock.setAutoLockTimeout(timeoutMs) }
+                InlineButton("۱ دقیقه", Modifier.weight(1f)) { timeoutMs = 60_000; lock.setAutoLockTimeout(timeoutMs) }
+                InlineButton("۵ دقیقه", Modifier.weight(1f)) { timeoutMs = 300_000; lock.setAutoLockTimeout(timeoutMs) }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -300,15 +320,46 @@ fun AppLockScreen(onBack: () -> Unit) {
 @Composable
 fun RemindersScreen(onBack: () -> Unit) {
     val container = LocalAppContainer.current
+    val context = LocalContext.current
     val scheduler = container.reminders
     val quiet = container.quiet
-    var reminders by remember { mutableStateOf(scheduler.all()) }
+    fun visibleReminders() = scheduler.all().filterNot {
+        it.id == com.hamyareman.ir.ui.ailearning.AI_LESSON_REMINDER_ID ||
+            it.id == com.hamyareman.ir.ui.study.SchoolAlarmStore.SCHOOL_M ||
+            it.id == com.hamyareman.ir.ui.study.SchoolAlarmStore.SCHOOL_N
+    }
+    var reminders by remember { mutableStateOf(visibleReminders()) }
     var quietState by remember { mutableStateOf(quiet.state()) }
+    var policyGranted by remember { mutableStateOf(QuietHoursAutomation.hasPolicyAccess(context)) }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf("") }
     var hour by remember { mutableStateOf("18") }
     var minute by remember { mutableStateOf("0") }
     var message by remember { mutableStateOf<String?>(null) }
+
+    LifecycleResumeEffect(Unit) {
+        policyGranted = QuietHoursAutomation.hasPolicyAccess(context)
+        QuietHoursAutomation.syncNow(context)
+        onPauseOrDispose { }
+    }
+
+    fun pickQuietTime(start: Boolean) {
+        val h = if (start) quietState.startHour else quietState.endHour
+        val m = if (start) quietState.startMinute else quietState.endMinute
+        android.app.TimePickerDialog(context, { _, pickedHour, pickedMinute ->
+            if (start) {
+                quiet.update(startHour = pickedHour, startMinute = pickedMinute)
+            } else {
+                quiet.update(endHour = pickedHour, endMinute = pickedMinute)
+            }
+            quietState = quiet.state()
+            QuietHoursAutomation.schedule(context)
+            scheduler.rescheduleAll()
+        }, h, m, true).show()
+    }
+
+    fun timeLabel(hourValue: Int, minuteValue: Int): String =
+        toPersianDigits("%02d:%02d".format(hourValue, minuteValue))
 
     Column(
         Modifier
@@ -318,51 +369,57 @@ fun RemindersScreen(onBack: () -> Unit) {
         AppTopBar("یادآورها", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
-                "یادآورها ملایم‌اند: در ساعات سکوت هیچ اعلانی نشان داده نمی‌شود و به روز بعد منتقل می‌شوند.",
+                "در بازهٔ سکوت، یادآورها متوقف می‌شوند و گوشی با اجازهٔ سیستم روی سکوت کامل می‌رود.",
                 style = MaterialTheme.typography.bodySmall,
             )
 
             Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(12.dp)) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text("ساعات سکوت", Modifier.weight(1f))
+                        Text("ساعات سکوت", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                         Switch(
                             checked = quietState.enabled,
-                            onCheckedChange = {
-                                quiet.update(enabled = it)
+                            onCheckedChange = { enabled ->
+                                quiet.update(enabled = enabled)
                                 quietState = quiet.state()
+                                QuietHoursAutomation.schedule(context)
                                 scheduler.rescheduleAll()
+                                message = if (enabled && !policyGranted) {
+                                    "برای سایلنت‌شدن گوشی، دسترسی «مزاحم نشو» را فعال کن."
+                                } else null
                             },
                         )
                     }
-                    Text(
-                        "بازه‌ی فعلی: ${toPersianDigits(quietState.startHour.toString())} تا ${toPersianDigits(quietState.endHour.toString())}",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Spacer(Modifier.height(6.dp))
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        InlineButton("۲۲ تا ۷", Modifier.weight(1f)) {
-                            quiet.update(startHour = 22, endHour = 7)
-                            quietState = quiet.state()
-                            scheduler.rescheduleAll()
-                        }
-                        InlineButton("۲۱ تا ۸", Modifier.weight(1f)) {
-                            quiet.update(startHour = 21, endHour = 8)
-                            quietState = quiet.state()
-                            scheduler.rescheduleAll()
-                        }
-                        InlineButton("۲۳ تا ۶", Modifier.weight(1f)) {
-                            quiet.update(startHour = 23, endHour = 6)
-                            quietState = quiet.state()
-                            scheduler.rescheduleAll()
-                        }
+                        InlineButton(
+                            "از  ${timeLabel(quietState.startHour, quietState.startMinute)}",
+                            Modifier.weight(1f),
+                        ) { pickQuietTime(start = true) }
+                        InlineButton(
+                            "تا  ${timeLabel(quietState.endHour, quietState.endMinute)}",
+                            Modifier.weight(1f),
+                        ) { pickQuietTime(start = false) }
+                    }
+                    Text(
+                        if (policyGranted) {
+                            "دسترسی سکوت گوشی فعال است. در شروع بازه، اعلان وضعیت با گزینهٔ «غیرفعال شود» نمایش داده می‌شود."
+                        } else {
+                            "برای خاموش‌شدن صدای گوشی و آلارم‌ها، دسترسی ویژهٔ «مزاحم نشو» لازم است."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (policyGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    )
+                    if (!policyGranted) {
+                        TextButton(onClick = {
+                            runCatching { context.startActivity(QuietHoursAutomation.policySettingsIntent()) }
+                        }) { Text("دادن دسترسی سکوت گوشی") }
                     }
                 }
             }
@@ -392,7 +449,7 @@ fun RemindersScreen(onBack: () -> Unit) {
                             checked = reminder.enabled,
                             onCheckedChange = { enabled ->
                                 scheduler.setEnabled(reminder.id, enabled)
-                                reminders = scheduler.all()
+                                reminders = visibleReminders()
                             },
                         )
                     }
@@ -444,7 +501,7 @@ fun RemindersScreen(onBack: () -> Unit) {
                             minute = m,
                         ),
                     )
-                    reminders = scheduler.all()
+                    reminders = visibleReminders()
                     title = ""
                     body = ""
                     message = "یادآور برای ${toPersianDigits("%02d:%02d".format(h, m))} تنظیم شد."

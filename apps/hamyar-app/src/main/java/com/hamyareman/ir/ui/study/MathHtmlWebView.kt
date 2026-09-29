@@ -28,6 +28,8 @@ internal fun MathInteractiveHtml(
     val ctx = LocalContext.current
     val progress = LocalAppContainer.current.studyProgress
     val store = remember { LocalStore(ctx, "hamyar_math_html") }
+    val webRef = remember { arrayOfNulls<WebView>(1) }
+    ManagedWebMediaEffect { webRef[0] }
     val bridge = remember(packId, kind) {
         HamyarHtmlBridge(ctx.applicationContext, packId, kind, store, progress)
     }
@@ -46,6 +48,7 @@ internal fun MathInteractiveHtml(
                             "(function(){var s=document.createElement('script');s.src='file:///android_asset/math/c905/hamyar-persist.js';document.documentElement.appendChild(s);})();",
                             null,
                         )
+                        view.bindManagedMediaLifecycle()
                     }
                 }
                 settings.javaScriptEnabled = true
@@ -57,6 +60,8 @@ internal fun MathInteractiveHtml(
                 settings.displayZoomControls = false
                 settings.allowFileAccess = true
                 addJavascriptInterface(bridge, "Hamyar")
+                installManagedMediaLifecycle()
+                webRef[0] = this
                 setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
                 setBackgroundColor(android.graphics.Color.WHITE)
                 setOnTouchListener { v, _ ->
@@ -73,7 +78,11 @@ internal fun MathInteractiveHtml(
             }
         },
         modifier = modifier.fillMaxSize(),
-        onRelease = { it.destroy() },
+        onRelease = {
+            it.stopManagedMedia()
+            if (webRef[0] === it) webRef[0] = null
+            it.destroy()
+        },
     )
 }
 

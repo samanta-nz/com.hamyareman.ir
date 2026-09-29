@@ -5,6 +5,7 @@ import com.hamyareman.ir.platform.core.notifications.NotificationChannels
 import com.hamyareman.ir.platform.core.notifications.Reminder
 import com.hamyareman.ir.di.AppContainer
 import com.hamyareman.ir.ui.ailearning.AI_LESSON_REMINDER_ID
+import com.hamyareman.ir.ui.study.SchoolAlarmStore
 
 class HamyarApplication : Application() {
 
@@ -36,6 +37,8 @@ class HamyarApplication : Application() {
             runCatching { com.hamyareman.ir.ui.study.MediaVault.openPlainStream(this, key) }.getOrNull()
         }
         NotificationChannels.ensure(this)
+        // بازهٔ سکوت بعد از بسته‌شدن برنامه و reboot مستقل از UI اجرا می‌شود.
+        com.hamyareman.ir.platform.core.notifications.QuietHoursAutomation.schedule(this)
         com.hamyareman.ir.ui.profile.StudentProfileState.loadMirror(this)
         com.hamyareman.ir.ui.profile.StudentProfileState.applyLauncherIcon(this, com.hamyareman.ir.ui.profile.StudentProfileState.gender)
         runCatching {
@@ -60,16 +63,10 @@ class HamyarApplication : Application() {
                 Reminder("study-review", "مرور درس امروز", "ده دقیقه مرور، فردا خیلی راحت‌تر می‌شود.", 18, 0),
                 Reminder("calm-evening", "آرام‌سازی شبانه", "چند نفس عمیق و یک کشش کوتاه پیش از خواب.", 21, 30)).forEach { scheduler.upsert(it) }
         }
-        // یادآور روزانه‌ی ماژول هوش مصنوعی — با شناسه‌ی ثابت، پس فقط یک‌بار ساخته می‌شود
-        // و از داخل خود ماژول قابل خاموش‌کردن است (ساعات سکوت هم رعایت می‌شود).
-        if (scheduler.find(AI_LESSON_REMINDER_ID) == null) {
-            scheduler.upsert(
-                Reminder(
-                    id = AI_LESSON_REMINDER_ID,
-                    title = "درس امروز هوش مصنوعی",
-                    body = "ده دقیقه یادگیری AI: یک درس کوتاه + یک آزمون کوچولو.",
-                    hour = 17,
-                    minute = 0))
-        }
+        // مهاجرت نسخهٔ ۲.۱: این دو نوع یادآور طبق طراحی تازه دیگر وجود ندارند.
+        // remove علاوه بر پاک‌کردن state، PendingIntent نسخهٔ قبلی را هم لغو می‌کند.
+        scheduler.remove(AI_LESSON_REMINDER_ID)
+        scheduler.remove(SchoolAlarmStore.SCHOOL_M)
+        scheduler.remove(SchoolAlarmStore.SCHOOL_N)
     }
 }

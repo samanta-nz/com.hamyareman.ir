@@ -424,6 +424,7 @@ class MainActivity : FragmentActivity() {
         super.onResume()
         val container = (application as HamyarApplication).container
         unlocked.value = !container.lock.isLockedNow()
+        container.lock.onForegrounded()
     }
 
     override fun onNewIntent(intent: android.content.Intent) {
@@ -434,11 +435,22 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun captureSleepIntent(intent: android.content.Intent?) {
+        val destination = intent?.getStringExtra(
+            com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_SLEEP_DESTINATION,
+        )
+        if (!destination.isNullOrBlank()) {
+            com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination = destination
+            intent.removeExtra(
+                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_SLEEP_DESTINATION,
+            )
+            return
+        }
         val sleepAction = com.hamyareman.ir.platform.feature.playback.SleepPlaybackService.OPEN_ACTION
         val extra = intent?.getBooleanExtra(com.hamyareman.ir.platform.feature.playback.SleepPlaybackService.OPEN_EXTRA, false) == true ||
             intent?.getBooleanExtra(com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_OPEN_SLEEP, false) == true
         if (intent?.action == sleepAction || extra) {
-            com.hamyareman.ir.ui.study.SleepLaunch.pending = true
+            com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination =
+                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.SLEEP_LISTEN
         }
     }
 
@@ -468,8 +480,8 @@ class MainActivity : FragmentActivity() {
 
     override fun onPause() {
         super.onPause()
-        // خروج از اپ = شروع دوباره‌ی تایمر قفل خودکار (اگر کاربر فعالش کرده باشد).
-        (application as HamyarApplication).container.lock.lock()
+        // شروع شمارندهٔ پس‌زمینه؛ قفل فوری قبلی باعث می‌شد انتخاب‌های ۳۰ث/۱د/۵د بی‌اثر باشند.
+        (application as HamyarApplication).container.lock.onBackgrounded()
     }
 
     /** خروج از حساب — صفحه‌ی ورود دوباره نشان داده می‌شود. */

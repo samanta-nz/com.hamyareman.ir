@@ -36,15 +36,16 @@ class ReminderReceiver : BroadcastReceiver() {
             scheduler.find(id)?.let { scheduler.schedule(it) }
             return
         }
-        if (!school && scheduler.quietHours.isQuietNow()) {
-            // سکوت یعنی سکوت: فقط فردا دوباره زمان‌بندی می‌کنیم.
+        val sleepInvitation = id.removeSuffix("_r") == "school_sleep"
+        if (!sleepInvitation && scheduler.quietHours.isQuietNow()) {
+            // در سکوت، هیچ آلارم مدرسه/یادآور عمومی صدا یا اعلان تولید نمی‌کند.
             scheduler.find(id)?.let { scheduler.schedule(it) }
             return
         }
 
-        show(context, id, title, body, channel, openSleep = id == "school_sleep")
+        show(context, id, title, body, channel, sleepInvitation = sleepInvitation)
         scheduler.find(id)?.let { scheduler.schedule(it) }
-        if (school) scheduleRepeatIfNeeded(context, id, title, body, channel)
+        if (school && !sleepInvitation) scheduleRepeatIfNeeded(context, id, title, body, channel)
     }
 
     private fun show(
@@ -53,40 +54,45 @@ class ReminderReceiver : BroadcastReceiver() {
         title: String,
         body: String,
         channel: String,
-        openSleep: Boolean = false,
+        sleepInvitation: Boolean = false,
     ) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
+        ) return
+
+        val notificationId = id.hashCode()
         val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            if (openSleep) putExtra(EXTRA_OPEN_SLEEP, true)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            if (sleepInvitation) putExtra(EXTRA_SLEEP_DESTINATION, SLEEP_LISTEN)
         }
         val contentIntent = launch?.let {
             PendingIntent.getActivity(
                 context,
-                id.hashCode(),
+                (id + "_open").hashCode(),
                 it,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
         }
         val school = channel == NotificationChannels.SCHOOL_ALARM || id.startsWith("school_")
-        // زنگِ واقعی: آهنگِ انتخابیِ کاربر با صدای خودمان پخش می‌شود (نه فقط صدای اعلان).
-        if (school) {
-            AlarmRinger.start(context)
+        val audibleAlarm = school && !sleepInvitation
+        if (audibleAlarm) AlarmRinger.start(context)
+
+        fun actionPending(labelKey: String, destination: String? = null): PendingIntent {
+            val action = Intent(context, AlarmStopReceiver::class.java).apply {
+                action = ACTION_STOP_ALARM
+                putExtra(AlarmStopReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+                putExtra(AlarmStopReceiver.EXTRA_REMINDER_ID, id)
+                destination?.let { putExtra(AlarmStopReceiver.EXTRA_SLEEP_DESTINATION, it) }
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                (id + labelKey).hashCode(),
+                action,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
         }
-        val stopIntent = Intent(context, AlarmStopReceiver::class.java).apply {
-            action = ACTION_STOP_ALARM
-        }
-        val stopPi = PendingIntent.getBroadcast(
-            context,
-            (id + "_stop").hashCode(),
-            stopIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-        val notification = NotificationCompat.Builder(
+
+        val builder = NotificationCompat.Builder(
             context,
             if (school) NotificationChannels.SCHOOL_ALARM else channel,
         )
@@ -94,29 +100,33 @@ class ReminderReceiver : BroadcastReceiver() {
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
-            .setPriority(if (school) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
-            .setCategory(if (school) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(if (audibleAlarm) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
+            .setCategory(if (audibleAlarm) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .apply {
-                if (school) {
-                    // صدا را خودمان (AlarmRinger) می‌زنیم؛ اعلان فقط لرزش و نمایش.
+                contentIntent?.let { setContentIntent(it) }
+                if (audibleAlarm) {
                     setDefaults(NotificationCompat.DEFAULT_VIBRATE)
                     setSound(null)
+                    val isBus = id.contains("_bus_")
                     addAction(
                         android.R.drawable.ic_lock_idle_alarm,
-                        "توقف زنگ",
-                        stopPi,
+                        if (isBus) "باشه فهمیدم" else "باشه الان حاضر شم",
+                        actionPending("_ack"),
                     )
+                } else if (sleepInvitation) {
+                    setSilent(true)
+                    addAction(0, "بریم قصه", actionPending("_story", SLEEP_STORY))
+                    addAction(0, "بریم موسیقی", actionPending("_listen", SLEEP_LISTEN))
+                    addAction(0, "بریم تنفس", actionPending("_breath", SLEEP_BREATH))
                 } else {
                     setDefaults(NotificationCompat.DEFAULT_ALL)
                 }
-                contentIntent?.let { setContentIntent(it) }
             }
-            .build()
 
-        runCatching { NotificationManagerCompat.from(context).notify(id.hashCode(), notification) }
-        // ذخیره‌ی «آخرین یادآور نمایش‌داده‌شده» برای آمار ملایم (بدون فشار به کاربر)
-        LocalStore(context, ReminderScheduler.REMINDER_STORE).putLong("last_shown_${id}", System.currentTimeMillis())
+        runCatching { NotificationManagerCompat.from(context).notify(notificationId, builder.build()) }
+        LocalStore(context, ReminderScheduler.REMINDER_STORE)
+            .putLong("last_shown_${id}", System.currentTimeMillis())
     }
 
     private fun scheduleRepeatIfNeeded(
@@ -152,6 +162,10 @@ class ReminderReceiver : BroadcastReceiver() {
         const val EXTRA_BODY = "reminder_body"
         const val EXTRA_CHANNEL = "reminder_channel"
         const val EXTRA_OPEN_SLEEP = "open_sleep"
+        const val EXTRA_SLEEP_DESTINATION = "open_sleep_destination"
+        const val SLEEP_STORY = "story"
+        const val SLEEP_LISTEN = "listen"
+        const val SLEEP_BREATH = "breath"
         const val ACTION_STOP_ALARM = "com.hamyareman.ir.STOP_ALARM"
     }
 }

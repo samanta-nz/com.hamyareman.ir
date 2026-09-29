@@ -35,6 +35,7 @@ import com.hamyareman.ir.ui.art.DailyArtPromptScreen
 import com.hamyareman.ir.ui.calmdown.BreathingScreen
 import com.hamyareman.ir.ui.calmdown.CalmMenuScreen
 import com.hamyareman.ir.ui.calmdown.JournalScreen
+import com.hamyareman.ir.ui.calmdown.GratitudeJournalScreen
 import com.hamyareman.ir.ui.chatbot.ChatScreen
 import com.hamyareman.ir.ui.chatbot.ChatSettingsScreen
 import com.hamyareman.ir.ui.content.ContentCategoryScreen
@@ -66,6 +67,8 @@ import com.hamyareman.ir.ui.recipes.RecipesScreen
 import com.hamyareman.ir.ui.routine.RoutineScreen
 import com.hamyareman.ir.ui.safespace.HelplinesScreen
 import com.hamyareman.ir.ui.safespace.SafeSpaceScreen
+import com.hamyareman.ir.ui.safespace.SafeFreeWritingScreen
+import com.hamyareman.ir.ui.study.SecureMediaGalleryScreen
 import com.hamyareman.ir.ui.safespace.WritingPromptScreen
 import com.hamyareman.ir.ui.settings.AppLockScreen
 import com.hamyareman.ir.ui.settings.PrivacySettingsScreen
@@ -73,6 +76,7 @@ import com.hamyareman.ir.ui.settings.RemindersScreen
 import com.hamyareman.ir.ui.settings.SettingsScreen
 import com.hamyareman.ir.ui.settings.SyncScreen
 import com.hamyareman.ir.ui.study.AcademyHubScreen
+import com.hamyareman.ir.ui.study.AcademySoonScreen
 import com.hamyareman.ir.ui.study.AudiobookScreen
 import com.hamyareman.ir.ui.study.BookDetailScreen
 import com.hamyareman.ir.ui.study.DownloadsScreen
@@ -104,10 +108,20 @@ fun ZahraNavHost() {
     val route = entry?.destination?.route
     // لمس اعلان پخش → صفحه‌ی تدریس همان درس (قانون: صوت فقط در صفحه‌ی تدریس پخش می‌شود؛
     // پس بعد از لود شدن همان صفحه، پخش خودکار از TeachAudioBar شروع می‌شود).
-    LaunchedEffect(com.hamyareman.ir.ui.study.SleepLaunch.pending) {
-        if (com.hamyareman.ir.ui.study.SleepLaunch.pending) {
-            com.hamyareman.ir.ui.study.SleepLaunch.pending = false
-            nav.navigate(Screen.SleepNight.route) { launchSingleTop = true }
+    val sleepDestination = com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination
+    LaunchedEffect(sleepDestination) {
+        val destination = sleepDestination ?: return@LaunchedEffect
+        com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination = null
+        val target = when (destination) {
+            com.hamyareman.ir.platform.core.notifications.ReminderReceiver.SLEEP_STORY ->
+                Screen.PracticeGroup.of("cl-story")
+            com.hamyareman.ir.platform.core.notifications.ReminderReceiver.SLEEP_BREATH ->
+                Screen.SleepBreath.route
+            else -> Screen.SleepNight.route
+        }
+        nav.navigate(target) {
+            popUpTo(Screen.Home.route)
+            launchSingleTop = true
         }
     }
     LaunchedEffect(com.hamyareman.ir.ui.study.TeachLaunch.pendingTeachPack) {
@@ -173,6 +187,7 @@ fun ZahraNavHost() {
             composable(Screen.More.route) { MoreScreen(nav) }
             composable(Screen.HealthHub.route) { HealthHubScreen(nav) }
             composable(Screen.Academy.route) { AcademyHubScreen(nav) }
+            composable(Screen.AcademySoon.route) { AcademySoonScreen() }
             composable(
                 Screen.Book.route,
                 listOf(navArgument("bookCode") { type = NavType.StringType })) { entry ->
@@ -255,9 +270,12 @@ fun ZahraNavHost() {
                     onBack = { nav.popBackStack() })
             }
             composable(Screen.Journal.route) { JournalScreen { nav.popBackStack() } }
+            composable(Screen.GratitudeJournal.route) { GratitudeJournalScreen { nav.popBackStack() } }
             composable(Screen.Breath.route) { BreathingScreen { nav.popBackStack() } }
             composable(Screen.Routine.route) { RoutineScreen { nav.popBackStack() } }
             composable(Screen.SafeSpace.route) { SafeSpaceScreen(nav) }
+            composable(Screen.SafeFreeWriting.route) { SafeFreeWritingScreen { nav.popBackStack() } }
+            composable(Screen.SecureGallery.route) { SecureMediaGalleryScreen { nav.popBackStack() } }
             composable(Screen.Writing.route) { WritingPromptScreen { nav.popBackStack() } }
             composable(Screen.Helplines.route) { HelplinesScreen { nav.popBackStack() } }
             composable(Screen.Library.route) { LibraryScreen { nav.popBackStack() } }

@@ -185,8 +185,10 @@ class AppContainer(context: Context) {
 
     /** بیومتریک فقط «راه جایگزینِ بازکردن همان قفل PIN» است؛ بدون PIN فعال نمی‌شود. */
     val biometric = BiometricUnlock(store, lock)
-    val quiet = QuietHoursManager(store)
     val reminders = ReminderScheduler(context)
+    // UI و BroadcastReceiver باید دقیقاً یک state را ببینند؛ هر دو از استور
+    // مستقلِ یادآورها استفاده می‌کنند تا ساعات سکوت بعد از reboot هم برقرار بماند.
+    val quiet = reminders.quietHours
 
     /** کلید در Android Keystore است؛ هیچ بایتی از آن روی دیسک نمی‌ماند. */
     val encryptor = Encryptor()

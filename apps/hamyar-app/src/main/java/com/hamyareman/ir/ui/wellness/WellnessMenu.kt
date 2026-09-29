@@ -303,7 +303,7 @@ object WellnessMenu {
             ),
         ),
         g(
-            "mf-journal", "📓", "روزنوشت آزاد و شکرگزاری", "دفترچه‌ی خصوصی رمزشده روی همین گوشی",
+            "mf-journal", "📓", "دفترچه‌های من", "ثبت سریع شکرگزاری روزانه",
             items = listOf(
                 i("jo-free", "✍️", "دفترچه‌ی من", "حرف‌های بلندتر؛ فقط برای خودت", route = Screen.Journal.route),
             ),
@@ -592,8 +592,8 @@ object WellnessMenu {
         g(
             "pd-yoga", "🧘", "یوگای دوره‌ی قاعدگی", "ملایم؛ اگر درد زیاد شد بایست",
             items = listOf(
-                i("pd-catcow", "🐱", "گربه-گاو", "Cat-Cow — قبلاً موجود", slug = "yoga-cat-cow"),
-                i("pd-child", "🙇", "حالت کودک", "Child's Pose — قبلاً موجود", slug = "yoga-balasana"),
+                i("pd-catcow", "🐱", "گربه-گاو", "تمرین تعاملی", route = Screen.ContentHtml.of("yga-02")),
+                i("pd-child", "🙇", "حالت کودک", "تمرین تعاملی", route = Screen.ContentHtml.of("yga-01")),
                 i(
                     "pd-butterfly", "🦋", "پروانه‌ی خوابیده", "Reclined Butterfly", "۲ دقیقه",
                     steps = listOf(

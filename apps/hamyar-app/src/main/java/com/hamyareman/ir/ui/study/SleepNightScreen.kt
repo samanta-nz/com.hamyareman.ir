@@ -37,7 +37,8 @@ import com.hamyareman.ir.ui.AppTypography
 import kotlinx.coroutines.launch
 
 object SleepLaunch {
-    @Volatile var pending: Boolean = false
+    /** state است تا onNewIntent در حالی که اپ باز است هم ناوبری را فوراً اجرا کند. */
+    var pendingDestination by mutableStateOf<String?>(null)
 }
 
 data class SleepTrack(val id: String, val title: String, val subtitle: String, val uri: String)

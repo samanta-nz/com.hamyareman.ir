@@ -19,7 +19,9 @@ import javax.crypto.spec.PBEKeySpec
  */
 class AppLock(private val store: LocalStore) {
 
+    /** این دو مقدار عمداً فقط در حافظه‌اند؛ مرگ process همیشه به قفل امن برمی‌گردد. */
     private var unlockedAtMs: Long = 0L
+    private var backgroundedAtMs: Long = 0L
 
     fun hasPin(): Boolean = store.getString(KEY_HASH).isNotBlank()
 
@@ -44,12 +46,14 @@ class AppLock(private val store: LocalStore) {
         store.putString(KEY_HASH, hash(pin, salt).toHex())
         store.putBool(KEY_ENABLED, true)
         unlockedAtMs = System.currentTimeMillis()
+        backgroundedAtMs = 0L
         return true
     }
 
     fun clearPin() {
         store.remove(KEY_SALT, KEY_HASH, KEY_ENABLED, KEY_TIMEOUT)
         unlockedAtMs = 0L
+        backgroundedAtMs = 0L
     }
 
     fun verify(pin: String): Boolean {
@@ -70,19 +74,37 @@ class AppLock(private val store: LocalStore) {
         store.putLong(KEY_TIMEOUT, timeoutMs.coerceAtLeast(0L))
     }
 
-    /** آیا الان باید صفحه‌ی PIN نشان داده شود؟ */
+    /**
+     * قفل خودکار فقط مدتِ حضور در پس‌زمینه را می‌سنجد؛ زمان کار فعال با برنامه
+     * نباید کاربر را ناگهان قفل کند. process تازه همیشه قفل است.
+     */
     fun isLockedNow(timeoutMs: Long = autoLockTimeoutMs()): Boolean {
         if (!isEnabled()) return false
         if (unlockedAtMs == 0L) return true
-        return System.currentTimeMillis() - unlockedAtMs > timeoutMs
+        if (backgroundedAtMs == 0L) return false
+        return System.currentTimeMillis() - backgroundedAtMs >= timeoutMs
     }
 
     fun markUnlocked() {
         unlockedAtMs = System.currentTimeMillis()
+        backgroundedAtMs = 0L
+    }
+
+    /** در onPause ثبت می‌شود؛ هنوز قفل نمی‌کنیم تا timeout واقعاً معنا داشته باشد. */
+    fun onBackgrounded(nowMs: Long = System.currentTimeMillis()) {
+        if (isEnabled() && unlockedAtMs != 0L && backgroundedAtMs == 0L) {
+            backgroundedAtMs = nowMs
+        }
+    }
+
+    /** بعد از ارزیابی onResume، اگر مهلت نگذشته باشد نشست ادامه پیدا می‌کند. */
+    fun onForegrounded() {
+        if (!isLockedNow()) backgroundedAtMs = 0L
     }
 
     fun lock() {
         unlockedAtMs = 0L
+        backgroundedAtMs = 0L
     }
 
     private fun hash(pin: String, salt: ByteArray): ByteArray {

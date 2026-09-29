@@ -181,16 +181,18 @@ private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String)
                     ),
                     maxLines = 1,
                 )
-                AutoShrinkTileText(
-                    text = tile.subtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontFamily = AppTypography.cardSub.family,
-                        fontWeight = AppTypography.cardSub.weight,
-                        fontSize = AppTypography.cardSub.size,
-                    ),
-                    maxLines = 2,
-                )
+                if (tile.subtitle.isNotBlank()) {
+                    AutoShrinkTileText(
+                        text = tile.subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = AppTypography.cardSub.family,
+                            fontWeight = AppTypography.cardSub.weight,
+                            fontSize = AppTypography.cardSub.size,
+                        ),
+                        maxLines = 2,
+                    )
+                }
             }
         }
     }

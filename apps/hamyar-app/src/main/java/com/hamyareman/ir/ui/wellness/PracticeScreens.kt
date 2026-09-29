@@ -39,6 +39,7 @@ fun PracticeHubScreen(
     accKey: String = "",
     onBack: (() -> Unit)? = null,
     extraTop: @Composable () -> Unit = {},
+    extraBottom: @Composable () -> Unit = {},
 ) {
     val groups = remember(rootIds) { WellnessMenu.groupsOf(rootIds) }
     HubBody {
@@ -51,12 +52,16 @@ fun PracticeHubScreen(
                     title = g.title,
                     subtitle = if (g.id == "cl-breath") "تمرین‌های تنفسی تعاملی" else g.subtitle,
                     onClick = {
-                        if (g.id == "cl-breath") nav.layerTo(Screen.ContentCategory.of("breath"))
-                        else nav.layerTo(Screen.PracticeGroup.of(g.id))
+                        when (g.id) {
+                            "cl-breath" -> nav.layerTo(Screen.ContentCategory.of("breath"))
+                            "mf-journal" -> nav.layerTo(Screen.GratitudeJournal.route)
+                            else -> nav.layerTo(Screen.PracticeGroup.of(g.id))
+                        }
                     },
                 )
             },
         )
+        extraBottom()
     }
 }
 

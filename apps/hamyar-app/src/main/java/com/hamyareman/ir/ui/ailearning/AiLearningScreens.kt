@@ -51,8 +51,7 @@ import com.hamyareman.ir.platform.core.common.AppResult
  * از همان زیرساخت کاتالوگ استفاده می‌کند (درس/آزمون/گره با پیش‌نیاز) ولی سه چیز
  * مخصوص خودش دارد:
  *  ۱) **مسیر پیش‌نیازدار** با یک گره‌ی ریاضی از مسیر دیگر (`node-math-1`)؛
- *  ۲) **یادآور روزانه** (AlarmManager، با رعایت ساعات سکوت) که از همین‌جا خاموش می‌شود؛
- *  ۳) **تعیین سطح و نمودار پیشرفت** مخصوص همین ماژول (گره‌ها، درس‌های خوانده‌شده، دقت آزمون).
+ *  ۲) **تعیین سطح و نمودار پیشرفت** مخصوص همین ماژول (گره‌ها، درس‌های خوانده‌شده، دقت آزمون).
  *
  * همه‌ی داده‌های پیشرفت روی دستگاه می‌مانند و Sync نمی‌شوند.
  */
@@ -63,7 +62,6 @@ private const val AI_LEVEL = "ai_level"
 private const val AI_SCORE = "ai_score"
 private const val AI_TOTAL = "ai_total"
 private const val AI_DATE = "ai_date"
-private const val DEFAULT_REMINDER_HOUR = 17
 
 @Composable
 fun AiLearningHomeScreen(nav: NavController) {
@@ -72,7 +70,6 @@ fun AiLearningHomeScreen(nav: NavController) {
     var lessons by remember { mutableStateOf<List<Lesson>>(emptyList()) }
     var quizCount by remember { mutableIntStateOf(0) }
     var tick by remember { mutableIntStateOf(0) }
-    var reminder by remember { mutableStateOf(c.reminders.find(AI_LESSON_REMINDER_ID)) }
 
     LaunchedEffect(Unit) {
         val allNodes = c.catalog.learningNodes()
@@ -204,42 +201,6 @@ fun AiLearningHomeScreen(nav: NavController) {
             ) { }
 
             Spacer(Modifier.height(2.dp))
-            Text("یادآور روزانه", style = MaterialTheme.typography.titleMedium)
-            val current = reminder
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Switch(
-                    checked = current?.enabled == true,
-                    onCheckedChange = { on ->
-                        val base = current ?: Reminder(
-                            id = AI_LESSON_REMINDER_ID,
-                            title = "درس امروز هوش مصنوعی",
-                            body = "ده دقیقه یادگیری AI: یک درس کوتاه + یک آزمون کوچولو.",
-                            hour = DEFAULT_REMINDER_HOUR,
-                            minute = 0,
-                        )
-                        c.reminders.upsert(base.copy(enabled = on))
-                        reminder = c.reminders.find(AI_LESSON_REMINDER_ID)
-                    },
-                )
-                Text(
-                    if (current == null) "یادآور ساخته نشده" else "هر روز ساعت ${toPersianDigits("%02d:%02d".format(current.hour, current.minute))}",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { shiftReminder(c, -30) { reminder = it } }) { Text("۳۰ دقیقه زودتر") }
-                TextButton(onClick = { shiftReminder(c, +30) { reminder = it } }) { Text("۳۰ دقیقه دیرتر") }
-            }
-            Text(
-                "یادآور در «ساعات سکوت» نشان داده نمی‌شود و هر وقت بخواهی خاموش می‌شود.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-
-            Spacer(Modifier.height(2.dp))
             Text("همه‌ی درس‌های این مسیر", style = MaterialTheme.typography.titleMedium)
             if (lessons.isEmpty()) Text("درس‌ها در حال آماده‌سازی‌اند…", style = MaterialTheme.typography.bodySmall)
             lessons.forEach { lesson ->
@@ -255,18 +216,6 @@ fun AiLearningHomeScreen(nav: NavController) {
             ) { nav.navigate(Screen.Chat.route) }
         }
     }
-}
-
-private fun shiftReminder(
-    container: com.hamyareman.ir.di.AppContainer,
-    deltaMinutes: Int,
-    onUpdate: (Reminder?) -> Unit,
-) {
-    val current = container.reminders.find(AI_LESSON_REMINDER_ID) ?: return
-    val totalMinutes = (current.hour * 60 + current.minute + deltaMinutes)
-        .mod(24 * 60)
-    container.reminders.upsert(current.copy(hour = totalMinutes / 60, minute = totalMinutes % 60))
-    onUpdate(container.reminders.find(AI_LESSON_REMINDER_ID))
 }
 
 @Composable

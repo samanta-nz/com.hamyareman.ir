@@ -30,9 +30,12 @@ sealed class Screen(val route: String) {
     data object CalmHub : Screen("calm-hub")
     data object FreeReading : Screen("free-reading")
     data object Journal : Screen("journal")
+    data object GratitudeJournal : Screen("gratitude-journal")
     data object Breath : Screen("breath")
     data object Routine : Screen("routine")
     data object SafeSpace : Screen("safespace")
+    data object SafeFreeWriting : Screen("safe-free-writing")
+    data object SecureGallery : Screen("secure-gallery")
     data object Album : Screen("album")
     data object Writing : Screen("writing")
     data object Helplines : Screen("helplines")
@@ -53,6 +56,7 @@ sealed class Screen(val route: String) {
     data object HealthHub : Screen("health")
     data object AwarenessHub : Screen("awareness")
     data object Academy : Screen("academy")
+    data object AcademySoon : Screen("academy-coming-soon")
     data object Book : Screen("study-book/{bookCode}") {
         fun of(bookCode: String) = "study-book/${Uri.encode(bookCode)}"
     }

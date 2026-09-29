@@ -54,6 +54,9 @@ import com.hamyareman.ir.ui.AppTypography
 import com.hamyareman.ir.ui.hub.AutoShrinkTileText
 import com.hamyareman.ir.ui.profile.AppEdition
 import com.hamyareman.ir.ui.profile.StudentProfileState
+import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -87,6 +90,7 @@ fun ToolHubScreen(
     items: List<ToolCard>,
     onBack: () -> Unit,
     onOpen: (ToolCard) -> Unit) {
+    com.hamyareman.ir.ui.study.SecureWebEffect()
     Column(Modifier.fillMaxSize()) {
         AppTopBar(title, onBack)
         Column(
@@ -187,6 +191,9 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     val container = LocalAppContainer.current
     val scope = rememberCoroutineScope()
     val webRef = remember { arrayOfNulls<WebView>(1) }
+    // همهٔ جعبه‌ابزارها و آزمایشگاه‌ها محتوای محافظت‌شده‌اند.
+    com.hamyareman.ir.ui.study.SecureWebEffect()
+    com.hamyareman.ir.ui.study.ManagedWebMediaEffect { webRef[0] }
     val premium = StudentProfileState.isPaid()
     var pageUrl by remember(toolId) { mutableStateOf<String?>(null) }
     var loadErr by remember(toolId) { mutableStateOf<String?>(null) }
@@ -286,9 +293,11 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                                     view.evaluateJavascript(toolPageJs(toolId, premium), null)
                                     view.post { applyLabViewport(view) }
                                     applySaved(view)
+                                    view.bindManagedMediaLifecycle()
                                 }
                             }
                             addJavascriptInterface(bridge, "HamyarTool")
+                            installManagedMediaLifecycle()
                             setBackgroundColor(if (isLab) android.graphics.Color.parseColor("#050912") else android.graphics.Color.TRANSPARENT)
                             webRef[0] = this
                             loadUrl(url)
@@ -297,7 +306,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                     modifier = Modifier.fillMaxSize().onSizeChanged {
                         webRef[0]?.let { applyLabViewport(it) }
                     },
-                    onRelease = { webRef[0] = null; it.destroy() })
+                    onRelease = { it.stopManagedMedia(); webRef[0] = null; it.destroy() })
                 }
             }
         }
