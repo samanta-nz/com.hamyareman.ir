@@ -1,0 +1,16 @@
+{
+  "source": {
+    "endpoint": "https://s3.ir-thr-at1.arvanstorage.ir",
+    "bucket": "hamyar-e-man"
+  },
+  "dest": {
+    "endpoint": "https://parspack.net",
+    "bucket": "c539776"
+  },
+  "sourceObjects": 260,
+  "copied": 260,
+  "skipped": 0,
+  "failed": 0,
+  "destObjects": 0,
+  "destBytes": 0
+}
