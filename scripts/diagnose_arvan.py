@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import uuid
@@ -108,6 +109,49 @@ def main() -> int:
 
     probe_key = f"apk/_diagnose/{uuid.uuid4().hex}.txt"
     say("## ۴) نوشتن شیء آزمایشی")
+    say("")
+
+    say("### ۴-صفر) پاسخ خام آروان به یک PutObject کمینه")
+    say("")
+    sent: dict = {}
+
+    def capture(request, **_kwargs):  # noqa: ANN001
+        sent["method"] = request.method
+        sent["url"] = request.url
+        sent["headers"] = {
+            k: ("<redacted>" if k.lower() in {"authorization", "x-amz-content-sha256"} else v)
+            for k, v in dict(request.headers).items()
+        }
+
+    s3.meta.events.register("before-send.s3.PutObject", capture)
+    try:
+        s3.put_object(Bucket=BUCKET, Key=f"apk/_diagnose/{uuid.uuid4().hex}.bin", Body=b"x")
+        say("- ✅ موفق")
+    except ClientError as exc:
+        payload = json.loads(json.dumps(exc.response, default=str))
+        meta = payload.get("ResponseMetadata") or {}
+        say(f"- کد: `{(payload.get('Error') or {}).get('Code')}` · HTTP {meta.get('HTTPStatusCode')}")
+        extra = {k: v for k, v in payload.items() if k not in {"Error", "ResponseMetadata"}}
+        say("")
+        say("```json")
+        say(json.dumps({"Error": payload.get("Error"), "extra": extra}, ensure_ascii=False, indent=2))
+        say("```")
+        say("")
+        say("پاسخ سرور (هدرها):")
+        say("")
+        say("```json")
+        say(json.dumps(meta.get("HTTPHeaders") or {}, ensure_ascii=False, indent=2))
+        say("```")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- ❌ {label(exc)}")
+    finally:
+        s3.meta.events.unregister("before-send.s3.PutObject", capture)
+    say("")
+    say("درخواستی که فرستاده شد:")
+    say("")
+    say("```json")
+    say(json.dumps(sent, ensure_ascii=False, indent=2))
+    say("```")
     say("")
 
     say("### ۴-الف) اثر تنظیم چک‌سام")
