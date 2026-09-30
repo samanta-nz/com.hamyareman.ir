@@ -2,32 +2,11 @@
 
 ## وضعیت کلی
 
-- تسک‌های شکست‌خورده: **1**
+- تسک‌های شکست‌خورده: **0**
 - خطای کامپایل کاتلین: **0**
 - هشدار کامپایلر (یکتا): **56**
-- تست واحد: **160** اجرا، **4** ناموفق
+- تست واحد: **160** اجرا، **0** ناموفق
 - APK ساخته‌شده: **3**
-
-## تسک‌های شکست‌خورده
-
-- `:hamyar-app:testP09DebugUnitTest`
-
-## جزئیات شکست Gradle
-
-```
-* What went wrong:
-Execution failed for task ':hamyar-app:testP09DebugUnitTest'.
-> There were failing tests. See the report at: apps/hamyar-app/build/reports/tests/testP09DebugUnitTest/index.html
-
-* Try:
-> Run with --scan to get full insights from a Build Scan (powered by Develocity).
-
-* Exception is:
-org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':hamyar-app:testP09DebugUnitTest'.
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
-	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
-```
 
 ## خروجی‌ها
 
@@ -60,15 +39,8 @@ org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':hamyar-
 | `com.hamyareman.ir.ui.study.SchoolShiftTest` | 6 | 0 | 0 | 0 |
 | `com.hamyareman.ir.ui.study.SpacedReviewMathTest` | 5 | 0 | 0 | 0 |
 | `com.hamyareman.ir.ui.update.UpdatePlanTest` | 12 | 0 | 0 | 0 |
-| `com.hamyareman.ir.ui.wellness.WellnessCatalogTest` | 17 | 3 | 0 | 0 |
-| `com.hamyareman.ir.ui.wellness.WellnessTimingTest` | 14 | 1 | 0 | 0 |
-
-### تست‌های ناموفق
-
-- com.hamyareman.ir.ui.wellness.WellnessCatalogTest.audioCueIds helper returns single element for non-pipe value — java.lang.AssertionError: expected:<1> but was:<0>
-- com.hamyareman.ir.ui.wellness.WellnessCatalogTest.startCueId, midCueId, endCueId return correct files — java.lang.AssertionError: expected:<cue-yoga-balasana-start.mp3> but was:<null>
-- com.hamyareman.ir.ui.wellness.WellnessCatalogTest.audioCueIds helper splits pipe-separated values — java.lang.AssertionError: expected:<3> but was:<0>
-- com.hamyareman.ir.ui.wellness.WellnessTimingTest.all yoga cues use audioCueId in the move for intro — java.util.NoSuchElementException: List is empty.
+| `com.hamyareman.ir.ui.wellness.WellnessCatalogTest` | 18 | 0 | 0 | 0 |
+| `com.hamyareman.ir.ui.wellness.WellnessTimingTest` | 13 | 0 | 0 | 0 |
 
 ## لینت
 
@@ -157,9 +129,9 @@ org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':hamyar-
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:83:21 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.` (×2)
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:104:29 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:122:30 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
+- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
-- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 
 ### Other — 9 مورد یکتا
 
