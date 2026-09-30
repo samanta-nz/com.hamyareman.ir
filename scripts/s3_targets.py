@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+"""خواندن پیکربندی سرورهای S3 از config/storage-internal.json.
+
+هیچ کلیدی در این فایل یا در آن JSON نیست؛ کلیدها فقط از متغیرهای محیطیِ رانر
+خوانده می‌شوند (نام متغیر در خود JSON آمده است).
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from dataclasses import dataclass
+from pathlib import Path
+from urllib.parse import quote
+
+import boto3
+from botocore.client import Config
+
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "storage-internal.json"
+
+
+@dataclass(frozen=True)
+class Target:
+    name: str
+    label: str
+    endpoint: str
+    region: str
+    bucket: str
+    public_url_style: str
+    access_key: str
+    secret_key: str
+
+    @property
+    def host(self) -> str:
+        return self.endpoint.split("://", 1)[-1].rstrip("/")
+
+    def public_url(self, key: str) -> str:
+        encoded = "/".join(quote(part, safe="") for part in key.split("/"))
+        if self.public_url_style == "virtual-host":
+            return f"https://{self.bucket}.{self.host}/{encoded}"
+        return f"{self.endpoint.rstrip('/')}/{self.bucket}/{encoded}"
+
+    def client(self, *, addressing: str | None = None):
+        extra: dict = {}
+        if addressing:
+            extra["s3"] = {"addressing_style": addressing}
+        return boto3.client(
+            "s3",
+            endpoint_url=self.endpoint,
+            region_name=self.region,
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            config=Config(
+                # از botocore 1.36 چک‌سام CRC32 روی هر PutObject اجباری می‌شود و
+                # ارائه‌دهنده‌های S3-سازگار آن را رد می‌کنند.
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+                connect_timeout=20,
+                read_timeout=240,
+                retries={"max_attempts": 6, "mode": "standard"},
+                **extra,
+            ),
+        )
+
+
+def load_config() -> dict:
+    return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+
+
+def target(name: str | None = None, *, require_keys: bool = True) -> Target:
+    config = load_config()
+    chosen = name or config.get("active") or "parspack"
+    raw = config["providers"][chosen]
+    access = os.getenv(raw["accessKeyEnv"], "").strip()
+    secret = os.getenv(raw["secretKeyEnv"], "").strip()
+    if require_keys and (not access or not secret):
+        raise SystemExit(
+            f"کلیدهای «{raw['label']}» تنظیم نشده‌اند — "
+            f"{raw['accessKeyEnv']} و {raw['secretKeyEnv']} را در Secrets مخزن بگذارید."
+        )
+    return Target(
+        name=chosen,
+        label=raw["label"],
+        endpoint=os.getenv(f"{chosen.upper()}_ENDPOINT", "").strip() or raw["endpoint"],
+        region=os.getenv(f"{chosen.upper()}_REGION", "").strip() or raw["region"],
+        bucket=os.getenv(f"{chosen.upper()}_BUCKET", "").strip() or raw["bucket"],
+        public_url_style=raw.get("publicUrlStyle", "path"),
+        access_key=access,
+        secret_key=secret,
+    )

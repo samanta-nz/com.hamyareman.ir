@@ -1,0 +1,27 @@
+{
+  "_comment": "پیکربندی سرور داخلی (ایران) برای محتوا و APK. فقط مقادیر غیرمحرمانه اینجاست؛ کلیدها در GitHub Actions Secrets می‌مانند: PARSPACK_ACCESS_KEY و PARSPACK_SECRET_KEY.",
+  "active": "parspack",
+  "providers": {
+    "parspack": {
+      "label": "پارس‌پک",
+      "endpoint": "https://c539776.parspack.net",
+      "region": "us-east-1",
+      "bucket": "hamyar-e-man",
+      "publicUrlStyle": "path",
+      "accessKeyEnv": "PARSPACK_ACCESS_KEY",
+      "secretKeyEnv": "PARSPACK_SECRET_KEY",
+      "quotaGb": 20,
+      "notes": "سرور داخلی، ترافیک نامحدود. سبک نشانی عمومی در preflight تأیید می‌شود."
+    },
+    "arvan": {
+      "label": "آروان",
+      "endpoint": "https://s3.ir-thr-at1.arvanstorage.ir",
+      "region": "ir-thr-at1",
+      "bucket": "hamyar-e-man",
+      "publicUrlStyle": "virtual-host",
+      "accessKeyEnv": "ARVAN_ACCESS_KEY",
+      "secretKeyEnv": "ARVAN_SECRET_KEY",
+      "notes": "از ۲۰۲۶-۰۹-۳۰ باکت سمت ارائه‌دهنده فقط‌خواندنی شد؛ فقط منبع خواندن برای مهاجرت است."
+    }
+  }
+}
