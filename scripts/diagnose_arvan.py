@@ -252,6 +252,51 @@ def main() -> int:
             say(f"- ⚠️ DeleteObject ناموفق — {label(exc)}")
     say("")
 
+    say("## ۴-پ) حساب یا باکت؟ (تست قطعی)")
+    say("")
+    say("اگر ساختن باکت تازه و نوشتن در آن کار کند، ایراد فقط مال باکت فعلی است؛")
+    say("اگر آن هم رد شود، نوشتن در کل حساب بسته است (اعتبار/طرح/تعلیق).")
+    say("")
+    probe_bucket = f"hamyar-diag-{uuid.uuid4().hex[:12]}"
+    made = False
+    try:
+        s3.create_bucket(Bucket=probe_bucket)
+        made = True
+        say(f"- ✅ CreateBucket موفق (`{probe_bucket}`)")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- ❌ CreateBucket ناموفق — {label(exc)}")
+    if made:
+        try:
+            s3.put_object(Bucket=probe_bucket, Key="probe.txt", Body=b"x")
+            say("- ✅ PutObject در باکت تازه موفق → **ایراد فقط مال باکت `hamyar-e-man` است**")
+            s3.delete_object(Bucket=probe_bucket, Key="probe.txt")
+        except Exception as exc:  # noqa: BLE001
+            say(f"- ❌ PutObject در باکت تازه هم ناموفق — {label(exc)}")
+            say("- → **نوشتن در کل حساب آروان بسته است.**")
+        try:
+            s3.delete_bucket(Bucket=probe_bucket)
+            say("- 🧹 باکت آزمایشی پاک شد")
+        except Exception as exc:  # noqa: BLE001
+            say(f"- ⚠️ پاک‌کردن باکت آزمایشی ناموفق — {label(exc)}")
+    say("")
+
+    say("## ۴-ت) پیکربندی باکت `" + BUCKET + "`")
+    say("")
+    for name, call in (
+        ("Versioning", lambda: s3.get_bucket_versioning(Bucket=BUCKET)),
+        ("ACL", lambda: s3.get_bucket_acl(Bucket=BUCKET)),
+        ("Policy", lambda: s3.get_bucket_policy(Bucket=BUCKET)),
+        ("Lifecycle", lambda: s3.get_bucket_lifecycle_configuration(Bucket=BUCKET)),
+        ("ObjectLock", lambda: s3.get_object_lock_configuration(Bucket=BUCKET)),
+    ):
+        try:
+            value = call()
+            value.pop("ResponseMetadata", None)
+            say(f"- **{name}**: `{json.dumps(value, ensure_ascii=False, default=str)[:400]}`")
+        except Exception as exc:  # noqa: BLE001
+            say(f"- **{name}**: {label(exc)}")
+    say("")
+
     say("## ۵) وضعیت APKهای موجود روی آروان")
     say("")
     try:
