@@ -11,7 +11,8 @@
       "accessKeyEnv": "PARSPACK_ACCESS_KEY",
       "secretKeyEnv": "PARSPACK_SECRET_KEY",
       "quotaGb": 20,
-      "notes": "سرور داخلی، ترافیک نامحدود. سبک نشانی عمومی در preflight تأیید می‌شود."
+      "notes": "سرور داخلی، ترافیک نامحدود. سبک نشانی عمومی در preflight تأیید می‌شود.",
+      "addressingStyle": "path"
     },
     "arvan": {
       "label": "آروان",
@@ -21,7 +22,8 @@
       "publicUrlStyle": "virtual-host",
       "accessKeyEnv": "ARVAN_ACCESS_KEY",
       "secretKeyEnv": "ARVAN_SECRET_KEY",
-      "notes": "از ۲۰۲۶-۰۹-۳۰ باکت سمت ارائه‌دهنده فقط‌خواندنی شد؛ فقط منبع خواندن برای مهاجرت است."
+      "notes": "از ۲۰۲۶-۰۹-۳۰ باکت سمت ارائه‌دهنده فقط‌خواندنی شد؛ فقط منبع خواندن برای مهاجرت است.",
+      "addressingStyle": "virtual"
     }
   }
 }

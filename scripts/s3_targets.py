@@ -29,6 +29,7 @@ class Target:
     public_url_style: str
     access_key: str
     secret_key: str
+    addressing_style: str = "path"
 
     @property
     def host(self) -> str:
@@ -41,9 +42,10 @@ class Target:
         return f"{self.endpoint.rstrip('/')}/{self.bucket}/{encoded}"
 
     def client(self, *, addressing: str | None = None):
-        extra: dict = {}
-        if addressing:
-            extra["s3"] = {"addressing_style": addressing}
+        # boto3 با endpoint سفارشی به‌طور پیش‌فرض virtual-host می‌سازد؛ بعضی
+        # ارائه‌دهنده‌ها فقط path-style را امضا می‌کنند و وگرنه
+        # SignatureDoesNotMatch می‌دهند.
+        extra: dict = {"s3": {"addressing_style": addressing or self.addressing_style}}
         return boto3.client(
             "s3",
             endpoint_url=self.endpoint,
@@ -87,4 +89,5 @@ def target(name: str | None = None, *, require_keys: bool = True) -> Target:
         public_url_style=raw.get("publicUrlStyle", "path"),
         access_key=access,
         secret_key=secret,
+        addressing_style=raw.get("addressingStyle", "path"),
     )
