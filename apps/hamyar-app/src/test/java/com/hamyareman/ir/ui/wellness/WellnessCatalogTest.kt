@@ -80,30 +80,40 @@ class WellnessCatalogTest {
         assertEquals(8, breathing.size)
     }
 
+    // کاتالوگ دیگر audioCueId ندارد، پس این سه تست قرارداد خودِ helper را روی
+    // یک نمونهٔ ساختگی می‌سنجند تا اگر روزی مقدار از جدول Appwrite آمد، کار کند.
+
     @Test
     fun `audioCueIds helper splits pipe-separated values`() {
-        val balasana = WellnessCatalog.bySlug("yoga-balasana")!!
-        val ids = balasana.audioCueIds
+        val move = WellnessCatalog.bySlug("yoga-balasana")!!
+            .copy(audioCueId = "a-start.mp3|a-mid.mp3|a-end.mp3")
+        val ids = move.audioCueIds
         assertEquals(3, ids.size)
-        assertEquals("cue-yoga-balasana-start.mp3", ids[0])
-        assertEquals("cue-yoga-balasana-mid.mp3", ids[1])
-        assertEquals("cue-yoga-balasana-end.mp3", ids[2])
+        assertEquals("a-start.mp3", ids[0])
+        assertEquals("a-mid.mp3", ids[1])
+        assertEquals("a-end.mp3", ids[2])
     }
 
     @Test
     fun `audioCueIds helper returns single element for non-pipe value`() {
-        val squat = WellnessCatalog.bySlug("ex-squat")!!
-        val ids = squat.audioCueIds
+        val move = WellnessCatalog.bySlug("ex-squat")!!.copy(audioCueId = "solo.mp3")
+        val ids = move.audioCueIds
         assertEquals(1, ids.size)
-        assertEquals("cue-ex-squat.mp3", ids[0])
+        assertEquals("solo.mp3", ids[0])
     }
 
     @Test
     fun `startCueId, midCueId, endCueId return correct files`() {
-        val balasana = WellnessCatalog.bySlug("yoga-balasana")!!
-        assertEquals("cue-yoga-balasana-start.mp3", balasana.startCueId)
-        assertEquals("cue-yoga-balasana-mid.mp3", balasana.midCueId)
-        assertEquals("cue-yoga-balasana-end.mp3", balasana.endCueId)
+        val move = WellnessCatalog.bySlug("yoga-balasana")!!
+            .copy(audioCueId = "a-start.mp3|a-mid.mp3|a-end.mp3")
+        assertEquals("a-start.mp3", move.startCueId)
+        assertEquals("a-mid.mp3", move.midCueId)
+        assertEquals("a-end.mp3", move.endCueId)
+    }
+
+    @Test
+    fun `audioCueIds helper returns empty list for blank value`() {
+        assertTrue(WellnessCatalog.bySlug("yoga-balasana")!!.audioCueIds.isEmpty())
     }
 
     @Test
