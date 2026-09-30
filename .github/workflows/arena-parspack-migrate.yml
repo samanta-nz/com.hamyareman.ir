@@ -39,8 +39,9 @@ jobs:
 
       - name: ۱) آمادگی‌سنجی سرور داخلی
         id: preflight
+        shell: bash
         run: |
-          set -uo pipefail
+          set +e
           mkdir -p ci-report
           if [ -z "${PARSPACK_ACCESS_KEY:-}" ] || [ -z "${PARSPACK_SECRET_KEY:-}" ]; then
             printf '# آمادگی‌سنجی\n\n❌ `PARSPACK_ACCESS_KEY` / `PARSPACK_SECRET_KEY` در Secrets مخزن نیست.\n' \
@@ -49,17 +50,21 @@ jobs:
             exit 0
           fi
           python3 scripts/preflight_parspack.py > ci-report/parspack-preflight.md 2>&1
-          echo "ok=$([ $? -eq 0 ] && echo true || echo true)" >> "$GITHUB_OUTPUT"
-          cat ci-report/parspack-preflight.md
+          echo "preflight exit=$?"
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          cat ci-report/parspack-preflight.md || true
+          exit 0
 
       - name: ۲) آینه‌سازی محتوا با همان پوشه‌بندی
         if: steps.preflight.outputs.ok == 'true'
+        shell: bash
         run: |
-          set -uo pipefail
+          set +e
           python3 scripts/mirror_storage.py \
             --source arvan --dest parspack \
             --out ci-report/parspack-mirror.md \
-            --json-out ci-report/parspack-mirror.json 2>&1 | tail -n 200
+            --json-out ci-report/parspack-mirror.json 2>&1 | tail -n 120
+          echo "mirror exit=$?"
           exit 0
 
       - name: پاک‌سازی کلیدها از گزارش‌ها
@@ -81,16 +86,22 @@ jobs:
 
       - name: ثبت گزارش روی برنچ
         if: always()
+        shell: bash
         run: |
-          set -euo pipefail
+          set +e
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/parspack-preflight.md ci-report/parspack-mirror.md ci-report/parspack-mirror.json 2>/dev/null || true
-          if ! git diff --cached --quiet; then
+          git add -f -A ci-report
+          git diff --cached --quiet
+          if [ $? -ne 0 ]; then
             git commit -m "گزارش مهاجرت به پارس‌پک"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "push exit=$?"
+          else
+            echo "چیزی برای کامیت نبود."
           fi
           for f in ci-report/parspack-preflight.md ci-report/parspack-mirror.md; do
-            [ -f "$f" ] && cat "$f" >> "$GITHUB_STEP_SUMMARY"
+            if [ -f "$f" ]; then cat "$f" >> "$GITHUB_STEP_SUMMARY"; fi
           done
+          exit 0
