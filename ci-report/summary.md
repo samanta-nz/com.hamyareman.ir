@@ -2,11 +2,32 @@
 
 ## وضعیت کلی
 
-- تسک‌های شکست‌خورده: **0**
+- تسک‌های شکست‌خورده: **1**
 - خطای کامپایل کاتلین: **0**
-- هشدار کامپایلر (یکتا): **58**
-- تست واحد: **165** اجرا، **0** ناموفق
+- هشدار کامپایلر (یکتا): **56**
+- تست واحد: **160** اجرا، **4** ناموفق
 - APK ساخته‌شده: **3**
+
+## تسک‌های شکست‌خورده
+
+- `:hamyar-app:testP09DebugUnitTest`
+
+## جزئیات شکست Gradle
+
+```
+* What went wrong:
+Execution failed for task ':hamyar-app:testP09DebugUnitTest'.
+> There were failing tests. See the report at: apps/hamyar-app/build/reports/tests/testP09DebugUnitTest/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':hamyar-app:testP09DebugUnitTest'.
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
+```
 
 ## خروجی‌ها
 
@@ -39,8 +60,15 @@
 | `com.hamyareman.ir.ui.study.SchoolShiftTest` | 6 | 0 | 0 | 0 |
 | `com.hamyareman.ir.ui.study.SpacedReviewMathTest` | 5 | 0 | 0 | 0 |
 | `com.hamyareman.ir.ui.update.UpdatePlanTest` | 12 | 0 | 0 | 0 |
-| `com.hamyareman.ir.ui.wellness.WellnessCatalogTest` | 22 | 0 | 0 | 0 |
-| `com.hamyareman.ir.ui.wellness.WellnessTimingTest` | 14 | 0 | 0 | 0 |
+| `com.hamyareman.ir.ui.wellness.WellnessCatalogTest` | 17 | 3 | 0 | 0 |
+| `com.hamyareman.ir.ui.wellness.WellnessTimingTest` | 14 | 1 | 0 | 0 |
+
+### تست‌های ناموفق
+
+- com.hamyareman.ir.ui.wellness.WellnessCatalogTest.audioCueIds helper returns single element for non-pipe value — java.lang.AssertionError: expected:<1> but was:<0>
+- com.hamyareman.ir.ui.wellness.WellnessCatalogTest.startCueId, midCueId, endCueId return correct files — java.lang.AssertionError: expected:<cue-yoga-balasana-start.mp3> but was:<null>
+- com.hamyareman.ir.ui.wellness.WellnessCatalogTest.audioCueIds helper splits pipe-separated values — java.lang.AssertionError: expected:<3> but was:<0>
+- com.hamyareman.ir.ui.wellness.WellnessTimingTest.all yoga cues use audioCueId in the move for intro — java.util.NoSuchElementException: List is empty.
 
 ## لینت
 
@@ -87,56 +115,56 @@
 
 ### Deprecated API — 29 مورد یکتا
 
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/FontFloater.kt:147:56 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:487:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:489:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/cycle/PeriodTrainingScreen.kt:74:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LessonPlayerScreen.kt:302:30 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/IranPlaces.kt:101:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/JalaliBirthDateFields.kt:115:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt:92:9 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/FreeReadingScreen.kt:23:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:148:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:55 'val Icons.Filled.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:83 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/MathLessonScreen.kt:328:5 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:93:34 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:95:19 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:96:50 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:97:35 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:98:35 'static field SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:99:35 'static field SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:100:35 'static field SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:101:35 'static field SYSTEM_UI_FLAG_LAYOUT_STABLE: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:104:38 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/ApkUpdate.kt:364:36 'static field ACTION_INSTALL_PACKAGE: String' is deprecated. Deprecated in Java.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/UpdateGate.kt:109:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.` (×2)
 - `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:461:21 'suspend fun createVerification(url: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.createEmailVerification` instead.`
 - `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:474:21 'suspend fun updateVerification(userId: String, secret: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.updateEmailVerification` instead.`
 - `shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:123:58 'constructor(p0: MediaSession): MediaSession.ConnectionResult.AcceptedResultBuilder' is deprecated. Deprecated in Java.`
 - `shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:158:34 'fun onPlayerCommandRequest(p0: MediaSession, p1: MediaSession.ControllerInfo, p2: Int): Int' is deprecated. Deprecated in Java.`
 - `shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/SleepPlaybackService.kt:61:58 'constructor(p0: MediaSession): MediaSession.ConnectionResult.AcceptedResultBuilder' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/FontFloater.kt:147:56 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:487:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:489:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/cycle/PeriodTrainingScreen.kt:74:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LessonPlayerScreen.kt:302:30 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/IranPlaces.kt:101:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/JalaliBirthDateFields.kt:115:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt:92:9 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/FreeReadingScreen.kt:23:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:148:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:55 'val Icons.Filled.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:83 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/MathLessonScreen.kt:328:5 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:93:34 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:95:19 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:96:50 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:97:35 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:98:35 'static field SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:99:35 'static field SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:100:35 'static field SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:101:35 'static field SYSTEM_UI_FLAG_LAYOUT_STABLE: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:104:38 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/ApkUpdate.kt:364:36 'static field ACTION_INSTALL_PACKAGE: String' is deprecated. Deprecated in Java.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/UpdateGate.kt:109:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.`
 
-### Redundant code — 15 مورد یکتا
+### Redundant code — 13 مورد یکتا
 
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt:200:41 Unnecessary safe call on a non-null receiver of type 'ContentItem'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt:200:64 Unnecessary safe call on a non-null receiver of type 'ContentItem'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:42 Condition is always 'true'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:57 Condition is always 'true'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:693:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'StudyPack.Question'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:79:34 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:81:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:83:21 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.` (×2)
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:104:29 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:122:30 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
-- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt:200:41 Unnecessary safe call on a non-null receiver of type 'ContentItem'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt:200:64 Unnecessary safe call on a non-null receiver of type 'ContentItem'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:42 Condition is always 'true'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:57 Condition is always 'true'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:693:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'StudyPack.Question'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:79:34 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:81:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:83:21 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/AudioCueCache.kt:67:27 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/AudioCueCache.kt:68:23 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.`
+- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 
 ### Other — 9 مورد یکتا
 
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LearningScreens.kt:94:8 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.` (×2)
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessScreen.kt:187:49 The corresponding parameter in the supertype 'WellnessLogSink' is named 'move'. This may cause problems when calling this function with named arguments.` (×2)
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:199:19 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:343:13 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminConsoleScreens.kt:57:12 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.`
@@ -144,8 +172,6 @@
 - `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/FunctionsService.kt:55:32 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.`
 - `shared/feature-calls/src/main/java/com/hamyareman/ir/platform/feature/calls/CallEngine.kt:389:58 The corresponding parameter in the supertype 'SdpAdapter' is named 'sdp'. This may cause problems when calling this function with named arguments.`
 - `shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:145:30 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LearningScreens.kt:94:8 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.`
-- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessScreen.kt:198:49 The corresponding parameter in the supertype 'WellnessLogSink' is named 'move'. This may cause problems when calling this function with named arguments.`
 
 ### Unused code — 5 مورد یکتا
 
