@@ -19,22 +19,41 @@
 
 ## ۴) نوشتن شیء آزمایشی
 
-### ۴-الف) اثر تنظیم چک‌سام
+### ۴-صفر) پاسخ خام آروان به یک PutObject کمینه
 
-- ❌ بدون اصلاح چک‌سام (s3v4 خام) — `InvalidArgument` (HTTP 400) — 
-- ❌ با when_required — `InvalidArgument` (HTTP 400) — 
+- کد: `InvalidArgument` · HTTP 400
 
-### ۴-ب) همان مسیر انتشار (هدرهای واقعی)
-
-- ❌ PutObject ناموفق — `InvalidArgument` (HTTP 400) — 
-
-## ۵) وضعیت APKهای موجود روی آروان
-
-- (خالی)
-
-## ۶) بازتولید مسیر publish_public_s3_object.py
-
+```json
+{
+  "Error": {
+    "Code": "InvalidArgument",
+    "Message": null,
+    "BucketName": "hamyar-e-man"
+  },
+  "extra": {}
+}
 ```
-S3 publish failed: RuntimeError: S3 PUT header preflight failed: minimal=InvalidArgument: , content-type=InvalidArgument: , cache-control=InvalidArgument: , metadata=InvalidArgument: , combined=InvalidArgument: 
-current bytes_match=False, public=False (bytes differ or absent)
-S3 one-byte PUT preflight minimal=InvalidArgument: , content-type=InvalidArgument: , cache-control=InvalidArgument: , metadata=InvalidArgument: , combined=InvalidArgument: 
+
+پاسخ سرور (هدرها):
+
+```json
+{
+  "date": "Wed, 30 Sep 2026 02:02:24 GMT",
+  "content-type": "application/xml",
+  "content-length": "261",
+  "connection": "keep-alive",
+  "keep-alive": "timeout=65",
+  "x-amz-request-id": "tx000000a8b6e9c65e85b34-006abc6db0-3164929517-ir-thr-at1",
+  "x-robots-tag": "noindex, nofollow",
+  "server": "ArvanCloud",
+  "server-timing": "total;dur=472",
+  "x-request-id": "b78580b8cbdd43dc180deb3d5006216e",
+  "x-sid": "6980"
+}
+```
+
+درخواستی که فرستاده شد:
+
+```json
+
+**خطای پیش‌بینی‌نشده:** `TypeError` — Object of type bytes is not JSON serializable
