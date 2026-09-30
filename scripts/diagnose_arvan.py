@@ -297,6 +297,47 @@ def main() -> int:
             say(f"- **{name}**: {label(exc)}")
     say("")
 
+    say("## ۴-ث) منطقهٔ باکت و تست روی همهٔ endpointهای آروان")
+    say("")
+    try:
+        location = s3.get_bucket_location(Bucket=BUCKET)
+        say(f"- `GetBucketLocation` → `{location.get('LocationConstraint')}`")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- `GetBucketLocation` → {label(exc)}")
+    say("")
+    endpoints = {
+        "ir-thr-at1": "https://s3.ir-thr-at1.arvanstorage.ir",
+        "ir-tbz-sh1": "https://s3.ir-tbz-sh1.arvanstorage.ir",
+        "ir-thr-ba1": "https://s3.ir-thr-ba1.arvanstorage.ir",
+        "ir-bnd-ba1": "https://s3.ir-bnd-ba1.arvanstorage.ir",
+    }
+    for region, endpoint in endpoints.items():
+        client = boto3.session.Session().client(
+            "s3",
+            endpoint_url=endpoint,
+            region_name=region,
+            aws_access_key_id=access.strip(),
+            aws_secret_access_key=secret.strip(),
+            config=Config(
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+                retries={"max_attempts": 1, "mode": "standard"},
+                connect_timeout=15,
+                read_timeout=30,
+            ),
+        )
+        key = f"apk/_diagnose/{uuid.uuid4().hex}.bin"
+        try:
+            client.put_object(Bucket=BUCKET, Key=key, Body=b"x")
+            say(f"- ✅ **{region}** — PutObject موفق")
+            try:
+                client.delete_object(Bucket=BUCKET, Key=key)
+            except Exception:  # noqa: BLE001
+                pass
+        except Exception as exc:  # noqa: BLE001
+            say(f"- ❌ **{region}** — {label(exc)}")
+    say("")
+
     say("## ۵) وضعیت APKهای موجود روی آروان")
     say("")
     try:
