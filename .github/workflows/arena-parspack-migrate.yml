@@ -67,6 +67,17 @@ jobs:
           echo "mirror exit=$?"
           exit 0
 
+      - name: ۳) تأیید کامل هر فایل روی سرور داخلی
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/verify_mirror.py \
+            --source arvan --dest parspack \
+            --out ci-report/parspack-verify.md 2>&1 | tail -n 60
+          echo "verify exit=$?"
+          exit 0
+
       - name: پاک‌سازی کلیدها از گزارش‌ها
         if: always()
         run: |
@@ -101,7 +112,7 @@ jobs:
           else
             echo "چیزی برای کامیت نبود."
           fi
-          for f in ci-report/parspack-preflight.md ci-report/parspack-mirror.md; do
+          for f in ci-report/parspack-preflight.md ci-report/parspack-mirror.md ci-report/parspack-verify.md; do
             if [ -f "$f" ]; then cat "$f" >> "$GITHUB_STEP_SUMMARY"; fi
           done
           exit 0

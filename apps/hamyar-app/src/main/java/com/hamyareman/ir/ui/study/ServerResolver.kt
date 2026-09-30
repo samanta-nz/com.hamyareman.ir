@@ -15,7 +15,11 @@ import kotlinx.coroutines.withContext
 /** انتخاب origin و سنجش واقعی latency + سرعت دریافت Range از هر دو سرور. */
 object ServerResolver {
 
-    const val INTERNAL_PUBLIC = "https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir"
+    // سرور داخلی از ۲٫۲ پارس‌پک است (دیتاسنتر تهران، ترافیک نامحدود). باکت
+    // آروان از سمت ارائه‌دهنده فقط‌خواندنی شد و دیگر قابل به‌روزرسانی نیست؛
+    // همهٔ ۲۶۰ فایل محتوا با همان مسیر و پوشه‌بندی به اینجا منتقل شده‌اند.
+    // نسخه‌های نصب‌شدهٔ قدیمی‌تر همچنان از آروان می‌خوانند و خواندن آنجا سالم است.
+    const val INTERNAL_PUBLIC = "https://c539776.parspack.net"
     private const val EXTERNAL_ENDPOINT = "https://sgp.cloud.appwrite.io/v1"
     private const val EXTERNAL_PROJECT = "6abb134a002025222005"
     private const val EXTERNAL_BUCKET = "6abb564d00155cc56d65"

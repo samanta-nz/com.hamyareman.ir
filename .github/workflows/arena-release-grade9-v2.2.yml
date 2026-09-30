@@ -4,7 +4,8 @@ name: Release grade 9 v2.2 (forced)
 #
 # ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
 # ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. پس اگر آپلود
-# آروان یا مخزن عمومی شکست بخورد، هیچ کاربری پشت آپدیت اجباریِ خراب گیر نمی‌کند.
+# سرور داخلی یا مخزن عمومی شکست بخورد، هیچ کاربری پشت آپدیت اجباریِ خراب گیر
+# نمی‌کند. سرور داخلی از ۲٫۲ پارس‌پک است (باکت c539776).
 #
 # راه‌اندازی: کامیتی روی همین برنچ که پیامش با «Release grade 9 v2.2» شروع شود.
 
@@ -29,7 +30,6 @@ env:
   PACKAGE: com.hamyareman.p09
   ROW_ID: app_release_grade9
   ASSET: hamyar-grade9-2.2-debug.apk
-  ARVAN_BUCKET: hamyar-e-man
 
 jobs:
   release:
@@ -59,14 +59,14 @@ jobs:
       - name: ۰) بررسی کلیدها پیش از هر کاری
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
-          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
           RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           RELEASES_REPO: ${{ vars.RELEASES_REPO }}
         run: |
           set -euo pipefail
           missing=""
-          for name in APPWRITE_API_KEY ARVAN_ACCESS_KEY ARVAN_SECRET_KEY; do
+          for name in APPWRITE_API_KEY PARSPACK_ACCESS_KEY PARSPACK_SECRET_KEY; do
             [ -n "${!name:-}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then
@@ -140,48 +140,20 @@ jobs:
           gh release upload "$TAG" "dist/$ASSET" --repo "$PUBLIC_REPO" --clobber
           echo "EXTERNAL_URL=https://github.com/$PUBLIC_REPO/releases/download/$TAG/$ASSET" >> "$GITHUB_ENV"
 
-      - name: ۵) آپلود روی آروان (internalUrl)
+      - name: ۵) آپلود روی سرور داخلی (internalUrl)
+        shell: bash
         env:
-          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
-          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
-          ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
-          ARVAN_REGION: ir-thr-at1
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
         run: |
-          set -uo pipefail
-          mkdir -p ci-report
+          set -euo pipefail
           pip install --quiet boto3 requests
-          KEY="apk/$GRADE_ID/$ASSET"
-          INTERNAL="https://$ARVAN_BUCKET.s3.ir-thr-at1.arvanstorage.ir/$KEY"
-          set +e
-          python3 scripts/publish_public_s3_object.py \
+          python3 scripts/put_public_object.py \
             --file "dist/$ASSET" \
-            --bucket "$ARVAN_BUCKET" \
-            --key "$KEY" \
-            --public-url "$INTERNAL" \
+            --key "apk/$GRADE_ID/$ASSET" \
+            --provider parspack \
             --content-type application/vnd.android.package-archive \
-            --metadata grade="$GRADE_ID" \
-            --metadata versioncode="$VERSION_CODE" > ci-report/arvan.log 2>&1
-          code=$?
-          set -e
-          # کلیدها هرگز وارد فایل گزارش نمی‌شوند، حتی اگر کتابخانه آن‌ها را چاپ کند.
-          python3 - <<'PY'
-          import os, re
-          from pathlib import Path
-          log = Path("ci-report/arvan.log")
-          text = log.read_text(encoding="utf-8", errors="replace")
-          for name in ("ARVAN_ACCESS_KEY", "ARVAN_SECRET_KEY", "APPWRITE_API_KEY"):
-              value = os.getenv(name, "").strip()
-              if len(value) > 3:
-                  text = text.replace(value, f"<{name}>")
-          text = re.sub(r"[A-Za-z0-9/+=]{40,}", "<redacted>", text)
-          log.write_text(text[-20000:], encoding="utf-8")
-          print(text[-4000:])
-          PY
-          if [ "$code" -ne 0 ]; then
-            echo "::error::آپلود آروان شکست خورد — جزئیات در ci-report/arvan.log"
-            exit "$code"
-          fi
-          echo "INTERNAL_URL=$INTERNAL" >> "$GITHUB_ENV"
+            --env-name INTERNAL_URL
 
       - name: ۶) اعلام نسخه و روشن‌کردن آپدیت اجباری
         env:
