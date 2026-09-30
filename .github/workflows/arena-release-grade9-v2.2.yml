@@ -1,0 +1,207 @@
+name: Release grade 9 v2.2 (forced)
+
+# ساخت و انتشار نسخهٔ ۲٫۲ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
+#
+# ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
+# ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. پس اگر آپلود
+# آروان یا مخزن عمومی شکست بخورد، هیچ کاربری پشت آپدیت اجباریِ خراب گیر نمی‌کند.
+#
+# راه‌اندازی: کامیتی روی همین برنچ که پیامش با «Release grade 9 v2.2» شروع شود.
+
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arena-release-grade9
+  cancel-in-progress: false
+
+env:
+  VERSION_NAME: '2.2'
+  VERSION_CODE: '220'
+  MIN_CODE: '220'          # هر نصبِ زیر ۲۲۰ → آپدیت اجباری
+  ROLLOUT: '100'
+  GRADE_ID: grade9
+  PACKAGE: com.hamyareman.p09
+  ROW_ID: app_release_grade9
+  ASSET: hamyar-grade9-2.2-debug.apk
+  ARVAN_BUCKET: hamyar-e-man
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade 9 v2.2')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: ۰) بررسی کلیدها پیش از هر کاری
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in APPWRITE_API_KEY ARVAN_ACCESS_KEY ARVAN_SECRET_KEY; do
+            [ -n "${!name:-}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::این secretها تنظیم نشده‌اند:$missing"
+            exit 1
+          fi
+          if [ -n "${RELEASES_TOKEN:-}" ] && [ -n "${RELEASES_REPO:-}" ]; then
+            echo "PUBLIC_REPO=$RELEASES_REPO" >> "$GITHUB_ENV"
+          else
+            echo "::warning::RELEASES_TOKEN/RELEASES_REPO نیست — externalUrl از همین مخزنِ عمومی برداشته می‌شود."
+          fi
+
+      - name: ۱) تست و ساخت APK نهم ۲٫۲
+        run: |
+          set -euo pipefail
+          ./gradlew --console=plain --stacktrace \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:assembleP09Debug \
+            -PhamyarVersionCode="$VERSION_CODE" -PhamyarVersionName="$VERSION_NAME"
+          mkdir -p dist
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          cp -f "${files[0]}" "dist/$ASSET"
+          ls -l "dist/$ASSET"
+
+      - name: ۲) اعتبارسنجی هویت و امضای APK
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          BADGING="$($AAPT dump badging "dist/$ASSET" | head -1)"
+          echo "$BADGING"
+          grep -F "name='$PACKAGE'"            <<<"$BADGING"
+          grep -F "versionCode='$VERSION_CODE'" <<<"$BADGING"
+          grep -F "versionName='$VERSION_NAME-debug'" <<<"$BADGING"
+          SIGNER="$($APKSIGNER verify --print-certs "dist/$ASSET" \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          test "$SIGNER" = "$EXPECTED" || { echo "::error::کلید امضا عوض شده است"; exit 1; }
+          {
+            echo "SIGNER_SHA256=$SIGNER"
+            echo "APK_SIZE=$(stat -c%s "dist/$ASSET")"
+            echo "APK_SHA256=$(sha256sum "dist/$ASSET" | cut -d' ' -f1)"
+          } >> "$GITHUB_ENV"
+
+      - name: ۳) بایگانی در Release «ci-apk» همین مخزن
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release view ci-apk >/dev/null 2>&1 || \
+            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم."
+          gh release upload ci-apk "dist/$ASSET" --clobber
+          echo "FALLBACK_URL=https://github.com/${GITHUB_REPOSITORY}/releases/download/ci-apk/$ASSET" >> "$GITHUB_ENV"
+
+      - name: ۴) انتشار در مخزن عمومی (externalUrl)
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PUBLIC_REPO:-}" ]; then
+            echo "EXTERNAL_URL=$FALLBACK_URL" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          TAG="grade9-v$VERSION_NAME"
+          gh release view "$TAG" --repo "$PUBLIC_REPO" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$PUBLIC_REPO" \
+              --title "همیار من نهم $VERSION_NAME" \
+              --notes "versionCode $VERSION_CODE — آپدیت اجباری برای نسخه‌های پایین‌تر از $MIN_CODE"
+          gh release upload "$TAG" "dist/$ASSET" --repo "$PUBLIC_REPO" --clobber
+          echo "EXTERNAL_URL=https://github.com/$PUBLIC_REPO/releases/download/$TAG/$ASSET" >> "$GITHUB_ENV"
+
+      - name: ۵) آپلود روی آروان (internalUrl)
+        env:
+          ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
+          ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
+          ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
+          ARVAN_REGION: ir-thr-at1
+        run: |
+          set -euo pipefail
+          pip install --quiet boto3 requests
+          KEY="apk/$GRADE_ID/$ASSET"
+          INTERNAL="https://$ARVAN_BUCKET.s3.ir-thr-at1.arvanstorage.ir/$KEY"
+          python3 scripts/publish_public_s3_object.py \
+            --file "dist/$ASSET" \
+            --bucket "$ARVAN_BUCKET" \
+            --key "$KEY" \
+            --public-url "$INTERNAL" \
+            --content-type application/vnd.android.package-archive \
+            --metadata grade="$GRADE_ID" \
+            --metadata versioncode="$VERSION_CODE"
+          echo "INTERNAL_URL=$INTERNAL" >> "$GITHUB_ENV"
+
+      - name: ۶) اعلام نسخه و روشن‌کردن آپدیت اجباری
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-report
+          python3 scripts/publish_grade9_update.py \
+            --apk "dist/$ASSET" \
+            --version-code "$VERSION_CODE" \
+            --version-name "$VERSION_NAME" \
+            --min-code "$MIN_CODE" \
+            --rollout "$ROLLOUT" \
+            --external-url "$EXTERNAL_URL" \
+            --internal-url "$INTERNAL_URL" \
+            --signer-sha256 "$SIGNER_SHA256" \
+            --row-id "$ROW_ID" \
+            --package "$PACKAGE" \
+            --grade-id "$GRADE_ID" \
+            --notes "آپدیت اجباری نسخهٔ ۲٫۲|میزبانی هم‌زمان روی سرور داخلی و خارجی" \
+            --out ci-report/release-2.2.json
+
+      - name: ۷) ثبت نتیجه روی برنچ
+        if: always()
+        run: |
+          set -euo pipefail
+          test -f ci-report/release-2.2.json || exit 0
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/release-2.2.json
+          if ! git diff --cached --quiet; then
+            git commit -m "نتیجهٔ انتشار نهم ۲٫۲"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          cat ci-report/release-2.2.json >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hamyar-grade9-2.2-debug
+          path: dist/*.apk
+          if-no-files-found: warn
+          retention-days: 14
