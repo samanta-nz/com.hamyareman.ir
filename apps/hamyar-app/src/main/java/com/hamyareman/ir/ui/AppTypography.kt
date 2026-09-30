@@ -31,6 +31,12 @@ import com.hamyareman.ir.ui.appearance.SlotChoice
 object AppTypography {
     const val BUMP = 2
 
+    // منوهای خارج از داشبورد باید همیشه با وزن واقعی Light وزیرمتن نمایش داده شوند.
+    // اعمال اجباری در Role.apply، انتخاب‌های دست‌نویس ذخیره‌شدهٔ نسخه‌های قبلی را هم مهاجرت می‌دهد.
+    private val forcedMenuRoles = setOf(
+        "a.title", "a.sub", "b.title", "b.sub", "e.title", "e.sub", "nav.bar",
+    )
+
     data class Spec(
         val id: String,
         val title: String,
@@ -59,11 +65,16 @@ object AppTypography {
         fun apply(font: String, sizeDelta: Int) = apply(font, sizeDelta, weight = null, absolute = false)
 
         fun apply(font: String?, size: Int?, weight: String? = null, absolute: Boolean = true) {
-            if (font != null) {
-                fontKey = if (EmbeddedFonts.isKnown(font)) EmbeddedFonts.canonicalKey(font) else spec.defaultFont
-                if (weight == null) weightKey = EmbeddedFonts.weightFromKey(font, weightKey)
+            if (spec.id in forcedMenuRoles) {
+                fontKey = "vazirmatn"
+                weightKey = EmbeddedFonts.W_LIGHT
+            } else {
+                if (font != null) {
+                    fontKey = if (EmbeddedFonts.isKnown(font)) EmbeddedFonts.canonicalKey(font) else spec.defaultFont
+                    if (weight == null) weightKey = EmbeddedFonts.weightFromKey(font, weightKey)
+                }
+                if (weight != null) weightKey = EmbeddedFonts.normalizeWeight(weight)
             }
-            if (weight != null) weightKey = EmbeddedFonts.normalizeWeight(weight)
             if (size != null) {
                 sizeSp = if (absolute) size.coerceIn(8, 40) else (spec.baseSp + size).coerceIn(8, 40)
             }
@@ -81,13 +92,13 @@ object AppTypography {
         weight: String = EmbeddedFonts.defaultWeightOf(font),
     ) = Role(Spec(id, title, group, font, base, weight, sample))
 
-    /** A — کارت آکاردئونی — از بکاپ پیش‌فرض.json */
-    val accordionTitle = role("a.title", "عنوان آکاردئون", "A آکاردئون", "parastoo_bold", 19, "کتاب‌ها", "regular")
-    val accordionSub = role("a.sub", "توضیح آکاردئون", "A آکاردئون", "tanha", 14, "هر کتاب با درس‌ها", "bold")
+    /** A — کارت آکاردئونی */
+    val accordionTitle = role("a.title", "عنوان آکاردئون", "A آکاردئون", "vazirmatn", 19, "کتاب‌ها", EmbeddedFonts.W_LIGHT)
+    val accordionSub = role("a.sub", "توضیح آکاردئون", "A آکاردئون", "vazirmatn", 14, "هر کتاب با درس‌ها", EmbeddedFonts.W_LIGHT)
 
     /** B — کارت و زیرکارت */
-    val cardTitle = role("b.title", "عنوان کارت", "B کارت", "estedad_bold", 20, "برنامه‌ی هفتگی من", "bold")
-    val cardSub = role("b.sub", "توضیح کارت", "B کارت", "tanha", 14, "جدول زمانی شخصی", "bold")
+    val cardTitle = role("b.title", "عنوان کارت", "B کارت", "vazirmatn", 20, "برنامه‌ی هفتگی من", EmbeddedFonts.W_LIGHT)
+    val cardSub = role("b.sub", "توضیح کارت", "B کارت", "vazirmatn", 14, "جدول زمانی شخصی", EmbeddedFonts.W_LIGHT)
 
     /** C — صفحات بازشده از زیرکارت */
     val pageTitle = role("c.title", "عنوان اصلی بالای صفحه", "C صفحه", "vazirmatn", 19, "برنامه هفتگی", "bold")
@@ -96,9 +107,9 @@ object AppTypography {
     val pageTable = role("c.table", "جدول", "C صفحه", "badkhat_bold", 17, "درس / زنگ", "bold")
     val pageButton = role("c.button", "دکمه", "C صفحه", "estedad_bold", 16, "ذخیره", "bold")
 
-    /** E — همهٔ عناوین */
-    val title = role("e.title", "متن عنوان", "E عنوان", "aviny", 25, "مدرسه", "bold")
-    val titleSub = role("e.sub", "توضیح زیر عنوان", "E عنوان", "tanha", 14, "کلاسِ درس همیشه باز است", "bold")
+    /** E — همهٔ عناوین خارج از داشبورد */
+    val title = role("e.title", "متن عنوان", "E عنوان", "vazirmatn", 25, "مدرسه", EmbeddedFonts.W_LIGHT)
+    val titleSub = role("e.sub", "توضیح زیر عنوان", "E عنوان", "vazirmatn", 14, "کلاسِ درس همیشه باز است", EmbeddedFonts.W_LIGHT)
 
     /** داشبورد */
     val d1Greeting = role("d1", "D1 خوش‌آمدگویی", "D داشبورد", "aviny", 29, "صبح‌ت بخیر", "bold")
@@ -115,7 +126,7 @@ object AppTypography {
     val d12ClassDate = role("d12", "D12 تاریخ و روز کنار کادرها", "D داشبورد", "sahel", 15, "چهارشنبه", "bold")
 
     /** نوار پایین جدا از بقیهٔ نقش‌ها. */
-    val navBar = role("nav.bar", "نوار پایین", "نوار پایین", "titr", 13, "خانه", "thin")
+    val navBar = role("nav.bar", "نوار پایین", "نوار پایین", "vazirmatn", 13, "خانه", EmbeddedFonts.W_LIGHT)
 
     /** فاصلهٔ افقی کارت سخنان از دو طرف (۰ تا ۳۲ dp). */
     var quoteSideDp by mutableIntStateOf(17)

@@ -339,11 +339,12 @@ private fun MathChromeTabRow(tabs: List<MathTab>, tab: Int, onSelect: (Int) -> U
 @Composable
 private fun MathBookHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomChanged: (Boolean) -> Unit = {}) {
     val asset = html?.bookAsset
-    if (!asset.isNullOrBlank()) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    if (MathHtmlAssets.exists(ctx, asset)) {
         MathInteractiveHtml(
             packId = pack.packId,
             kind = "book",
-            assetPath = asset,
+            assetPath = asset.orEmpty(),
             modifier = Modifier.fillMaxSize(),
             onZoomChanged = onZoomChanged,
         )
@@ -355,11 +356,12 @@ private fun MathBookHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomC
 @Composable
 private fun MathFlashHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomChanged: (Boolean) -> Unit = {}) {
     val asset = html?.flashAsset
-    if (!asset.isNullOrBlank()) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    if (MathHtmlAssets.exists(ctx, asset)) {
         MathInteractiveHtml(
             packId = pack.packId,
             kind = "flash",
-            assetPath = asset,
+            assetPath = asset.orEmpty(),
             modifier = Modifier.fillMaxSize(),
             onZoomChanged = onZoomChanged,
         )
@@ -371,11 +373,12 @@ private fun MathFlashHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoom
 @Composable
 private fun MathExamHtmlTab(pack: StudyPack, html: MathHtmlAssets.Spec?, onZoomChanged: (Boolean) -> Unit = {}) {
     val asset = html?.examAsset
-    if (!asset.isNullOrBlank()) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    if (MathHtmlAssets.exists(ctx, asset)) {
         MathInteractiveHtml(
             packId = pack.packId,
             kind = "exam",
-            assetPath = asset,
+            assetPath = asset.orEmpty(),
             modifier = Modifier.fillMaxSize(),
             onZoomChanged = onZoomChanged,
         )
@@ -389,6 +392,8 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
     val tracks = teachTracksOf(pack)
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val container = LocalAppContainer.current
+    val webRef = remember { arrayOfNulls<WebView>(1) }
+    ManagedWebMediaEffect { webRef[0] }
     var remoteHtml by remember(pack.packId) { mutableStateOf<String?>(null) }
     var remoteTried by remember(pack.packId) { mutableStateOf(false) }
     LaunchedEffect(pack.packId) {
@@ -401,7 +406,10 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
             try { HtmlMediaKey.fetch(ctx, container.tables) } catch (_: Throwable) {}
             runCatching {
                 if (!MediaVault.isVerified(ctx, fid)) {
-                    MediaVault.downloadEncrypted(ctx, StudyMedia.viewUrl(fid), fid) { _, _ -> }
+                    MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(fid), fid) { _, _ -> }
+                    if (MediaVault.isVerified(ctx, fid)) {
+                        MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
+                    }
                 }
                 String(MediaVault.decryptToMemory(ctx, fid), Charsets.UTF_8)
             }.getOrNull()
@@ -431,7 +439,11 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
                 AndroidView(
                     factory = { c ->
                         WebView(c).apply {
-                            webViewClient = WebViewClient()
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageFinished(view: WebView, url: String) {
+                                    view.bindManagedMediaLifecycle()
+                                }
+                            }
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             settings.loadWithOverviewMode = false
@@ -441,6 +453,8 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
                             settings.displayZoomControls = false
                             setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
                             addJavascriptInterface(TeachHtmlBridge(), "HamyarPlayer")
+                            installManagedMediaLifecycle()
+                            webRef[0] = this
                             setBackgroundColor(android.graphics.Color.WHITE)
                             setOnTouchListener { v, e ->
                                 v.parent?.requestDisallowInterceptTouchEvent(true)
@@ -462,6 +476,11 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
                         }
                     },
                     modifier = Modifier.fillMaxSize().padding(4.dp),
+                    onRelease = {
+                        it.stopManagedMedia()
+                        if (webRef[0] === it) webRef[0] = null
+                        it.destroy()
+                    },
                 )
             } else {
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp)) {
@@ -651,6 +670,8 @@ private fun MathFlashTab(pack: StudyPack) {
 
 @Composable
 private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoomChanged: (Boolean) -> Unit = {}) {
+    val webRef = remember { arrayOfNulls<WebView>(1) }
+    ManagedWebMediaEffect { webRef[0] }
     val summary = pack.summary.ifBlank {
         pack.sections.filter { it.kind == "exam" }.lastOrNull()?.body
             ?: "خلاصه‌ی چندسطری این درس به‌زودی از پوشهٔ Books نوشته می‌شود."
@@ -670,8 +691,14 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
         AndroidView(
             factory = { ctx ->
                 WebView(ctx).apply {
-                    webViewClient = WebViewClient()
-                    settings.javaScriptEnabled = false
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, url: String) {
+                            view.bindManagedMediaLifecycle()
+                        }
+                    }
+                    settings.javaScriptEnabled = true
+                    installManagedMediaLifecycle()
+                    webRef[0] = this
                     settings.loadWithOverviewMode = false
                     settings.useWideViewPort = true
                     settings.setSupportZoom(true)
@@ -694,6 +721,11 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
                 }
             },
             modifier = Modifier.weight(1f).padding(4.dp),
+            onRelease = {
+                it.stopManagedMedia()
+                if (webRef[0] === it) webRef[0] = null
+                it.destroy()
+            },
         )
     }
 }

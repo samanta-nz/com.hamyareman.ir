@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -84,42 +85,50 @@ object ApkUpdate {
      */
     suspend fun download(
         ctx: Context,
-        url: String,
+        urls: List<String>,
         onProgress: (ApkProgress) -> Unit,
     ): File? = withContext(Dispatchers.IO) {
+        val origins = urls.filter(String::isNotBlank).distinct()
+        if (origins.isEmpty()) return@withContext null
         val target = file(ctx)
         val tmp = part(ctx)
         runCatching { target.delete() }
-        if (!tmp.exists()) runCatching { tmp.delete() }
 
         var total = 0L
         var start = if (tmp.exists()) tmp.length() else 0L
         var speed = 0L
-        var attempts = 0
         var lastReport = 0L
         var windowBytes = 0L
         var windowStart = System.currentTimeMillis()
+        var completed = false
 
-        try {
-            while (attempts < 60) {
-                if (total > 0 && start >= total) break
+        origins@ for (url in origins) {
+            var attempts = 0
+            while (attempts < 7) {
+                if (total > 0 && start >= total) {
+                    completed = true
+                    break@origins
+                }
+                var conn: java.net.HttpURLConnection? = null
                 try {
                     val range = if (start > 0) "bytes=$start-" else null
-                    val conn = ResilientHttp.openOnline(ctx, url, range, connectMs = 15_000, readMs = 25_000)
-                    val code = conn.responseCode
+                    val active = ResilientHttp.openOnline(ctx, url, range, connectMs = 15_000, readMs = 25_000)
+                    conn = active
+                    val code = active.responseCode
                     if (code !in 200..299) error("HTTP $code")
-                    // سرور رنج را نادیده گرفت (۲۰۰): از صفر و روی فایلِ تازه.
+                    // origin دوم می‌تواند Range را نادیده بگیرد؛ در آن حالت فایل
+                    // نیمه‌کاره حذف و همان APK از صفر نوشته می‌شود.
                     if (start > 0 && code == 200) {
                         tmp.delete()
                         start = 0
                     }
-                    val cl = conn.contentLengthLong
+                    val cl = active.contentLengthLong
                     if (cl > 0) total = if (code == 206) start + cl else cl
 
                     RandomAccessFile(tmp, "rw").use { raf ->
                         raf.seek(start)
                         raf.setLength(start)
-                        conn.inputStream.use { input ->
+                        active.inputStream.use { input ->
                             val buf = ByteArray(64 * 1024)
                             while (true) {
                                 val n = input.read(buf)
@@ -141,26 +150,27 @@ object ApkUpdate {
                             }
                         }
                     }
-                    runCatching { conn.disconnect() }
-                    if (total > 0 && start < total) {
-                        // تماس قطع شد ولی سرور خطا نداد؛ همان‌جا دوباره وصل شو.
-                        attempts++
-                        delay(400)
-                        continue
+                    if (total <= 0 || start >= total) {
+                        completed = true
+                        break@origins
                     }
-                    break
-                } catch (t: Throwable) {
                     attempts++
+                    delay(400)
+                } catch (error: Throwable) {
+                    // خطای قطعی 4xx (از جمله سهمیهٔ 402) فوراً به origin بعدی
+                    // می‌رود؛ خطای گذرا روی همان origin تا هفت بار retry می‌شود.
+                    attempts = if (error.message.orEmpty().startsWith("HTTP 4")) 7 else attempts + 1
                     if (!NetState.isOnline(ctx)) NetState.awaitOnline(ctx)
-                    delay((400L * attempts).coerceAtMost(4000L))
+                    if (attempts < 7) delay((400L * attempts).coerceAtMost(4000L))
+                } finally {
+                    runCatching { conn?.disconnect() }
                 }
             }
-        } catch (t: Throwable) {
-            return@withContext null
         }
 
-        if (total > 0 && start < total) return@withContext null
-        if (start <= 1024L * 100L) return@withContext null
+        if (!completed || (total > 0 && start < total) || start <= 1024L * 100L) {
+            return@withContext null
+        }
         runCatching { onProgress(ApkProgress(start, if (total > 0) total else start, speed)) }
         if (!tmp.renameTo(target)) {
             runCatching {
@@ -170,6 +180,12 @@ object ApkUpdate {
         }
         target
     }
+
+    suspend fun download(
+        ctx: Context,
+        url: String,
+        onProgress: (ApkProgress) -> Unit,
+    ): File? = download(ctx, listOf(url), onProgress)
 
     /** sha256 یک فایل. */
     fun sha256Of(f: File): String? = runCatching {
@@ -194,6 +210,96 @@ object ApkUpdate {
         if (expected.isBlank()) return true
         val actual = sha256Of(file(ctx)) ?: return false
         return actual.equals(expected.trim(), ignoreCase = true)
+    }
+
+    private const val INSTALL_PREF = "hamyar_update_install"
+    private const val KEY_PENDING_VERSION = "pending_version"
+
+    @Suppress("DEPRECATION")
+    private fun archiveInfo(ctx: Context) = if (Build.VERSION.SDK_INT >= 33) {
+        ctx.packageManager.getPackageArchiveInfo(
+            file(ctx).absolutePath,
+            PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()),
+        )
+    } else {
+        ctx.packageManager.getPackageArchiveInfo(file(ctx).absolutePath, PackageManager.GET_SIGNING_CERTIFICATES)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun installedInfo(ctx: Context) = if (Build.VERSION.SDK_INT >= 33) {
+        ctx.packageManager.getPackageInfo(
+            ctx.packageName,
+            PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()),
+        )
+    } else {
+        ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun versionCodeOf(info: android.content.pm.PackageInfo): Long =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode else info.versionCode.toLong()
+
+    private fun signerSha256(info: android.content.pm.PackageInfo): String? = runCatching {
+        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.signingInfo?.apkContentsSigners
+        } else {
+            @Suppress("DEPRECATION") info.signatures
+        }.orEmpty()
+        val cert = signatures.firstOrNull()?.toByteArray() ?: return@runCatching null
+        MessageDigest.getInstance("SHA-256").digest(cert).joinToString("") { "%02x".format(it) }
+    }.getOrNull()
+
+    /**
+     * پیش از بازکردن نصب‌کننده سه نگهبان قطعی دارد: package همان پایه، versionCode
+     * دقیق payload و همان گواهی امضای نسخهٔ نصب‌شده. null یعنی فایل مجاز است.
+     */
+    fun identityError(ctx: Context, info: UpdateInfo): String? {
+        val archive = archiveInfo(ctx) ?: return "فایل، APK معتبر اندروید نیست."
+        if (archive.packageName != ctx.packageName) {
+            return "این فایل برای یک پایهٔ دیگر است و روی این برنامه نصب نمی‌شود."
+        }
+        if (versionCodeOf(archive) != info.latest.toLong()) {
+            return "کد نسخهٔ فایل با نسخهٔ اعلام‌شدهٔ سرور یکسان نیست."
+        }
+        val archiveSigner = signerSha256(archive) ?: return "امضای فایل قابل بررسی نیست."
+        val installedSigner = runCatching { signerSha256(installedInfo(ctx)) }.getOrNull()
+            ?: return "امضای نسخهٔ نصب‌شده قابل بررسی نیست."
+        if (!archiveSigner.equals(installedSigner, ignoreCase = true)) {
+            return "کلید امضای فایل با نسخهٔ نصب‌شده یکسان نیست."
+        }
+        val declared = info.signingSha256.filter { it.isLetterOrDigit() }.lowercase()
+        if (declared.isNotBlank() && declared != archiveSigner.lowercase()) {
+            return "اثر انگشت امضای فایل با اعلام سرور یکسان نیست."
+        }
+        return null
+    }
+
+    private fun markPendingInstall(ctx: Context, version: Int) {
+        ctx.getSharedPreferences(INSTALL_PREF, Context.MODE_PRIVATE)
+            .edit().putInt(KEY_PENDING_VERSION, version).apply()
+    }
+
+    private fun clearPendingInstall(ctx: Context) {
+        ctx.getSharedPreferences(INSTALL_PREF, Context.MODE_PRIVATE).edit().clear().apply()
+    }
+
+    /**
+     * اجرای نسخهٔ تازه ممکن است process قبلی را قبل از callback ببندد؛ در شروع
+     * نسخهٔ جدید نیز فایل APK و part حتماً پاک می‌شوند.
+     */
+    fun cleanupAfterSuccessfulInstall(ctx: Context) {
+        val pending = ctx.getSharedPreferences(INSTALL_PREF, Context.MODE_PRIVATE)
+            .getInt(KEY_PENDING_VERSION, 0)
+        val current = runCatching { versionCodeOf(installedInfo(ctx)).toInt() }.getOrDefault(0)
+        if (pending > 0 && current >= pending) {
+            clear(ctx)
+            clearPendingInstall(ctx)
+        }
+    }
+
+    fun onInstallSucceeded(ctx: Context) {
+        clear(ctx)
+        clearPendingInstall(ctx)
     }
 
     /** آیا اجازهٔ «نصب از منابع ناشناس» برای همین اپ داده شده؟ */
@@ -266,11 +372,14 @@ object ApkUpdate {
      * اجرای نصب‌کنندهٔ سیستم، به ترتیبِ مطمئن‌ترین راه‌ها.
      * @return false یعنی هیچ راهی باز نشد (فراخوان باید راهِ جایگزین نشان دهد).
      */
-    fun install(ctx: Context): Boolean {
+    fun install(ctx: Context, info: UpdateInfo): Boolean {
         val f = file(ctx)
         if (!f.exists() || f.length() <= 0L) return false
+        if (identityError(ctx, info) != null) return false
+        markPendingInstall(ctx, info.latest)
         if (installViaIntent(ctx)) return true
         if (installViaSession(ctx)) return true
+        clearPendingInstall(ctx)
         return false
     }
 

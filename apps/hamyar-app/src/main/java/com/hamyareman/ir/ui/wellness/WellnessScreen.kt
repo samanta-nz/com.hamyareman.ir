@@ -54,6 +54,16 @@ import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.LocalAppContainer
 import kotlinx.coroutines.launch
 
+private fun wellnessImageAspectRatio(move: WellnessMove): Float = when (move.category) {
+    WellnessMove.Category.EXERCISE -> 1120f / 751f
+    WellnessMove.Category.YOGA -> {
+        val landscape751 = setOf("yga-01", "yga-02", "yga-03", "yga-05", "yga-06")
+        val id = move.referenceImageUrl.substringAfterLast('/').substringBefore('.')
+        if (id in landscape751) 1120f / 751f else 1120f / 625f
+    }
+    else -> 4f / 3f
+}
+
 /**
  * یک دسته در هر صفحه: یوگا / ورزش / تنفس / یادگیری — بدون سربرگ «همه».
  */
@@ -129,9 +139,10 @@ private fun MoveCard(move: WellnessMove, onStart: () -> Unit) {
                     AsyncImage(
                         model = move.referenceImageUrl,
                         contentDescription = move.titleFa,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier
-                            .size(72.dp)
+                            .width(112.dp)
+                            .aspectRatio(wellnessImageAspectRatio(move))
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surface))
                 } else {
@@ -206,10 +217,10 @@ private fun ActiveMoveView(move: WellnessMove, onClose: () -> Unit) {
             AsyncImage(
                 model = move.referenceImageUrl,
                 contentDescription = move.titleFa,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(4f / 3f)
+                    .aspectRatio(wellnessImageAspectRatio(move))
                     .clip(RoundedCornerShape(12.dp)))
         }
 

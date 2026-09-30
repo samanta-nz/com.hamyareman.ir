@@ -1,56 +1,52 @@
-name: Upload APK to Arvan
+name: Upload grade APK to Arvan atomically
 
 on:
   workflow_dispatch:
     inputs:
+      grade_id:
+        description: 'کانال APK'
+        type: choice
+        options: [grade4, grade5, grade6, grade7, grade8, grade9, grade10, grade11, grade12]
+        default: grade9
       asset:
-        description: "نام فایل در ci-apk"
+        description: 'نام دقیق فایل در release ci-apk'
         required: true
-        default: "hamyar-1.96.apk"
+        default: 'hamyar-grade9-2.0.apk'
 
 jobs:
   upload:
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v4
+
       - name: دریافت APK
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p dist
-          gh release download ci-apk --repo infobehzad/com.hamyareman.ir \
-            --pattern "${{ inputs.asset }}" --dir dist
-          test -f "dist/${{ inputs.asset }}"
-      - name: آپلود به باکت ایرانی
+          gh release download ci-apk --repo "$GITHUB_REPOSITORY" --pattern "${{ inputs.asset }}" --dir dist
+          test -s "dist/${{ inputs.asset }}"
+
+      - name: staging → verify → atomic public publish → anonymous verify
         env:
           ARVAN_ACCESS_KEY: ${{ secrets.ARVAN_ACCESS_KEY }}
           ARVAN_SECRET_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
           ASSET: ${{ inputs.asset }}
+          GRADE_ID: ${{ inputs.grade_id }}
+          ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
+          ARVAN_REGION: ir-thr-at1
         run: |
-          pip install --quiet boto3
-          python3 - <<'PY'
-          import os
-          from pathlib import Path
-          import boto3
-          from botocore.config import Config
-          name = os.environ["ASSET"]
-          data = Path("dist", name).read_bytes()
-          s3 = boto3.client(
-              "s3",
-              aws_access_key_id=os.environ["ARVAN_ACCESS_KEY"],
-              aws_secret_access_key=os.environ["ARVAN_SECRET_KEY"],
-              endpoint_url="https://s3.ir-thr-at1.arvanstorage.ir",
-              region_name="ir-thr-at1",
-              config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
-                            connect_timeout=20, read_timeout=180, retries={"max_attempts": 3}),
-          )
-          extra = {"ContentType": "application/vnd.android.package-archive"}
-          try:
-              s3.put_object(Bucket="hamyar-e-man", Key=name, Body=data, ACL="public-read", **extra)
-          except Exception:
-              s3.put_object(Bucket="hamyar-e-man", Key=name, Body=data, **extra)
-          print("arvan ok", name, len(data))
-          PY
+          set -euo pipefail
+          pip install --quiet boto3 requests
+          FINAL="apk/$GRADE_ID/$ASSET"
+          python3 scripts/publish_public_s3_object.py \
+            --file "dist/$ASSET" \
+            --bucket hamyar-e-man \
+            --key "$FINAL" \
+            --public-url "https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir/$FINAL" \
+            --content-type application/vnd.android.package-archive \
+            --metadata grade="$GRADE_ID"

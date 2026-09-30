@@ -22,6 +22,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -124,6 +125,7 @@ fun AudiobookScreen(onBack: () -> Unit) {
     var bookmarks by remember { mutableStateOf(readBookmarks(store)) }
     var sleepEndsAt by remember { mutableLongStateOf(0L) }
     var sleepRemainingSeconds by remember { mutableLongStateOf(0L) }
+    var visualizerPhase by remember { mutableFloatStateOf(0f) }
 
     val latestPosition = rememberUpdatedState(if (scrubMs >= 0L) scrubMs else positionMs)
 
@@ -173,6 +175,7 @@ fun AudiobookScreen(onBack: () -> Unit) {
         while (true) {
             positionMs = playback.positionMs
             if (!state.playing) break
+            visualizerPhase += 0.45f
             delay(500L)
         }
     }
@@ -240,6 +243,10 @@ fun AudiobookScreen(onBack: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            val selectedUri = store.getString(KEY_URI)
+            if (selectedUri.isNotBlank()) {
+                AlbumArtEqualizer(selectedUri, state.playing, visualizerPhase)
+            }
             Text(
                 if (title.isBlank()) "هنوز فایلی انتخاب نکردی" else title,
                 style = MaterialTheme.typography.titleMedium,

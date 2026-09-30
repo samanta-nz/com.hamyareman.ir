@@ -54,7 +54,7 @@ class CallSignaling(
         toUserId: String,
         fromLabel: String,
     ): AppResult<Unit> {
-        if (!isConfigured) return AppResult.Err(AppError.Local("بدون Appwrite تماس برقرار نمی‌شود."))
+        if (!isConfigured) return AppResult.Err(AppError.Local("بدون اتصال به سرور خارجی تماس برقرار نمی‌شود."))
         val data = mapOf(
             "callId" to callId,
             "kind" to kind.name,
@@ -74,7 +74,7 @@ class CallSignaling(
     }
 
     suspend fun send(signal: CallSignal): AppResult<Unit> {
-        if (!isConfigured) return AppResult.Err(AppError.Local("بدون Appwrite تماس برقرار نمی‌شود."))
+        if (!isConfigured) return AppResult.Err(AppError.Local("بدون اتصال به سرور خارجی تماس برقرار نمی‌شود."))
         val data = mapOf(
             "callId" to signal.callId,
             "fromUserId" to signal.fromUserId,

@@ -135,10 +135,11 @@ object MediaVault {
             dataKey = SecretKeySpec(raw, "AES")
             return dataKey!!
         }
-        // ساخت کلید داده‌ی تازه + پوشاندن با Keystore (یا ذخیره‌ی مستقیم در بدترین حالت).
+        // fail-closed: کلید داده هرگز Base64 خام روی دیسک ذخیره نمی‌شود. اگر
+        // Android Keystore در دسترس نیست، دانلود امن شروع نمی‌شود.
         val bytes = ByteArray(32).also { SecureRandom().nextBytes(it) }
-        val wrapped = runCatching { wrapWithKeystore(bytes) }.getOrNull()
-        prefs.edit().putString(WRAPPED_KEY, wrapped ?: Base64.encodeToString(bytes, Base64.NO_WRAP)).apply()
+        val wrapped = wrapWithKeystore(bytes)
+        prefs.edit().putString(WRAPPED_KEY, wrapped).apply()
         dataKey = SecretKeySpec(bytes, "AES")
         return dataKey!!
     }
@@ -218,6 +219,27 @@ object MediaVault {
             if (ok) return
         }
         downloadSingle(ctx, url, cacheKey, probed, onProgress)
+    }
+
+    /**
+     * FASTEST: origin برنده و سپس origin دوم؛ EXTERNAL/INTERNAL: فقط همان سرور.
+     * URL موفق برای نمایش/ثبت diagnostics برگردانده می‌شود.
+     */
+    fun downloadEncrypted(
+        ctx: Context,
+        urls: List<String>,
+        cacheKey: String,
+        onProgress: (Long, Long) -> Unit,
+    ): String {
+        require(urls.isNotEmpty()) { "برای این فایل نشانی سرور وجود ندارد." }
+        val failures = mutableListOf<String>()
+        for (url in urls.distinct()) {
+            val result = runCatching { downloadEncrypted(ctx, url, cacheKey, onProgress) }
+            if (result.isSuccess) return url
+            failures += (result.exceptionOrNull()?.message ?: "خطای نامشخص")
+            delete(ctx, cacheKey)
+        }
+        throw java.io.IOException(failures.joinToString(" | "))
     }
 
     /**

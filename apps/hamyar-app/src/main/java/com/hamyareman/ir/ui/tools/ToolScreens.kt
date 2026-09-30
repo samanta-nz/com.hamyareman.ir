@@ -1,7 +1,6 @@
 package com.hamyareman.ir.ui.tools
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.util.Log
 import android.webkit.ConsoleMessage
@@ -43,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,7 +51,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.hub.AutoShrinkTileText
+import com.hamyareman.ir.ui.profile.AppEdition
 import com.hamyareman.ir.ui.profile.StudentProfileState
+import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -85,6 +90,7 @@ fun ToolHubScreen(
     items: List<ToolCard>,
     onBack: () -> Unit,
     onOpen: (ToolCard) -> Unit) {
+    com.hamyareman.ir.ui.study.SecureWebEffect()
     Column(Modifier.fillMaxSize()) {
         AppTopBar(title, onBack)
         Column(
@@ -103,24 +109,30 @@ fun ToolHubScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
                     Row(
-                        Modifier.fillMaxWidth().padding(16.dp),
+                        Modifier.fillMaxWidth().padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(item.emoji, fontSize = 28.sp)
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                item.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontFamily = AppTypography.cardTitle.family,
-                                fontWeight = AppTypography.cardTitle.weight,
-                                fontSize = AppTypography.cardTitle.size)
-                            Text(
-                                item.subtitle,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontFamily = AppTypography.cardSub.family,
-                                fontWeight = AppTypography.cardSub.weight,
-                                fontSize = AppTypography.cardSub.size)
+                        horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                        Text(item.emoji, fontSize = 20.sp)
+                        Column(Modifier.weight(1f).height(46.dp)) {
+                            AutoShrinkTileText(
+                                text = item.title,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontFamily = AppTypography.cardTitle.family,
+                                    fontWeight = AppTypography.cardTitle.weight,
+                                    fontSize = AppTypography.cardTitle.size,
+                                ),
+                                maxLines = 1,
+                            )
+                            AutoShrinkTileText(
+                                text = item.subtitle,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontFamily = AppTypography.cardSub.family,
+                                    fontWeight = AppTypography.cardSub.weight,
+                                    fontSize = AppTypography.cardSub.size,
+                                ),
+                                maxLines = 2,
+                            )
                         }
                     }
                 }
@@ -144,7 +156,7 @@ fun GeneralToolkitScreen(onBack: () -> Unit, onOpen: (String) -> Unit) = ToolHub
 @Composable
 fun MathToolkitScreen(onBack: () -> Unit, onOpen: (String) -> Unit) = ToolHubScreen(
     title = "جعبه‌ابزار ریاضی",
-    subtitle = "ماشین‌حساب‌های مهندسی برای تمرین‌های ریاضی نهم.",
+    subtitle = "ماشین‌حساب‌های مهندسی برای تمرین‌های ریاضی ${AppEdition.faShort}.",
     items = listOf(
         ToolCard("ti_nspire", "📐", "TI-Nspire CX II-T CAS", "ماشین‌حساب نموداری تگزاس اینسترومنتس"),
         ToolCard("casio991", "🔢", "CASIO fx-991CW", "کاسیو ClassWiz نسل CW")),
@@ -179,24 +191,37 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     val container = LocalAppContainer.current
     val scope = rememberCoroutineScope()
     val webRef = remember { arrayOfNulls<WebView>(1) }
+    // همهٔ جعبه‌ابزارها و آزمایشگاه‌ها محتوای محافظت‌شده‌اند.
+    com.hamyareman.ir.ui.study.SecureWebEffect()
+    com.hamyareman.ir.ui.study.ManagedWebMediaEffect { webRef[0] }
     val premium = StudentProfileState.isPaid()
     var pageUrl by remember(toolId) { mutableStateOf<String?>(null) }
     var loadErr by remember(toolId) { mutableStateOf<String?>(null) }
     LaunchedEffect(toolId) {
         loadErr = null
-        val local = runCatching { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ToolRemote.ensure(ctx, toolId) } }.getOrNull()
+        val local = runCatching {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
+                if (!keyReady) null else ToolRemote.ensure(ctx, toolId)
+            }
+        }.getOrNull()
         pageUrl = when {
             local != null -> "file://$local"
             else -> {
-                loadErr = "برای نمایش این صفحه به اینترنت نیاز است."
+                loadErr = if (com.hamyareman.ir.ui.study.HtmlMediaKey.get(ctx) == null) {
+                    "کد بازگشایی محتوا دریافت نشد؛ دوباره وارد حساب شو."
+                } else {
+                    "فایل از سرور انتخاب‌شده دریافت نشد؛ اتصال یا تنظیم منبع محتوا را بررسی کن."
+                }
                 null
             }
         }
     }
+    DisposableEffect(toolId) {
+        onDispose { ToolRemote.release(ctx, toolId) }
+    }
     val isLab = toolId == "chemistry" || toolId == "physics" || toolId == "biology"
-    val isCalc = toolId == "ti_nspire" || toolId == "casio991" || toolId == "dj120d"
-    val hideChrome = isLab || isCalc
-    val activity = ctx as? Activity
+    val activity = LocalActivity.current
     DisposableEffect(isLab) {
         if (!isLab) return@DisposableEffect onDispose { }
         val prev = activity?.requestedOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -234,8 +259,8 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
         if (uid.isNotBlank()) runCatching { ToolSaveStore.pull(ctx, container.tables, uid) }
         applySaved(webRef[0])
     }
+    // همهٔ ابزارهای HTML تمام‌صفحه‌اند؛ فقط نوار ناوبری پایین اپ دیده می‌شود.
     Column(Modifier.fillMaxSize()) {
-        if (!hideChrome) AppTopBar(title, onBack)
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             when {
                 pageUrl == null && loadErr != null -> Text(loadErr.orEmpty(), color = MaterialTheme.colorScheme.error)
@@ -268,9 +293,11 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                                     view.evaluateJavascript(toolPageJs(toolId, premium), null)
                                     view.post { applyLabViewport(view) }
                                     applySaved(view)
+                                    view.bindManagedMediaLifecycle()
                                 }
                             }
                             addJavascriptInterface(bridge, "HamyarTool")
+                            installManagedMediaLifecycle()
                             setBackgroundColor(if (isLab) android.graphics.Color.parseColor("#050912") else android.graphics.Color.TRANSPARENT)
                             webRef[0] = this
                             loadUrl(url)
@@ -279,7 +306,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                     modifier = Modifier.fillMaxSize().onSizeChanged {
                         webRef[0]?.let { applyLabViewport(it) }
                     },
-                    onRelease = { webRef[0] = null; it.destroy() })
+                    onRelease = { it.stopManagedMedia(); webRef[0] = null; it.destroy() })
                 }
             }
         }

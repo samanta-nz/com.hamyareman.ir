@@ -1,6 +1,7 @@
 package com.hamyareman.ir.ui.content
 
 import android.content.Context
+import com.hamyareman.ir.ui.profile.AppEdition
 import org.json.JSONObject
 
 /** یک دستهٔ محتوا (آموزشگاه، یوگا، …). */
@@ -30,6 +31,8 @@ object ContentCatalog {
 
     @Volatile private var cats: List<ContentCat> = emptyList()
     @Volatile private var itemsById: Map<String, ContentItem> = emptyMap()
+    @Volatile private var mirrorKeys: Map<String, String> = emptyMap()
+    @Volatile private var relativeFiles: Map<String, String> = emptyMap()
     @Volatile private var loaded = false
 
     fun load(ctx: Context) {
@@ -66,8 +69,23 @@ object ContentCatalog {
                     )
                     map[item.id] = item
                 }
+                val mirrors = mutableMapOf<String, String>()
+                // catalog مرجع UI است؛ server-map همهٔ payloadهای مشترک از جمله
+                // صوت/PDF/HTML تدریس را پوشش می‌دهد.
+                map.values.forEach { mirrors[it.aw] = it.key }
+                runCatching {
+                    val mirrorText = ctx.applicationContext.assets.open("content/server-map.json")
+                        .bufferedReader().use { it.readText() }
+                    val mirrorArray = JSONObject(mirrorText).getJSONArray("entries")
+                    for (i in 0 until mirrorArray.length()) {
+                        val entry = mirrorArray.getJSONObject(i)
+                        mirrors[entry.getString("id")] = entry.getString("key")
+                    }
+                }
                 cats = cs.sortedBy { it.order }
                 itemsById = map
+                mirrorKeys = mirrors
+                relativeFiles = map.values.associate { it.key.substringAfterLast('/') to it.id }
                 loaded = true
             }
         }
@@ -79,21 +97,78 @@ object ContentCatalog {
 
     fun categories(): List<ContentCat> = cats
 
-    /** آیتم‌های یک دسته (فقط HTML برای فهرست) با اعمال جنسیت. */
+    private fun belongsToEdition(item: ContentItem): Boolean {
+        val lab = Regex("^lab-(\\d{2})-").find(item.id) ?: return true
+        return lab.groupValues[1].toIntOrNull() == AppEdition.grade.num
+    }
+
+    /** آیتم‌های یک دسته با قفل هم‌زمان پایه و جنسیت همین APK. */
     fun itemsOf(cat: String, gender: String): List<ContentItem> =
         itemsById.values
-            .filter { it.cat == cat && it.kind == "html" && (it.gender == "all" || it.gender == gender) }
+            .filter {
+                it.cat == cat && it.kind == "html" && belongsToEdition(it) &&
+                    (it.gender == "all" || it.gender == gender)
+            }
             .sortedBy { it.id }
 
-    fun item(id: String): ContentItem? = itemsById[id]
+    /** دستهٔ خالیِ پایهٔ دیگر اصلاً به‌صورت کاشیِ قابل کلیک نمایش داده نمی‌شود. */
+    fun categoriesFor(gender: String): List<ContentCat> =
+        cats.filter { itemsOf(it.id, gender).isNotEmpty() }
 
-    /** نگاشت شناسهٔ Appwrite ← کلید آروان (برای ابزارها/آزمایشگاه‌ها هم). */
-    fun keyFor(fileId: String): String? = itemsById[fileId]?.key
+    fun item(id: String): ContentItem? = itemsById[id]?.takeIf(::belongsToEdition)
 
-    /** یک کلید HTML کوچک‌تر برای کاوش — نخستین آیتم HTML. */
-    fun sampleHtmlKey(): String? =
-        itemsById.values.firstOrNull { it.kind == "html" }?.key
+    /** نگاشت همهٔ payloadهای عمومی Appwrite ← کلید قطعی و اتمیک آروان. */
+    fun keyFor(fileId: String): String? = mirrorKeys[fileId]
 
-    /** برای ابزارها: از روی شناسهٔ Appwrite (tool-*.html). */
+    /** مقصد لینک نسبی در HTMLهای آموزشی، مثل 02-handwriting.html. */
+    fun itemIdForRelativeFile(fileName: String): String? =
+        relativeFiles[fileName.substringBefore('?').substringBefore('#').substringAfterLast('/')]
+
+    /** یک فایل واقعیِ موجود روی هر دو origin برای سنجش Range و سرعت. */
+    fun sampleHtmlItem(): ContentItem? =
+        itemsById.values.filter { it.kind == "html" }.minByOrNull { it.id }
+
+    fun sampleHtmlKey(): String? = sampleHtmlItem()?.key
+
+    /** جلدهای ۳۴ درس آموزشگاه، دقیقاً به ترتیب amz-01 تا amz-34؛ پومودورو کاشی مستقل یادگیری است. */
+    private val academyCovers = listOf(
+        "sk-speed", "sk-hand", "sk-type", "sk-cornell", "sk-summary",
+        "sk-debate", "sk-fallacy", "sk-present", "sk-voice", "sk-email", "sk-listen",
+        "sk-math", "sk-palace", "sk-lateral", "sk-chain", "sk-feel", "hyp-reframe",
+        "sk-resilience", "sk-plan", "sk-habit", "sk-desk", "sk-digital", "sk-ai-what",
+        "sk-search", "sk-privacy", "sk-fake", "sk-team", "sk-conflict", "sk-no",
+        "sk-budget", "sk-need", "sk-storm", "sk-create", "sk-music",
+    )
+
+    fun coverId(item: ContentItem): String {
+        if (item.cat == "amozesh") {
+            val number = item.id.removePrefix("amz-").toIntOrNull()
+            if (number != null) return academyCovers.getOrElse(number - 1) { item.id }
+        }
+        return when (item.cat) {
+            // سی تصویر تأییدشده بر اساس نام/شناسهٔ همان حرکت داخل APK هستند.
+            "yoga" -> item.id.takeIf { it.startsWith("yga-") } ?: "hl-yoga"
+            "sport" -> item.id.takeIf { it.startsWith("spo-") } ?: "hl-exercise"
+            "breath" -> "cl-breath"
+            else -> item.id
+        }
+    }
+
+    /** کاورهای منوی یوگا/ورزش پوستر عمودی ۲:۳ هستند؛ HTML داخلی دست‌نخورده است. */
+    fun coverAspectRatio(item: ContentItem): Float = when (item.cat) {
+        "sport", "yoga" -> 2f / 3f
+        else -> 1f
+    }
+
+    fun tileSubtitle(item: ContentItem): String = when (item.cat) {
+        "amozesh" -> "آموزش تعاملی مهارت"
+        "yoga" -> "حرکت تعاملی با راهنمای کامل"
+        "sport" -> "تمرین تعاملی مرحله‌به‌مرحله"
+        "breath" -> "تمرین تنفسی تعاملی"
+        "lab" -> "آزمایشگاه تعاملی"
+        else -> "محتوای تعاملی"
+    }
+
+    /** برای ابزارها: از روی شناسهٔ فایل. */
     fun keyForOrNull(fileId: String): String? = keyFor(fileId)
 }

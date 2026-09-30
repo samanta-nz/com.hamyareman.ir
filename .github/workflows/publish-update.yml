@@ -1,62 +1,48 @@
-# انتشارِ نسخه از راه دور — «کانالِ آپدیتِ همیار من»
-#
-# این ورک‌فلو سه کار می‌کند:
-#   ۱. APK را می‌سازد (دیباگ یا ریلیزِ R8).
-#   ۲. فایل را در **ریپوی عمومیِ انتشار** به‌عنوان Release Asset می‌گذارد.
-#   ۳. ردیفِ `app_release` در جدولِ `app_state` را به‌روز می‌کند ⇒ اپ خودش پیام
-#      آپدیت را نشان می‌دهد (توصیه‌ای یا اجباری، با رول‌آوتِ دلخواه).
-#
-# بدونِ هیچ توکنی داخلِ اپ: ریپوی اصلی خصوصی می‌ماند و ریپوی انتشار فقط فایلِ APK
-# را دارد (دانلودِ انتشارها در گیت‌هاب بی‌احراز هویت کار می‌کند).
-#
-# چیزهایی که یک‌بار باید تنظیم شوند (Settings → Secrets and variables → Actions):
-#   • secret  RELEASES_TOKEN      : توکنِ دقیق‌محدوده با دسترسی Contents: Read and write
-#                                   **فقط روی ریپوی عمومیِ انتشار** (نه روی این ریپو).
-#   • secret  APPWRITE_API_KEY    : کلیدِ Appwrite با دسترسی نوشتنِ ردیف‌ها.
-#   • variable RELEASES_REPO      : مثل `Aydinnza/hamyar-releases`
-#                                   (یا هر بار در ورودیِ releases_repo بدهید).
-#
-# استفادهٔ بی‌خطر (dry-run): `publish = false` بگذارید تا فقط فایل ساخته و payload
-# چاپ شود؛ هیچ چیزی روی ریپوی عمومی و سرور نوشته نمی‌شود.
-
-name: Publish update
+# Grade-isolated updater for the nine installable apps.
+# Each grade has its own applicationId, release asset, tag and Appwrite row.
+name: Publish grade update
 
 on:
   workflow_dispatch:
     inputs:
+      grade:
+        description: 'اپ مقصد'
+        type: choice
+        options: [p04, p05, p06, p07, p08, p09, p10, p11, p12]
+        default: p09
       version_code:
-        description: 'versionCode این بیلد (مثلاً 68)'
+        description: 'versionCode تازه؛ باید از آخرین نسخهٔ همان پایه بزرگ‌تر باشد'
         required: true
       version_name:
-        description: 'نامِ خوانای نسخه (مثلاً 1.67)'
+        description: 'نام نسخه، مانند 2.0'
         required: true
       variant:
-        description: 'کدام APK منتشر شود؟'
+        description: 'نوع APK'
         type: choice
         options: [release, debug]
         default: release
       publish:
-        description: 'اعلام به کاربران؟ (false = فقط ساخت و چاپِ payload)'
+        description: 'انتشار و اعلام به همان پایه؟'
         type: choice
         options: ['false', 'true']
         default: 'false'
       min_code:
-        description: 'کمتر از این versionCode → آپدیتِ اجباری (0 = هرگز)'
+        description: 'کمتر از این versionCode، آپدیت اجباری است'
         default: '0'
       rollout:
-        description: 'درصدِ کاربرانی که پیام را می‌بینند (1..100)'
+        description: 'درصد rollout از 1 تا 100'
         default: '100'
       notes:
-        description: 'یادداشت‌های نسخه، جداشده با |'
+        description: 'یادداشت‌ها با | جدا شوند'
         default: ''
       releases_repo:
-        description: 'ریپوی عمومیِ انتشار (خالی = از variable RELEASES_REPO)'
+        description: 'ریپوی عمومی انتشار؛ خالی یعنی variable RELEASES_REPO'
         default: ''
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -70,44 +56,125 @@ jobs:
         with:
           cache-cleanup: never
 
-      - name: ساختِ APK
+      - name: Resolve immutable grade identity
+        env:
+          GRADE: ${{ inputs.grade }}
         run: |
           set -euo pipefail
-          if [ "${{ inputs.variant }}" = "release" ]; then
-            ./gradlew :hamyar-app:assembleRelease --stacktrace
-            DIR=apps/hamyar-app/build/outputs/apk/release
-          else
-            ./gradlew :hamyar-app:assembleDebug --stacktrace
-            DIR=apps/hamyar-app/build/outputs/apk/debug
-          fi
-          APK=$(ls -1 "$DIR"/*.apk | head -1)
-          echo "APK=$APK" >> "$GITHUB_ENV"
-          echo "ASSET_NAME=hamyar-${{ inputs.version_name }}.apk" >> "$GITHUB_ENV"
+          case "$GRADE" in
+            p04) GRADE_ID=grade4;  PACKAGE=com.hamyareman.p04; TASK=P04; FA=چهارم ;;
+            p05) GRADE_ID=grade5;  PACKAGE=com.hamyareman.p05; TASK=P05; FA=پنجم ;;
+            p06) GRADE_ID=grade6;  PACKAGE=com.hamyareman.p06; TASK=P06; FA=ششم ;;
+            p07) GRADE_ID=grade7;  PACKAGE=com.hamyareman.p07; TASK=P07; FA=هفتم ;;
+            p08) GRADE_ID=grade8;  PACKAGE=com.hamyareman.p08; TASK=P08; FA=هشتم ;;
+            p09) GRADE_ID=grade9;  PACKAGE=com.hamyareman.p09;  TASK=P09; FA=نهم ;;
+            p10) GRADE_ID=grade10; PACKAGE=com.hamyareman.p10; TASK=P10; FA=دهم ;;
+            p11) GRADE_ID=grade11; PACKAGE=com.hamyareman.p11; TASK=P11; FA=یازدهم ;;
+            p12) GRADE_ID=grade12; PACKAGE=com.hamyareman.p12; TASK=P12; FA=دوازدهم ;;
+            *) echo "::error::پایه ناشناخته"; exit 2 ;;
+          esac
+          {
+            echo "GRADE_ID=$GRADE_ID"
+            echo "PACKAGE=$PACKAGE"
+            echo "TASK=$TASK"
+            echo "FA=$FA"
+            echo "ROW_ID=app_release_$GRADE_ID"
+          } >> "$GITHUB_ENV"
 
-      - name: اندازه و هش
+      - name: Require a strictly newer server version
+        if: inputs.publish == 'true'
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          VERSION_CODE: ${{ inputs.version_code }}
         run: |
           set -euo pipefail
+          test -n "${APPWRITE_API_KEY:-}" || { echo "::error::APPWRITE_API_KEY تنظیم نشده"; exit 1; }
+          python3 - <<'PY'
+          import json, os, urllib.error, urllib.request
+          project=os.environ['APPWRITE_PROJECT_ID']; row=os.environ['ROW_ID']; new=int(os.environ['VERSION_CODE'])
+          url=f'https://sgp.cloud.appwrite.io/v1/tablesdb/6abb238d000d05730d10/tables/app_state/rows/{row}'
+          req=urllib.request.Request(url,headers={'X-Appwrite-Project':project,'X-Appwrite-Key':os.environ['APPWRITE_API_KEY']})
+          try:
+              with urllib.request.urlopen(req,timeout=60) as response: doc=json.load(response)
+          except urllib.error.HTTPError as exc:
+              if exc.code == 404:
+                  raise SystemExit(f'Update row {row} does not exist; run platform/update-row provisioning first')
+              raise
+          payload=json.loads(doc.get('payload') or doc.get('data',{}).get('payload') or '{}')
+          current=int(payload.get('latest') or 0)
+          if new <= current:
+              raise SystemExit(f'versionCode must increase for {row}: new={new}, current={current}')
+          expected_package=os.environ['PACKAGE']; expected_grade=os.environ['GRADE_ID']
+          old_package=payload.get('packageName'); old_grade=payload.get('gradeId')
+          if old_package and old_package != expected_package: raise SystemExit('server row package identity mismatch')
+          if old_grade and old_grade != expected_grade: raise SystemExit('server row grade identity mismatch')
+          print(f'version guard ok: {current} -> {new} for {row}')
+          PY
+
+      - name: Build exactly one grade APK
+        env:
+          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          VARIANT: ${{ inputs.variant }}
+          CONFIGURED_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID || vars.GOOGLE_WEB_CLIENT_ID }}
+          GOOGLE_WEB_CLIENT_ID: 548109780863-84ub4jlu08a436mfi0hmn252kge7gv61.apps.googleusercontent.com
+        run: |
+          set -euo pipefail
+          if [ -n "${CONFIGURED_GOOGLE_WEB_CLIENT_ID:-}" ] && \
+             [ "$CONFIGURED_GOOGLE_WEB_CLIENT_ID" != "$GOOGLE_WEB_CLIENT_ID" ]; then
+            echo "::warning::Ignoring stale GOOGLE_WEB_CLIENT_ID secret/variable"
+          fi
+          if [ "$VARIANT" = release ]; then BUILD=Release; else BUILD=Debug; fi
+          ./gradlew ":hamyar-app:assemble${TASK}${BUILD}" \
+            -PhamyarVersionCode="$VERSION_CODE" \
+            -PhamyarVersionName="$VERSION_NAME" \
+            -Pgoogle.webClientId="$GOOGLE_WEB_CLIENT_ID" \
+            --stacktrace
+          mapfile -t apks < <(find apps/hamyar-app/build/outputs/apk -type f \
+            -path "*/${{ inputs.grade }}/$VARIANT/*.apk" -print)
+          test "${#apks[@]}" -eq 1 || { printf 'expected one APK, found %s\n' "${#apks[@]}"; printf '%s\n' "${apks[@]}"; exit 1; }
+          APK="${apks[0]}"
+          ASSET_NAME="hamyar-${GRADE_ID}-${VERSION_NAME}.apk"
+          echo "APK=$APK" >> "$GITHUB_ENV"
+          echo "ASSET_NAME=$ASSET_NAME" >> "$GITHUB_ENV"
+
+      - name: Verify package, version and signing certificate
+        env:
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          BADGING="$($AAPT dump badging "$APK" | head -1)"
+          echo "$BADGING" | grep -F "name='$PACKAGE'"
+          echo "$BADGING" | grep -F "versionCode='$VERSION_CODE'"
+          SIGNING_SHA="$($APKSIGNER verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          test "${#SIGNING_SHA}" -eq 64
+          EXPECTED_SIGNING_SHA=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          test "$SIGNING_SHA" = "$EXPECTED_SIGNING_SHA" || {
+            echo "::error::APK با کلید ثابت انتشار پروژه امضا نشده است"; exit 1;
+          }
           SIZE=$(stat -c%s "$APK")
           SHA=$(sha256sum "$APK" | cut -d' ' -f1)
-          echo "SIZE=$SIZE" >> "$GITHUB_ENV"
-          echo "SHA=$SHA" >> "$GITHUB_ENV"
           {
-            echo "### APK ساخته شد"
-            echo "- فایل: \`$APK\`"
-            echo "- حجم: $(( SIZE / 1048576 )) مگابایت ($SIZE بایت)"
-            echo "- sha256: \`$SHA\`"
-            echo "- نسخه: ${{ inputs.version_name }} (کد ${{ inputs.version_code }}) — variant: ${{ inputs.variant }}"
-          } >> "$GITHUB_STEP_SUMMARY"
-          ls -la "$APK"
+            echo "SIZE=$SIZE"
+            echo "SHA=$SHA"
+            echo "SIGNING_SHA=$SIGNING_SHA"
+          } >> "$GITHUB_ENV"
+          echo "### APK پایه $FA" >> "$GITHUB_STEP_SUMMARY"
+          echo "- package: \`$PACKAGE\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- version: ${{ inputs.version_name }} ($VERSION_CODE)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- APK sha256: \`$SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- signer sha256: \`$SIGNING_SHA\`" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: نگه‌داشتنِ APK به‌عنوان آرتیفکتِ ران
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: hamyar-${{ inputs.version_name }}-${{ inputs.variant }}-apk
+          name: hamyar-${{ env.GRADE_ID }}-${{ inputs.version_name }}-${{ inputs.variant }}
           path: ${{ env.APK }}
           retention-days: 30
 
-      - name: آپلود در ریپوی عمومیِ انتشار
+      - name: Publish grade-specific release asset
         if: inputs.publish == 'true'
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
@@ -115,40 +182,24 @@ jobs:
           REPO_VAR: ${{ vars.RELEASES_REPO }}
         run: |
           set -euo pipefail
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::error::secret با نام RELEASES_TOKEN تنظیم نشده است."
-            exit 1
-          fi
+          test -n "${GH_TOKEN:-}" || { echo "::error::RELEASES_TOKEN تنظیم نشده"; exit 1; }
           REPO="${REPO_INPUT:-${REPO_VAR:-}}"
-          if [ -z "$REPO" ]; then
-            echo "::error::ریپوی انتشار مشخص نیست (variable RELEASES_REPO یا ورودیِ releases_repo)."
-            exit 1
-          fi
-          TAG="v${{ inputs.version_name }}"
-          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-            gh release create "$TAG" --repo "$REPO" \
-              --title "همیار من ${{ inputs.version_name }}" \
-              --notes "نسخهٔ ${{ inputs.version_name }} (کد ${{ inputs.version_code }})"
-          fi
+          test -n "$REPO" || { echo "::error::RELEASES_REPO مشخص نیست"; exit 1; }
+          TAG="${GRADE_ID}-v${{ inputs.version_name }}"
+          gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$REPO" --title "همیار پایه $FA — ${{ inputs.version_name }}" \
+              --notes "package: $PACKAGE · versionCode: ${{ inputs.version_code }}"
           gh release upload "$TAG" "$APK#$ASSET_NAME" --repo "$REPO" --clobber
           URL="https://github.com/$REPO/releases/download/$TAG/$ASSET_NAME"
           echo "URL=$URL" >> "$GITHUB_ENV"
-          echo "REPO=$REPO" >> "$GITHUB_ENV"
-          echo "TAG=$TAG" >> "$GITHUB_ENV"
-          echo "🔗 $URL" >> "$GITHUB_STEP_SUMMARY"
-          # پیش از اعلام به کاربران، مطمئن شویم فایل واقعاً عمومی و در دسترس است.
           CODE=$(curl -sIL -o /dev/null -w '%{http_code}' "$URL" || echo 000)
-          echo "بررسیِ لینکِ عمومی: HTTP $CODE"
-          case "$CODE" in
-            200|302|303) ;;
-            *) echo "::error::لینکِ دانلود در دسترس نیست (HTTP $CODE) — اعلام انجام نشد."; exit 1 ;;
-          esac
+          case "$CODE" in 200|302|303) ;; *) echo "::error::asset HTTP $CODE"; exit 1 ;; esac
 
-      - name: اعلام از سرور (ردیفِ app_release)
+      - name: Atomically announce only to this grade
         if: inputs.publish == 'true'
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6a9d59e3002751cc3ea8' }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
           VERSION_CODE: ${{ inputs.version_code }}
           VERSION_NAME: ${{ inputs.version_name }}
           MIN_CODE: ${{ inputs.min_code }}
@@ -156,63 +207,35 @@ jobs:
           NOTES: ${{ inputs.notes }}
         run: |
           set -euo pipefail
-          if [ -z "${APPWRITE_API_KEY:-}" ]; then
-            echo "::error::secret با نام APPWRITE_API_KEY تنظیم نشده است."
-            exit 1
-          fi
           python3 - <<'PY'
           import json, os, time, urllib.request
-
-          key = os.environ['APPWRITE_API_KEY']
-          project = os.environ.get('APPWRITE_PROJECT_ID') or '6a9d59e3002751cc3ea8'
-          base = 'https://fra.cloud.appwrite.io/v1'
-          notes = [n.strip() for n in os.environ.get('NOTES', '').split('|') if n.strip()]
-          payload = {
-              'latest': int(os.environ['VERSION_CODE']),
-              'name': os.environ['VERSION_NAME'],
-              'min': int(os.environ.get('MIN_CODE', '0') or 0),
-              'url': os.environ['URL'],
-              'size': int(os.environ['SIZE']),
-              'sha256': os.environ['SHA'],
-              'chan': 'stable',
-              'rollout': max(1, min(100, int(os.environ.get('ROLLOUT', '100') or 100))),
-              'notes': notes,
+          payload={
+            'latest':int(os.environ['VERSION_CODE']), 'name':os.environ['VERSION_NAME'],
+            'min':int(os.environ.get('MIN_CODE') or 0), 'url':os.environ['URL'],
+            'size':int(os.environ['SIZE']), 'sha256':os.environ['SHA'],
+            'chan':'stable', 'rollout':max(1,min(100,int(os.environ.get('ROLLOUT') or 100))),
+            'notes':[x.strip() for x in os.environ.get('NOTES','').split('|') if x.strip()],
+            'packageName':os.environ['PACKAGE'], 'gradeId':os.environ['GRADE_ID'],
+            'signingSha256':os.environ['SIGNING_SHA'],
           }
-          body = json.dumps({
-              'data': {
-                  'userId': 'global',
-                  'key': 'app_release',
-                  'payload': json.dumps(payload, ensure_ascii=False, separators=(',', ':')),
-                  'updatedAt': int(time.time() * 1000),
-              },
-              'permissions': ['read("users")'],
-          }, ensure_ascii=False).encode()
-
-          req = urllib.request.Request(
-              f'{base}/databases/ZahraDB/collections/app_state/documents/app_release',
-              data=body, method='PATCH')
-          req.add_header('X-Appwrite-Project', project)
-          req.add_header('X-Appwrite-Key', key)
-          req.add_header('Content-Type', 'application/json')
-          with urllib.request.urlopen(req, timeout=60) as r:
-              print('سرور به‌روز شد:', r.status)
-          print(json.dumps(payload, ensure_ascii=False, indent=2))
+          body=json.dumps({'data':{
+            'userId':'global','key':os.environ['ROW_ID'],
+            'payload':json.dumps(payload,ensure_ascii=False,separators=(',',':')),
+            'updatedAt':int(time.time()*1000),
+          },'permissions':['read("any")']},ensure_ascii=False).encode()
+          url=f"https://sgp.cloud.appwrite.io/v1/tablesdb/6abb238d000d05730d10/tables/app_state/rows/{os.environ['ROW_ID']}"
+          req=urllib.request.Request(url,data=body,method='PATCH',headers={
+            'X-Appwrite-Project':os.environ['APPWRITE_PROJECT_ID'],
+            'X-Appwrite-Key':os.environ['APPWRITE_API_KEY'],'Content-Type':'application/json'})
+          with urllib.request.urlopen(req,timeout=60) as response:
+              if response.status not in range(200,300): raise SystemExit(response.status)
+          print(json.dumps(payload,ensure_ascii=False,indent=2))
           PY
 
-      - name: خلاصهٔ پایان
+      - name: Summary
         if: always()
         run: |
-          {
-            echo ""
-            echo "### نتیجه"
-            if [ "${{ inputs.publish }}" = "true" ]; then
-              echo "- فایل منتشر و ردیفِ سرور به‌روز شد."
-            else
-              echo "- حالتِ آزمایشی (publish=false): فقط ساخته شد. برای اعلام، همین ورک‌فلو را با publish=true اجرا کنید."
-              echo "- payload آماده (باید در ردیفِ \`app_release\` بنشیند):"
-              echo '```json'
-              printf '{"latest":%s,"name":"%s","min":%s,"url":"<لینکِ عمومیِ APK>","size":%s,"chan":"stable","rollout":%s}\n' \
-                "${{ inputs.version_code }}" "${{ inputs.version_name }}" "${{ inputs.min_code }}" "${SIZE:-0}" "${{ inputs.rollout }}"
-              echo '```'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "- grade: ${GRADE_ID:-unknown}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- package: ${PACKAGE:-unknown}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- server row: ${ROW_ID:-unknown}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- publish: ${{ inputs.publish }}" >> "$GITHUB_STEP_SUMMARY"

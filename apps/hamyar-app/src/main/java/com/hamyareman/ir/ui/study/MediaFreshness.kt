@@ -62,7 +62,9 @@ object MediaFreshness {
 
     /** نشانیِ **متادیتا** (نه `view`): همان چیزی که اثرِ انگشت را برمی‌گرداند. */
     private fun metaUrl(fileId: String): String =
-        StudyMedia.viewUrl(StudyMedia.resolveFileId(fileId)).substringBefore("/view")
+        // metadata JSON فقط API Appwrite است؛ URL آروان object خام برمی‌گرداند.
+        // payload می‌تواند از آروان بیاید ولی freshness همیشه از مبدأ حقیقت خوانده می‌شود.
+        StudyMedia.externalUrl(StudyMedia.resolveFileId(fileId)).substringBefore("/view")
 
     /**
      * اثرِ انگشتِ محتوای فایل روی سرور — `signature|size|updatedAt`.

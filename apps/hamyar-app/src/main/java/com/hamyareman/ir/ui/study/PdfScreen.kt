@@ -92,6 +92,7 @@ import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.feature.hearttoheart.MediaFiles
+import com.hamyareman.ir.ui.components.LinedNotebookInput
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.profile.loadOrientedBitmap
 import kotlinx.coroutines.Dispatchers
@@ -118,7 +119,7 @@ private const val KEY_FILES = "study_pdfs"
 private const val KEY_NOTES = "lesson_notes_text"
 private const val KEY_NOTES_AT = "lesson_notes_at"
 private const val FREE_FILE_CAP = 10
-private val GalleryGroups = listOf("عکس", "PDF", "متن", "سایر")
+private val GalleryGroups = listOf("عکس", "ویدیو", "صوت", "PDF", "متن", "سایر")
 
 
 internal fun readNoteFiles(store: LocalStore): List<NoteFile> = runCatching {
@@ -276,6 +277,8 @@ private fun guessMime(ext: String): String =
         }
 
 private fun isImageMime(mime: String) = mime.startsWith("image/")
+private fun isVideoItem(item: NoteFile) = item.mime.startsWith("video/") || extOf(item) in setOf("mp4", "mkv", "webm", "3gp")
+private fun isAudioItem(item: NoteFile) = item.mime.startsWith("audio/") || extOf(item) in setOf("mp3", "m4a", "aac", "ogg", "wav", "flac")
 
 /** پسوندِ واقعی — از مسیرِ فایل هم اگر در فهرست خالی مانده باشد. */
 private fun extOf(item: NoteFile): String =
@@ -312,10 +315,13 @@ private fun isPlainTextItem(item: NoteFile): Boolean {
 
 /** هر چه بشود داخل اپ نشان داد. */
 private fun canOpenInternal(item: NoteFile): Boolean =
-    isImageMime(item.mime) || isHtmlItem(item) || isPlainTextItem(item) || isPdfItem(item)
+    isImageMime(item.mime) || isVideoItem(item) || isAudioItem(item) ||
+        isHtmlItem(item) || isPlainTextItem(item) || isPdfItem(item)
 
 private fun fileGroup(item: NoteFile): String = when {
     isImageMime(item.mime) -> "عکس"
+    isVideoItem(item) -> "ویدیو"
+    isAudioItem(item) -> "صوت"
     item.mime == "application/pdf" || item.ext.equals("pdf", true) -> "PDF"
     item.mime.startsWith("text/") || item.ext.lowercase() in setOf("txt", "md", "rtf", "html", "htm") -> "متن"
     else -> "سایر"
@@ -348,6 +354,8 @@ fun PdfUploadScreen(onBack: () -> Unit) {
     var askDeleteNote by remember { mutableStateOf<LessonNote?>(null) }
     var pdfView by remember { mutableStateOf<NoteFile?>(null) }
     var editTarget by remember { mutableStateOf<NoteFile?>(null) }
+    var gallerySpan by remember { mutableIntStateOf(3) }
+    var exportTarget by remember { mutableStateOf<NoteFile?>(null) }
 
     fun openExternal(item: NoteFile) {
         runCatching {
@@ -373,7 +381,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                 imageAlbum = album
             }
             isPdfItem(item) -> pdfView = item
-            isHtmlItem(item) || isPlainTextItem(item) -> internalView = item
+            isHtmlItem(item) || isPlainTextItem(item) || isVideoItem(item) || isAudioItem(item) -> internalView = item
             else -> openExternal(item)
         }
     }
@@ -492,6 +500,23 @@ fun PdfUploadScreen(onBack: () -> Unit) {
             }
             titleText = name.substringBeforeLast('.')
             titleDraft = copied to mime
+        }
+    }
+
+    val exportCreate = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
+        val item = exportTarget
+        exportTarget = null
+        if (uri == null || item == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.contentResolver.openOutputStream(uri)?.use { output ->
+                        File(item.localPath).inputStream().use { it.copyTo(output) }
+                    } ?: error("output")
+                    true
+                }.getOrDefault(false)
+            }
+            notice = if (ok) "فایل در حافظهٔ انتخابی ذخیره شد." else "خروجی گرفتن ممکن نشد."
         }
     }
 
@@ -721,6 +746,13 @@ fun PdfUploadScreen(onBack: () -> Unit) {
 
             if (items.isEmpty()) {
                 Text("گالری خالی است.", style = MaterialTheme.typography.bodySmall)
+            } else {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("تعداد ستون:", style = MaterialTheme.typography.labelMedium)
+                    (2..4).forEach { span ->
+                        TextButton(onClick = { gallerySpan = span }) { Text(if (span == gallerySpan) "● $span" else span.toString()) }
+                    }
+                }
             }
             GalleryGroups.forEach { group ->
                 val groupItems = items.filter { fileGroup(it) == group }
@@ -731,7 +763,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Right)
-                groupItems.chunked(3).forEach { row ->
+                groupItems.chunked(gallerySpan).forEach { row ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         row.forEach { item ->
                             GalleryTile(
@@ -741,6 +773,10 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                                     if (canOpenInternal(item)) openInternal(item) else openExternal(item)
                                 },
                                 onExternal = { openExternal(item) },
+                                onExport = {
+                                    exportTarget = item
+                                    exportCreate.launch(item.title + "." + item.ext)
+                                },
                                 onDelete = {
                                     scope.launch {
                                         withContext(Dispatchers.IO) { runCatching { File(item.localPath).delete() } }
@@ -750,7 +786,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                                     }
                                 })
                         }
-                        repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                        repeat(gallerySpan - row.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
             }
@@ -917,6 +953,8 @@ fun PdfUploadScreen(onBack: () -> Unit) {
     }
 
     internalView?.let { item ->
+        val internalWebRef = remember(item.id) { arrayOfNulls<WebView>(1) }
+        ManagedWebMediaEffect { internalWebRef[0] }
         Dialog(
             onDismissRequest = { internalView = null },
             properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = true)) {
@@ -928,19 +966,34 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                 Text(item.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 val body = remember(item.localPath) {
-                    runCatching { File(item.localPath).readText(Charsets.UTF_8) }.getOrDefault("خواندن فایل ممکن نشد.")
+                    if (isHtmlItem(item) || isPlainTextItem(item)) {
+                        runCatching { File(item.localPath).readText(Charsets.UTF_8) }.getOrDefault("خواندن فایل ممکن نشد.")
+                    } else ""
                 }
-                if (isHtmlItem(item)) {
+                if (isVideoItem(item) || isAudioItem(item)) {
+                    NotebookMediaViewer(item, Modifier.weight(1f).fillMaxWidth())
+                } else if (isHtmlItem(item)) {
                     AndroidView(
                         factory = { ctx ->
                             WebView(ctx).apply {
-                                webViewClient = WebViewClient()
-                                settings.javaScriptEnabled = false
+                                webViewClient = object : WebViewClient() {
+                                    override fun onPageFinished(view: WebView, url: String) {
+                                        view.bindManagedMediaLifecycle()
+                                    }
+                                }
+                                settings.javaScriptEnabled = true
                                 settings.allowFileAccess = true
+                                installManagedMediaLifecycle()
+                                internalWebRef[0] = this
                                 loadDataWithBaseURL(null, body, "text/html", "utf-8", null)
                             }
                         },
-                        modifier = Modifier.weight(1f).fillMaxWidth())
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        onRelease = {
+                            it.stopManagedMedia()
+                            if (internalWebRef[0] === it) internalWebRef[0] = null
+                            it.destroy()
+                        })
                 } else {
                     Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                         Text(body, style = MaterialTheme.typography.bodyMedium)
@@ -958,41 +1011,33 @@ fun PdfUploadScreen(onBack: () -> Unit) {
  * دفتر نکات (دفتر ۸خطِ وکتور با قاب) — فونت بدخط و اندازه‌ی همسان با خط‌ها.
  */
 @Composable
-private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
-    val density = LocalDensity.current
-    // ۸ خطِ دفتر در ۲۳۶dp ⇒ گامِ هر خط ۲۴sp (فونت ۱۶sp روی همان گام می‌نشیند).
-    val lineSp = with(density) { 24.dp.toSp() }
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(236.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
-            .border(2.dp, Color(0xFFF59E0B), RoundedCornerShape(16.dp))) {
-        Image(
-            painter = painterResource(R.drawable.notes_lined_paper),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds)
-        BasicTextField(
-            value = value,
-            onValueChange = { raw ->
-                val lines = raw.replace("\r", "").split('\n')
-                onValueChange(lines.take(8).joinToString("\n"))
+private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
+    Box(modifier.background(Color.Black), contentAlignment = Alignment.Center) {
+        AndroidView(
+            factory = { context ->
+                android.widget.VideoView(context).apply {
+                    val controls = android.widget.MediaController(context)
+                    controls.setAnchorView(this)
+                    setMediaController(controls)
+                    setVideoPath(item.localPath)
+                    setOnPreparedListener {
+                        seekTo(1)
+                        controls.show(0)
+                    }
+                }
             },
-            textStyle = TextStyle(
-                lineHeight = lineSp,
-                color = Color(0xFF1E3A5F),
-                textAlign = TextAlign.Right,
-                platformStyle = PlatformTextStyle(includeFontPadding = false),
-                lineHeightStyle = LineHeightStyle(
-                    alignment = LineHeightStyle.Alignment.Bottom,
-                    trim = LineHeightStyle.Trim.None)),
-            cursorBrush = SolidColor(Color(0xFF1E3A5F)),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 6.dp))
+            modifier = Modifier.fillMaxSize(),
+            onRelease = { it.stopPlayback() },
+        )
+        if (isAudioItem(item)) {
+            Text("🎧  برای پخش، کنترل پایین صفحه را لمس کن", color = Color.White)
+        }
     }
+}
+
+@Composable
+private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
+    LinedNotebookInput(value = value, onValueChange = onValueChange)
 }
 
 /**
@@ -1155,7 +1200,8 @@ private fun GalleryTile(
     modifier: Modifier,
     onOpen: () -> Unit,
     onDelete: () -> Unit,
-    onExternal: () -> Unit = {}) {
+    onExternal: () -> Unit = {},
+    onExport: () -> Unit = {}) {
     Column(modifier.clickable(onClick = onOpen)) {
         Box(
             Modifier
@@ -1182,6 +1228,7 @@ private fun GalleryTile(
         if (canOpenInternal(item)) {
             TextButton(onClick = onExternal, modifier = Modifier.fillMaxWidth()) { Text("با برنامهٔ دیگر") }
         }
+        TextButton(onClick = onExport, modifier = Modifier.fillMaxWidth()) { Text("خروجی به حافظه") }
         TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("حذف") }
     }
 }
@@ -1283,8 +1330,8 @@ private fun GalleryThumb(item: NoteFile) {
         }
     }
     val previewText = remember(item.localPath) {
-        if (bmp == null && !isImageMime(item.mime) && !isPdfItem(item)) {
-            runCatching { File(item.localPath).readText(Charsets.UTF_8).take(200) }.getOrDefault("")
+        if (bmp == null && isPlainTextItem(item)) {
+            runCatching { File(item.localPath).bufferedReader().use { it.readText().take(200) } }.getOrDefault("")
         } else ""
     }
     when {
@@ -1299,6 +1346,8 @@ private fun GalleryThumb(item: NoteFile) {
                 textAlign = TextAlign.Right),
             maxLines = 8,
             modifier = Modifier.fillMaxSize().padding(6.dp))
+        isVideoItem(item) -> Text("🎬", style = MaterialTheme.typography.headlineLarge)
+        isAudioItem(item) -> Text("🎧", style = MaterialTheme.typography.headlineLarge)
         else -> Text(item.ext.uppercase().ifBlank { "FILE" }, fontWeight = FontWeight.Bold)
     }
 }

@@ -127,12 +127,18 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
 
     fun installNow() {
         note = null
+        val identityError = if (ApkUpdate.isReady(ctx)) ApkUpdate.identityError(ctx, info) else null
         when {
             !ApkUpdate.isReady(ctx) -> note = "فایلِ نصبی آماده نیست؛ اول دانلودش کن."
             !ApkUpdate.verify(ctx, info.sha256) -> {
                 ApkUpdate.clear(ctx)
                 ready = false
                 note = "فایلِ دانلودشده سالم نبود و پاک شد؛ یک‌بار دیگر دانلود کن."
+            }
+            identityError != null -> {
+                ApkUpdate.clear(ctx)
+                ready = false
+                note = identityError + " فایل حذف شد."
             }
             !ApkUpdate.canInstall(ctx) -> {
                 if (!askedPermission) {
@@ -144,7 +150,7 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
                     note = "هنوز مجوز نصب داده نشده. بعد از روشن‌کردنش به برنامه برگرد."
                 }
             }
-            !ApkUpdate.install(ctx) -> {
+            !ApkUpdate.install(ctx, info) -> {
                 ApkUpdate.explain(ctx)
                 note = "نصب‌کننده باز نشد؛ یک‌بار دیگر بزن."
             }
@@ -167,13 +173,18 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
         downloading = true
         progress = ApkProgress(0, info.size, 0)
         scope.launch {
-            val f = ApkUpdate.download(ctx, info.url) { p -> progress = p }
+            val f = ApkUpdate.download(ctx, UpdateSource.candidates(info)) { p -> progress = p }
             downloading = false
             when {
                 f == null -> note = "دانلود کامل نشد؛ اینترنت را چک کن و دوباره بزن (از همان‌جا ادامه می‌دهد)."
                 !ApkUpdate.verify(ctx, info.sha256) -> {
                     ApkUpdate.clear(ctx)
                     note = "فایلِ دانلودشده سالم نبود و پاک شد؛ یک‌بار دیگر بزن."
+                }
+                ApkUpdate.identityError(ctx, info) != null -> {
+                    val why = ApkUpdate.identityError(ctx, info).orEmpty()
+                    ApkUpdate.clear(ctx)
+                    note = "$why فایل حذف شد."
                 }
                 else -> afterDownloadOk()
             }
@@ -328,7 +339,7 @@ fun UpdateCheckCard() {
                     status = null
                     scope.launch {
                         val info = UpdateChecker.refresh(ctx, container.tables)
-                        if (info == null || info.url.isBlank() || info.latest <= 0) {
+                        if (info == null || UpdateSource.candidates(info).isEmpty() || info.latest <= 0) {
                             status = "الان نتوانستم از سرور بپرسم؛ بعداً دوباره امتحان کن."
                         } else if (info.latest <= BuildConfig.VERSION_CODE) {
                             status = "همین نسخه را داری؛ «" + UpdatePlan.versionLabel(info) +

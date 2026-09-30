@@ -1,263 +1,280 @@
 #!/usr/bin/env python3
-"""Appwrite media bucket → Arvan S3 (hamyar-e-man). Incremental by size.
+"""Atomic Appwrite → Arvan mirror for public app content.
 
-Local: reads /home/user/.hamyar-secrets/arvan-ir-bucket.env + appwrite/credentials.json
-CI:    env APPWRITE_* and ARVAN_*
+Final object keys come only from assets/content/server-map.json. User uploads are
+not mirrored. Uploads go to a private staging key, are size/hash verified, then
+server-side copied to the public final key; an interrupted upload can therefore
+never replace a healthy final object with a partial file.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import mimetypes
 import os
-import sys
+import tempfile
+import uuid
 from pathlib import Path
+from typing import Any
 
 import requests
 
-APPWRITE_ENDPOINT = os.environ.get("APPWRITE_ENDPOINT", "https://fra.cloud.appwrite.io/v1").rstrip("/")
-APPWRITE_PROJECT = os.environ.get("APPWRITE_PROJECT_ID", "6a9d59e3002751cc3ea8")
-APPWRITE_BUCKET = os.environ.get("APPWRITE_BUCKET_ID", "6aa1eaae00303400117b")
-ARVAN_ENDPOINT = os.environ.get("ARVAN_ENDPOINT", "https://s3.ir-thr-at1.arvanstorage.ir")
-ARVAN_REGION = os.environ.get("ARVAN_REGION", "ir-thr-at1")
-ARVAN_BUCKET = os.environ.get("ARVAN_BUCKET", "hamyar-e-man")
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MAP = ROOT / "apps/hamyar-app/src/main/assets/content/server-map.json"
+# مبدأ صوت‌های قدیمی فقط هنگام نبود مقصد خوانده می‌شود؛ اپ runtime به آن وابسته نیست.
+APPWRITE_ENDPOINT = os.getenv("SOURCE_APPWRITE_ENDPOINT", "https://fra.cloud.appwrite.io/v1").rstrip("/")
+APPWRITE_PROJECT = os.getenv("SOURCE_APPWRITE_PROJECT_ID", "6a9d59e3002751cc3ea8")
+APPWRITE_BUCKET = os.getenv("APPWRITE_BUCKET_ID", "6aa1eaae00303400117b")
+ARVAN_ENDPOINT = os.getenv("ARVAN_ENDPOINT", "https://s3.ir-thr-at1.arvanstorage.ir")
+ARVAN_REGION = os.getenv("ARVAN_REGION", "ir-thr-at1")
+ARVAN_BUCKET = os.getenv("ARVAN_BUCKET", "hamyar-e-man")
 
 
 def load_local_env() -> None:
-    envp = Path("/home/user/.hamyar-secrets/arvan-ir-bucket.env")
-    if envp.is_file():
-        for line in envp.read_text().splitlines():
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, v = line.split("=", 1)
-            os.environ.setdefault(k, v)
-            if k == "ARVAN_ACCESS_KEY":
-                os.environ.setdefault("ARVAN_ACCESS_KEY", v)
-            if k == "ARVAN_SECRET_KEY":
-                os.environ.setdefault("ARVAN_SECRET_KEY", v)
-    aw = Path("/home/user/appwrite/credentials.json")
-    if aw.is_file() and not os.environ.get("APPWRITE_API_KEY"):
-        d = json.loads(aw.read_text())
-        os.environ.setdefault("APPWRITE_API_KEY", d.get("api_key", ""))
-        os.environ.setdefault("APPWRITE_PROJECT_ID", d.get("project_id", APPWRITE_PROJECT))
-        os.environ.setdefault("APPWRITE_BUCKET_ID", d.get("media_bucket_id", APPWRITE_BUCKET))
-        os.environ.setdefault("APPWRITE_ENDPOINT", d.get("endpoint", APPWRITE_ENDPOINT))
-
-
-def aw_headers() -> dict:
-    key = os.environ.get("APPWRITE_API_KEY", "")
-    if not key:
-        sys.exit("missing APPWRITE_API_KEY")
-    return {"X-Appwrite-Project": os.environ.get("APPWRITE_PROJECT_ID", APPWRITE_PROJECT), "X-Appwrite-Key": key}
-
-
-def aw_get(path: str, params=None):
-    url = f"{os.environ.get('APPWRITE_ENDPOINT', APPWRITE_ENDPOINT).rstrip('/')}{path}"
-    r = requests.get(url, headers=aw_headers(), params=params or {}, timeout=60)
-    r.raise_for_status()
-    return r.json()
-
-
-def paginate_list(search: str | None = None) -> list[dict]:
-    files: list[dict] = []
-    offset = 0
-    bucket = os.environ.get("APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
-    while True:
-        params = {"limit": 25, "offset": offset}
-        if search:
-            params["search"] = search
-        j = aw_get(f"/storage/buckets/{bucket}/files", params)
-        chunk = j.get("files") or []
-        files.extend(chunk)
-        total = j.get("total") or 0
-        if not chunk or len(files) >= total:
-            break
-        offset += len(chunk)
-        if offset > 5000:
-            break
-    return files
-
-
-def file_meta(fid: str) -> dict | None:
-    bucket = os.environ.get("APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
-    url = (
-        f"{os.environ.get('APPWRITE_ENDPOINT', APPWRITE_ENDPOINT).rstrip('/')}"
-        f"/storage/buckets/{bucket}/files/{fid}"
-    )
-    r = requests.get(url, headers=aw_headers(), timeout=30)
-    if r.status_code != 200:
-        return None
-    return r.json()
-
-
-def collect_all() -> dict[str, dict]:
-    found: dict[str, dict] = {}
-
-    def add(f: dict) -> None:
-        fid = f.get("$id") or f.get("id")
-        if not fid:
-            return
-        found[fid] = {
-            "id": fid,
-            "name": f.get("name") or fid,
-            "mime": f.get("mimeType") or "",
-            "size": int(f.get("sizeOriginal") or 0),
-        }
-
-    for f in paginate_list(None):
-        add(f)
-    for q in (
-        "html", "jpg", "jpeg", "png", "mp3", "mp4", "webp", "wav", "json",
-        "Amzshghh", "Background", "tool-", "lab-", "yg-", "br-", "ex-",
+    for path in (
+        ROOT / "Hidden Files/02-appwrite-hamyar.env",
+        ROOT / "Hidden Files/01-arvan-iran-bucket.env",
+        ROOT / "Hidden Files/arvan-ir-bucket.env",
+        Path.home() / ".hamyar-secrets/arvan-ir-bucket.env",
     ):
-        for f in paginate_list(q):
-            add(f)
-
-    extra = ["Background-music.html"]
-    extra += [f"Amzshghh-{i:02d}-speed-reading.html" for i in range(1, 35)]
-    extra += [f"yg-{i:02d}.html" for i in range(1, 16)]
-    extra += [f"yg-{i:02d}.jpg" for i in range(1, 16)]
-    extra += [f"br-{i:02d}.html" for i in range(1, 9)]
-    extra += [f"ex-{i:02d}.html" for i in range(1, 16)]
-    extra += [f"ex-{i:02d}.jpg" for i in range(1, 16)]
-    extra += [
-        "tool-dj120d.html", "tool-casio991.html", "tool-ti-nspire.html",
-        "tool-calendar.html", "tool-converter.html",
-        "lab-09-chemistry.html", "lab-09-physics.html", "lab-09-biology.html",
-    ]
-    for fid in extra:
-        if fid in found:
+        if not path.is_file():
             continue
-        m = file_meta(fid)
-        if m:
-            add(m)
-    return found
+        for raw in path.read_text().splitlines():
+            raw = raw.strip()
+            if not raw or raw.startswith("#") or "=" not in raw:
+                continue
+            key, value = raw.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+    credentials = ROOT / "Hidden Files/02-appwrite-hamyar.json"
+    if credentials.is_file() and not os.getenv("APPWRITE_API_KEY"):
+        data = json.loads(credentials.read_text())
+        os.environ["APPWRITE_API_KEY"] = data.get("api_key", "")
 
 
-def is_pdf(item: dict) -> bool:
-    fid = item["id"].lower()
-    name = item["name"].lower()
-    mime = (item.get("mime") or "").lower()
-    return fid.endswith(".pdf") or name.endswith(".pdf") or "pdf" in mime
+def query(method: str, *values: Any) -> str:
+    return json.dumps({"method": method, "values": list(values)}, separators=(",", ":"))
 
 
-def download_bytes(fid: str) -> bytes:
-    bucket = os.environ.get("APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
-    proj = os.environ.get("APPWRITE_PROJECT_ID", APPWRITE_PROJECT)
-    ep = os.environ.get("APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
-    url = f"{ep}/storage/buckets/{bucket}/files/{fid}/view?project={proj}"
-    r = requests.get(url, headers=aw_headers(), timeout=180)
-    r.raise_for_status()
-    return r.content
+def appwrite_headers() -> dict[str, str]:
+    key = os.getenv("SOURCE_APPWRITE_API_KEY") or os.getenv("APPWRITE_API_KEY", "")
+    if not key:
+        raise RuntimeError("missing APPWRITE_API_KEY")
+    return {
+        "X-Appwrite-Project": os.getenv("SOURCE_APPWRITE_PROJECT_ID", APPWRITE_PROJECT),
+        "X-Appwrite-Key": key,
+        "Accept-Encoding": "identity",
+    }
+
+
+def get_appwrite_file(file_id: str) -> dict[str, Any]:
+    """Fetch source metadata only after S3 HEAD proves an upload is needed."""
+    endpoint = os.getenv("SOURCE_APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
+    bucket = os.getenv("SOURCE_APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
+    response = requests.get(
+        f"{endpoint}/storage/buckets/{bucket}/files/{file_id}",
+        headers=appwrite_headers(),
+        timeout=(20, 90),
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def load_manifest(path: Path) -> list[dict[str, Any]]:
+    payload = json.loads(path.read_text())
+    entries = payload.get("entries") or []
+    ids: set[str] = set()
+    keys: set[str] = set()
+    for entry in entries:
+        file_id = str(entry.get("id") or "")
+        key = str(entry.get("key") or "")
+        if not file_id or not key or file_id in ids or key in keys:
+            raise ValueError(f"invalid/duplicate mirror entry: {file_id!r} -> {key!r}")
+        if file_id.startswith(("avt-", "rec")):
+            raise ValueError("user-private object present in public mirror manifest")
+        ids.add(file_id)
+        keys.add(key)
+    return entries
 
 
 def s3_client():
     import boto3
     from botocore.config import Config
 
-    ak = os.environ.get("ARVAN_ACCESS_KEY") or os.environ.get("ARVAN_ACCESS_KEY_ID")
-    sk = os.environ.get("ARVAN_SECRET_KEY") or os.environ.get("ARVAN_SECRET_ACCESS_KEY")
-    if not ak or not sk:
-        sys.exit("missing ARVAN_ACCESS_KEY / ARVAN_SECRET_KEY")
+    access = os.getenv("ARVAN_ACCESS_KEY") or os.getenv("ARVAN_ACCESS_KEY_ID")
+    secret = os.getenv("ARVAN_SECRET_KEY") or os.getenv("ARVAN_SECRET_ACCESS_KEY")
+    if not access or not secret:
+        raise RuntimeError("missing Arvan credentials")
     return boto3.client(
         "s3",
-        aws_access_key_id=ak,
-        aws_secret_access_key=sk,
-        endpoint_url=os.environ.get("ARVAN_ENDPOINT", ARVAN_ENDPOINT),
-        region_name=os.environ.get("ARVAN_REGION", ARVAN_REGION),
+        aws_access_key_id=access,
+        aws_secret_access_key=secret,
+        endpoint_url=os.getenv("ARVAN_ENDPOINT", ARVAN_ENDPOINT),
+        region_name=os.getenv("ARVAN_REGION", ARVAN_REGION),
         config=Config(
             signature_version="s3v4",
             s3={"addressing_style": "path"},
+            request_checksum_calculation="when_required",
+            response_checksum_validation="when_required",
             connect_timeout=20,
-            read_timeout=180,
-            retries={"max_attempts": 3},
+            read_timeout=240,
+            retries={"max_attempts": 8, "mode": "adaptive"},
         ),
     )
 
 
-def s3_size(s3, key: str) -> int | None:
+def head(s3: Any, key: str) -> dict[str, Any] | None:
     try:
-        r = s3.head_object(Bucket=os.environ.get("ARVAN_BUCKET", ARVAN_BUCKET), Key=key)
-        return int(r.get("ContentLength") or 0)
+        return s3.head_object(Bucket=os.getenv("ARVAN_BUCKET", ARVAN_BUCKET), Key=key)
     except Exception:
         return None
 
 
-def put(s3, key: str, data: bytes, mime: str) -> None:
-    extra = {}
-    if mime:
-        extra["ContentType"] = mime
+def hash_s3(s3: Any, key: str) -> str:
+    response = s3.get_object(Bucket=os.getenv("ARVAN_BUCKET", ARVAN_BUCKET), Key=key)
+    digest = hashlib.sha256()
     try:
-        s3.put_object(
-            Bucket=os.environ.get("ARVAN_BUCKET", ARVAN_BUCKET),
-            Key=key,
-            Body=data,
-            ACL="public-read",
-            **extra,
-        )
+        while True:
+            chunk = response["Body"].read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    finally:
+        response["Body"].close()
+    return digest.hexdigest()
+
+
+def download_appwrite(file_id: str, destination: Path, expected_size: int) -> tuple[int, str]:
+    endpoint = os.getenv("SOURCE_APPWRITE_ENDPOINT", APPWRITE_ENDPOINT).rstrip("/")
+    bucket = os.getenv("SOURCE_APPWRITE_BUCKET_ID", APPWRITE_BUCKET)
+    project = os.getenv("SOURCE_APPWRITE_PROJECT_ID", APPWRITE_PROJECT)
+    url = f"{endpoint}/storage/buckets/{bucket}/files/{file_id}/view?project={project}"
+    digest = hashlib.sha256()
+    size = 0
+    with requests.get(url, headers=appwrite_headers(), stream=True, timeout=(20, 300)) as response:
+        response.raise_for_status()
+        with destination.open("wb") as output:
+            for chunk in response.iter_content(1024 * 1024):
+                if not chunk:
+                    continue
+                output.write(chunk)
+                digest.update(chunk)
+                size += len(chunk)
+            output.flush()
+            os.fsync(output.fileno())
+    if expected_size and size != expected_size:
+        destination.unlink(missing_ok=True)
+        raise RuntimeError(f"incomplete source download {file_id}: {size}/{expected_size}")
+    return size, digest.hexdigest()
+
+
+def copy_with_metadata(s3: Any, source_key: str, final_key: str, size: int, sha256: str, mime: str) -> None:
+    bucket = os.getenv("ARVAN_BUCKET", ARVAN_BUCKET)
+    args = {
+        "Bucket": bucket,
+        "Key": final_key,
+        "CopySource": {"Bucket": bucket, "Key": source_key},
+        "MetadataDirective": "REPLACE",
+        "Metadata": {"sha256": sha256, "source": "appwrite"},
+        "ContentType": mime,
+        "CacheControl": "public, max-age=3600, must-revalidate",
+    }
+    try:
+        s3.copy_object(ACL="public-read", **args)
     except Exception:
-        s3.put_object(
-            Bucket=os.environ.get("ARVAN_BUCKET", ARVAN_BUCKET),
-            Key=key,
-            Body=data,
-            **extra,
-        )
+        s3.copy_object(**args)
+        # Some S3-compatible deployments reject ACL on copy but accept it separately.
+        s3.put_object_acl(Bucket=bucket, Key=final_key, ACL="public-read")
+    final = head(s3, final_key)
+    if final is None or int(final.get("ContentLength") or -1) != size:
+        raise RuntimeError(f"final object verification failed: {final_key}")
+    metadata = {str(k).lower(): str(v) for k, v in (final.get("Metadata") or {}).items()}
+    if metadata.get("sha256") != sha256:
+        raise RuntimeError(f"final sha metadata missing: {final_key}")
+
+
+def atomic_publish(s3: Any, source: Path, key: str, size: int, sha256: str, mime: str) -> None:
+    bucket = os.getenv("ARVAN_BUCKET", ARVAN_BUCKET)
+    staging = f".staging/{uuid.uuid4().hex}/{key}"
+    extra = {
+        "ContentType": mime,
+        "Metadata": {"sha256": sha256, "source": "appwrite"},
+        "CacheControl": "no-store",
+    }
+    try:
+        s3.upload_file(str(source), bucket, staging, ExtraArgs=extra)
+        staged = head(s3, staging)
+        if staged is None or int(staged.get("ContentLength") or -1) != size:
+            raise RuntimeError(f"staging verification failed: {key}")
+        staged_meta = {str(k).lower(): str(v) for k, v in (staged.get("Metadata") or {}).items()}
+        if staged_meta.get("sha256") != sha256:
+            raise RuntimeError(f"staging hash metadata failed: {key}")
+        copy_with_metadata(s3, staging, key, size, sha256, mime)
+    finally:
+        try:
+            s3.delete_object(Bucket=bucket, Key=staging)
+        except Exception:
+            pass
 
 
 def main() -> int:
     load_local_env()
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--skip-pdf", action="store_true")
-    ap.add_argument("--force", action="store_true")
-    ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--local-dir", default="", help="هم‌زمان روی دیسک هم ذخیره کن")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MAP)
+    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--only", action="append", default=[], help="file ID; repeatable")
+    args = parser.parse_args()
 
-    print("listing Appwrite …")
-    all_files = collect_all()
-    items = list(all_files.values())
-    if args.skip_pdf:
-        items = [i for i in items if not is_pdf(i)]
-    print("files", len(items), "bytes", sum(i["size"] for i in items))
+    manifest = load_manifest(args.manifest)
+    only = set(args.only)
+    selected = [entry for entry in manifest if not only or entry["id"] in only]
+    if only and len(selected) != len(only):
+        found = {entry["id"] for entry in selected}
+        raise RuntimeError(f"unknown manifest IDs: {sorted(only - found)}")
+    print(f"plan public files={len(selected)} bytes={sum(int(e.get('size') or 0) for e in selected)}")
+    if args.dry_run:
+        for entry in selected:
+            print("DRY", entry["id"], "->", entry["key"], entry.get("size", 0))
+        return 0
 
-    local = Path(args.local_dir) if args.local_dir else None
-    if local:
-        local.mkdir(parents=True, exist_ok=True)
-
-    s3 = None
-    if not args.dry_run:
-        s3 = s3_client()
-
-    ok = skip = fail = 0
-    for i, item in enumerate(sorted(items, key=lambda x: x["id"]), 1):
-        fid = item["id"]
-        mime = item.get("mime") or mimetypes.guess_type(fid)[0] or "application/octet-stream"
-        try:
-            if s3 is not None and not args.force:
-                remote = s3_size(s3, fid)
-                if remote is not None and item["size"] and remote == item["size"]:
-                    skip += 1
-                    print(f"[{i}/{len(items)}] SKIP {fid}")
-                    continue
-            data = download_bytes(fid)
-            if local is not None:
-                dest = local / fid
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                dest.write_bytes(data)
-            if args.dry_run:
-                print(f"[{i}/{len(items)}] DRY {fid} {len(data)}")
-                ok += 1
+    s3 = s3_client()
+    published = skipped = failed = 0
+    with tempfile.TemporaryDirectory(prefix="hamyar-mirror-") as temporary:
+        work = Path(temporary)
+        for index, entry in enumerate(selected, 1):
+            file_id = entry["id"]
+            key = entry["key"]
+            manifest_size = int(entry.get("size") or 0)
+            target_head = head(s3, key)
+            target_size = int((target_head or {}).get("ContentLength") or -1)
+            target_meta = {str(k).lower(): str(v) for k, v in ((target_head or {}).get("Metadata") or {}).items()}
+            # مهم: قبل از هر تماس با Appwrite قدیمی، وجود و اندازهٔ مقصد را بررسی کن.
+            # sha256 متادیتا (اگر موجود باشد) نیز ثبت می‌شود؛ برای فایل هم‌اندازه هیچ
+            # GET پرهزینه‌ای از هیچ‌کدام از دو سرویس انجام نمی‌دهیم.
+            if not args.force and target_head and manifest_size > 0 and target_size == manifest_size:
+                marker = target_meta.get("sha256") or str(target_head.get("ETag") or "").strip('"')
+                skipped += 1
+                print(f"[{index}/{len(selected)}] SKIP existing-size {file_id} -> {key} ({target_size}, hash={marker[:16] or 'etag-unavailable'})")
                 continue
-            put(s3, fid, data, mime)
-            ok += 1
-            print(f"[{i}/{len(items)}] OK {fid} {len(data)}")
-        except Exception as e:
-            fail += 1
-            print(f"[{i}/{len(items)}] FAIL {fid} {type(e).__name__}: {str(e)[:180]}")
-    print("done ok", ok, "skip", skip, "fail", fail)
-    return 0 if fail == 0 else 1
-
+            try:
+                # فقط فایل غایب/ناقص یک بار از مبدأ خوانده می‌شود؛ retry سطح برنامه نداریم.
+                row = get_appwrite_file(file_id)
+                expected = int(row.get("sizeOriginal") or manifest_size)
+                if manifest_size and expected != manifest_size:
+                    raise RuntimeError(f"source/manifest size mismatch {file_id}: {expected}/{manifest_size}")
+                mime = row.get("mimeType") or entry.get("mime") or mimetypes.guess_type(file_id)[0] or "application/octet-stream"
+                source = work / (hashlib.sha256(file_id.encode()).hexdigest() + ".bin")
+                size, source_sha = download_appwrite(file_id, source, expected)
+                atomic_publish(s3, source, key, size, source_sha, mime)
+                source.unlink(missing_ok=True)
+                published += 1
+                print(f"[{index}/{len(selected)}] OK {file_id} -> {key} ({size}, sha256={source_sha})")
+            except Exception as exc:
+                failed += 1
+                print(f"[{index}/{len(selected)}] FAIL {file_id}: {type(exc).__name__}: {str(exc)[:240]}")
+    print(f"done published={published} skipped={skipped} failed={failed}")
+    return 0 if failed == 0 else 1
 
 if __name__ == "__main__":
     raise SystemExit(main())

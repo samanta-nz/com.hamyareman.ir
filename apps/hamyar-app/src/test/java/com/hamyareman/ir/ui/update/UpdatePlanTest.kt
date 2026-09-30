@@ -15,7 +15,8 @@ class UpdatePlanTest {
     private val full = """
         {"latest":67,"min":0,"url":"https://github.com/x/y/releases/download/v1.66/hamyar-1.66.apk",
          "size":28000000,"sha256":"abc","name":"1.66","notes":["پلیر صوت","ورود آفلاین"],
-         "chan":"stable","rollout":100}
+         "chan":"stable","packageName":"com.hamyareman.p09","gradeId":"grade9",
+         "signingSha256":"def","rollout":100}
     """.trimIndent()
 
     @Test
@@ -29,6 +30,9 @@ class UpdatePlanTest {
         assertEquals("abc", info.sha256)
         assertEquals(listOf("پلیر صوت", "ورود آفلاین"), info.notes)
         assertEquals("stable", info.chan)
+        assertEquals("com.hamyareman.p09", info.packageName)
+        assertEquals("grade9", info.gradeId)
+        assertEquals("def", info.signingSha256)
         assertEquals(100, info.rollout)
     }
 
@@ -44,9 +48,27 @@ class UpdatePlanTest {
     }
 
     @Test
+    fun `grade and package isolate update channels`() {
+        val info = UpdatePlan.parse(full)
+        assertTrue(UpdatePlan.isCompatible(info, "com.hamyareman.p09", "grade9"))
+        assertTrue(!UpdatePlan.isCompatible(info, "com.hamyareman.p04", "grade4"))
+        assertTrue(!UpdatePlan.isCompatible(UpdatePlan.parse("""{"latest":99}"""), "com.hamyareman.p09", "grade9"))
+    }
+
+    @Test
     fun `missing url never triggers a prompt`() {
         val info = UpdatePlan.parse("""{"latest":99,"min":99}""")
         assertEquals(UpdateDecision.None, UpdatePlan.decisionFor(66, info))
+    }
+
+    @Test
+    fun `dual server urls are parsed and can force an update without legacy url`() {
+        val info = UpdatePlan.parse(
+            """{"latest":100,"min":100,"externalUrl":"https://appwrite/x.apk","internalUrl":"https://arvan/x.apk"}""",
+        )
+        assertEquals("https://appwrite/x.apk", info.externalUrl)
+        assertEquals("https://arvan/x.apk", info.internalUrl)
+        assertTrue(UpdatePlan.decisionFor(99, info) is UpdateDecision.Forced)
     }
 
     @Test

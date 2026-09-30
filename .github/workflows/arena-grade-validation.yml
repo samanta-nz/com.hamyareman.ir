@@ -1,0 +1,77 @@
+name: Arena grade architecture validation
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arena-grade-validation
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Validate grade hardening')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+      - name: Validate static identity and mirrored assets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/*.py
+          python3 scripts/validate_grade_architecture.py
+      - name: Test, lint, and assemble grade nine
+        run: |
+          set +e
+          ./gradlew \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:lintP09Debug \
+            :hamyar-app:assembleP09Debug \
+            --stacktrace 2>&1 | tee /tmp/grade-gradle.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            {
+              echo '### Gradle failure tail'
+              echo '```text'
+              tail -n 350 /tmp/grade-gradle.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            grep -E '^(e: |FAILURE:|\* What went wrong:|> Task .*FAILED|.*: error:)' /tmp/grade-gradle.log \
+              | tail -n 30 \
+              | while IFS= read -r line; do
+                  line=${line//'%'/'%25'}; line=${line//$'\r'/'%0D'}; line=${line//$'\n'/'%0A'}
+                  echo "::error title=Gradle validation::$line"
+                done
+          fi
+          exit "$code"
+      - name: Verify packaged grade-nine identity, version, and signer
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          EXPECTED_SIGNER=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          apk="${files[0]}"
+          badging=$("$AAPT" dump badging "$apk" | head -1)
+          echo "$badging" | grep -F "name='com.hamyareman.p09'"
+          echo "$badging" | grep -F "versionCode='210'"
+          echo "$badging" | grep -F "versionName='2.1-debug'"
+          signer=$("$APKSIGNER" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')
+          test "$signer" = "$EXPECTED_SIGNER"
+          printf 'p09 package=com.hamyareman.p09 version=2.1 signer=%s\n' "$signer"

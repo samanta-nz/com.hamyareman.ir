@@ -78,8 +78,8 @@ class AppContainer(context: Context) {
         if (appwrite.isConfigured) {
             CoroutineScope(Dispatchers.IO).launch {
                 runCatching { Account(appwrite.client).get() }
-                    .onSuccess { Log.i("AppwritePing", "اتصال Appwrite تأیید شد (پروژه: ${BuildConfig.APPWRITE_PROJECT_NAME})") }
-                    .onFailure { Log.w("AppwritePing", "Appwrite پاسخ داد: ${it.message}") }
+                    .onSuccess { Log.i("BackendPing", "اتصال سرور خارجی تأیید شد") }
+                    .onFailure { Log.w("BackendPing", "سرور خارجی پاسخ داد: ${it.message}") }
             }
         }
     }
@@ -185,8 +185,10 @@ class AppContainer(context: Context) {
 
     /** بیومتریک فقط «راه جایگزینِ بازکردن همان قفل PIN» است؛ بدون PIN فعال نمی‌شود. */
     val biometric = BiometricUnlock(store, lock)
-    val quiet = QuietHoursManager(store)
     val reminders = ReminderScheduler(context)
+    // UI و BroadcastReceiver باید دقیقاً یک state را ببینند؛ هر دو از استور
+    // مستقلِ یادآورها استفاده می‌کنند تا ساعات سکوت بعد از reboot هم برقرار بماند.
+    val quiet = reminders.quietHours
 
     /** کلید در Android Keystore است؛ هیچ بایتی از آن روی دیسک نمی‌ماند. */
     val encryptor = Encryptor()

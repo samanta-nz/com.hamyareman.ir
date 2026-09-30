@@ -1,5 +1,9 @@
 package com.hamyareman.ir
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import androidx.core.content.ContextCompat
 import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.designsystem.BrandTheme
 import com.hamyareman.ir.platform.core.designsystem.PinLockGate
@@ -26,6 +31,7 @@ import com.hamyareman.ir.platform.core.security.AppLock
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.di.AppContainer
 import com.hamyareman.ir.ui.appearance.LocalUiPrefs
+import com.hamyareman.ir.ui.auth.GoogleNativeSignIn
 import com.hamyareman.ir.ui.auth.LoginScreen
 import com.hamyareman.ir.ui.navigation.ZahraNavHost
 import kotlinx.coroutines.launch
@@ -59,8 +65,22 @@ class MainActivity : FragmentActivity() {
     /** null = در حال بررسی؛ true = پروفایل ثبت نشده → فرم ثبت‌نام اجباری. */
     private val profileNeeded = mutableStateOf<Boolean?>(null)
 
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                com.hamyareman.ir.ui.safespace.SafeSpaceSession.onScreenLocked(context)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ContextCompat.registerReceiver(
+            this,
+            screenOffReceiver,
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         val app = application as HamyarApplication
         enableEdgeToEdge()
         unlocked.value = !app.container.lock.isLockedNow()
@@ -123,6 +143,7 @@ class MainActivity : FragmentActivity() {
             var loginLoading by remember { mutableStateOf(false) }
             var loginError by remember { mutableStateOf<String?>(null) }
             var loginNotice by remember { mutableStateOf<String?>(null) }
+            var verificationRequired by remember { mutableStateOf(false) }
 
             // v1.25 — «مرا به خاطر بسپار»: سشنِ معتبر = ورود مستقیم به اپ؛
             // صفحه‌ی لاگین فقط وقتی سشنی نیست. (قانون قدیمیِ «لاگین هر اجرا» حذف شد.)
@@ -230,111 +251,132 @@ class MainActivity : FragmentActivity() {
                                 loading = loginLoading,
                                 error = loginError,
                                 notice = loginNotice,
-                                onSignIn = { id, pw, rem ->
+                                verificationRequired = verificationRequired,
+                                onSignIn = { email, password ->
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.signInWithIdentifier(id, pw, rem)) {
+                                        when (val r = container.auth.signIn(email, password)) {
                                             is AppResult.Ok -> loggedIn.value = true
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onSignUp = { nm, em, un, pw, rem ->
+                                onSignUp = { name, email, password ->
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.signUpWithUsername(nm, em, un, pw, rem)) {
-                                            is AppResult.Ok -> loggedIn.value = true
-                                            is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
-                                        }
-                                    }
-                                },
-                                onRecover = { id ->
-                                    loginLoading = true; loginError = null; loginNotice = null
-                                    scope.launch {
-                                        when (val r = container.auth.requestRecovery(id)) {
+                                        when (val created = container.auth.signUp(name, email, password)) {
+                                            is AppResult.Err -> {
+                                                loginError = created.error.userMessage
+                                                loginLoading = false
+                                            }
                                             is AppResult.Ok -> {
-                                                loginNotice = "ایمیلِ بازیابی فرستاده شد. لینکِ داخلش را کپی کن و در اپ بچسبان."
+                                                verificationRequired = true
+                                                when (val sent = container.auth.requestEmailVerification()) {
+                                                    is AppResult.Ok -> loginNotice = "ایمیل تأیید فرستاده شد. لینک داخل ایمیل را کپی کن."
+                                                    is AppResult.Err -> loginNotice = "حساب ساخته شد. اگر ایمیل نرسید، «ارسال دوباره» را بزن."
+                                                }
+                                                loginLoading = false
+                                            }
+                                        }
+                                    }
+                                },
+                                onRecover = { email ->
+                                    loginLoading = true; loginError = null; loginNotice = null
+                                    scope.launch {
+                                        when (val r = container.auth.requestRecovery(email)) {
+                                            is AppResult.Ok -> {
+                                                loginNotice = "ایمیل بازیابی فرستاده شد. لینک داخل ایمیل یک ساعت اعتبار دارد."
                                                 loginLoading = false
                                             }
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onRecoverComplete = { link, pw ->
+                                onRecoverComplete = { link, password ->
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.completeRecovery(link, pw)) {
+                                        when (val r = container.auth.completeRecovery(link, password)) {
                                             is AppResult.Ok -> {
-                                                // لینکِ بازیابی فقط رمز را عوض می‌کند (سشن نمی‌سازد)؛
-                                                // کاربر با همان رمزِ تازه از فرمِ ورود وارد می‌شود.
-                                                loginNotice = "رمز عوض شد ✅ حالا با نام کاربری و رمز تازه وارد شو."
+                                                loginNotice = "رمز با موفقیت تغییر کرد؛ اکنون وارد حساب شو."
                                                 loginLoading = false
                                             }
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onSendOtp = { id ->
+                                onVerificationResend = {
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.sendOtp(id)) {
+                                        when (val r = container.auth.requestEmailVerification()) {
+                                            is AppResult.Ok -> { loginNotice = "ایمیل تأیید دوباره فرستاده شد."; loginLoading = false }
+                                            is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
+                                        }
+                                    }
+                                },
+                                onVerificationComplete = { link ->
+                                    loginLoading = true; loginError = null; loginNotice = null
+                                    scope.launch {
+                                        when (val r = container.auth.completeEmailVerification(link)) {
                                             is AppResult.Ok -> {
-                                                loginNotice = "کد ۶ رقمی به ایمیلت فرستاده شد (۱۵ دقیقه اعتبار دارد)."
-                                                loginLoading = false
+                                                verificationRequired = false
+                                                loggedIn.value = true
                                             }
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
                                 },
-                                onSignInOtp = { code, rem ->
-                                    loginLoading = true; loginError = null; loginNotice = null
-                                    scope.launch {
-                                        when (val r = container.auth.signInWithOtp(code, rem)) {
-                                            is AppResult.Ok -> loggedIn.value = true
-                                            is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
-                                        }
-                                    }
+                                onVerificationContinue = {
+                                    verificationRequired = false
+                                    loggedIn.value = true
                                 },
                                 onGoogle = {
                                     loginLoading = true; loginError = null; loginNotice = null
                                     scope.launch {
-                                        when (val r = container.auth.signInWithGoogle(activity)) {
+                                        val token = runCatching {
+                                            GoogleNativeSignIn.idToken(activity, BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                                        }.getOrElse {
+                                            loginError = it.message ?: "انتخاب حساب گوگل انجام نشد."
+                                            loginLoading = false
+                                            return@launch
+                                        }
+                                        when (val r = container.auth.signInWithGoogleIdToken(token)) {
                                             is AppResult.Ok -> loggedIn.value = true
                                             is AppResult.Err -> { loginError = r.error.userMessage; loginLoading = false }
                                         }
                                     }
-                                })
+                                },
+                            )
 
                             // ۱.۵) وارد شده ولی پروفایل دانش‌آموز ندارد → فرم ثبت‌نام (یک‌بار).
                             loggedIn.value == true && profileNeeded.value == true -> {
                                 var saving by remember { mutableStateOf(false) }
                                 var formError by remember { mutableStateOf<String?>(null) }
                                 var email by remember { mutableStateOf("") }
-                                var currentUsername by remember { mutableStateOf("") }
+                                var offerEmailPassword by remember { mutableStateOf(false) }
+                                var optionalPasswordSaved by remember { mutableStateOf(false) }
                                 LaunchedEffect(Unit) {
                                     val me = runCatching { container.auth.currentUser() }.getOrNull()
                                     email = me?.email.orEmpty()
-                                    currentUsername = me?.username?.ifBlank { null }
-                                        ?: runCatching { container.auth.currentUsername() }.getOrNull().orEmpty()
+                                    offerEmailPassword = container.auth.lastSignInWasGoogle()
                                 }
                                 com.hamyareman.ir.ui.profile.StudentProfileScreen(
                                     email = email,
                                     saving = saving,
                                     error = formError,
-                                    currentUsername = currentUsername,
-                                    onSubmit = { fn, ln, age, birthDate, grade, phone, gender, province, county, city, un, pw ->
+                                    offerEmailPassword = offerEmailPassword,
+                                    onSubmit = { fn, ln, age, birthDate, grade, phone, gender, province, county, city, pw ->
                                         saving = true; formError = null
                                         scope.launch {
-                                            // v1.65 — نام کاربریِ یکتا (+ رمز برای حسابِ گوگلی) پیش از
-                                            // ثبتِ پروفایل ذخیره می‌شود تا ورودِ بعدی بدونِ گوگل/اینترنت ممکن شود.
-                                            if (un.isNotBlank() && un != currentUsername) {
-                                                val r = container.auth.saveUsername(un, pw.ifBlank { null }, null)
-                                                if (r is AppResult.Err) {
-                                                    formError = r.error.userMessage
+                                            // ورود ایمیلی از قبل رمز دارد. فقط برای حسابی که با Google
+                                            // وارد شده، رمز اختیاری روی همان ایمیل ثبت می‌شود.
+                                            if (pw.isNotBlank() && !optionalPasswordSaved) {
+                                                val result = container.auth.setPasswordForCurrentEmail(pw)
+                                                if (result is AppResult.Err) {
+                                                    formError = result.error.userMessage
                                                     saving = false
                                                     return@launch
                                                 }
-                                                currentUsername = un
+                                                optionalPasswordSaved = true
                                             }
                                             val uid = container.auth.currentUserId().orEmpty()
                                             val ok = com.hamyareman.ir.ui.profile.StudentProfileRepo.save(
@@ -401,6 +443,7 @@ class MainActivity : FragmentActivity() {
         super.onResume()
         val container = (application as HamyarApplication).container
         unlocked.value = !container.lock.isLockedNow()
+        container.lock.onForegrounded()
     }
 
     override fun onNewIntent(intent: android.content.Intent) {
@@ -411,11 +454,22 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun captureSleepIntent(intent: android.content.Intent?) {
+        val destination = intent?.getStringExtra(
+            com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_SLEEP_DESTINATION,
+        )
+        if (!destination.isNullOrBlank()) {
+            com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination = destination
+            intent.removeExtra(
+                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_SLEEP_DESTINATION,
+            )
+            return
+        }
         val sleepAction = com.hamyareman.ir.platform.feature.playback.SleepPlaybackService.OPEN_ACTION
         val extra = intent?.getBooleanExtra(com.hamyareman.ir.platform.feature.playback.SleepPlaybackService.OPEN_EXTRA, false) == true ||
             intent?.getBooleanExtra(com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_OPEN_SLEEP, false) == true
         if (intent?.action == sleepAction || extra) {
-            com.hamyareman.ir.ui.study.SleepLaunch.pending = true
+            com.hamyareman.ir.ui.study.SleepLaunch.pendingDestination =
+                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.SLEEP_LISTEN
         }
     }
 
@@ -443,10 +497,17 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        runCatching { unregisterReceiver(screenOffReceiver) }
+        super.onDestroy()
+    }
+
     override fun onPause() {
         super.onPause()
-        // خروج از اپ = شروع دوباره‌ی تایمر قفل خودکار (اگر کاربر فعالش کرده باشد).
-        (application as HamyarApplication).container.lock.lock()
+        // شروع شمارندهٔ پس‌زمینه؛ قفل فوری قبلی باعث می‌شد انتخاب‌های ۳۰ث/۱د/۵د بی‌اثر باشند.
+        (application as HamyarApplication).container.lock.onBackgrounded()
+        // فضای امن policy و نشست مستقل دارد؛ فقط حالت «قفل صفحه» اینجا بسته می‌شود.
+        com.hamyareman.ir.ui.safespace.SafeSpaceSession.onAppBackgrounded(this)
     }
 
     /** خروج از حساب — صفحه‌ی ورود دوباره نشان داده می‌شود. */

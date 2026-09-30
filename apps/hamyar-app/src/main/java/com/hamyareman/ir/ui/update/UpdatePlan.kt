@@ -1,13 +1,16 @@
 package com.hamyareman.ir.ui.update
 
+import com.hamyareman.ir.BuildConfig
+
 /**
  * منطقِ خالصِ «کانالِ آپدیت» — آگاه از Android و `org.json` نیست تا در تست‌های
  * JVM (بدونِ Robolectric) اجرا شود.
  *
- * تنظیماتِ انتشار در **سرور** است: یک ردیفِ قطعی در جدولِ `app_state` با شناسهٔ
- * `app_release` (`userId = "global"`, `key = "app_release"`, ستونِ `payload` =
- * همان JSON پایین). فایلِ APK در **ریپوی عمومیِ انتشار** میزبانی می‌شود و نشانی‌اش
- * در همین ردیف می‌آید؛ پس برای اجباری‌کردنِ یک نسخه، تغییرِ متنِ پیام یا
+ * تنظیمات انتشار در **سرور** است: هر flavor یک ردیف قطعی و جدا در جدول
+ * `app_state` دارد (`app_release_grade4` … `app_release_grade12`). payload علاوه
+ * بر نسخه، `packageName`، `gradeId` و SHA-256 گواهی امضا را حمل می‌کند. فایل APK
+ * در ریپوی عمومی انتشار میزبانی می‌شود و نشانی‌اش در همان ردیف پایه می‌آید؛ پس
+ * برای اجباری‌کردن یک نسخه، تغییر متن پیام یا
  * رول‌آوتِ تدریجی هیچ APKی لازم نیست — فقط همان ردیف عوض می‌شود.
  *
  * نمونهٔ `payload`:
@@ -23,13 +26,24 @@ data class UpdateInfo(
     val name: String = "",
     /** پایین‌تر از این `versionCode` آپدیت **اجباری** می‌شود؛ `0` = هیچ‌وقت. */
     val min: Int = 0,
+    /** URL قدیمی/عمومی؛ برای payloadهای قبلی fallback منبع خارجی است. */
     val url: String = "",
+    /** APK روی Appwrite برای حالت خارجی. */
+    val externalUrl: String = "",
+    /** همان APK روی آروان برای حالت ایرانی. */
+    val internalUrl: String = "",
     /** حجمِ تقریبیِ فایل (بایت) برای نمایش؛ `0` = نامعلوم. */
     val size: Long = 0L,
     /** هشِ فایلِ APK؛ خالی = سرور هش نداده (بررسی به نصب‌کنندهٔ سیستم واگذار می‌شود). */
     val sha256: String = "",
     val notes: List<String> = emptyList(),
     val chan: String = "stable",
+    /** applicationId مقصد؛ مانع پیشنهاد APK پایهٔ دیگر می‌شود. */
+    val packageName: String = "",
+    /** شناسهٔ پایهٔ مقصد، مثل grade9. */
+    val gradeId: String = "",
+    /** SHA-256 گواهی امضای APK (عمومی است، secret نیست). */
+    val signingSha256: String = "",
     /** درصدِ کاربرانی که این پیام را می‌بینند (۱..۱۰۰). */
     val rollout: Int = 100,
 )
@@ -43,8 +57,8 @@ sealed interface UpdateDecision {
 
 object UpdatePlan {
 
-    /** شناسهٔ ردیفِ تنظیمات در جدولِ `app_state` (هم برای خواندن هم نوشتن). */
-    const val ROW_ID = "app_release"
+    /** ردیف مستقل همان flavor؛ مثال: app_release_grade9. */
+    val ROW_ID: String get() = BuildConfig.UPDATE_ROW_ID
 
     /** کانالِ این بیلد. نسخه‌های `chan` دیگر (مثلاً `beta`) روی این بیلد کاری ندارند. */
     const val CHANNEL = "stable"
@@ -58,12 +72,24 @@ object UpdatePlan {
         name = str(json, "name"),
         min = num(json, "min").toInt(),
         url = str(json, "url"),
+        externalUrl = str(json, "externalUrl"),
+        internalUrl = str(json, "internalUrl"),
         size = num(json, "size"),
         sha256 = str(json, "sha256"),
         notes = arr(json, "notes"),
         chan = str(json, "chan").ifBlank { CHANNEL },
+        packageName = str(json, "packageName"),
+        gradeId = str(json, "gradeId"),
+        signingSha256 = str(json, "signingSha256"),
         rollout = num(json, "rollout").toInt().let { if (it <= 0) 100 else it.coerceAtMost(100) },
     )
+
+    /**
+     * payload قدیمی/اشتباه یا مربوط به پایهٔ دیگر هرگز به مرحلهٔ دانلود نمی‌رسد.
+     * عمداً fail-closed است: نبود packageName/gradeId نیز ناسازگار محسوب می‌شود.
+     */
+    fun isCompatible(info: UpdateInfo, packageName: String, gradeId: String): Boolean =
+        info.packageName == packageName && info.gradeId == gradeId
 
     /**
      * تصمیم بر پایهٔ `versionCode` فعلی و «سطلِ» رول‌آوتِ این نصب.
@@ -72,7 +98,9 @@ object UpdatePlan {
      * نمی‌شود (پس انتشارِ ردیفِ ناقص بی‌خطر است).
      */
     fun decisionFor(current: Int, info: UpdateInfo, bucket: Int = 0): UpdateDecision {
-        if (info.latest <= 0 || info.url.isBlank()) return UpdateDecision.None
+        if (info.latest <= 0 || (info.url.isBlank() && info.externalUrl.isBlank() && info.internalUrl.isBlank())) {
+            return UpdateDecision.None
+        }
         if (info.chan != CHANNEL) return UpdateDecision.None
         if (current >= info.latest) return UpdateDecision.None
         if (info.rollout < 100 && bucket >= info.rollout) return UpdateDecision.None

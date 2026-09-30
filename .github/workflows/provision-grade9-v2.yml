@@ -1,0 +1,37 @@
+name: Provision HM_DB for grade 9 v2.0
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+
+permissions:
+  contents: read
+
+jobs:
+  provision:
+    if: startsWith(github.event.head_commit.message, 'Provision HM_DB grade nine 2.0')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Provision and report a sanitized failure
+        run: |
+          set +e
+          test -n "${APPWRITE_API_KEY:-}" || { echo '::error title=HM_DB provisioning::APPWRITE_API_KEY is empty'; exit 1; }
+          python3 scripts/provision_appwrite_schema.py > /tmp/provision.log 2>&1
+          code=$?
+          cat /tmp/provision.log
+          if [ "$code" -ne 0 ]; then
+            message=$(tail -n 1 /tmp/provision.log | tr -d '\r' | cut -c1-1500)
+            message=${message//'%'/'%25'}; message=${message//$'\n'/'%0A'}; message=${message//$'\r'/'%0D'}
+            echo "::error title=HM_DB provisioning::$message"
+          fi
+          exit "$code"

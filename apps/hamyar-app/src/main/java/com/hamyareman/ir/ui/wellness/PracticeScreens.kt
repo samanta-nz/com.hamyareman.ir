@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.navigation.NavController
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
 import com.hamyareman.ir.ui.hub.HubBody
 import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
@@ -39,6 +42,7 @@ fun PracticeHubScreen(
     accKey: String = "",
     onBack: (() -> Unit)? = null,
     extraTop: @Composable () -> Unit = {},
+    extraBottom: @Composable () -> Unit = {},
 ) {
     val groups = remember(rootIds) { WellnessMenu.groupsOf(rootIds) }
     HubBody {
@@ -49,11 +53,18 @@ fun PracticeHubScreen(
                 HubCoverTile(
                     id = g.id,
                     title = g.title,
-                    subtitle = g.subtitle,
-                    onClick = { nav.layerTo(Screen.PracticeGroup.of(g.id)) },
+                    subtitle = if (g.id == "cl-breath") "تمرین‌های تنفسی تعاملی" else g.subtitle,
+                    onClick = {
+                        when (g.id) {
+                            "cl-breath" -> nav.layerTo(Screen.ContentCategory.of("breath"))
+                            "mf-journal" -> nav.layerTo(Screen.GratitudeJournal.route)
+                            else -> nav.layerTo(Screen.PracticeGroup.of(g.id))
+                        }
+                    },
                 )
             },
         )
+        extraBottom()
     }
 }
 
@@ -135,6 +146,20 @@ fun PracticeItemScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            val staticPlaceholder = move == null && item.route.isBlank() && (body.isNotBlank() || steps.isNotEmpty())
+            if (staticPlaceholder) {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("این بخش به‌زودی فعال می‌شود", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "این مقصد هنوز محتوای HTML یا ابزار اجرایی ندارد. به‌محض آماده‌شدن نسخهٔ واقعی، همین‌جا در دسترس قرار می‌گیرد.",
+                            style = AppTypography.pageBody.style,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                return@Column
+            }
             if (!session) {
                 if (body.isNotBlank()) {
                     Text(body, style = AppTypography.pageBody.style)
@@ -187,6 +212,7 @@ fun BetweenLessonsHubScreen(nav: NavController, onBack: () -> Unit) {
         headerSlot = "hub.between.header",
         accKey = "acc_between",
         onBack = onBack,
+        extraTop = { BackgroundMusicHost() },
     )
 }
 

@@ -139,15 +139,17 @@ class WellnessCatalogTest {
     }
 
     @Test
-    fun `referenceImageUrl points to wellness-media bucket`() {
+    fun `referenceImageUrl keeps lesson media separate from menu covers`() {
+        // پوسترهای yga/spo فقط برای کاشی منو هستند؛ نمایشگر حرکت باید همان رسانهٔ
+        // آموزشی wellness-media را بخواند و هیچ‌وقت asset منو را داخل محتوا تزریق نکند.
         WellnessCatalog.all.forEach { move ->
-            assertTrue(
-                "move ${move.slug} باید referenceImageUrl غیرخالی داشته باشد",
-                move.referenceImageUrl.isNotBlank(),
-            )
             assertTrue(
                 "move ${move.slug} باید به wellness-media اشاره کند، ولی url=${move.referenceImageUrl}",
                 move.referenceImageUrl.contains("wellness-media"),
+            )
+            assertTrue(
+                "move ${move.slug} نباید از practice-covers در محتوای تمرین استفاده کند",
+                !move.referenceImageUrl.contains("practice-covers"),
             )
         }
     }

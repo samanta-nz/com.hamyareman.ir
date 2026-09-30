@@ -5,29 +5,20 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * نقشه‌ی رسانه‌های درس‌ها — صوت/ویدیوی هر پک از باکت عمومی Appwrite.
- * ریاضی نهم: نام جدید روی دیسک (`ryazif01d01.mp3` / `C905f01d01.pdf`)؛
- * اگر در باکت نبود، نام قدیمی `*_AUDIO.mp3` / `*_BOOK.pdf` امتحان می‌شود.
- */
+/** نقشهٔ رسانه‌های کتاب و صوت روی سرور داخلی و شناسهٔ فضای ذخیره‌سازی جاری. */
 object StudyMedia {
-    const val BUCKET = "6aa1eaae00303400117b"
-    private const val PROJECT = "6a9d59e3002751cc3ea8"
-    private const val ENDPOINT = "https://fra.cloud.appwrite.io/v1"
+    const val BUCKET = "6abb564d00155cc56d65"
 
     fun videoIds(packId: String): List<String> =
         listOf("${packId.replace("_", "-")}-V01.mp4")
 
-    /** نشانی خام Appwrite — مبدأِ حقیقت (کاوش وجود فایل و کاندیداهای قدیمی). */
-    fun externalUrl(fileId: String): String =
-        "$ENDPOINT/storage/buckets/$BUCKET/files/$fileId/view?project=$PROJECT"
+    fun externalUrl(fileId: String): String = ServerResolver.external(fileId)
 
-    /**
-     * نشانی دوآدرسی: طبق «تنظیمات سرور» از سرور ایرانی (کلید catalog.json) یا Appwrite.
-     * فایل‌های بدون کلید داخلی (آواتار، ویدیو، سفارشی‌ها) همیشه خارجی می‌مانند.
-     */
-    fun viewUrl(fileId: String): String =
-        ServerResolver.pick(fileId, ContentCatalog.keyFor(fileId))
+    // نسخهٔ دوم فعلاً برای HTMLهای تعاملی است؛ کتاب و صوت مستقیماً از سرور داخلی می‌آیند.
+    fun candidateUrls(fileId: String): List<String> =
+        ContentCatalog.keyFor(fileId)?.let { listOf(ServerResolver.internal(it)) }.orEmpty()
+
+    fun viewUrl(fileId: String): String = candidateUrls(fileId).firstOrNull().orEmpty()
 
     fun candidateIds(fileId: String): List<String> {
         if (fileId.isBlank()) return emptyList()
@@ -75,9 +66,9 @@ object StudyMedia {
         return fileId
     }
 
-    fun existsOnServer(fileId: String): Boolean {
-        return runCatching {
-            val conn = (URL(externalUrl(fileId)).openConnection() as HttpURLConnection).apply {
+    fun existsOnServer(fileId: String): Boolean = candidateUrls(fileId).any { url ->
+        runCatching {
+            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
                 connectTimeout = 8000
                 readTimeout = 8000
                 instanceFollowRedirects = true

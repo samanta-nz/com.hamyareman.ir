@@ -18,6 +18,11 @@
 -keep class org.webrtc.** { *; }
 -dontwarn org.webrtc.**
 
+# --- Google Credential Manager ---
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** { *; }
+-keep class com.google.android.libraries.identity.googleid.** { *; }
+
 # --- شبکه ---
 -dontwarn okhttp3.**
 -dontwarn okio.**

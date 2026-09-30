@@ -34,10 +34,12 @@ import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.feature.playback.PlaybackController
 import com.hamyareman.ir.platform.feature.playback.SleepPlaybackService
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
 import kotlinx.coroutines.launch
 
 object SleepLaunch {
-    @Volatile var pending: Boolean = false
+    /** state است تا onNewIntent در حالی که اپ باز است هم ناوبری را فوراً اجرا کند. */
+    var pendingDestination by mutableStateOf<String?>(null)
 }
 
 data class SleepTrack(val id: String, val title: String, val subtitle: String, val uri: String)
@@ -70,6 +72,7 @@ fun SleepNightScreen(onBack: () -> Unit) {
 
     Column(Modifier.fillMaxSize()) {
         AppTopBar("بشنو و بخواب", onBack)
+        BackgroundMusicHost()
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -138,7 +141,7 @@ private fun TrackRow(t: SleepTrack, playing: Boolean, onPlay: () -> Unit) {
             Text(t.title)
             Text(t.subtitle, style = MaterialTheme.typography.bodySmall)
             if (t.uri.isBlank()) {
-                Text("فایل هنوز روی سرور نیست.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = AppTypography.pageBody.style)
+                Text("این بخش به‌زودی فعال می‌شود", color = MaterialTheme.colorScheme.onSurfaceVariant, style = AppTypography.pageBody.style)
             }
         }
     }

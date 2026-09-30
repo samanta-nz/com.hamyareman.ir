@@ -1,1 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- کاربر باید این دسترسی ویژه را از صفحهٔ «مزاحم نشو» صریحاً تأیید کند. -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+
+    <application>
+        <receiver
+            android:name=".QuietHoursReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

@@ -56,10 +56,4 @@
         android:strokeWidth="1.4"
         android:strokeColor="#93C5FD"
         android:fillColor="#00000000" />
-    <!-- خط قرمزِ حاشیه -->
-    <path
-        android:pathData="M40,8v220"
-        android:strokeWidth="1.2"
-        android:strokeColor="#FCA5A5"
-        android:fillColor="#00000000" />
 </vector>

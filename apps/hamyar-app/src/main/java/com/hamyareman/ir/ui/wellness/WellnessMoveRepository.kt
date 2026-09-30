@@ -27,7 +27,7 @@ class WellnessMoveRepository(
         if (provider.isConfigured) {
             when (val res = tables.list(TableIds.WELLNESS_MOVES, listOf("limit(200)"))) {
                 is AppResult.Ok -> {
-                    val parsed = res.value.mapNotNull { it.toWellnessMove() }
+                    val parsed = res.value.mapNotNull { it.toWellnessMove() }.map(::withMoveArtwork)
                     if (parsed.isNotEmpty()) {
                         writeCache(parsed)
                         return parsed
@@ -36,7 +36,16 @@ class WellnessMoveRepository(
                 is AppResult.Err -> { /* ignore */ }
             }
         }
-        return readCache().ifEmpty { WellnessCatalog.all }
+        return readCache().map(::withMoveArtwork).ifEmpty { WellnessCatalog.all }
+    }
+
+    /** یوگا و ورزش همیشه عکس اختصاصی همان حرکت را از پوشهٔ هم‌نام می‌گیرند. */
+    private fun withMoveArtwork(move: WellnessMove): WellnessMove {
+        if (move.category !in setOf(WellnessMove.Category.YOGA, WellnessMove.Category.EXERCISE)) {
+            return move
+        }
+        val bundled = WellnessCatalog.bySlug(move.slug)?.referenceImageUrl.orEmpty()
+        return if (bundled.isBlank()) move else move.copy(referenceImageUrl = bundled)
     }
 
     suspend fun bySlug(slug: String): WellnessMove? = list().firstOrNull { it.slug == slug }

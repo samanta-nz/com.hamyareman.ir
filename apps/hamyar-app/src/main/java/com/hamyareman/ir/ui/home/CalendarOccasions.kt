@@ -37,6 +37,7 @@ data class CalEvent(
 ) {
     val kind: OccasionKind
         get() = when (category) {
+            "تعطیل رسمی", "تعطیل مدرسه" -> OccasionKind.OFFICIAL
             "جهانی" -> OccasionKind.WORLD
             "مذهبی قمری" -> OccasionKind.RELIGIOUS
             "ملی باستانی ایرانی" -> OccasionKind.ANCIENT
@@ -131,10 +132,9 @@ object CalendarOccasions {
     fun allOn(ctx: Context, j: JalaliDate.Jalali, lunarOffset: Int = CalendarPrefs.lunarOffset(ctx)): List<Occasion> {
         val iso = JalaliDate.toGregorianIso(j) ?: return emptyList()
         val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: return emptyList()
-        val extra = if (date.dayOfWeek == DayOfWeek.FRIDAY)
-            listOf(Occasion("جمعه", OccasionKind.OFFICIAL, true))
-        else emptyList()
-        return extra + matching(ctx, date, lunarOffset).flatMap { e ->
+        // پنجشنبه/جمعه فقط «وضعیت هفته» هستند، نه مناسبت تقویمی. متن رنگی
+        // آن‌ها مستقیماً در داشبورد ساخته می‌شود و وارد فهرست مناسبت‌ها نمی‌شود.
+        return matching(ctx, date, lunarOffset).flatMap { e ->
             val base = Occasion(e.title, e.kind, e.holiday)
             if (e.holiday) listOf(Occasion(e.title, OccasionKind.OFFICIAL, true), base) else listOf(base)
         }
@@ -169,13 +169,15 @@ object CalendarOccasions {
         for (d in 1..dim) {
             val iso = JalaliDate.toGregorianIso(JalaliDate.Jalali(year, month, d)) ?: continue
             val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: continue
-            matching(ctx, date, lunarOffset).forEach { e ->
+            val matched = matching(ctx, date, lunarOffset)
+            matched.forEach { e ->
                 val kinds = buildList {
                     add(e.kind)
                     if (e.holiday) add(OccasionKind.OFFICIAL)
                 }
                 if (kinds.any { it in enabled }) out += d to e
             }
+            // روز خالی پنجشنبه/جمعه عمداً به «مناسبات این ماه» تزریق نمی‌شود.
         }
         return out
     }

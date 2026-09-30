@@ -1,0 +1,171 @@
+name: Arena storage maintenance
+
+on:
+  push:
+    branches: [arena/01a0ea05-com-hamyareman-ir]
+
+permissions:
+  contents: write
+
+jobs:
+  maintain:
+    if: startsWith(github.event.head_commit.message, 'Run authenticated storage maintenance')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile and test grade-aware app
+        run: |
+          set +e
+          ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace > /tmp/compile.log 2>&1
+          code=$?
+          if [ "$code" -ne 0 ]; then
+            mkdir -p docs/maintenance/latest
+            tail -n 500 /tmp/compile.log > docs/maintenance/latest/compile-failure.log
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/maintenance/latest/compile-failure.log
+            git commit -m "Store maintenance compile failure"
+            git push origin HEAD:arena/01a0ea05-com-hamyareman-ir
+          fi
+          exit "$code"
+
+      - name: Install maintenance dependencies
+        run: pip install --quiet requests boto3 cryptography
+
+      - name: Publish one-time credential sealing key
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hamyar-maintenance maintenance-handshake
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 \
+            -out /tmp/hamyar-maintenance/private.pem 2>/dev/null
+          openssl pkey -in /tmp/hamyar-maintenance/private.pem -pubout \
+            -out "maintenance-handshake/public-${GITHUB_RUN_ID}.pem" 2>/dev/null
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maintenance-handshake
+          git commit -m "Publish one-time maintenance sealing key"
+          git push origin HEAD:arena/01a0ea05-com-hamyareman-ir
+
+      - name: Open one-time sealed credentials in runner memory
+        run: |
+          set -euo pipefail
+          bundle=/tmp/hamyar-maintenance/credentials.sealed.json
+          bundle_path="maintenance-handshake/credentials-${GITHUB_RUN_ID}.sealed.json"
+          remote_ref=refs/remotes/origin/arena/01a0ea05-com-hamyareman-ir
+          for _ in $(seq 1 180); do
+            git fetch --quiet origin refs/heads/arena/01a0ea05-com-hamyareman-ir:"$remote_ref"
+            if git cat-file -e "$remote_ref:$bundle_path" 2>/dev/null; then
+              git show "$remote_ref:$bundle_path" > "$bundle"
+              break
+            fi
+            sleep 5
+          done
+          test -s "$bundle"
+          python3 - <<'PY'
+          import base64,json,os
+          from pathlib import Path
+          from cryptography.hazmat.primitives import hashes,serialization
+          from cryptography.hazmat.primitives.asymmetric import padding
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+          env=json.loads(Path('/tmp/hamyar-maintenance/credentials.sealed.json').read_text())
+          private=serialization.load_pem_private_key(Path('/tmp/hamyar-maintenance/private.pem').read_bytes(),password=None)
+          key=private.decrypt(base64.b64decode(env['sealedKey']),padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+          plain=AESGCM(key).decrypt(base64.b64decode(env['nonce']),base64.b64decode(env['ciphertext']),b'hamyar-read-only-audit-v1')
+          values=json.loads(plain)
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+            for name in ('APPWRITE_API_KEY','ARVAN_ACCESS_KEY','ARVAN_SECRET_KEY','HTML_MEDIA_KEY_B64'):
+              value=str(values[name]).replace('\n','')
+              out.write(f'{name}={value}\n')
+          PY
+
+      - name: Mirror, harden, register platforms, and verify
+        id: apply
+        env:
+          APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+          APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
+          APPWRITE_BUCKET_ID: 6aa1eaae00303400117b
+          APPWRITE_DATABASE_ID: ZahraDB
+          ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
+          ARVAN_REGION: ir-thr-at1
+          ARVAN_BUCKET: hamyar-e-man
+          ARVAN_PUBLIC: https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir
+        run: |
+          set +e
+          mkdir -p maintenance-output audit-output
+          python3 scripts/sync_appwrite_to_arvan.py 2>&1 | tee maintenance-output/mirror.log
+          mirror=${PIPESTATUS[0]}
+          if [ "$mirror" -eq 0 ]; then
+            python3 scripts/harden_content_storage.py --apply 2>&1 | tee maintenance-output/hardening.log
+            harden=${PIPESTATUS[0]}
+          else
+            harden=99
+            echo 'hardening skipped because mirror failed' | tee maintenance-output/hardening.log
+          fi
+          python3 scripts/sync_appwrite_android_platforms.py --apply 2>&1 | tee maintenance-output/platforms.log
+          platforms=${PIPESTATUS[0]}
+          python3 scripts/verify_content_mirror.py --output maintenance-output/mirror-verification.json 2>&1 | tee maintenance-output/verification.log
+          verify=${PIPESTATUS[0]}
+          python3 scripts/audit_content_servers.py --output audit-output 2>&1 | tee maintenance-output/audit.log
+          audit=${PIPESTATUS[0]}
+          python3 - "$mirror" "$harden" "$platforms" "$verify" "$audit" <<'PY'
+          import json,sys
+          names=('mirror','harden','platforms','verify','audit')
+          result={name:int(value) for name,value in zip(names,sys.argv[1:])}
+          result['success']=all(value==0 for value in result.values())
+          open('maintenance-output/result.json','w').write(json.dumps(result,indent=2))
+          print(json.dumps(result))
+          raise SystemExit(0 if result['success'] else 1)
+          PY
+
+      - name: Destroy credential material
+        if: always()
+        run: |
+          shred -u /tmp/hamyar-maintenance/private.pem /tmp/hamyar-maintenance/credentials.sealed.json 2>/dev/null || true
+          rm -rf /tmp/hamyar-maintenance
+
+      - name: Upload maintenance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authenticated-storage-maintenance
+          path: |
+            maintenance-output
+            audit-output
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Persist sanitized evidence and remove handshake
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin arena/01a0ea05-com-hamyareman-ir
+          rm -rf maintenance-handshake
+          mkdir -p docs/maintenance/latest
+          cp -f maintenance-output/result.json docs/maintenance/latest/result.json 2>/dev/null || true
+          cp -f maintenance-output/mirror-verification.json docs/maintenance/latest/mirror-verification.json 2>/dev/null || true
+          cp -f audit-output/summary.md docs/maintenance/latest/audit-summary.md 2>/dev/null || true
+          git add -A docs/maintenance/latest
+          if git ls-files maintenance-handshake | grep -q .; then
+            git add -A maintenance-handshake
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Store storage maintenance verification"
+            git push origin HEAD:arena/01a0ea05-com-hamyareman-ir
+          fi

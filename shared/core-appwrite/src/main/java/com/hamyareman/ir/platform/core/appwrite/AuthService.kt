@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import io.appwrite.ID
 import io.appwrite.Permission
 import io.appwrite.Role
+import io.appwrite.enums.IdTokenProvider
 import io.appwrite.enums.OAuthProvider
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.services.Account
@@ -52,6 +53,7 @@ interface AuthService {
 
     suspend fun signUp(name: String, email: String, password: String): AppResult<AuthUser>
     suspend fun signIn(email: String, password: String): AppResult<AuthUser>
+    suspend fun signInWithGoogleIdToken(idToken: String): AppResult<AuthUser>
     suspend fun signInWithGoogle(activity: ComponentActivity): AppResult<AuthUser>
     suspend fun signInAsGuest(): AppResult<AuthUser>
     suspend fun logout(): AppResult<Unit>
@@ -84,6 +86,12 @@ interface AuthService {
         currentPassword: String? = null,
     ): AppResult<String>
 
+    /** برای حسابی که با Google ساخته شده، یک رمز اختیاری روی همان ایمیل می‌گذارد. */
+    suspend fun setPasswordForCurrentEmail(newPassword: String): AppResult<Unit>
+
+    /** روش آخرین ورود موفق؛ برای فرم پروفایل یک‌باره روی نصب مجدد هم نگه داشته می‌شود. */
+    fun lastSignInWasGoogle(): Boolean
+
     suspend fun currentUsername(): String?
 
     /** فرستادنِ ایمیلِ بازیابیِ رمز به آدرسِ همین نام کاربری/ایمیل. */
@@ -91,6 +99,10 @@ interface AuthService {
 
     /** کامل‌کردنِ بازیابی با لینکِ داخلِ ایمیل (userId و secret از همان لینک خوانده می‌شود). */
     suspend fun completeRecovery(link: String, newPassword: String): AppResult<Unit>
+
+    /** ارسال و تکمیل تأیید ایمیل؛ صفحهٔ تأیید در UI از ثبت‌نام جداست. */
+    suspend fun requestEmailVerification(): AppResult<Unit>
+    suspend fun completeEmailVerification(link: String): AppResult<Unit>
 
     /** فرستادنِ کد ۶ رقمی یک‌بارمصرف به ایمیلِ همان نام کاربری/ایمیل. */
     suspend fun sendOtp(identifier: String): AppResult<Unit>
@@ -220,7 +232,7 @@ class AppwriteAuthService(
             runCatching { account.deleteSession("current") }
             account.create(userId = ID.unique(), email = email, password = password, name = name)
             account.createEmailPasswordSession(email = email, password = password)
-            afterSession()
+            afterSession().also { if (it is AppResult.Ok) markAuthMethod(google = false) }
         }.getOrElse { AppResult.Err(mapAuth(it, "رمز یا ایمیل نامعتبر است.", "این ایمیل قبلاً ثبت شده.")) }
     }
 
@@ -244,7 +256,12 @@ class AppwriteAuthService(
         return runCatching {
             runCatching { account.deleteSession("current") }
             account.createEmailPasswordSession(email = email, password = password)
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = false)
+                    adoptUsername(it.value.id, email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "نام کاربری/ایمیل یا رمز عبور درست نیست.")) }
     }
 
@@ -270,6 +287,7 @@ class AppwriteAuthService(
             account.createEmailPasswordSession(email = email, password = password)
             val res = afterSession()
             if (res is AppResult.Ok) {
+                markAuthMethod(google = false)
                 publishUsername(res.value.id, u, email)
                 store?.putString(KEY_USERNAME, u)
                 remember(res.value.copy(username = u))
@@ -282,12 +300,24 @@ class AppwriteAuthService(
         return AppResult.Err(AppError.Auth("ورود مهمان حذف شده است. با نام کاربری یا ایمیل وارد شو."))
     }
 
-    /**
-     * ورود با گوگل (OAuth2): مرورگر/کروم‌تب باز می‌شود و برگشت با اسکیم
-     * `appwrite-callback-<PROJECT_ID>` به همین اپ می‌آید (intent-filter در Manifest).
-     * برگشت توسط SDK روی همان activity شنود می‌شود، پس [activity] باید همان
-     * اکتیویتیِ زنده‌ی فعلی باشد.
-     */
+    /** ورود native: Credential Manager توکن گوگل را می‌گیرد و Appwrite آن را اعتبارسنجی می‌کند. */
+    override suspend fun signInWithGoogleIdToken(idToken: String): AppResult<AuthUser> {
+        if (!provider.isConfigured) return AppResult.Ok(localUser)
+        if (idToken.isBlank()) return AppResult.Err(AppError.Validation("توکن ورود گوگل دریافت نشد."))
+        setRemember(true)
+        return runCatching {
+            runCatching { account.deleteSession("current") }
+            account.createIdTokenSession(provider = IdTokenProvider.GOOGLE, idToken = idToken)
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = true)
+                    adoptUsername(it.value.id, it.value.email)
+                }
+            }
+        }.getOrElse { AppResult.Err(mapAuth(it, "ورود امن با گوگل ناموفق بود.")) }
+    }
+
+    /** مسیر مرورگری قدیمی فقط برای سازگاری داخلی؛ UI نسخهٔ ۲٫۰ از native استفاده می‌کند. */
     override suspend fun signInWithGoogle(activity: ComponentActivity): AppResult<AuthUser> {
         if (!provider.isConfigured) return AppResult.Ok(localUser)
         setRemember(true)
@@ -298,7 +328,12 @@ class AppwriteAuthService(
             // تمام می‌کنیم تا OAuth همیشه از صفر شروع کند و هر اکانت گوگل، کاربر خودش را بسازد.
             runCatching { account.deleteSession("current") }
             account.createOAuth2Session(activity = activity, provider = OAuthProvider.GOOGLE)
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, it.value.email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = true)
+                    adoptUsername(it.value.id, it.value.email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "ورود با گوگل ناموفق بود.")) }
     }
 
@@ -353,6 +388,30 @@ class AppwriteAuthService(
         return AppResult.Ok(u)
     }
 
+    override suspend fun setPasswordForCurrentEmail(newPassword: String): AppResult<Unit> {
+        if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
+        val password = newPassword.trim()
+        if (password.isEmpty()) return AppResult.Ok(Unit)
+        if (password.length < 8) {
+            return AppResult.Err(AppError.Validation("رمز باید حداقل ۸ کاراکتر باشد."))
+        }
+        return runCatching {
+            // حسابی که با Google ساخته شده رمز قبلی ندارد؛ Appwrite در این حالت
+            // oldPassword را اختیاری می‌داند و رمز روی همان ایمیل حساب ثبت می‌شود.
+            account.updatePassword(password)
+            AppResult.Ok(Unit)
+        }.getOrElse {
+            AppResult.Err(mapAuth(it, "ثبت رمز برای این ایمیل انجام نشد؛ از بازیابی رمز استفاده کن."))
+        }
+    }
+
+    override fun lastSignInWasGoogle(): Boolean =
+        store?.getString(KEY_AUTH_METHOD) == AUTH_METHOD_GOOGLE
+
+    private fun markAuthMethod(google: Boolean) {
+        store?.putString(KEY_AUTH_METHOD, if (google) AUTH_METHOD_GOOGLE else AUTH_METHOD_EMAIL)
+    }
+
     override suspend fun currentUsername(): String? {
         cachedUsername()?.let { return it }
         if (!provider.isConfigured) return null
@@ -396,6 +455,27 @@ class AppwriteAuthService(
         }.getOrElse { AppResult.Err(mapAuth(it, "لینکِ بازیابی نامعتبر یا منقضی است (یک ساعت اعتبار دارد).")) }
     }
 
+    override suspend fun requestEmailVerification(): AppResult<Unit> {
+        if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
+        return runCatching {
+            account.createVerification(url = VERIFY_URL)
+            AppResult.Ok(Unit)
+        }.getOrElse { AppResult.Err(mapAuth(it, "فرستادن ایمیل تأیید ناموفق بود.")) }
+    }
+
+    override suspend fun completeEmailVerification(link: String): AppResult<Unit> {
+        if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
+        val userId = extractParam(link, "userId")
+        val secret = extractParam(link, "secret")
+        if (userId.isNullOrBlank() || secret.isNullOrBlank()) {
+            return AppResult.Err(AppError.Validation("لینک کامل تأیید را از ایمیل کپی کن."))
+        }
+        return runCatching {
+            account.updateVerification(userId = userId, secret = secret)
+            AppResult.Ok(Unit)
+        }.getOrElse { AppResult.Err(mapAuth(it, "لینک تأیید نامعتبر یا منقضی است.")) }
+    }
+
     override suspend fun sendOtp(identifier: String): AppResult<Unit> {
         if (!provider.isConfigured) return AppResult.Err(AppError.Auth())
         val email = emailForIdentifier(identifier)
@@ -421,7 +501,12 @@ class AppwriteAuthService(
         return runCatching {
             runCatching { account.deleteSession("current") }
             account.createSession(userId = uid, secret = otp.trim())
-            afterSession().also { if (it is AppResult.Ok) adoptUsername(it.value.id, it.value.email) }
+            afterSession().also {
+                if (it is AppResult.Ok) {
+                    markAuthMethod(google = false)
+                    adoptUsername(it.value.id, it.value.email)
+                }
+            }
         }.getOrElse { AppResult.Err(mapAuth(it, "کد یک‌بارمصرف درست نیست یا منقضی شده.")) }
     }
 
@@ -609,7 +694,7 @@ class AppwriteAuthService(
     }
 
     private fun forgetRole() {
-        store?.remove(KEY_ROLE, KEY_USER_ID, KEY_PROFILE, KEY_USERNAME, KEY_REMEMBER, KEY_OTP_UID)
+        store?.remove(KEY_ROLE, KEY_USER_ID, KEY_PROFILE, KEY_USERNAME, KEY_REMEMBER, KEY_OTP_UID, KEY_AUTH_METHOD)
     }
 
     /** نقش کش‌شده برای نمایش فوری UI قبل از رسیدن پاسخ سرور. */
@@ -692,14 +777,13 @@ class AppwriteAuthService(
         const val KEY_REMEMBER = "auth_remember"
         const val KEY_USERNAME = "auth_username"
         const val KEY_OTP_UID = "auth_otp_uid"
+        const val KEY_AUTH_METHOD = "auth_method"
+        private const val AUTH_METHOD_GOOGLE = "google"
+        private const val AUTH_METHOD_EMAIL = "email"
 
-        /**
-         * نشانیِ لینکِ بازیابیِ رمز. Appwrite فقط نشانی‌هایی را قبول می‌کند که
-         * میزبانشان به‌عنوان یک پلتفرم در کنسول ثبت شده باشد (میزبانِ
-         * `hamyareman.ir` ثبت شده است). کاربر لینک را از ایمیل کپی و در اپ جای‌گذاری
-         * می‌کند؛ `userId` و `secret` از همان لینک خوانده می‌شود.
-         */
-        const val RECOVERY_URL = "https://hamyareman.ir/recovery"
+        /** Deep links متعلق به Android Platform پروژه؛ هیچ دامنهٔ غیرفعالی استفاده نمی‌شود. */
+        const val RECOVERY_URL = "appwrite-callback-6abb134a002025222005://recovery"
+        const val VERIFY_URL = "appwrite-callback-6abb134a002025222005://verify"
 
         private const val REFRESH_THROTTLE_MS = 5 * 60 * 1000L
         private val USERNAME_REGEX = Regex("^[a-z0-9_]{3,24}$")

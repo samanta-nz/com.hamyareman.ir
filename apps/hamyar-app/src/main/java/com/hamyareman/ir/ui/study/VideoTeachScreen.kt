@@ -1,5 +1,6 @@
 package com.hamyareman.ir.ui.study
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,7 +74,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     val fileId = remember(packId) { StudyMedia.videoIds(packId).firstOrNull() ?: "${packId.replace("_", "-")}-V01.mp4" }
 
     // --- تمام‌صفحه: مخفی‌کردن نوار وضعیت/ناوبری تا وقتی صفحه باز است ---
-    val activity = remember { context as? android.app.Activity }
+    val activity = LocalActivity.current
     // v1.19: دکمه‌ی فول‌اسکرین خود پلیر — چرخش افقی و حذف کنترل‌های بالایی
     var fullscreen by remember { mutableStateOf(false) }
     val startedLandscape = remember {
@@ -113,10 +114,12 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     var cacheTick by remember { mutableIntStateOf(0) }
     var msg by remember { mutableStateOf<String?>(null) }
 
+    val remoteUris = StudyMedia.candidateUrls(fileId)
+    var remoteIndex by remember(fileId) { mutableIntStateOf(0) }
     val uri = if (cacheTick >= 0 && useLocal && MediaVault.isCached(context, fileId)) {
         MediaVault.localUrl(context, fileId)
     } else {
-        StudyMedia.viewUrl(fileId)
+        remoteUris.getOrElse(remoteIndex) { remoteUris.first() }
     }
 
     // --- سرعت (قفل تا اتمام دوره‌ی اول — همان قانون صوت) ---
@@ -160,6 +163,16 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
                 if (playbackState == Player.STATE_ENDED) {
                     TeachStats.markTrackDone(context, packId, fileId)
                     store.putString("vid_${packId}_pos", "0")
+                }
+            }
+
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                if (!useLocal && remoteIndex < remoteUris.lastIndex) {
+                    posMs = p.currentPosition.coerceAtLeast(posMs)
+                    remoteIndex++
+                    msg = "سرور سریع‌تر پاسخ نداد؛ پخش از سرور دوم ادامه پیدا می‌کند."
+                } else {
+                    msg = "پخش آنلاین ممکن نشد؛ اتصال یا سرور انتخاب‌شده را بررسی کنید."
                 }
             }
 
@@ -302,7 +315,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
                         scope.launch {
                             try {
                                 withContext(Dispatchers.IO) {
-                                    MediaVault.downloadEncrypted(context, StudyMedia.viewUrl(fileId), fileId) { p, t -> progressPct = if (t > 0) ((p * 100) / t).toInt() else -1 }
+                                    MediaVault.downloadEncrypted(context, StudyMedia.candidateUrls(fileId), fileId) { p, t -> progressPct = if (t > 0) ((p * 100) / t).toInt() else -1 }
                                 }
                                 downloading = false; cacheTick++; useLocal = true
                                 msg = "دانلود شد — پخش محلی رمزشده."

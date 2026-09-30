@@ -141,7 +141,7 @@ class CallEngine(
                 kind = effectiveKind,
                 phase = CallPhase.Failed,
                 remoteLabel = remoteLabel,
-                notice = "تماس آنلاین فقط با Appwrite پیکربندی‌شده و پیوند فعال کار می‌کند. از «زنگ با تلفن معمولی» استفاده کن.",
+                notice = "تماس آنلاین فقط با سرور خارجی و پیوند فعال کار می‌کند. از «زنگ با تلفن معمولی» استفاده کن.",
             )
             return
         }

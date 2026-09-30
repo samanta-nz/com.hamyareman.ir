@@ -1,31 +1,32 @@
-name: Sync Appwrite → Arvan
+name: Sync Appwrite → Arvan atomically
 
 on:
   workflow_dispatch:
     inputs:
       force:
-        description: "آپلود مجدد حتی اگر حجم یکی باشد"
-        type: boolean
-        default: false
-      skip_pdf:
-        description: "PDF نفرست"
+        description: 'بازنشر حتی وقتی hash یکسان است'
         type: boolean
         default: false
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: '0 */6 * * *'
+
+# دو mirror هم‌زمان هرگز روی staging/final کار نکنند.
+concurrency:
+  group: hamyar-content-mirror
+  cancel-in-progress: false
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Install
         run: pip install --quiet requests boto3
-      - name: Sync to Arvan
+      - name: Atomic mirror
         env:
           APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
           APPWRITE_PROJECT_ID: 6a9d59e3002751cc3ea8
@@ -37,7 +38,15 @@ jobs:
           ARVAN_REGION: ir-thr-at1
           ARVAN_BUCKET: hamyar-e-man
         run: |
-          FLAGS=""
-          if [ "${{ inputs.force }}" = "true" ]; then FLAGS="$FLAGS --force"; fi
-          if [ "${{ inputs.skip_pdf }}" = "true" ]; then FLAGS="$FLAGS --skip-pdf"; fi
-          python3 scripts/sync_appwrite_to_arvan.py $FLAGS
+          set -euo pipefail
+          FLAGS=()
+          if [ "${{ inputs.force }}" = "true" ]; then FLAGS+=(--force); fi
+          python3 scripts/sync_appwrite_to_arvan.py "${FLAGS[@]}"
+          python3 scripts/verify_content_mirror.py --output mirror-verification.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: content-mirror-verification
+          path: mirror-verification.json
+          if-no-files-found: warn
+          retention-days: 14

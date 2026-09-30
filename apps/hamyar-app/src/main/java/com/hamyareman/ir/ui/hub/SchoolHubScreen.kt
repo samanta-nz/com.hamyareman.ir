@@ -64,8 +64,8 @@ fun SchoolHubScreen(nav: NavController) {
             slotId = "hub.school.group.books",
         ) {
             val ctx = LocalContext.current
-            books.chunked(2).forEach { pair ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            books.chunked(3).forEach { pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
                     pair.forEach { book ->
                         val cover = remember(book.bookCode) {
                             com.hamyareman.ir.ui.study.PdfSafe.decodeCover(ctx, book.bookCode)
@@ -78,30 +78,33 @@ fun SchoolHubScreen(nav: NavController) {
                                     Image(
                                         bitmap = cover.asImageBitmap(),
                                         contentDescription = "کاور ${book.title}",
-                                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                                        modifier = Modifier.fillMaxWidth().height(84.dp),
                                         contentScale = ContentScale.Fit,
                                     )
                                 }
-                                Column(Modifier.padding(10.dp)) {
-                                    Text(
-                                        book.title,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        maxLines = 2,
-                                        fontFamily = com.hamyareman.ir.ui.appearance.TypeSlots.family("hub.school.item.book"),
-                                        fontSize = com.hamyareman.ir.ui.appearance.TypeSlots.size("hub.school.item.book", 13),
+                                Column(Modifier.fillMaxWidth().height(56.dp).padding(6.dp)) {
+                                    AutoShrinkTileText(
+                                        text = book.title,
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontFamily = com.hamyareman.ir.ui.appearance.TypeSlots.family("hub.school.item.book"),
+                                            fontSize = com.hamyareman.ir.ui.appearance.TypeSlots.size("hub.school.item.book", 13),
+                                        ),
+                                        maxLines = 1,
                                     )
-                                    Text(
-                                        "${lessonCount(book)} درس",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontFamily = com.hamyareman.ir.ui.appearance.TypeSlots.family("hub.school.item.book"),
-                                        fontSize = com.hamyareman.ir.ui.appearance.TypeSlots.size("hub.school.item.book", 11),
+                                    AutoShrinkTileText(
+                                        text = "${lessonCount(book)} درس",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontFamily = com.hamyareman.ir.ui.appearance.TypeSlots.family("hub.school.item.book"),
+                                            fontSize = com.hamyareman.ir.ui.appearance.TypeSlots.size("hub.school.item.book", 11),
+                                        ),
+                                        maxLines = 2,
                                     )
                                 }
                             }
                         }
                     }
-                    if (pair.size == 1) Spacer(Modifier.weight(1f))
+                    repeat(3 - pair.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         }
