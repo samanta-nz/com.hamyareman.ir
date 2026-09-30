@@ -8,8 +8,8 @@
     "bucket": "c539776"
   },
   "sourceObjects": 260,
-  "copied": 260,
-  "skipped": 0,
+  "copied": 0,
+  "skipped": 260,
   "failed": 0,
   "destObjects": 0,
   "destBytes": 0
