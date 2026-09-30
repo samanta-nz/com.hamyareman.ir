@@ -1,0 +1,103 @@
+name: APK urls
+
+# استخراج نشانی واقعی هر فایل از دل APK منتشرشده — بدون بیلد.
+# فقط دانلود asset از ریلیز ci-apk + خواندن assets و استخر رشته‌های DEX.
+#
+# راه‌اندازی: کامیتی که پیامش با «APK urls» شروع شود، یا اجرای دستی.
+
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+    inputs:
+      asset:
+        description: نام asset در ریلیز ci-apk
+        default: hamyar-grade9-2.2-debug.apk
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arena-apk-urls
+  cancel-in-progress: true
+
+jobs:
+  extract:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'APK urls')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: دریافت APK از ریلیز
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSET: ${{ github.event.inputs.asset || 'hamyar-grade9-2.2-debug.apk' }}
+        run: |
+          set +e
+          mkdir -p dist ci-report
+          gh release download ci-apk --pattern "$ASSET" --dir dist --clobber
+          ls -l dist/ || true
+          [ -f "dist/$ASSET" ] || { echo "APK دریافت نشد"; exit 1; }
+          echo "APK=dist/$ASSET" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: استخراج نشانی‌ها و تست زندهٔ همه
+        shell: bash
+        run: |
+          set +e
+          pip install --quiet requests
+          python3 scripts/extract_apk_urls.py \
+            --apk "$APK" \
+            --probe \
+            --out-md ci-report/apk-urls.md \
+            --out-csv ci-report/apk-urls.csv 2>&1 | tail -n 20
+          exit 0
+
+      - name: مقایسه با فهرستِ ساخته‌شده از سورس
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/list_content_urls.py >/dev/null 2>&1
+          python3 - <<'PY' >> ci-report/apk-urls.md
+          import csv, pathlib
+          apk = {r["url"] for r in csv.DictReader(open("ci-report/apk-urls.csv", encoding="utf-8-sig"))}
+          src_path = pathlib.Path("docs/maintenance/grade9/نشانی-html-و-pdf.csv")
+          print("\n## مقایسهٔ APK با سورس مخزن\n")
+          if not src_path.is_file():
+              print("فهرست سورس پیدا نشد.")
+          else:
+              src = {r["internal"] for r in csv.DictReader(open(src_path, encoding="utf-8-sig"))}
+              only_src = sorted(src - apk)
+              only_apk_html = sorted(u for u in apk - src if u.lower().endswith((".html", ".pdf")))
+              if not only_src and not only_apk_html:
+                  print("✅ هر نشانی HTML/PDF که سورس می‌سازد، دقیقاً در APK هم هست.")
+              else:
+                  print(f"فقط در سورس: {len(only_src)} — فقط در APK: {len(only_apk_html)}\n")
+                  for u in (only_src + only_apk_html)[:40]:
+                      print(f"- `{u}`")
+          PY
+          exit 0
+
+      - name: ثبت گزارش روی برنچ
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/apk-urls.md ci-report/apk-urls.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "نشانی‌های استخراج‌شده از APK"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          if [ -f ci-report/apk-urls.md ]; then
+            head -c 200000 ci-report/apk-urls.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit 0
