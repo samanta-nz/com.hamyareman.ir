@@ -145,13 +145,33 @@ def main() -> int:
             bucket = found_buckets[0]
     legacy_buckets = [b for b in found_buckets if b != bucket]
 
-    # شناسهٔ پروژهٔ Appwrite: رشتهٔ hex بیست‌کاراکتری که باکت نیست.
-    hex20 = [s for s in sorted(set(strings)) if re.fullmatch(r"6[a-f0-9]{19}", s)]
-    project = next((h for h in hex20 if h != bucket), "")
+    # پایهٔ نشانی خارجی را از خودِ رشتهٔ ساخته‌شده در باینری برمی‌داریم؛
+    # رشتهٔ «cloud.appwrite.io» تنها مقدار پیش‌فرض SDK است و گمراه‌کننده.
     ext_base = next(
         (u for u in all_urls if re.search(r"/storage/buckets/[^/]+/files/?$", u) and bucket and bucket in u),
         f"{endpoint}/storage/buckets/{bucket}/files/" if endpoint and bucket else "",
     )
+    if ext_base:
+        endpoint = ext_base.split("/storage/")[0]
+
+    # چند شناسهٔ hex بیست‌کاراکتری در باینری هست (پروژهٔ فعلی + میراث قدیمی).
+    # حدس نمی‌زنیم: با یک درخواست واقعی معلوم می‌کنیم کدام جواب می‌دهد.
+    hex20 = [x for x in sorted(set(strings)) if re.fullmatch(r"6[a-f0-9]{19}", x) and x != bucket]
+    project = ""
+    project_probe: list[str] = []
+    if ext_base and hex20:
+        import requests as _rq
+
+        sample = next((e["id"] for e in smap["entries"] if e["key"].lower().endswith(".html")), "")
+        for cand in hex20:
+            u = f"{ext_base.rstrip('/')}/{url_encoder(sample)}/view?project={cand}"
+            try:
+                code = _rq.get(u, headers={"Range": "bytes=0-1"}, timeout=25).status_code
+            except Exception:  # noqa: BLE001
+                code = 0
+            project_probe.append(f"`{cand}` → HTTP {code}")
+            if code in (200, 206) and not project:
+                project = cand
 
     # ۲) مسیرهای کش روی دستگاه — رشته‌های واقعی داخل باینری
     cache_markers = [
@@ -234,6 +254,8 @@ def main() -> int:
         md.append("| باکت‌های دیگری که در باینری دیده شد | " +
                   "، ".join(f"`{b}`" for b in legacy_buckets) + " |")
     md.append(f"| شناسهٔ پروژهٔ خارجی | `{project or '—'}` |")
+    if project_probe:
+        md.append("| شناسه‌های آزمایش‌شده | " + "، ".join(project_probe) + " |")
     md.append("")
     md.append("### قالب نشانی، همان‌طور که در APK ساخته می‌شود\n")
     md.append("```")

@@ -55,8 +55,8 @@ jobs:
           python3 scripts/extract_apk_urls.py \
             --apk "$APK" \
             --probe \
-            --out-md ci-report/apk-urls.md \
-            --out-csv ci-report/apk-urls.csv 2>&1 | tail -n 20
+            --out-md 'docs/maintenance/grade9/آدرس-واقعی-از-apk.md' \
+            --out-csv 'docs/maintenance/grade9/آدرس-واقعی-از-apk.csv' 2>&1 | tail -n 20
           exit 0
 
       - name: مقایسه با فهرستِ ساخته‌شده از سورس
@@ -64,9 +64,9 @@ jobs:
         run: |
           set +e
           python3 scripts/list_content_urls.py >/dev/null 2>&1
-          python3 - <<'PY' >> ci-report/apk-urls.md
+          python3 - <<'PY' >> 'docs/maintenance/grade9/آدرس-واقعی-از-apk.md'
           import csv, pathlib
-          apk = {r["url"] for r in csv.DictReader(open("ci-report/apk-urls.csv", encoding="utf-8-sig"))}
+          apk = {r["url"] for r in csv.DictReader(open("docs/maintenance/grade9/آدرس-واقعی-از-apk.csv", encoding="utf-8-sig"))}
           src_path = pathlib.Path("docs/maintenance/grade9/نشانی-html-و-pdf.csv")
           print("\n## مقایسهٔ APK با سورس مخزن\n")
           if not src_path.is_file():
@@ -91,13 +91,13 @@ jobs:
           set +e
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/apk-urls.md ci-report/apk-urls.csv
+          git add -f 'docs/maintenance/grade9/آدرس-واقعی-از-apk.md' 'docs/maintenance/grade9/آدرس-واقعی-از-apk.csv'
           if ! git diff --cached --quiet; then
             git commit -m "نشانی‌های استخراج‌شده از APK"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
-          if [ -f ci-report/apk-urls.md ]; then
-            head -c 200000 ci-report/apk-urls.md >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "docs/maintenance/grade9/آدرس-واقعی-از-apk.md" ]; then
+            head -c 200000 "docs/maintenance/grade9/آدرس-واقعی-از-apk.md" >> "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
