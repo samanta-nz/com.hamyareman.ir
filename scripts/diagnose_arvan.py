@@ -338,6 +338,58 @@ def main() -> int:
             say(f"- ❌ **{region}** — {label(exc)}")
     say("")
 
+    say("## ۴-ج) آیا نسخه‌بندی مقصر است؟")
+    say("")
+    vtest = f"hamyar-diag-{uuid.uuid4().hex[:12]}"
+    try:
+        s3.create_bucket(Bucket=vtest)
+        s3.put_object(Bucket=vtest, Key="before.txt", Body=b"x")
+        say("- ✅ باکت تازه بدون نسخه‌بندی — نوشتن موفق")
+        s3.put_bucket_versioning(Bucket=vtest, VersioningConfiguration={"Status": "Enabled"})
+        say("- ✅ نسخه‌بندی روشن شد")
+        try:
+            s3.put_object(Bucket=vtest, Key="after.txt", Body=b"x")
+            say("- ✅ نوشتن بعد از روشن‌کردن نسخه‌بندی هم موفق → **نسخه‌بندی مقصر نیست**")
+        except Exception as exc:  # noqa: BLE001
+            say(f"- ❌ نوشتن بعد از نسخه‌بندی ناموفق — {label(exc)}")
+            say("- → **نسخه‌بندی مقصر است؛ باید روی باکت اصلی Suspend شود.**")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- ⚠️ تست ناتمام — {label(exc)}")
+    finally:
+        try:
+            for page in s3.get_paginator("list_object_versions").paginate(Bucket=vtest):
+                for item in (page.get("Versions") or []) + (page.get("DeleteMarkers") or []):
+                    s3.delete_object(Bucket=vtest, Key=item["Key"], VersionId=item["VersionId"])
+            s3.delete_bucket(Bucket=vtest)
+            say("- 🧹 باکت آزمایشی پاک شد")
+        except Exception as exc:  # noqa: BLE001
+            say(f"- ⚠️ پاک‌سازی ناتمام — {label(exc)}")
+    say("")
+
+    say("## ۴-چ) حجم و تعداد اشیای باکت اصلی (بررسی سهمیه)")
+    say("")
+    try:
+        total_size = 0
+        total_count = 0
+        for page in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET):
+            for obj in page.get("Contents") or []:
+                total_size += int(obj.get("Size") or 0)
+                total_count += 1
+        say(f"- نسخهٔ جاری: **{total_count}** شیء، **{total_size / 1073741824:.2f} GB**")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- ❌ {label(exc)}")
+    try:
+        ver_size = 0
+        ver_count = 0
+        for page in s3.get_paginator("list_object_versions").paginate(Bucket=BUCKET):
+            for item in page.get("Versions") or []:
+                ver_size += int(item.get("Size") or 0)
+                ver_count += 1
+        say(f"- با همهٔ نسخه‌های قدیمی: **{ver_count}** نسخه، **{ver_size / 1073741824:.2f} GB**")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- ❌ شمارش نسخه‌ها — {label(exc)}")
+    say("")
+
     say("## ۵) وضعیت APKهای موجود روی آروان")
     say("")
     try:
