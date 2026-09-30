@@ -199,7 +199,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                                 // فقط نمونهٔ تکراریِ DOM پنهان می‌شود؛ رشتهٔ HTML دریافتی تغییر نمی‌کند.
                                 if (item?.cat == "yoga" || item?.cat == "sport") {
                                     view.evaluateJavascript(
-                                        "document.querySelectorAll('iframe[src*=\\"background-music\\"],[data-background-music],#background-music,#backgroundMusic').forEach(function(e){e.style.display=\\"none\\"});",
+                                        """document.querySelectorAll('iframe[src*="background-music"],[data-background-music],#background-music,#backgroundMusic').forEach(function(e){e.style.display="none"});""",
                                         null,
                                     )
                                 }
