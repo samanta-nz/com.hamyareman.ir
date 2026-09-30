@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -108,16 +107,9 @@ class PlaybackService : MediaSessionService() {
             .setSeekBackIncrementMs(SEEK_INCREMENT_MS)
             .setSeekForwardIncrementMs(SEEK_INCREMENT_MS)
             .build()
-        val player = object : ForwardingPlayer(exo) {
-            override fun getAvailableCommands(): Player.Commands =
-                Player.Commands.Builder()
-                    .addAll(super.getAvailableCommands())
-                    .remove(Player.COMMAND_SEEK_TO_PREVIOUS)
-                    .remove(Player.COMMAND_SEEK_TO_NEXT)
-                    .remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
-                    .remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
-                    .build()
-        }
+        // صف‌های آلبوم شخصی و کتاب صوتی به قبلی/بعدی واقعی نیاز دارند؛ فرمان‌های
+        // استاندارد Media3 را پنهان نمی‌کنیم تا UI و اعلان سیستم هر دو یک موتور باشند.
+        val player: Player = exo
 
         mediaSession = MediaSession.Builder(this, player)
             .setSessionActivity(teachPendingIntent(currentPackOf(player)))

@@ -3,10 +3,12 @@ package com.hamyareman.ir.ui.study
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,10 +24,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,13 +39,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -51,12 +58,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import coil.compose.AsyncImage
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -73,10 +84,16 @@ private data class SecureMediaItem(
 
 /** آلبوم داخلیِ فضای امن؛ فقط عکس، ویدیو و صوت را می‌پذیرد. */
 @Composable
-fun SecureMediaGalleryScreen(onBack: () -> Unit) {
+fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
     val context = LocalContext.current
     val container = LocalAppContainer.current
     val store = remember { LocalStore(context, "hamyar_secure_media") }
+    val diaryStore = remember { LocalStore(context, "hamyar_private_diary") }
+    val diaryCover = when (diaryStore.getString("cover", "celestial")) {
+        "botanical" -> "file:///android_asset/diary/cover-botanical.jpg"
+        "geometric" -> "file:///android_asset/diary/cover-geometric.jpg"
+        else -> "file:///android_asset/diary/cover-celestial.jpg"
+    }
     var media by remember { mutableStateOf(readSecureMedia(store).filter { File(it.path).exists() }) }
     var selected by remember { mutableStateOf<SecureMediaItem?>(null) }
     var exporting by remember { mutableStateOf<SecureMediaItem?>(null) }
@@ -133,30 +150,47 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit) {
                 }
             }
             notice?.let { Text(it, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall) }
-            if (media.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("آلبوم هنوز خالی است.") }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(media, key = { it.id }) { item ->
-                        Card(Modifier.fillMaxWidth().clickable { selected = item }) {
-                            Box(
-                                Modifier.fillMaxWidth().size((310 / columns).dp).background(MaterialTheme.colorScheme.surfaceVariant),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                if (item.mime.startsWith("image/")) {
-                                    val bitmap = remember(item.path, File(item.path).lastModified()) { PdfSafe.decodeFileCapped(item.path, 500) }
-                                    bitmap?.let {
-                                        Image(it.asImageBitmap(), item.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                                    } ?: Text("تصویر")
-                                } else {
-                                    Text(if (item.mime.startsWith("video/")) "🎬" else "🎧", style = MaterialTheme.typography.headlineMedium)
-                                }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                // دفتر خاطرات همیشه مثل یک کتاب واقعی، کنار بقیهٔ رسانه‌ها دیده می‌شود.
+                item(key = "private-diary-book") {
+                    Card(Modifier.fillMaxWidth().clickable(onClick = onOpenDiary)) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            AsyncImage(
+                                model = diaryCover,
+                                contentDescription = "دفتر خاطرات",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxWidth().size((310 / columns).dp),
+                            )
+                            Text("دفتر خاطرات", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(5.dp))
+                        }
+                    }
+                }
+                items(media, key = { it.id }) { item ->
+                    Card(Modifier.fillMaxWidth().clickable { selected = item }) {
+                        Box(
+                            Modifier.fillMaxWidth().size((310 / columns).dp).background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (item.mime.startsWith("image/")) {
+                                val bitmap = remember(item.path, File(item.path).lastModified()) { PdfSafe.decodeFileCapped(item.path, 500) }
+                                bitmap?.let {
+                                    Image(it.asImageBitmap(), item.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                } ?: Text("تصویر")
+                            } else {
+                                Text(if (item.mime.startsWith("video/")) "🎬" else "🎧", style = MaterialTheme.typography.headlineMedium)
                             }
+                        }
+                    }
+                }
+                if (media.isEmpty()) {
+                    item(key = "empty-media") {
+                        Box(Modifier.fillMaxWidth().size((310 / columns).dp), contentAlignment = Alignment.Center) {
+                            Text("هنوز رسانه‌ای اضافه نشده است.", style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -167,6 +201,10 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit) {
     selected?.let { item ->
         SecureMediaViewer(
             item = item,
+            playlist = media.filter { candidate ->
+                (item.mime.startsWith("audio/") && candidate.mime.startsWith("audio/")) ||
+                    (item.mime.startsWith("video/") && candidate.mime.startsWith("video/"))
+            },
             onClose = { selected = null },
             onExport = {
                 exporting = item
@@ -189,6 +227,7 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit) {
 @Composable
 private fun SecureMediaViewer(
     item: SecureMediaItem,
+    playlist: List<SecureMediaItem>,
     onClose: () -> Unit,
     onExport: () -> Unit,
     onChanged: () -> Unit,
@@ -200,8 +239,8 @@ private fun SecureMediaViewer(
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 when {
                     item.mime.startsWith("image/") -> ZoomableSecureImage(item.path, revision)
-                    item.mime.startsWith("video/") -> SecureMedia3Player(item, video = true)
-                    else -> SecureMedia3Player(item, video = false)
+                    item.mime.startsWith("video/") -> SecureMedia3Player(item, playlist, video = true)
+                    else -> SecureMedia3Player(item, playlist, video = false)
                 }
             }
             Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -258,20 +297,52 @@ private fun ZoomableSecureImage(path: String, revision: Int) {
 }
 
 @Composable
-private fun SecureMedia3Player(item: SecureMediaItem, video: Boolean) {
+private fun SecureMedia3Player(item: SecureMediaItem, playlist: List<SecureMediaItem>, video: Boolean) {
     val context = LocalContext.current
-    val playback = remember(item.path) {
+    val queue = remember(item.id, playlist) { playlist.ifEmpty { listOf(item) } }
+    val startIndex = remember(item.id, queue) { queue.indexOfFirst { it.id == item.id }.coerceAtLeast(0) }
+    val playback = remember(item.id) {
         com.hamyareman.ir.platform.feature.playback.PlaybackController(context)
     }
     val state by playback.state.collectAsState()
+    var position by remember { mutableLongStateOf(0L) }
+    var scrub by remember { mutableLongStateOf(-1L) }
+    var sleepEndsAt by remember { mutableLongStateOf(0L) }
+    var sleepRemaining by remember { mutableLongStateOf(0L) }
+    var phase by remember { mutableFloatStateOf(0f) }
 
-    LaunchedEffect(item.path) {
+    LaunchedEffect(item.id, queue) {
         if (playback.connect()) {
-            playback.setMedia(Uri.fromFile(File(item.path)).toString(), item.name)
+            val mediaItems = queue.map { row ->
+                MediaItem.Builder()
+                    .setMediaId(row.id)
+                    .setUri(Uri.fromFile(File(row.path)))
+                    .setMediaMetadata(MediaMetadata.Builder().setTitle(row.name).setDisplayTitle(row.name).build())
+                    .build()
+            }
+            playback.setMediaItems(mediaItems, startIndex)
         }
     }
+    LaunchedEffect(state.connected, state.playing) {
+        if (!state.connected) return@LaunchedEffect
+        while (true) {
+            position = playback.positionMs
+            if (state.playing) phase += 0.12f
+            delay(if (state.playing) 120L else 500L)
+        }
+    }
+    LaunchedEffect(sleepEndsAt) {
+        if (sleepEndsAt <= 0L) return@LaunchedEffect
+        while (sleepEndsAt > System.currentTimeMillis()) {
+            sleepRemaining = (sleepEndsAt - System.currentTimeMillis()).coerceAtLeast(0L)
+            delay(1_000L)
+        }
+        playback.pause()
+        sleepEndsAt = 0L
+        sleepRemaining = 0L
+    }
     DisposableEffect(playback) {
-        // سرویس Media3 مشترک است، اما رسانهٔ خصوصی فقط تا وقتی نمایشگر آلبوم باز است مجاز است.
+        // همان Media3 مشترک برای آلبوم و کتاب صوتی؛ رسانهٔ خصوصی با بستن نمایشگر قطع می‌شود.
         com.hamyareman.ir.platform.feature.playback.TeachGate.enter()
         onDispose {
             runCatching { playback.stop() }
@@ -280,8 +351,13 @@ private fun SecureMedia3Player(item: SecureMediaItem, video: Boolean) {
         }
     }
 
+    val current = queue.getOrNull(state.currentIndex) ?: item
+    val duration = state.durationMs.coerceAtLeast(0L)
+    val shown = if (scrub >= 0L) scrub else position.coerceAtLeast(0L)
+    val sliderMax = maxOf(duration, shown, 1L)
+
     Column(
-        Modifier.fillMaxSize(),
+        Modifier.fillMaxSize().padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -298,13 +374,116 @@ private fun SecureMedia3Player(item: SecureMediaItem, video: Boolean) {
                 onRelease = { it.player = null },
             )
         } else {
-            Text("🎧", style = MaterialTheme.typography.displayLarge)
+            AlbumArtEqualizer(current.path, state.playing, phase)
+        }
+        Text(state.title.ifBlank { current.name }, color = Color.White, style = MaterialTheme.typography.titleMedium)
+        Slider(
+            value = shown.coerceIn(0L, sliderMax).toFloat(),
+            onValueChange = { scrub = it.toLong() },
+            onValueChangeFinished = {
+                playback.seekTo(if (scrub >= 0L) scrub else position)
+                position = if (scrub >= 0L) scrub else position
+                scrub = -1L
+            },
+            valueRange = 0f..sliderMax.toFloat(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(mediaTime(shown), color = Color.White, style = MaterialTheme.typography.labelSmall)
+            Text("−${mediaTime((duration - shown).coerceAtLeast(0L))}", color = Color.White, style = MaterialTheme.typography.labelSmall)
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            OutlinedButton(
+                onClick = { playback.setShuffle(!state.shuffleEnabled) },
+                modifier = Modifier.weight(1f),
+            ) { Text(if (state.shuffleEnabled) "تصادفی ✓" else "تصادفی") }
+            OutlinedButton(
+                onClick = { playback.seekToPrevious() },
+                enabled = state.mediaCount > 1,
+                modifier = Modifier.weight(1f),
+            ) { Text("قبلی") }
+            OutlinedButton(
+                onClick = {
+                    com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
+                    if (state.playing) playback.pause() else playback.play()
+                },
+                modifier = Modifier.weight(1f),
+            ) { Text(if (state.playing) "مکث" else "پخش") }
+            OutlinedButton(
+                onClick = { playback.seekToNext() },
+                enabled = state.mediaCount > 1,
+                modifier = Modifier.weight(1f),
+            ) { Text("بعدی") }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (sleepEndsAt > 0L) {
+                TextButton(onClick = { sleepEndsAt = 0L; sleepRemaining = 0L }, modifier = Modifier.weight(1f)) {
+                    Text("لغو تایمر ${mediaTime(sleepRemaining)}")
+                }
+            } else {
+                listOf(15, 30, 45).forEach { minutes ->
+                    TextButton(
+                        onClick = {
+                            sleepEndsAt = System.currentTimeMillis() + minutes * 60_000L
+                            sleepRemaining = minutes * 60_000L
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) { Text("خواب $minutes د") }
+                }
+            }
         }
         state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        OutlinedButton(onClick = {
-            com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
-            if (state.playing) playback.pause() else playback.play()
-        }) { Text(if (state.playing) "مکث" else "پخش") }
+    }
+}
+
+private fun mediaTime(ms: Long): String {
+    val seconds = ms.coerceAtLeast(0L) / 1_000L
+    return com.hamyareman.ir.platform.core.common.toPersianDigits(
+        "%d:%02d".format(java.util.Locale.US, seconds / 60L, seconds % 60L),
+    )
+}
+
+@Composable
+internal fun AlbumArtEqualizer(path: String, playing: Boolean, phase: Float) {
+    val context = LocalContext.current
+    val art = remember(path) {
+        runCatching {
+            val retriever = MediaMetadataRetriever()
+            try {
+                if (path.startsWith("content://")) retriever.setDataSource(context, Uri.parse(path))
+                else retriever.setDataSource(path)
+                retriever.embeddedPicture?.let { bytes -> BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
+            } finally {
+                retriever.release()
+            }
+        }.getOrNull()
+    }
+    Box(Modifier.size(238.dp), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.fillMaxSize()) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val base = size.minDimension * 0.36f
+            repeat(36) { i ->
+                val angle = (Math.PI * 2.0 * i / 36.0).toFloat()
+                val pulse = if (playing) (kotlin.math.sin(phase + i * 0.77f) + 1f) / 2f else 0.12f
+                val length = 7f + pulse * 24f
+                val start = Offset(center.x + kotlin.math.cos(angle) * base, center.y + kotlin.math.sin(angle) * base)
+                val end = Offset(center.x + kotlin.math.cos(angle) * (base + length), center.y + kotlin.math.sin(angle) * (base + length))
+                drawLine(Color(0xFF62D8B3), start, end, strokeWidth = 5f, cap = StrokeCap.Round)
+            }
+        }
+        if (art != null) {
+            Image(
+                bitmap = art.asImageBitmap(),
+                contentDescription = "جلد صوت",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(154.dp).clip(CircleShape),
+            )
+        } else {
+            Box(
+                Modifier.size(154.dp).clip(CircleShape).background(Color(0xFF183E45)),
+                contentAlignment = Alignment.Center,
+            ) { Text("🎧", style = MaterialTheme.typography.displayLarge) }
+        }
     }
 }
 

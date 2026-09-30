@@ -1,6 +1,8 @@
 package com.hamyareman.ir.ui.safespace
 
+import android.app.KeyguardManager
 import android.content.Context
+import android.os.PowerManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -91,8 +93,19 @@ object SafeSpaceSession {
         previousRoute = route
     }
 
-    /** policy «قفل صفحه» با رفتن Activity به پس‌زمینه/خاموش‌شدن نمایشگر اجرا می‌شود. */
+    /**
+     * تعویض سادهٔ برنامه در سیاست «قفل صفحه» نشست را نمی‌بندد؛ فقط خاموش یا
+     * واقعاً قفل‌شدن نمایشگر معتبر است. گیرندهٔ ACTION_SCREEN_OFF نیز همین رویداد
+     * را به [onScreenLocked] می‌رساند تا ترتیب callbackها در گوشی‌ها مهم نباشد.
+     */
     fun onAppBackgrounded(context: Context) {
+        if (!unlocked || policy(context) != SafeExitPolicy.SCREEN_LOCK) return
+        val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+        if (power?.isInteractive == false || keyguard?.isKeyguardLocked == true) forceLock()
+    }
+
+    fun onScreenLocked(context: Context) {
         if (unlocked && policy(context) == SafeExitPolicy.SCREEN_LOCK) forceLock()
     }
 

@@ -130,7 +130,7 @@ object ContentCatalog {
 
     fun sampleHtmlKey(): String? = sampleHtmlItem()?.key
 
-    /** جلد کاشی‌های آموزشگاه؛ شمارهٔ ۱ تا ۳۴ به جلد هم‌موضوع قبلی وصل می‌شود. */
+    /** جلدهای ۳۴ درس آموزشگاه، دقیقاً به ترتیب amz-01 تا amz-34؛ پومودورو کاشی مستقل یادگیری است. */
     private val academyCovers = listOf(
         "sk-speed", "sk-hand", "sk-type", "sk-cornell", "sk-summary",
         "sk-debate", "sk-fallacy", "sk-present", "sk-voice", "sk-email", "sk-listen",
@@ -154,14 +154,9 @@ object ContentCatalog {
         }
     }
 
-    /** نسبت واقعی تصاویر منوی یوگا/ورزش؛ HTML و تصاویر داخل آن دست‌نخورده‌اند. */
+    /** کاورهای منوی یوگا/ورزش پوستر عمودی ۲:۳ هستند؛ HTML داخلی دست‌نخورده است. */
     fun coverAspectRatio(item: ContentItem): Float = when (item.cat) {
-        "sport" -> 1120f / 751f
-        "yoga" -> if (item.id in setOf("yga-01", "yga-02", "yga-03", "yga-05", "yga-06")) {
-            1120f / 751f
-        } else {
-            1120f / 625f
-        }
+        "sport", "yoga" -> 2f / 3f
         else -> 1f
     }
 

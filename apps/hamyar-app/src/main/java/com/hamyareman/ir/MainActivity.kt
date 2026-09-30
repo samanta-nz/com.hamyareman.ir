@@ -1,5 +1,9 @@
 package com.hamyareman.ir
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import androidx.core.content.ContextCompat
 import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.designsystem.BrandTheme
 import com.hamyareman.ir.platform.core.designsystem.PinLockGate
@@ -60,8 +65,22 @@ class MainActivity : FragmentActivity() {
     /** null = در حال بررسی؛ true = پروفایل ثبت نشده → فرم ثبت‌نام اجباری. */
     private val profileNeeded = mutableStateOf<Boolean?>(null)
 
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                com.hamyareman.ir.ui.safespace.SafeSpaceSession.onScreenLocked(context)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ContextCompat.registerReceiver(
+            this,
+            screenOffReceiver,
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         val app = application as HamyarApplication
         enableEdgeToEdge()
         unlocked.value = !app.container.lock.isLockedNow()
@@ -476,6 +495,11 @@ class MainActivity : FragmentActivity() {
         if (intent?.action == action && !live.isNullOrBlank()) {
             com.hamyareman.ir.ui.study.TeachLaunch.pendingTeachPack = live
         }
+    }
+
+    override fun onDestroy() {
+        runCatching { unregisterReceiver(screenOffReceiver) }
+        super.onDestroy()
     }
 
     override fun onPause() {

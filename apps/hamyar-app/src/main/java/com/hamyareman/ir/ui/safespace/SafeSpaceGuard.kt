@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun SafeContentGuard(onLocked: () -> Unit, content: @Composable () -> Unit) {
     val context = LocalContext.current
+    com.hamyareman.ir.ui.study.SecureWebEffect("Screenshots are disabled in the private workspace.")
     if (SafeSpaceSession.isUnlocked(context)) {
         content()
     } else {

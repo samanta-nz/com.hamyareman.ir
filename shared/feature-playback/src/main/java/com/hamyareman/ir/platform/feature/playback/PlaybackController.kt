@@ -32,6 +32,10 @@ data class PlaybackState(
     val playWhenReady: Boolean = false,
     /** در حال بارگذاری/بافر کردن است (فایل هنوز آماده نیست). */
     val buffering: Boolean = false,
+    val currentIndex: Int = 0,
+    val mediaCount: Int = 0,
+    val title: String = "",
+    val shuffleEnabled: Boolean = false,
 )
 
 /**
@@ -156,6 +160,18 @@ class PlaybackController(
         c.seekTo((c.currentPosition + deltaMs).coerceAtLeast(0L))
     }
 
+    fun seekToPrevious() {
+        controller?.let { if (it.hasPreviousMediaItem()) it.seekToPreviousMediaItem() else it.seekTo(0L) }
+    }
+
+    fun seekToNext() {
+        controller?.let { if (it.hasNextMediaItem()) it.seekToNextMediaItem() }
+    }
+
+    fun setShuffle(enabled: Boolean) {
+        controller?.let { it.shuffleModeEnabled = enabled; publish(it) }
+    }
+
     /** سرعت پخش — برای کتاب صوتی واقعاً استفاده می‌شود (۰٫۷۵ تا ۱٫۵). */
     fun setSpeed(speed: Float) {
         controller?.setPlaybackSpeed(speed.coerceIn(MIN_SPEED, MAX_SPEED))
@@ -184,6 +200,10 @@ class PlaybackController(
                     player.playbackSuppressionReason != Player.PLAYBACK_SUPPRESSION_REASON_NONE,
                 playWhenReady = player.playWhenReady,
                 buffering = player.playbackState == Player.STATE_BUFFERING,
+                currentIndex = player.currentMediaItemIndex.coerceAtLeast(0),
+                mediaCount = player.mediaItemCount,
+                title = player.currentMediaItem?.mediaMetadata?.title?.toString().orEmpty(),
+                shuffleEnabled = player.shuffleModeEnabled,
             )
         }
     }

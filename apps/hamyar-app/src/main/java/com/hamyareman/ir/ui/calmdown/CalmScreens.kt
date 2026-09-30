@@ -1,5 +1,6 @@
 package com.hamyareman.ir.ui.calmdown
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,7 +54,12 @@ fun CalmMenuScreen(nav: NavController) {
 }
 
 /** یک یادداشت دفترچه؛ متن فقط به‌شکل رمزشده روی دستگاه می‌ماند. */
-private data class JournalEntry(val id: String, val createdAt: Long, val cipher: String)
+private data class JournalEntry(
+    val id: String,
+    val createdAt: Long,
+    val cipher: String,
+    val title: String = "",
+)
 
 private const val JOURNAL_KEY = "journal_entries"
 
@@ -62,7 +68,7 @@ private fun readJournal(store: LocalStore): List<JournalEntry> = runCatching {
     buildList {
         for (i in 0 until array.length()) {
             val o = array.getJSONObject(i)
-            add(JournalEntry(o.optString("id"), o.optLong("createdAt"), o.optString("cipher")))
+            add(JournalEntry(o.optString("id"), o.optLong("createdAt"), o.optString("cipher"), o.optString("title")))
         }
     }.sortedByDescending { it.createdAt }
 }.getOrDefault(emptyList())
@@ -74,7 +80,8 @@ private fun writeJournal(store: LocalStore, entries: List<JournalEntry>) {
             JSONObject()
                 .put("id", entry.id)
                 .put("createdAt", entry.createdAt)
-                .put("cipher", entry.cipher),
+                .put("cipher", entry.cipher)
+                .put("title", entry.title),
         )
     }
     store.putString(JOURNAL_KEY, array.toString())
@@ -83,78 +90,70 @@ private fun writeJournal(store: LocalStore, entries: List<JournalEntry>) {
 @Composable
 fun JournalScreen(onBack: () -> Unit) {
     val c = LocalAppContainer.current
+    var title by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
     var entries by remember { mutableStateOf(readJournal(c.store)) }
-    var opened by remember { mutableStateOf<String?>(null) }
+    var editingId by remember { mutableStateOf<String?>(null) }
+    var notice by remember { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("دفترچه خصوصی", onBack)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        AppTopBar("دل‌نوشت", onBack)
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Text(
-                "این دفترچه با AES-GCM رمز می‌شود و کلیدش در Android Keystore است؛ " +
-                    "هرگز به سرور نمی‌رود و در فهرست «هرگز sync نمی‌شود» هم هست.",
+                "دل‌نوشت فقط روی دستگاه و با AES-GCM نگهداری می‌شود. لمس هر نوشته آن را برای خواندن و ویرایش باز می‌کند.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp),
-                label = { Text("هرچی دلت خواست") },
+                value = title,
+                onValueChange = { title = it.take(100) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("عنوان") },
+                singleLine = true,
             )
-            PrimaryButton("ذخیرهٔ رمزشده") {
-                if (text.isNotBlank()) {
-                    val entry = JournalEntry(
-                        id = UUID.randomUUID().toString(),
-                        createdAt = System.currentTimeMillis(),
-                        cipher = c.encryptor.encrypt(text),
-                    )
-                    writeJournal(c.store, (readJournal(c.store) + entry))
-                    entries = readJournal(c.store)
-                    text = ""
+            LinedNotebookInput(text, { text = it })
+            PrimaryButton(if (editingId == null) "ذخیرهٔ رمزشده" else "ذخیرهٔ ویرایش") {
+                if (text.isBlank()) {
+                    notice = "اول چیزی بنویس."
+                } else {
+                    val id = editingId ?: UUID.randomUUID().toString()
+                    val createdAt = entries.firstOrNull { it.id == id }?.createdAt ?: System.currentTimeMillis()
+                    val changed = JournalEntry(id, createdAt, c.encryptor.encrypt(text.trim()), title.trim())
+                    entries = (listOf(changed) + entries.filterNot { it.id == id }).sortedByDescending { it.createdAt }
+                    writeJournal(c.store, entries)
+                    title = ""; text = ""; editingId = null
+                    notice = "دل‌نوشت ذخیره شد."
                 }
             }
-
-            if (entries.isEmpty()) {
-                Text("هنوز یادداشتی ننوشتی.", style = MaterialTheme.typography.bodySmall)
+            if (editingId != null) {
+                TextButton(onClick = { editingId = null; title = ""; text = "" }) { Text("لغو ویرایش") }
             }
+            notice?.let { Text(it, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall) }
+            if (entries.isEmpty()) Text("هنوز دل‌نوشتی نداری.", style = MaterialTheme.typography.bodySmall)
             entries.forEach { entry ->
-                val plain = remember(entry.cipher) { c.encryptor.decrypt(entry.cipher) }
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(12.dp)) {
-                        Text(
-                            JalaliDate.stampFa(entry.createdAt),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        if (opened == entry.id) {
-                            Text(plain ?: "(رمزگشایی نشد)", style = MaterialTheme.typography.bodyMedium)
-                        } else {
-                            Text(
-                                plain?.lineSequence()?.firstOrNull()?.take(60) ?: "…",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = { opened = if (opened == entry.id) null else entry.id }) {
-                                Text(if (opened == entry.id) "بستن" else "خواندن")
-                            }
-                            TextButton(onClick = {
-                                writeJournal(c.store, readJournal(c.store).filterNot { it.id == entry.id })
-                                entries = readJournal(c.store)
-                            }) { Text("پاک‌کردن") }
-                        }
+                val plain = remember(entry.cipher) { c.encryptor.decrypt(entry.cipher).orEmpty() }
+                Card(Modifier.fillMaxWidth().clickable {
+                    editingId = entry.id
+                    title = entry.title
+                    text = plain
+                    notice = "این دل‌نوشت برای ویرایش باز شد."
+                }) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(entry.title.ifBlank { "بدون عنوان" }, style = MaterialTheme.typography.titleSmall)
+                        Text(JalaliDate.stampFa(entry.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(plain, style = MaterialTheme.typography.bodyMedium)
+                        TextButton(onClick = {
+                            entries = entries.filterNot { it.id == entry.id }
+                            writeJournal(c.store, entries)
+                            if (editingId == entry.id) { editingId = null; title = ""; text = "" }
+                        }) { Text("پاک‌کردن") }
                     }
                 }
             }
-            Spacer(Modifier.height(4.dp))
-            Text(
-                toPersianDigits("${entries.size} یادداشت روی این دستگاه"),
-                style = MaterialTheme.typography.labelSmall,
-            )
+            Text(toPersianDigits("${entries.size} دل‌نوشت روی این دستگاه"), style = MaterialTheme.typography.labelSmall)
             InlineButton("بازگشت") { onBack() }
         }
     }

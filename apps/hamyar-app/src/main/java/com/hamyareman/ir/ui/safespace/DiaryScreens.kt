@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -141,6 +142,7 @@ fun DiaryScreen(onBack: () -> Unit) {
     var entries by remember { mutableStateOf(readDiary(store)) }
     var title by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
+    var editingId by remember { mutableStateOf<String?>(null) }
     var viewer by remember { mutableStateOf(false) }
     var notice by remember { mutableStateOf<String?>(null) }
     SecureWebEffect("Screenshots are disabled in the private diary.")
@@ -222,22 +224,32 @@ fun DiaryScreen(onBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                 )
                 LinedNotebookInput(text, { text = it })
-                PrimaryButton("افزودن صفحه‌ها به انتهای دفتر") {
+                PrimaryButton(if (editingId == null) "افزودن صفحه‌ها به انتهای دفتر" else "ذخیرهٔ ویرایش صفحه‌ها") {
                     if (text.isBlank()) {
                         notice = "اول چیزی بنویس."
                     } else {
-                        val next = entries + DiaryEntry(
-                            UUID.randomUUID().toString(),
-                            System.currentTimeMillis(),
+                        val current = editingId?.let { id -> entries.firstOrNull { it.id == id } }
+                        val changed = DiaryEntry(
+                            current?.id ?: UUID.randomUUID().toString(),
+                            current?.createdAt ?: System.currentTimeMillis(),
                             title.trim(),
                             container.encryptor.encrypt(text.trim()),
                         )
+                        val next = if (current == null) entries + changed else entries.map { if (it.id == changed.id) changed else it }
                         writeDiary(store, next)
                         entries = next
                         title = ""
                         text = ""
-                        notice = "نوشته بدون پاک‌کردن صفحه‌های قبلی به انتهای دفتر اضافه شد."
+                        editingId = null
+                        notice = if (current == null) {
+                            "نوشته بدون پاک‌کردن صفحه‌های قبلی به انتهای دفتر اضافه شد."
+                        } else {
+                            "ویرایش ذخیره شد و ترتیب صفحه‌ها تغییر نکرد."
+                        }
                     }
+                }
+                if (editingId != null) {
+                    TextButton(onClick = { editingId = null; title = ""; text = "" }) { Text("لغو ویرایش") }
                 }
             }
             item {
@@ -259,15 +271,21 @@ fun DiaryScreen(onBack: () -> Unit) {
             }
             items(entries.asReversed(), key = { it.id }) { entry ->
                 val plain = remember(entry.cipher) { container.encryptor.decrypt(entry.cipher).orEmpty() }
-                Card(Modifier.fillMaxWidth()) {
+                Card(Modifier.fillMaxWidth().clickable {
+                    editingId = entry.id
+                    title = entry.title
+                    text = plain
+                    notice = "این نوشته برای ویرایش در دفتر بالا باز شد."
+                }) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(JalaliDate.stampFa(entry.createdAt), color = MaterialTheme.colorScheme.primary)
                         if (entry.title.isNotBlank()) Text(entry.title, style = MaterialTheme.typography.titleSmall)
-                        Text(plain.take(150) + if (plain.length > 150) "…" else "", style = MaterialTheme.typography.bodyMedium)
+                        Text(plain, style = MaterialTheme.typography.bodyMedium)
                         TextButton(onClick = {
                             val next = entries.filterNot { it.id == entry.id }
                             writeDiary(store, next)
                             entries = next
+                            if (editingId == entry.id) { editingId = null; title = ""; text = "" }
                         }) { Text("حذف این نوشته") }
                     }
                 }
@@ -312,38 +330,51 @@ private fun DiaryFullscreenViewer(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
             ) { index ->
-                if (index == 0) {
-                    AsyncImage(
-                        model = cover.asset,
-                        contentDescription = cover.title,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize().padding(18.dp),
-                    )
-                } else {
-                    val page = pages[index - 1]
-                    Box(
-                        Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 36.dp)
-                            .clip(RoundedCornerShape(14.dp)),
-                    ) {
+                // چرخش Y و جابه‌جایی افقی حس برگشتن ورق را می‌دهد؛ ترتیب خود Pager
+                // راست‌به‌چپ است و برای همین جلد صفحهٔ صفر باقی می‌ماند.
+                val pageOffset = (pager.currentPage - index) + pager.currentPageOffsetFraction
+                Box(
+                    Modifier.fillMaxSize().graphicsLayer {
+                        rotationY = (pageOffset * 24f).coerceIn(-34f, 34f)
+                        translationX = pageOffset * 22f
+                        cameraDistance = 18f * density
+                        alpha = (1f - kotlin.math.abs(pageOffset) * 0.16f).coerceIn(0.72f, 1f)
+                        shadowElevation = kotlin.math.abs(pageOffset) * 10f
+                    },
+                ) {
+                    if (index == 0) {
                         AsyncImage(
-                            model = "file:///android_asset/diary/page-lined.jpg",
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier.fillMaxSize(),
+                            model = cover.asset,
+                            contentDescription = cover.title,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize().padding(18.dp),
                         )
-                        Column(Modifier.fillMaxSize().padding(start = 34.dp, end = 58.dp, top = 42.dp, bottom = 30.dp)) {
-                            Text(page.date, color = Color(0xFF36506B), fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_BOLD))
-                            if (page.subtitle.isNotBlank()) {
-                                Text(page.subtitle, color = Color(0xFF5F4774), fontFamily = EmbeddedFonts.family("vazirmatn"), fontSize = 15.sp)
-                            }
-                            Text(
-                                page.text,
-                                color = Color(0xFF172B3A),
-                                fontFamily = EmbeddedFonts.family("vazirmatn"),
-                                fontSize = 18.sp,
-                                lineHeight = 27.sp,
-                                textAlign = TextAlign.Right,
+                    } else {
+                        val page = pages[index - 1]
+                        Box(
+                            Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 36.dp)
+                                .clip(RoundedCornerShape(14.dp)),
+                        ) {
+                            AsyncImage(
+                                model = "file:///android_asset/diary/page-lined.jpg",
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier.fillMaxSize(),
                             )
+                            Column(Modifier.fillMaxSize().padding(start = 34.dp, end = 58.dp, top = 42.dp, bottom = 30.dp)) {
+                                Text(page.date, color = Color(0xFF36506B), fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_BOLD))
+                                if (page.subtitle.isNotBlank()) {
+                                    Text(page.subtitle, color = Color(0xFF5F4774), fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT), fontSize = 15.sp)
+                                }
+                                Text(
+                                    page.text,
+                                    color = Color(0xFF172B3A),
+                                    fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT),
+                                    fontSize = 18.sp,
+                                    lineHeight = 27.sp,
+                                    textAlign = TextAlign.Right,
+                                )
+                            }
                         }
                     }
                 }
@@ -437,7 +468,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                 Text(
                                     page,
                                     color = Color(0xFF172B3A),
-                                    fontFamily = EmbeddedFonts.family("vazirmatn"),
+                                    fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT),
                                     fontSize = 17.sp,
                                     lineHeight = 25.sp,
                                     textAlign = TextAlign.Right,

@@ -26,8 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
 import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
 import com.hamyareman.ir.ui.profile.StudentProfileState
@@ -193,6 +195,14 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
 
                             override fun onPageFinished(view: WebView, url: String) {
                                 view.bindManagedMediaLifecycle()
+                                // در یوگا/ورزش، میزبان ثابت Android همان mini-player را نگه می‌دارد.
+                                // فقط نمونهٔ تکراریِ DOM پنهان می‌شود؛ رشتهٔ HTML دریافتی تغییر نمی‌کند.
+                                if (item?.cat == "yoga" || item?.cat == "sport") {
+                                    view.evaluateJavascript(
+                                        "document.querySelectorAll('iframe[src*=\\"background-music\\"],[data-background-music],#background-music,#backgroundMusic').forEach(function(e){e.style.display=\\"none\\"});",
+                                        null,
+                                    )
+                                }
                             }
                         }
                         installManagedMediaLifecycle()
@@ -208,13 +218,20 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         )
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().then(
+                    if (item.cat == "yoga" || item.cat == "sport") Modifier.padding(top = 92.dp) else Modifier,
+                ),
                 onRelease = {
                     it.stopManagedMedia()
                     if (webRef[0] === it) webRef[0] = null
                     it.destroy()
                 },
             )
+            if (item.cat == "yoga" || item.cat == "sport") {
+                BackgroundMusicHost(
+                    modifier = Modifier.align(Alignment.TopCenter).zIndex(4f),
+                )
+            }
         }
         when {
             error != null -> Column(

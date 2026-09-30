@@ -139,18 +139,17 @@ class WellnessCatalogTest {
     }
 
     @Test
-    fun `referenceImageUrl uses bundled approved yoga and exercise images`() {
-        (WellnessCatalog.yoga + WellnessCatalog.exercise).forEach { move ->
-            assertTrue(
-                "move ${move.slug} باید تصویر تأییدشدهٔ داخل برنامه داشته باشد، ولی url=${move.referenceImageUrl}",
-                move.referenceImageUrl.startsWith("file:///android_asset/practice-covers/"),
-            )
-            assertTrue("move ${move.slug} باید تصویر JPG داشته باشد", move.referenceImageUrl.endsWith(".jpg"))
-        }
-        (WellnessCatalog.breathing + WellnessCatalog.learning).forEach { move ->
+    fun `referenceImageUrl keeps lesson media separate from menu covers`() {
+        // پوسترهای yga/spo فقط برای کاشی منو هستند؛ نمایشگر حرکت باید همان رسانهٔ
+        // آموزشی wellness-media را بخواند و هیچ‌وقت asset منو را داخل محتوا تزریق نکند.
+        WellnessCatalog.all.forEach { move ->
             assertTrue(
                 "move ${move.slug} باید به wellness-media اشاره کند، ولی url=${move.referenceImageUrl}",
                 move.referenceImageUrl.contains("wellness-media"),
+            )
+            assertTrue(
+                "move ${move.slug} نباید از practice-covers در محتوای تمرین استفاده کند",
+                !move.referenceImageUrl.contains("practice-covers"),
             )
         }
     }

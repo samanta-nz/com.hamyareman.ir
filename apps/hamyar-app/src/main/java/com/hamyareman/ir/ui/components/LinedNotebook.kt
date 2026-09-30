@@ -71,9 +71,9 @@ fun LinedNotebookInput(
                 scope.launch { if (scroll.maxValue > 0) scroll.animateScrollTo(scroll.maxValue) }
             },
             textStyle = TextStyle(
-                fontFamily = EmbeddedFonts.family("vazirmatn"),
+                fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT),
                 fontSize = 19.sp,
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.Light,
                 lineHeight = lineSp,
                 color = Color(0xFF1E3A5F),
                 textAlign = TextAlign.Right,

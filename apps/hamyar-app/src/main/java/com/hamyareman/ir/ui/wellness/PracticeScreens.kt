@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.navigation.NavController
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
 import com.hamyareman.ir.ui.hub.HubBody
 import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
@@ -143,6 +145,20 @@ fun PracticeItemScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            val staticPlaceholder = move == null && item.route.isBlank() && (body.isNotBlank() || steps.isNotEmpty())
+            if (staticPlaceholder) {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("این بخش به‌زودی فعال می‌شود", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "این مقصد هنوز محتوای HTML یا ابزار اجرایی ندارد. به‌محض آماده‌شدن نسخهٔ واقعی، همین‌جا در دسترس قرار می‌گیرد.",
+                            style = AppTypography.pageBody.style,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                return@Column
+            }
             if (!session) {
                 if (body.isNotBlank()) {
                     Text(body, style = AppTypography.pageBody.style)
@@ -195,6 +211,7 @@ fun BetweenLessonsHubScreen(nav: NavController, onBack: () -> Unit) {
         headerSlot = "hub.between.header",
         accKey = "acc_between",
         onBack = onBack,
+        extraTop = { BackgroundMusicHost() },
     )
 }
 

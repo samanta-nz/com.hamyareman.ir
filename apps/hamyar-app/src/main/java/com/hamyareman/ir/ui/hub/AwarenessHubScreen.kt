@@ -1,5 +1,6 @@
 package com.hamyareman.ir.ui.hub
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -121,6 +122,8 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
     val dateKey = remember(today) { today.toString() }
     val question = remember(today) { dailySelfQuestion(today) }
     var answer by remember(dateKey) { mutableStateOf(store.getString("self_answer_$dateKey", "")) }
+    var editingDate by remember(dateKey) { mutableStateOf(dateKey) }
+    var editingQuestion by remember(dateKey) { mutableStateOf(question) }
     var reflections by remember { mutableStateOf(readSelfReflections(store)) }
     var notice by remember { mutableStateOf<String?>(null) }
 
@@ -154,13 +157,18 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
         extraBottom = {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("سؤال خودشناسی امروز", style = MaterialTheme.typography.titleMedium)
-                    Text(question, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        if (editingDate == dateKey) "سؤال خودشناسی امروز" else "ویرایش پاسخ ${com.hamyareman.ir.platform.core.common.toPersianDigits(editingDate)}",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(editingQuestion, style = MaterialTheme.typography.bodyLarge)
                     LinedNotebookInput(answer, { answer = it })
-                    PrimaryButton("ذخیره و همگام‌سازی") {
-                        store.putString("self_answer_$dateKey", answer)
+                    PrimaryButton(if (editingDate == dateKey) "ذخیره و همگام‌سازی" else "ذخیرهٔ ویرایش و همگام‌سازی") {
+                        val saveDate = editingDate
+                        val saveQuestion = editingQuestion
+                        store.putString("self_answer_$saveDate", answer)
                         val all = runCatching { JSONObject(store.getString("self_answers", "{}")) }.getOrDefault(JSONObject())
-                        all.put(dateKey, JSONObject().put("question", question).put("answer", answer))
+                        all.put(saveDate, JSONObject().put("question", saveQuestion).put("answer", answer))
                         store.putString("self_answers", all.toString())
                         reflections = readSelfReflections(store)
                         scope.launch {
@@ -182,7 +190,12 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
             if (reflections.isNotEmpty()) {
                 Text("پاسخ‌های قبلی من", style = MaterialTheme.typography.titleMedium)
                 reflections.forEach { reflection ->
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(Modifier.fillMaxWidth().clickable {
+                        editingDate = reflection.date
+                        editingQuestion = reflection.question
+                        answer = reflection.answer
+                        notice = "این پاسخ برای خواندن و ویرایش باز شد."
+                    }) {
                         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
                                 com.hamyareman.ir.platform.core.common.toPersianDigits(reflection.date),

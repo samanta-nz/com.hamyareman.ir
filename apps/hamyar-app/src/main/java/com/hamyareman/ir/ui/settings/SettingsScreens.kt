@@ -214,6 +214,22 @@ fun AppLockScreen(onBack: () -> Unit) {
                         pin = ""
                         confirm = ""
                         message = if (changingExistingPin) "PIN با موفقیت تغییر کرد." else "قفل برنامه فعال شد."
+                        if (!changingExistingPin && bioStatus == BiometricStatus.READY && activity != null) {
+                            // همان لحظهٔ ساخت PIN، یک بار اجازهٔ سیستم را می‌گیریم؛
+                            // فعال‌سازی خاموش/روشنِ بی‌تأیید مجاز نیست.
+                            BiometricPromptRunner.show(
+                                activity = activity,
+                                title = "فعال‌کردن ورود بیومتریک",
+                                subtitle = "برای ورود سریع‌تر به همیار من هویتت را تأیید کن.",
+                                negativeText = "فعلاً نه",
+                                onSuccess = {
+                                    bioState = bio.setEnabled(true, context)
+                                    message = if (bioState) "قفل و ورود بیومتریک فعال شدند." else "قفل فعال شد؛ بیومتریک آماده نبود."
+                                },
+                                onError = { message = "قفل فعال شد؛ $it" },
+                                onCancelled = { message = "قفل فعال شد؛ بیومتریک را هر وقت خواستی از همین‌جا روشن کن." },
+                            )
+                        }
                     }
                 }
             }

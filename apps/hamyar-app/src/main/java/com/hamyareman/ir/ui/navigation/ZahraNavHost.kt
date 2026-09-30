@@ -309,7 +309,12 @@ fun ZahraNavHost() {
             composable(Screen.SecureGallery.route) {
                 SafeContentGuard(onLocked = {
                     nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.SecureGallery.route) { inclusive = true } }
-                }) { SecureMediaGalleryScreen { nav.popBackStack() } }
+                }) {
+                    SecureMediaGalleryScreen(
+                        onBack = { nav.popBackStack() },
+                        onOpenDiary = { nav.navigate(Screen.Diary.route) },
+                    )
+                }
             }
             composable(Screen.Writing.route) {
                 SafeContentGuard(onLocked = {
