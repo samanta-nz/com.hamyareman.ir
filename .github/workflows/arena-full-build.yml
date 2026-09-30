@@ -1,0 +1,109 @@
+name: Arena full build check
+
+# بیلد «کاملِ» پروژه برای پیدا کردن خطاهای کامپایلی که CI اصلی (فقط p09 debug)
+# آن‌ها را نمی‌بیند: اپ ادمین، بیلد release با R8، لینت، تست همه‌ی ماژول‌ها و
+# ادغام منابع هر نه پایه.
+#
+# برای صرفه‌جویی در سهمیهٔ Actions فقط وقتی اجرا می‌شود که پیام کامیت شامل
+# «[ci-build]» باشد یا دستی (workflow_dispatch) اجرا شود.
+
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arena-full-build
+  cancel-in-progress: true
+
+jobs:
+  full-build:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ci-build]')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - name: ۱) تست واحد همهٔ ماژول‌ها
+        id: tests
+        run: |
+          ./gradlew --stacktrace --continue \
+            :core-common:testDebugUnitTest \
+            :feature-pairing:testDebugUnitTest \
+            :feature-playback:testDebugUnitTest \
+            :feature-study:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest
+
+      - name: ۲) کامپایل همهٔ ماژول‌های کتابخانه‌ای
+        if: always()
+        run: |
+          ./gradlew --stacktrace --continue \
+            :core-common:assembleDebug \
+            :core-designsystem:assembleDebug \
+            :core-appwrite:assembleDebug \
+            :core-security:assembleDebug \
+            :core-notifications:assembleDebug \
+            :core-sync:assembleDebug \
+            :feature-pairing:assembleDebug \
+            :feature-hearttoheart:assembleDebug \
+            :feature-calls:assembleDebug \
+            :feature-playback:assembleDebug \
+            :feature-study:assembleDebug
+
+      - name: ۳) APK دیباگِ اپ نهم + اپ ادمین
+        if: always()
+        run: |
+          ./gradlew --stacktrace --continue \
+            :hamyar-app:assembleP09Debug \
+            :hamyar-admin:assembleDebug
+
+      - name: ۴) ادغام منابع برای هر نه پایه
+        if: always()
+        run: |
+          ./gradlew --stacktrace --continue \
+            :hamyar-app:mergeP04DebugResources \
+            :hamyar-app:mergeP05DebugResources \
+            :hamyar-app:mergeP06DebugResources \
+            :hamyar-app:mergeP07DebugResources \
+            :hamyar-app:mergeP08DebugResources \
+            :hamyar-app:mergeP10DebugResources \
+            :hamyar-app:mergeP11DebugResources \
+            :hamyar-app:mergeP12DebugResources
+
+      - name: ۵) بیلد release با R8
+        if: always()
+        run: ./gradlew --stacktrace :hamyar-app:assembleP09Release
+
+      - name: ۶) لینت
+        if: always()
+        run: |
+          ./gradlew --stacktrace --continue \
+            :hamyar-app:lintP09Debug \
+            :hamyar-admin:lintDebug
+
+      - name: گزارش‌ها
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 5
