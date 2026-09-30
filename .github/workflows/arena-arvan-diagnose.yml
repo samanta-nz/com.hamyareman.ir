@@ -40,8 +40,30 @@ jobs:
           set -uo pipefail
           pip install --quiet boto3 requests
           mkdir -p ci-report
-          python3 scripts/diagnose_arvan.py > ci-report/arvan-diagnose.md 2>&1
+          {
+            echo "نسخه‌ها: $(python3 -c 'import boto3,botocore;print("boto3",boto3.__version__,"botocore",botocore.__version__)')"
+            echo
+          } > ci-report/arvan-diagnose.md
+          python3 scripts/diagnose_arvan.py >> ci-report/arvan-diagnose.md 2>&1
           code=$?
+          # بازتولید دقیق مسیر انتشار با یک فایل ۱ کیلوبایتی به‌جای APK ۶۸ مگابایتی
+          {
+            echo
+            echo "## ۶) بازتولید مسیر publish_public_s3_object.py"
+            echo
+            echo '```'
+          } >> ci-report/arvan-diagnose.md
+          head -c 1024 /dev/urandom > /tmp/probe.bin
+          KEY="apk/_diagnose/probe-${GITHUB_RUN_ID}.bin"
+          python3 scripts/publish_public_s3_object.py \
+            --file /tmp/probe.bin \
+            --bucket "$ARVAN_BUCKET" \
+            --key "$KEY" \
+            --public-url "https://$ARVAN_BUCKET.s3.$ARVAN_REGION.arvanstorage.ir/$KEY" \
+            --content-type application/octet-stream \
+            --github-env "" >> ci-report/arvan-diagnose.md 2>&1
+          echo "exit=$? " >> ci-report/arvan-diagnose.md
+          echo '```' >> ci-report/arvan-diagnose.md
           python3 - <<'PY'
           import os, re
           from pathlib import Path

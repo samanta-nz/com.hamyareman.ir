@@ -55,15 +55,24 @@ def main() -> int:
         say("- ⚠️ کلید فاصله/خط جدید اضافی دارد (هنگام کپی در secret جا افتاده).")
         say("")
 
-    session = boto3.session.Session()
-    s3 = session.client(
-        "s3",
-        endpoint_url=ENDPOINT,
-        region_name=REGION,
-        aws_access_key_id=access.strip(),
-        aws_secret_access_key=secret.strip(),
-        config=Config(signature_version="s3v4", retries={"max_attempts": 2, "mode": "standard"}),
+    def make_client(**extra) -> object:
+        return boto3.session.Session().client(
+            "s3",
+            endpoint_url=ENDPOINT,
+            region_name=REGION,
+            aws_access_key_id=access.strip(),
+            aws_secret_access_key=secret.strip(),
+            config=Config(retries={"max_attempts": 2, "mode": "standard"}, **extra),
+        )
+
+    # همان تنظیمی که publish_public_s3_object.py دارد: از botocore 1.36 به بعد
+    # چک‌سام CRC32 روی هر PutObject اجباری می‌شود و ارائه‌دهنده‌های S3-سازگار
+    # آن را با 400 InvalidArgument رد می‌کنند.
+    s3 = make_client(
+        request_checksum_calculation="when_required",
+        response_checksum_validation="when_required",
     )
+    s3_legacy = make_client(signature_version="s3v4")
 
     say("## ۲) اعتبار کلید (ListBuckets)")
     say("")
@@ -100,11 +109,37 @@ def main() -> int:
     probe_key = f"apk/_diagnose/{uuid.uuid4().hex}.txt"
     say("## ۴) نوشتن شیء آزمایشی")
     say("")
+
+    say("### ۴-الف) اثر تنظیم چک‌سام")
+    say("")
+    for name, client in (("بدون اصلاح چک‌سام (s3v4 خام)", s3_legacy), ("با when_required", s3)):
+        key = f"apk/_diagnose/{uuid.uuid4().hex}.txt"
+        try:
+            client.put_object(Bucket=BUCKET, Key=key, Body=b"x", ContentType="text/plain")
+            say(f"- ✅ {name} — PutObject موفق")
+            try:
+                client.delete_object(Bucket=BUCKET, Key=key)
+            except Exception:  # noqa: BLE001
+                pass
+        except Exception as exc:  # noqa: BLE001
+            say(f"- ❌ {name} — {label(exc)}")
+    say("")
+
+    say("### ۴-ب) همان مسیر انتشار (هدرهای واقعی)")
+    say("")
     wrote = False
     try:
-        s3.put_object(Bucket=BUCKET, Key=probe_key, Body=b"hamyar-diagnose", ContentType="text/plain")
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=probe_key,
+            Body=b"hamyar-diagnose",
+            ContentType="text/plain",
+            CacheControl="no-store",
+            Metadata={"sha256": "probe"},
+            ContentLength=15,
+        )
         wrote = True
-        say(f"- ✅ PutObject خصوصی موفق (`{probe_key}`)")
+        say(f"- ✅ PutObject خصوصی با ContentType+CacheControl+Metadata موفق (`{probe_key}`)")
     except Exception as exc:  # noqa: BLE001
         say(f"- ❌ PutObject ناموفق — {label(exc)}")
 
