@@ -4,15 +4,16 @@
   "providers": {
     "parspack": {
       "label": "پارس‌پک",
-      "endpoint": "https://c539776.parspack.net",
+      "endpoint": "https://parspack.net",
       "region": "us-east-1",
-      "bucket": "hamyar-e-man",
-      "publicUrlStyle": "path",
+      "bucket": "c539776",
+      "publicUrlStyle": "virtual-host",
       "accessKeyEnv": "PARSPACK_ACCESS_KEY",
       "secretKeyEnv": "PARSPACK_SECRET_KEY",
       "quotaGb": 20,
-      "notes": "سرور داخلی، ترافیک نامحدود. سبک نشانی عمومی در preflight تأیید می‌شود.",
-      "addressingStyle": "path"
+      "notes": "سرور داخلی، ترافیک نامحدود، ۲۰ GB. میزبان c539776.parspack.net شکل virtual-host باکت c539776 است، نه endpoint حساب.",
+      "addressingStyle": "virtual",
+      "publicBase": "https://c539776.parspack.net"
     },
     "arvan": {
       "label": "آروان",

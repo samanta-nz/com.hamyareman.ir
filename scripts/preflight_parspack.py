@@ -69,99 +69,66 @@ def raw_look(url: str) -> str:
         return f"{type(exc).__name__}: {str(exc)[:150]}"
 
 
+CANDIDATES = [
+    # (برچسب, endpoint, bucket, addressing, signature, region)
+    ("virtual روی parspack.net", "https://parspack.net", "c539776", "virtual", "s3v4", "us-east-1"),
+    ("virtual + SigV2", "https://parspack.net", "c539776", "virtual", "s3", "us-east-1"),
+    ("virtual بدون منطقه", "https://parspack.net", "c539776", "virtual", "s3v4", ""),
+    ("path روی s3.parspack.net", "https://s3.parspack.net", "c539776", "path", "s3v4", "us-east-1"),
+    ("path روی خودِ میزبان", "https://c539776.parspack.net", "c539776", "path", "s3v4", "us-east-1"),
+]
+
+
 def main() -> int:
     where = target("parspack")
     access, secret = where.access_key, where.secret_key
-    say(f"مقصد: **{where.label}** · endpoint `{where.endpoint}`")
     say(f"Access Key: طول {len(access)}، شروع با `{access[:4]}…` · Secret: طول {len(secret)}")
     say()
 
-    say("## ۱) کدام ترکیبِ «سبک نشانی × منطقهٔ امضا» کار می‌کند؟")
+    say("## ۱) کدام پیکربندی کار می‌کند؟")
     say()
-    say("| امضا | منطقه | ListBuckets |")
+    say("| پیکربندی | HeadBucket | PutObject |")
     say("|---|---|---|")
     winner = None
-    buckets: list[str] = []
-    for signature in SIGNATURES:
-        for region in REGIONS:
-            client = build(where.endpoint, region, "path", access, secret, signature)
+    for name, endpoint, bucket, addressing, signature, region in CANDIDATES:
+        client = build(endpoint, region, addressing, access, secret, signature)
+        try:
+            client.head_bucket(Bucket=bucket)
+            head = "✅"
+        except Exception as exc:  # noqa: BLE001
+            head = label(exc)[:55]
+        put = "—"
+        if head == "✅":
+            key = f"_preflight/{uuid.uuid4().hex}.txt"
             try:
-                names = [b["Name"] for b in client.list_buckets().get("Buckets", [])]
-                say(f"| `{signature}` | `{region or '—'}` | ✅ {len(names)} باکت: {', '.join(names) or '—'} |")
+                client.put_object(Bucket=bucket, Key=key, Body=b"hamyar", ContentType="text/plain")
+                put = "✅"
                 if winner is None:
-                    winner = (signature, region)
-                    buckets = names
-            except Exception as exc:  # noqa: BLE001
-                say(f"| `{signature}` | `{region or '—'}` | ❌ {label(exc)} |")
-    say()
-    say("### نگاه خام و ناشناس به سرور")
-    say()
-    say(f"- ریشهٔ endpoint: {raw_look(where.endpoint)}")
-    say(f"- مسیر باکت: {raw_look(where.endpoint.rstrip('/') + '/' + where.bucket)}")
-    say(f"- باکتِ قطعاً ناموجود: {raw_look(where.endpoint.rstrip('/') + '/bucket-that-does-not-exist-x9')}")
-    say()
-
-    if winner is None:
-        say("`ListBuckets` هیچ‌جا جواب نداد (بعضی ارائه‌دهنده‌ها آن را پشتیبانی نمی‌کنند).")
-        say("سراغ عملیات سطح باکت می‌رویم.")
-        say()
-
-    say("## ۲) عملیات سطح باکت")
-    say()
-    bucket = where.bucket
-    say(f"باکت هدف: `{bucket}`" + (f" · باکت‌های دیده‌شده: {', '.join(f'`{b}`' for b in buckets)}" if buckets else ""))
-    say()
-    say("| امضا | منطقه | HeadBucket | CreateBucket | PutObject |")
-    say("|---|---|---|---|---|")
-    working = None
-    for addressing in SIGNATURES:
-        for region in REGIONS:
-            client = build(where.endpoint, region, "path", access, secret, addressing)
-            try:
-                client.head_bucket(Bucket=bucket)
-                head = "✅"
-            except Exception as exc:  # noqa: BLE001
-                head = label(exc)[:60]
-            created = "—"
-            if head != "✅":
+                    winner = (name, endpoint, bucket, addressing, signature, region)
                 try:
-                    client.create_bucket(Bucket=bucket)
-                    created = "✅"
-                except Exception as exc:  # noqa: BLE001
-                    created = label(exc)[:60]
-            put = "—"
-            if head == "✅" or created == "✅":
-                key = f"_preflight/{uuid.uuid4().hex}.txt"
-                try:
-                    client.put_object(Bucket=bucket, Key=key, Body=b"hamyar", ContentType="text/plain")
-                    put = "✅"
-                    if working is None:
-                        working = (addressing, region)
-                    try:
-                        client.delete_object(Bucket=bucket, Key=key)
-                    except Exception:  # noqa: BLE001
-                        pass
-                except Exception as exc:  # noqa: BLE001
-                    put = label(exc)[:60]
-            say(f"| `{addressing}` | `{region or '—'}` | {head} | {created} | {put} |")
-            if working:
-                break
-        if working:
+                    client.delete_object(Bucket=bucket, Key=key)
+                except Exception:  # noqa: BLE001
+                    pass
+            except Exception as exc:  # noqa: BLE001
+                put = label(exc)[:55]
+        say(f"| {name} | {head} | {put} |")
+        if winner:
             break
     say()
 
-    if working is None:
-        say("**هیچ ترکیبی نتوانست بنویسد.** یا کلیدها اشتباه ذخیره شده‌اند (فاصله/کاراکتر جا افتاده)،")
-        say("یا باکت باید اول در پنل پارس‌پک ساخته شود.")
+    if winner is None:
+        say("**هیچ پیکربندی‌ای ننوشت.** محتمل‌ترین علت: کلید مخفی هنگام کپی ناقص/با فاصله ذخیره شده.")
+        say("در پنل پارس‌پک کلید را دوباره بسازید و در Secrets مخزن جایگزین کنید.")
         print("\n".join(lines))
         return 1
 
-    addressing, region = working
-    say(f"**ترکیب درست: امضای `{addressing}` · منطقهٔ `{region or 'پیش‌فرض'}` · سبک path**")
+    name, endpoint, bucket, addressing, signature, region = winner
+    say(f"**پیکربندی درست: {name}**")
+    say(f"- endpoint `{endpoint}` · bucket `{bucket}` · addressing `{addressing}` · signature `{signature}` · region `{region or 'پیش‌فرض'}`")
     say()
-    client = build(where.endpoint, region, "path", access, secret, addressing)
+    client = build(endpoint, region, addressing, access, secret, signature)
 
-    say("## ۳) نشانی عمومی")
+    say("## ۲) نشانی عمومی")
     say()
     key = f"_preflight/{uuid.uuid4().hex}.txt"
     body = b"hamyar-preflight"
@@ -169,26 +136,23 @@ def main() -> int:
     try:
         client.put_object(Bucket=bucket, Key=key, Body=body, ContentType="text/plain", ACL="public-read")
         acl_ok = True
-        say("- ✅ `PutObject` با `ACL=public-read` پذیرفته شد")
+        say("- ✅ `ACL=public-read` روی شیء پذیرفته شد")
     except Exception as exc:  # noqa: BLE001
         say(f"- ⚠️ ACL روی شیء پذیرفته نشد — {label(exc)}")
-        try:
-            client.put_object(Bucket=bucket, Key=key, Body=body, ContentType="text/plain")
-            say("- ✅ نوشتن بدون ACL موفق (دسترسی باید سطح باکت عمومی شود)")
-        except Exception as exc2:  # noqa: BLE001
-            say(f"- ❌ نوشتن ناموفق — {label(exc2)}")
-    host = where.host
-    working_styles: list[str] = []
+        client.put_object(Bucket=bucket, Key=key, Body=body, ContentType="text/plain")
+        say("- ✅ نوشتن بدون ACL موفق")
+    public_base = f"https://{bucket}.parspack.net"
+    working_url = None
     for style, url in (
-        ("path", f"{where.endpoint.rstrip('/')}/{bucket}/{key}"),
-        ("virtual-host", f"https://{bucket}.{host}/{key}"),
+        ("میزبان اختصاصی", f"{public_base}/{key}"),
+        ("path روی endpoint", f"{endpoint.rstrip('/')}/{bucket}/{key}"),
     ):
         try:
             response = requests.get(url, timeout=30)
             ok = response.status_code == 200 and response.content == body
             say(f"- {'✅' if ok else '❌'} **{style}** → HTTP {response.status_code} — `{url}`")
-            if ok:
-                working_styles.append(style)
+            if ok and working_url is None:
+                working_url = url.rsplit("/_preflight", 1)[0]
         except Exception as exc:  # noqa: BLE001
             say(f"- ❌ **{style}** — {label(exc)}")
     try:
@@ -196,16 +160,16 @@ def main() -> int:
     except Exception:  # noqa: BLE001
         pass
     say()
-    if working_styles:
-        say(f"**نشانی عمومی: `{working_styles[0]}`**")
+    if working_url:
+        say(f"**پایهٔ نشانی عمومی: `{working_url}`**")
     else:
-        say("**هیچ نشانی عمومی جواب نداد** — در پنل پارس‌پک دسترسی باکت را روی عمومی بگذارید.")
+        say("**خواندن ناشناس کار نکرد** — در پنل پارس‌پک دسترسی باکت را روی عمومی بگذارید.")
     say()
 
-    say("## ۴) وضعیت فعلی باکت")
+    say("## ۳) وضعیت فعلی باکت")
     say()
+    count = size = 0
     try:
-        count = size = 0
         for page in client.get_paginator("list_objects_v2").paginate(Bucket=bucket):
             for obj in page.get("Contents") or []:
                 count += 1
@@ -219,13 +183,15 @@ def main() -> int:
     Path("ci-report/parspack-settings.json").write_text(
         json.dumps(
             {
-                "endpoint": where.endpoint,
+                "endpoint": endpoint,
                 "bucket": bucket,
-                "addressingStyle": "path",
-                "signatureVersion": addressing,
+                "addressingStyle": addressing,
+                "signatureVersion": signature,
                 "signingRegion": region,
                 "objectAcl": acl_ok,
-                "publicUrlStyle": working_styles[0] if working_styles else None,
+                "publicBase": working_url,
+                "objects": count,
+                "bytes": size,
             },
             ensure_ascii=False,
             indent=2,
