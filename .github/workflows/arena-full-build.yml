@@ -1,8 +1,11 @@
 name: Arena full build check
 
 # بیلد «کاملِ» پروژه برای پیدا کردن خطاهای کامپایلی که CI اصلی (فقط p09 debug)
-# آن‌ها را نمی‌بیند: اپ ادمین، بیلد release با R8، لینت، تست همه‌ی ماژول‌ها و
-# ادغام منابع هر نه پایه.
+# آن‌ها را نمی‌بیند: اپ ادمین، بیلد release با R8، لینت و تست همه‌ی ماژول‌ها.
+#
+# دامنه: فقط پایهٔ نهم (p09) — همان «اپ بیس». هشت پایهٔ دیگر بعداً فقط با عوض‌کردن
+# فهرست کتاب‌ها/تدریس‌ها و فایل‌هایشان از همین بیس مشتق می‌شوند، پس بیلدشان در
+# این بررسی هیچ خطای تازه‌ای پیدا نمی‌کند و فقط وقت و سهمیهٔ Actions می‌خورد.
 #
 # برای صرفه‌جویی در سهمیهٔ Actions فقط وقتی اجرا می‌شود که پیام کامیت شامل
 # «[ci-build]» باشد یا دستی (workflow_dispatch) اجرا شود.
@@ -73,24 +76,11 @@ jobs:
             :hamyar-app:assembleP09Debug \
             :hamyar-admin:assembleDebug
 
-      - name: ۴) ادغام منابع برای هر نه پایه
-        if: always()
-        run: |
-          ./gradlew --stacktrace --continue \
-            :hamyar-app:mergeP04DebugResources \
-            :hamyar-app:mergeP05DebugResources \
-            :hamyar-app:mergeP06DebugResources \
-            :hamyar-app:mergeP07DebugResources \
-            :hamyar-app:mergeP08DebugResources \
-            :hamyar-app:mergeP10DebugResources \
-            :hamyar-app:mergeP11DebugResources \
-            :hamyar-app:mergeP12DebugResources
-
-      - name: ۵) بیلد release با R8
+      - name: ۴) بیلد release با R8
         if: always()
         run: ./gradlew --stacktrace :hamyar-app:assembleP09Release
 
-      - name: ۶) لینت
+      - name: ۵) لینت
         if: always()
         run: |
           ./gradlew --stacktrace --continue \
