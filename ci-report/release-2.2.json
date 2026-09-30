@@ -1,0 +1,40 @@
+{
+  "rowId": "app_release_grade9",
+  "versionCode": 220,
+  "versionName": "2.2",
+  "min": 220,
+  "forced": true,
+  "size": 72060924,
+  "sha256": "5a83a572ff132628baab1b6656b5db027ef4610ead7d42fb9983a0ff7f1fa6b7",
+  "externalUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.2-debug.apk",
+  "internalUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.2-debug.apk",
+  "checks": {
+    "external": "HTTP 206",
+    "internal": "HTTP 206"
+  },
+  "previous": {
+    "latest": 0,
+    "name": "",
+    "min": 0
+  },
+  "payload": {
+    "latest": 220,
+    "name": "2.2",
+    "min": 220,
+    "url": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.2-debug.apk",
+    "externalUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.2-debug.apk",
+    "internalUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.2-debug.apk",
+    "size": 72060924,
+    "sha256": "5a83a572ff132628baab1b6656b5db027ef4610ead7d42fb9983a0ff7f1fa6b7",
+    "chan": "stable",
+    "rollout": 100,
+    "notes": [
+      "آپدیت اجباری نسخهٔ ۲٫۲",
+      "میزبانی هم‌زمان روی سرور داخلی و خارجی"
+    ],
+    "packageName": "com.hamyareman.p09",
+    "gradeId": "grade9",
+    "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959"
+  },
+  "published": true
+}
