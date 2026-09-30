@@ -147,10 +147,12 @@ jobs:
           ARVAN_ENDPOINT: https://s3.ir-thr-at1.arvanstorage.ir
           ARVAN_REGION: ir-thr-at1
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          mkdir -p ci-report
           pip install --quiet boto3 requests
           KEY="apk/$GRADE_ID/$ASSET"
           INTERNAL="https://$ARVAN_BUCKET.s3.ir-thr-at1.arvanstorage.ir/$KEY"
+          set +e
           python3 scripts/publish_public_s3_object.py \
             --file "dist/$ASSET" \
             --bucket "$ARVAN_BUCKET" \
@@ -158,7 +160,27 @@ jobs:
             --public-url "$INTERNAL" \
             --content-type application/vnd.android.package-archive \
             --metadata grade="$GRADE_ID" \
-            --metadata versioncode="$VERSION_CODE"
+            --metadata versioncode="$VERSION_CODE" > ci-report/arvan.log 2>&1
+          code=$?
+          set -e
+          # کلیدها هرگز وارد فایل گزارش نمی‌شوند، حتی اگر کتابخانه آن‌ها را چاپ کند.
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          log = Path("ci-report/arvan.log")
+          text = log.read_text(encoding="utf-8", errors="replace")
+          for name in ("ARVAN_ACCESS_KEY", "ARVAN_SECRET_KEY", "APPWRITE_API_KEY"):
+              value = os.getenv(name, "").strip()
+              if len(value) > 3:
+                  text = text.replace(value, f"<{name}>")
+          text = re.sub(r"[A-Za-z0-9/+=]{40,}", "<redacted>", text)
+          log.write_text(text[-20000:], encoding="utf-8")
+          print(text[-4000:])
+          PY
+          if [ "$code" -ne 0 ]; then
+            echo "::error::آپلود آروان شکست خورد — جزئیات در ci-report/arvan.log"
+            exit "$code"
+          fi
           echo "INTERNAL_URL=$INTERNAL" >> "$GITHUB_ENV"
 
       - name: ۶) اعلام نسخه و روشن‌کردن آپدیت اجباری
@@ -187,16 +209,17 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          test -f ci-report/release-2.2.json || exit 0
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/release-2.2.json
+          git add -f ci-report/release-2.2.json ci-report/arvan.log 2>/dev/null || true
           if ! git diff --cached --quiet; then
             git commit -m "نتیجهٔ انتشار نهم ۲٫۲"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
-          cat ci-report/release-2.2.json >> "$GITHUB_STEP_SUMMARY"
+          for f in ci-report/release-2.2.json ci-report/arvan.log; do
+            [ -f "$f" ] && { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - uses: actions/upload-artifact@v4
         if: always()
