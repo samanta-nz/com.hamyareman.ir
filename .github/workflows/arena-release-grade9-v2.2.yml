@@ -114,14 +114,44 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: ۳) بایگانی در Release «ci-apk» همین مخزن
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
+          # آپلود به ریلیز گاهی با خطای گذرای شبکه می‌افتد؛ اینجا به‌جای اعتماد به
+          # خروجیِ فرمان، «اندازهٔ واقعی فایلِ نشسته روی ریلیز» را ملاک موفقیت می‌گیریم.
+          set +e
+          mkdir -p ci-report
+          LOG=ci-report/release-2.2.log
+          WANT=$(stat -c%s "dist/$ASSET")
+          echo "== مرحلهٔ ۳: بایگانی $ASSET ($WANT بایت)" >> "$LOG"
+
           gh release view ci-apk >/dev/null 2>&1 || \
-            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم."
-          gh release upload ci-apk "dist/$ASSET" --clobber
+            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم." >> "$LOG" 2>&1
+
+          got() {
+            gh api "/repos/${GITHUB_REPOSITORY}/releases/tags/ci-apk" \
+              -q ".assets[]|select(.name==\"$ASSET\")|.size" 2>/dev/null | head -1
+          }
+
+          for i in 1 2 3; do
+            echo "-- تلاش $i" >> "$LOG"
+            gh release delete-asset ci-apk "$ASSET" -y  >> "$LOG" 2>&1
+            gh release upload ci-apk "dist/$ASSET" --clobber >> "$LOG" 2>&1
+            HAVE=$(got)
+            echo "   اندازهٔ روی ریلیز: ${HAVE:-هیچ}" >> "$LOG"
+            [ "${HAVE:-0}" = "$WANT" ] && break
+            sleep 20
+          done
+
+          HAVE=$(got)
+          if [ "${HAVE:-0}" != "$WANT" ]; then
+            echo "✗ آپلود ریلیز ناموفق (${HAVE:-هیچ} ≠ $WANT)" >> "$LOG"
+            exit 1
+          fi
+          echo "✓ آپلود ریلیز تأیید شد" >> "$LOG"
           echo "FALLBACK_URL=https://github.com/${GITHUB_REPOSITORY}/releases/download/ci-apk/$ASSET" >> "$GITHUB_ENV"
+          exit 0
 
       - name: ۴) انتشار در مخزن عمومی (externalUrl)
         env:
@@ -153,7 +183,7 @@ jobs:
             --key "apk/$GRADE_ID/$ASSET" \
             --provider parspack \
             --content-type application/vnd.android.package-archive \
-            --env-name INTERNAL_URL
+            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.2.log
 
       - name: ۶) اعلام نسخه و روشن‌کردن آپدیت اجباری
         env:
@@ -175,23 +205,28 @@ jobs:
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
             --notes "آپدیت اجباری نسخهٔ ۲٫۲|میزبانی هم‌زمان روی سرور داخلی و خارجی" \
-            --out ci-report/release-2.2.json
+            --out ci-report/release-2.2.json 2>&1 | tee -a ci-report/release-2.2.log
 
       - name: ۷) ثبت نتیجه روی برنچ
         if: always()
+        shell: bash
         run: |
-          set -euo pipefail
+          set +e
+          mkdir -p ci-report
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/release-2.2.json ci-report/arvan.log 2>/dev/null || true
+          git add -f ci-report/release-2.2.json ci-report/release-2.2.log
           if ! git diff --cached --quiet; then
             git commit -m "نتیجهٔ انتشار نهم ۲٫۲"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
-          for f in ci-report/release-2.2.json ci-report/arvan.log; do
-            [ -f "$f" ] && { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          for f in ci-report/release-2.2.json ci-report/release-2.2.log; do
+            if [ -f "$f" ]; then
+              { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            fi
           done
+          exit 0
 
       - uses: actions/upload-artifact@v4
         if: always()
