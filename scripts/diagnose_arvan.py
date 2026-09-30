@@ -390,6 +390,43 @@ def main() -> int:
         say(f"- ❌ شمارش نسخه‌ها — {label(exc)}")
     say("")
 
+    say("## ۴-ح) بازنویسی شیء موجود در برابر ساخت شیء تازه")
+    say("")
+    say("اگر بازنویسی کار کند ولی کلید تازه نه، یعنی **سقف تعداد اشیای باکت** پر شده است.")
+    say("")
+    try:
+        listed = s3.list_objects_v2(Bucket=BUCKET, MaxKeys=1000)
+        objects = sorted(listed.get("Contents") or [], key=lambda o: int(o.get("Size") or 0))
+        target = next((o for o in objects if 0 < int(o["Size"]) < 200_000), None)
+        if not target:
+            say("- ⚠️ شیء کوچکی برای تست پیدا نشد.")
+        else:
+            key = target["Key"]
+            head_row = s3.head_object(Bucket=BUCKET, Key=key)
+            original = s3.get_object(Bucket=BUCKET, Key=key)["Body"].read()
+            say(f"- شیء آزمایشی: `{key}` ({len(original)} بایت)")
+            params = {
+                "Bucket": BUCKET,
+                "Key": key,
+                "Body": original,
+                "ContentType": head_row.get("ContentType", "application/octet-stream"),
+            }
+            metadata = head_row.get("Metadata") or {}
+            if metadata:
+                params["Metadata"] = metadata
+            if head_row.get("CacheControl"):
+                params["CacheControl"] = head_row["CacheControl"]
+            try:
+                s3.put_object(**params)
+                say("- ✅ **بازنویسی همان شیء با همان بایت‌ها موفق شد**")
+                say("- → باکت فقط‌خواندنی نیست؛ **سقف تعداد اشیاء پر است**.")
+            except Exception as exc:  # noqa: BLE001
+                say(f"- ❌ بازنویسی هم رد شد — {label(exc)}")
+                say("- → کل نوشتن روی این باکت بسته است (تنظیم سمت آروان).")
+    except Exception as exc:  # noqa: BLE001
+        say(f"- ⚠️ تست ناتمام — {label(exc)}")
+    say("")
+
     say("## ۵) وضعیت APKهای موجود روی آروان")
     say("")
     try:
