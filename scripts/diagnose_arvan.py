@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
@@ -15,6 +16,8 @@ import uuid
 
 import boto3
 import requests
+from botocore.auth import SigV4Auth
+from botocore.awsrequest import AWSRequest
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
@@ -111,6 +114,39 @@ def main() -> int:
     say("## ۴) نوشتن شیء آزمایشی")
     say("")
 
+    say("### ۴-خام) PUT دستی‌امضاشده — متن کامل XML خطا")
+    say("")
+    frozen = boto3.session.Session(
+        aws_access_key_id=access.strip(), aws_secret_access_key=secret.strip()
+    ).get_credentials().get_frozen_credentials()
+    body = b"x"
+    body_sha = hashlib.sha256(body).hexdigest()
+    host = ENDPOINT.split("://", 1)[1]
+    styles = {
+        "path-style": f"{ENDPOINT}/{BUCKET}/apk/_diagnose/{uuid.uuid4().hex}.bin",
+        "virtual-host": f"https://{BUCKET}.{host}/apk/_diagnose/{uuid.uuid4().hex}.bin",
+    }
+    for style, url in styles.items():
+        try:
+            request = AWSRequest(
+                method="PUT",
+                url=url,
+                data=body,
+                headers={"x-amz-content-sha256": body_sha, "content-length": str(len(body))},
+            )
+            SigV4Auth(frozen, "s3", REGION).add_auth(request)
+            response = requests.put(url, data=body, headers=dict(request.headers), timeout=60)
+            say(f"- **{style}** → HTTP {response.status_code}")
+            if response.text.strip():
+                say("")
+                say("```xml")
+                say(response.text.strip()[:1500])
+                say("```")
+            say("")
+        except Exception as exc:  # noqa: BLE001
+            say(f"- **{style}** → ❌ {label(exc)}")
+            say("")
+
     say("### ۴-صفر) پاسخ خام آروان به یک PutObject کمینه")
     say("")
     sent: dict = {}
@@ -119,7 +155,11 @@ def main() -> int:
         sent["method"] = request.method
         sent["url"] = request.url
         sent["headers"] = {
-            k: ("<redacted>" if k.lower() in {"authorization", "x-amz-content-sha256"} else v)
+            str(k): (
+                "<redacted>"
+                if str(k).lower() in {"authorization", "x-amz-content-sha256"}
+                else (v.decode("utf-8", "replace") if isinstance(v, bytes) else str(v))
+            )
             for k, v in dict(request.headers).items()
         }
 
