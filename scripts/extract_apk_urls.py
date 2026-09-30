@@ -145,6 +145,22 @@ def main() -> int:
             bucket = found_buckets[0]
     legacy_buckets = [b for b in found_buckets if b != bucket]
 
+    # شناسهٔ پروژهٔ Appwrite: رشتهٔ hex بیست‌کاراکتری که باکت نیست.
+    hex20 = [s for s in sorted(set(strings)) if re.fullmatch(r"6[a-f0-9]{19}", s)]
+    project = next((h for h in hex20 if h != bucket), "")
+    ext_base = next(
+        (u for u in all_urls if re.search(r"/storage/buckets/[^/]+/files/?$", u) and bucket and bucket in u),
+        f"{endpoint}/storage/buckets/{bucket}/files/" if endpoint and bucket else "",
+    )
+
+    # ۲) مسیرهای کش روی دستگاه — رشته‌های واقعی داخل باینری
+    cache_markers = [
+        "html-cipher-cache", ".hmk1", "media/pdf-cache/", "media-vault",
+        "secure-media", "hamyar-tools", "hamyar-tools-plain", "notes_gallery",
+        "admin-pdf-", "safe-plain-",
+    ]
+    cache_found = [m for m in cache_markers if m in set(strings)]
+
     titles = {i["id"]: i["title"] for i in catalog["items"]}
     cat_keys = {i["aw"]: i["key"] for i in catalog["items"]}
 
@@ -167,6 +183,8 @@ def main() -> int:
                 "key": key,
                 "catalogKey": cat_keys.get(fid, ""),
                 "url": internal,
+                "externalUrl": (ext_base.rstrip("/") + "/" + url_encoder(fid) +
+                                "/view?project=" + project) if ext_base else "",
                 "status": "",
                 "realSize": "",
             }
@@ -215,6 +233,38 @@ def main() -> int:
     if legacy_buckets:
         md.append("| باکت‌های دیگری که در باینری دیده شد | " +
                   "، ".join(f"`{b}`" for b in legacy_buckets) + " |")
+    md.append(f"| شناسهٔ پروژهٔ خارجی | `{project or '—'}` |")
+    md.append("")
+    md.append("### قالب نشانی، همان‌طور که در APK ساخته می‌شود\n")
+    md.append("```")
+    md.append(f"داخلی : {internal_public}/<کلید، هر بخش URL-encode شده>")
+    md.append(f"خارجی : {ext_base}<شناسهٔ فایل>/view?project={project}")
+    md.append("```")
+    md.append("")
+    md.append("### کجا روی گوشی کش می‌شود\n")
+    md.append("رشته‌های زیر عیناً در باینری هستند:\n")
+    md.append("| مسیر کش | چه چیزی |")
+    md.append("|---|---|")
+    notes = {
+        "html-cipher-cache": "HTMLهای درسی — `filesDir/html-cipher-cache/<sha256(fileId|url)[:32]>.hmk1`، فقط ciphertext، TTL شش ساعت",
+        ".hmk1": "پسوند فایل کش رمزشدهٔ HTML",
+        "media/pdf-cache/": "PDFها — `filesDir/media/pdf-cache/<fileId>`",
+        "media-vault": "رسانهٔ شخصی کاربر",
+        "secure-media": "گالری امن",
+        "hamyar-tools": "HTML ابزارها",
+        "hamyar-tools-plain": "نسخهٔ رمزگشایی‌شدهٔ موقت ابزارها در `cacheDir`",
+        "notes_gallery": "جزوه‌های شخصی",
+        "admin-pdf-": "پیش‌نمایش PDF در اپ ادمین",
+        "safe-plain-": "فایل موقت فضای امن",
+    }
+    for mk in cache_found:
+        md.append(f"| `{mk}` | {notes.get(mk, '')} |")
+    if not cache_found:
+        md.append("| — | هیچ‌کدام از نشانه‌های کش در رشته‌ها پیدا نشد |")
+    md.append("")
+    md.append("نکتهٔ مهم: نام فایل کش HTML از **خودِ نشانی** ساخته می‌شود")
+    md.append("(`sha256(\"fileId|url\")`), پس هر تغییر آدرس، کل کش آن فایل‌ها را")
+    md.append("باطل می‌کند و دوباره دانلود می‌شوند.")
     md.append("")
     md.append("### آیا اثری از آروان مانده؟\n")
     arvan = [s for s in strings if "arvan" in s.lower() or "ir-thr" in s.lower() or "hamyar-e-man" in s.lower()]
@@ -281,6 +331,7 @@ def main() -> int:
                 f"| {n} | `{r['id']}` | {r['title'] or r['file']} | "
                 f"{human(r['size'])} | <{r['url']}> |"
             )
+            # نشانی خارجی در CSV هست؛ در جدول تکرار نمی‌شود تا خوانا بماند.
             if args.probe:
                 okmark = "✅" if r["status"] in ("200", "206") else "❌"
                 line += f" {okmark} {r['status']} |"
