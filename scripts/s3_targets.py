@@ -30,6 +30,8 @@ class Target:
     access_key: str
     secret_key: str
     addressing_style: str = "path"
+    signature_version: str = "s3v4"
+    list_objects_version: int = 2
 
     @property
     def host(self) -> str:
@@ -53,6 +55,9 @@ class Target:
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
             config=Config(
+                # بعضی نصب‌های Ceph فقط SigV2 را می‌پذیرند و با SigV4
+                # SignatureDoesNotMatch می‌دهند.
+                signature_version=self.signature_version,
                 # از botocore 1.36 چک‌سام CRC32 روی هر PutObject اجباری می‌شود و
                 # ارائه‌دهنده‌های S3-سازگار آن را رد می‌کنند.
                 request_checksum_calculation="when_required",
@@ -90,4 +95,22 @@ def target(name: str | None = None, *, require_keys: bool = True) -> Target:
         access_key=access,
         secret_key=secret,
         addressing_style=raw.get("addressingStyle", "path"),
+        signature_version=raw.get("signatureVersion", "s3v4"),
+        list_objects_version=int(raw.get("listObjectsVersion", 2)),
     )
+
+
+def list_all(client, bucket: str, target_info: "Target", prefix: str = "") -> list[dict]:
+    """فهرست همهٔ اشیاء؛ اگر ListObjectsV2 پشتیبانی نشود به نسخهٔ ۱ برمی‌گردد."""
+    if target_info.list_objects_version == 2:
+        try:
+            found: list[dict] = []
+            for page in client.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
+                found.extend(page.get("Contents") or [])
+            return found
+        except Exception:  # noqa: BLE001 — به نسخهٔ ۱ برمی‌گردیم
+            pass
+    found = []
+    for page in client.get_paginator("list_objects").paginate(Bucket=bucket, Prefix=prefix):
+        found.extend(page.get("Contents") or [])
+    return found

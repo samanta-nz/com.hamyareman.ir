@@ -22,7 +22,7 @@ from pathlib import Path
 from botocore.exceptions import ClientError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from s3_targets import target  # noqa: E402
+from s3_targets import list_all, target  # noqa: E402
 
 SKIP_PREFIXES = ("staging-v2/", ".staging/", "_preflight/", "apk/_diagnose/")
 
@@ -65,30 +65,24 @@ def main() -> int:
         "",
     ]
 
-    # باکت مقصد باید باشد
+    # باکت مقصد باید در دسترس باشد (ساختنش کار پنل ارائه‌دهنده است)
     try:
         dst.head_bucket(Bucket=dest.bucket)
-    except Exception:  # noqa: BLE001
-        try:
-            dst.create_bucket(Bucket=dest.bucket)
-            lines.append(f"- باکت `{dest.bucket}` ساخته شد.")
-        except Exception as exc:  # noqa: BLE001
-            lines.append(f"- ❌ ساخت باکت مقصد ناموفق — {error_label(exc)}")
-            args.out.parent.mkdir(parents=True, exist_ok=True)
-            args.out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-            print("\n".join(lines))
-            return 1
+        lines.append(f"- ✅ باکت مقصد `{dest.bucket}` در دسترس است.")
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"- ❌ باکت مقصد در دسترس نیست — {error_label(exc)}")
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print("\n".join(lines))
+        return 1
 
     # فهرست مبدأ
     objects: list[dict] = []
-    for page in src.get_paginator("list_objects_v2").paginate(
-        Bucket=source.bucket, Prefix=args.prefix
-    ):
-        for obj in page.get("Contents") or []:
-            key = obj["Key"]
-            if key.endswith("/") or any(key.startswith(p) for p in SKIP_PREFIXES):
-                continue
-            objects.append(obj)
+    for obj in list_all(src, source.bucket, source, args.prefix):
+        key = obj["Key"]
+        if key.endswith("/") or any(key.startswith(p) for p in SKIP_PREFIXES):
+            continue
+        objects.append(obj)
     objects.sort(key=lambda o: o["Key"])
     total_bytes = sum(int(o["Size"]) for o in objects)
     lines += [
@@ -176,10 +170,9 @@ def main() -> int:
     dest_count = 0
     dest_bytes = 0
     try:
-        for page in dst.get_paginator("list_objects_v2").paginate(Bucket=dest.bucket):
-            for obj in page.get("Contents") or []:
-                dest_count += 1
-                dest_bytes += int(obj.get("Size") or 0)
+        for obj in list_all(dst, dest.bucket, dest):
+            dest_count += 1
+            dest_bytes += int(obj.get("Size") or 0)
         lines += [
             f"- وضعیت مقصد: **{dest_count}** شیء، **{dest_bytes / 1073741824:.2f} GB**",
             "",

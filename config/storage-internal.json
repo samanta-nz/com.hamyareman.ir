@@ -11,9 +11,13 @@
       "accessKeyEnv": "PARSPACK_ACCESS_KEY",
       "secretKeyEnv": "PARSPACK_SECRET_KEY",
       "quotaGb": 20,
-      "notes": "سرور داخلی، ترافیک نامحدود، ۲۰ GB. میزبان c539776.parspack.net شکل virtual-host باکت c539776 است، نه endpoint حساب.",
+      "notes": "تأییدشده در آمادگی‌سنجی ۲۰۲۶-۰۹-۳۰: فقط SigV2 امضا را می‌پذیرد و ListObjectsV2 خطای ۵۰۰ می‌دهد (نسخهٔ ۱ لازم است). ACL=public-read روی شیء پذیرفته می‌شود.",
       "addressingStyle": "virtual",
-      "publicBase": "https://c539776.parspack.net"
+      "publicBase": "https://c539776.parspack.net",
+      "bucketTitle": "HamyareMan",
+      "signatureVersion": "s3",
+      "listObjectsVersion": 1,
+      "datacenter": "Tehran 3"
     },
     "arvan": {
       "label": "آروان",
@@ -24,7 +28,9 @@
       "accessKeyEnv": "ARVAN_ACCESS_KEY",
       "secretKeyEnv": "ARVAN_SECRET_KEY",
       "notes": "از ۲۰۲۶-۰۹-۳۰ باکت سمت ارائه‌دهنده فقط‌خواندنی شد؛ فقط منبع خواندن برای مهاجرت است.",
-      "addressingStyle": "virtual"
+      "addressingStyle": "virtual",
+      "signatureVersion": "s3v4",
+      "listObjectsVersion": 2
     }
   }
 }
