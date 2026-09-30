@@ -12,6 +12,34 @@
 | endpoint خارجی | `https://cloud.appwrite.io/v1` |
 | باکت محتوا | `6abb564d00155cc56d65` |
 | باکت‌های دیگری که در باینری دیده شد | `wellness-media` |
+| شناسهٔ پروژهٔ خارجی | `6a9d59e3002751cc3ea8` |
+
+### قالب نشانی، همان‌طور که در APK ساخته می‌شود
+
+```
+داخلی : https://c539776.parspack.net/<کلید، هر بخش URL-encode شده>
+خارجی : https://sgp.cloud.appwrite.io/v1/storage/buckets/6abb564d00155cc56d65/files/<شناسهٔ فایل>/view?project=6a9d59e3002751cc3ea8
+```
+
+### کجا روی گوشی کش می‌شود
+
+رشته‌های زیر عیناً در باینری هستند:
+
+| مسیر کش | چه چیزی |
+|---|---|
+| `html-cipher-cache` | HTMLهای درسی — `filesDir/html-cipher-cache/<sha256(fileId|url)[:32]>.hmk1`، فقط ciphertext، TTL شش ساعت |
+| `.hmk1` | پسوند فایل کش رمزشدهٔ HTML |
+| `media/pdf-cache/` | PDFها — `filesDir/media/pdf-cache/<fileId>` |
+| `media-vault` | رسانهٔ شخصی کاربر |
+| `secure-media` | گالری امن |
+| `hamyar-tools` | HTML ابزارها |
+| `hamyar-tools-plain` | نسخهٔ رمزگشایی‌شدهٔ موقت ابزارها در `cacheDir` |
+| `notes_gallery` | جزوه‌های شخصی |
+| `safe-plain-` | فایل موقت فضای امن |
+
+نکتهٔ مهم: نام فایل کش HTML از **خودِ نشانی** ساخته می‌شود
+(`sha256("fileId|url")`), پس هر تغییر آدرس، کل کش آن فایل‌ها را
+باطل می‌کند و دوباره دانلود می‌شوند.
 
 ### آیا اثری از آروان مانده؟
 
@@ -79,10 +107,10 @@
 
 | نوع | تعداد | حجم | سالم |
 |---|---:|---:|---:|
-| HTML | 168 | 191.0 MB | 95/168 |
-| JPG | 56 | 6.0 MB | 28/56 |
+| HTML | 168 | 191.0 MB | 168/168 |
+| JPG | 56 | 6.0 MB | 56/56 |
 | MP3 | 8 | 213.6 MB | 8/8 |
-| PDF | 28 | 8.4 MB | 3/28 |
+| PDF | 28 | 8.4 MB | 28/28 |
 
 ## ناسازگاری catalog.json با server-map.json
 
@@ -92,79 +120,79 @@
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `Amzshghh-01-speed-reading.html` | Amzshghh-01-speed-reading.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-01-speed-reading.html> | ❌ 404 |
-| 2 | `Amzshghh-02-handwriting.html` | Amzshghh-02-handwriting.html | 7 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-02-handwriting.html> | ❌ 404 |
-| 3 | `Amzshghh-03-touch-typing.html` | Amzshghh-03-touch-typing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-03-touch-typing.html> | ❌ 404 |
-| 4 | `Amzshghh-04-note-taking.html` | Amzshghh-04-note-taking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-04-note-taking.html> | ❌ 404 |
-| 5 | `Amzshghh-05-summarizing.html` | Amzshghh-05-summarizing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-05-summarizing.html> | ❌ 404 |
-| 6 | `Amzshghh-06-debate-principles.html` | Amzshghh-06-debate-principles.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-06-debate-principles.html> | ❌ 404 |
-| 7 | `Amzshghh-07-logical-fallacies.html` | Amzshghh-07-logical-fallacies.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-07-logical-fallacies.html> | ❌ 404 |
-| 8 | `Amzshghh-08-public-speaking.html` | Amzshghh-08-public-speaking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-08-public-speaking.html> | ❌ 404 |
-| 9 | `Amzshghh-09-speech-anxiety.html` | Amzshghh-09-speech-anxiety.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-09-speech-anxiety.html> | ❌ 404 |
-| 10 | `Amzshghh-10-formal-email.html` | Amzshghh-10-formal-email.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-10-formal-email.html> | ❌ 404 |
-| 11 | `Amzshghh-11-active-listening.html` | Amzshghh-11-active-listening.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-11-active-listening.html> | ❌ 404 |
-| 12 | `Amzshghh-12-mental-math.html` | Amzshghh-12-mental-math.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-12-mental-math.html> | ❌ 404 |
-| 13 | `Amzshghh-13-memory-boost.html` | Amzshghh-13-memory-boost.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-13-memory-boost.html> | ❌ 404 |
-| 14 | `Amzshghh-14-problem-solving.html` | Amzshghh-14-problem-solving.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-14-problem-solving.html> | ❌ 404 |
-| 15 | `Amzshghh-15-relationships.html` | Amzshghh-15-relationships.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-15-relationships.html> | ❌ 404 |
-| 16 | `Amzshghh-16-self-awareness.html` | Amzshghh-16-self-awareness.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-16-self-awareness.html> | ❌ 404 |
-| 17 | `Amzshghh-17-mental-traps.html` | Amzshghh-17-mental-traps.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-17-mental-traps.html> | ❌ 404 |
-| 18 | `Amzshghh-18-resilience.html` | Amzshghh-18-resilience.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-18-resilience.html> | ❌ 404 |
-| 19 | `Amzshghh-19-daily-planning.html` | Amzshghh-19-daily-planning.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-19-daily-planning.html> | ❌ 404 |
-| 20 | `Amzshghh-20-habit-building.html` | Amzshghh-20-habit-building.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-20-habit-building.html> | ❌ 404 |
-| 21 | `Amzshghh-21-study-space.html` | Amzshghh-21-study-space.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-21-study-space.html> | ❌ 404 |
-| 22 | `Amzshghh-22-windows-basics.html` | Amzshghh-22-windows-basics.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-22-windows-basics.html> | ❌ 404 |
-| 23 | `Amzshghh-23-ai-literacy.html` | Amzshghh-23-ai-literacy.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-23-ai-literacy.html> | ❌ 404 |
-| 24 | `Amzshghh-24-smart-search.html` | Amzshghh-24-smart-search.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-24-smart-search.html> | ❌ 404 |
-| 25 | `Amzshghh-25-online-safety.html` | Amzshghh-25-online-safety.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-25-online-safety.html> | ❌ 404 |
-| 26 | `Amzshghh-26-fake-news.html` | Amzshghh-26-fake-news.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-26-fake-news.html> | ❌ 404 |
-| 27 | `Amzshghh-27-teamwork.html` | Amzshghh-27-teamwork.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-27-teamwork.html> | ❌ 404 |
-| 28 | `Amzshghh-28-conflict-friends.html` | Amzshghh-28-conflict-friends.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-28-conflict-friends.html> | ❌ 404 |
-| 29 | `Amzshghh-29-saying-no.html` | Amzshghh-29-saying-no.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-29-saying-no.html> | ❌ 404 |
-| 30 | `Amzshghh-30-budgeting.html` | Amzshghh-30-budgeting.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-30-budgeting.html> | ❌ 404 |
-| 31 | `Amzshghh-31-needs-vs-wants.html` | Amzshghh-31-needs-vs-wants.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-31-needs-vs-wants.html> | ❌ 404 |
-| 32 | `Amzshghh-32-brainstorming.html` | Amzshghh-32-brainstorming.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-32-brainstorming.html> | ❌ 404 |
-| 33 | `Amzshghh-33-creative-thinking.html` | Amzshghh-33-creative-thinking.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-33-creative-thinking.html> | ❌ 404 |
-| 34 | `Amzshghh-34-music-theory.html` | Amzshghh-34-music-theory.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-34-music-theory.html> | ❌ 404 |
-| 35 | `Background-music.html` | Background-music.html | 8.2 MB | <https://c539776.parspack.net/common/mirror/Background-music.html> | ❌ 404 |
-| 36 | `br-01.html` | br-01.html | 801 KB | <https://c539776.parspack.net/common/mirror/br-01.html> | ❌ 404 |
-| 37 | `br-02.html` | br-02.html | 659 KB | <https://c539776.parspack.net/common/mirror/br-02.html> | ❌ 404 |
-| 38 | `br-03.html` | br-03.html | 901 KB | <https://c539776.parspack.net/common/mirror/br-03.html> | ❌ 404 |
-| 39 | `br-04.html` | br-04.html | 774 KB | <https://c539776.parspack.net/common/mirror/br-04.html> | ❌ 404 |
-| 40 | `br-05.html` | br-05.html | 781 KB | <https://c539776.parspack.net/common/mirror/br-05.html> | ❌ 404 |
-| 41 | `br-06.html` | br-06.html | 722 KB | <https://c539776.parspack.net/common/mirror/br-06.html> | ❌ 404 |
-| 42 | `br-07.html` | br-07.html | 732 KB | <https://c539776.parspack.net/common/mirror/br-07.html> | ❌ 404 |
-| 43 | `br-08.html` | br-08.html | 803 KB | <https://c539776.parspack.net/common/mirror/br-08.html> | ❌ 404 |
-| 44 | `ex-01.html` | ex-01.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-01.html> | ❌ 404 |
-| 45 | `ex-02.html` | ex-02.html | 1.6 MB | <https://c539776.parspack.net/common/mirror/ex-02.html> | ❌ 404 |
-| 46 | `ex-03.html` | ex-03.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-03.html> | ❌ 404 |
-| 47 | `ex-04.html` | ex-04.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/ex-04.html> | ❌ 404 |
-| 48 | `ex-05.html` | ex-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/ex-05.html> | ❌ 404 |
-| 49 | `ex-06.html` | ex-06.html | 1.9 MB | <https://c539776.parspack.net/common/mirror/ex-06.html> | ❌ 404 |
-| 50 | `ex-07.html` | ex-07.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-07.html> | ❌ 404 |
-| 51 | `ex-08.html` | ex-08.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-08.html> | ❌ 404 |
-| 52 | `ex-09.html` | ex-09.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-09.html> | ❌ 404 |
-| 53 | `ex-10.html` | ex-10.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-10.html> | ❌ 404 |
-| 54 | `ex-11.html` | ex-11.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-11.html> | ❌ 404 |
-| 55 | `ex-12.html` | ex-12.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-12.html> | ❌ 404 |
-| 56 | `ex-13.html` | ex-13.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-13.html> | ❌ 404 |
-| 57 | `ex-14.html` | ex-14.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-14.html> | ❌ 404 |
-| 58 | `ex-15.html` | ex-15.html | 1.5 MB | <https://c539776.parspack.net/common/mirror/ex-15.html> | ❌ 404 |
-| 59 | `yg-01.html` | yg-01.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/yg-01.html> | ❌ 404 |
-| 60 | `yg-02.html` | yg-02.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/yg-02.html> | ❌ 404 |
-| 61 | `yg-03.html` | yg-03.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-03.html> | ❌ 404 |
-| 62 | `yg-04.html` | yg-04.html | 2.5 MB | <https://c539776.parspack.net/common/mirror/yg-04.html> | ❌ 404 |
-| 63 | `yg-05.html` | yg-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-05.html> | ❌ 404 |
-| 64 | `yg-06.html` | yg-06.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-06.html> | ❌ 404 |
-| 65 | `yg-07.html` | yg-07.html | 2.3 MB | <https://c539776.parspack.net/common/mirror/yg-07.html> | ❌ 404 |
-| 66 | `yg-08.html` | yg-08.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/yg-08.html> | ❌ 404 |
-| 67 | `yg-09.html` | yg-09.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-09.html> | ❌ 404 |
-| 68 | `yg-10.html` | yg-10.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-10.html> | ❌ 404 |
-| 69 | `yg-11.html` | yg-11.html | 3.4 MB | <https://c539776.parspack.net/common/mirror/yg-11.html> | ❌ 404 |
-| 70 | `yg-12.html` | yg-12.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-12.html> | ❌ 404 |
-| 71 | `yg-13.html` | yg-13.html | 3.5 MB | <https://c539776.parspack.net/common/mirror/yg-13.html> | ❌ 404 |
-| 72 | `yg-14.html` | yg-14.html | 2.7 MB | <https://c539776.parspack.net/common/mirror/yg-14.html> | ❌ 404 |
-| 73 | `yg-15.html` | yg-15.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/yg-15.html> | ❌ 404 |
+| 1 | `Amzshghh-01-speed-reading.html` | Amzshghh-01-speed-reading.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-01-speed-reading.html> | ✅ 206 |
+| 2 | `Amzshghh-02-handwriting.html` | Amzshghh-02-handwriting.html | 7 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-02-handwriting.html> | ✅ 206 |
+| 3 | `Amzshghh-03-touch-typing.html` | Amzshghh-03-touch-typing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-03-touch-typing.html> | ✅ 206 |
+| 4 | `Amzshghh-04-note-taking.html` | Amzshghh-04-note-taking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-04-note-taking.html> | ✅ 206 |
+| 5 | `Amzshghh-05-summarizing.html` | Amzshghh-05-summarizing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-05-summarizing.html> | ✅ 206 |
+| 6 | `Amzshghh-06-debate-principles.html` | Amzshghh-06-debate-principles.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-06-debate-principles.html> | ✅ 206 |
+| 7 | `Amzshghh-07-logical-fallacies.html` | Amzshghh-07-logical-fallacies.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-07-logical-fallacies.html> | ✅ 206 |
+| 8 | `Amzshghh-08-public-speaking.html` | Amzshghh-08-public-speaking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-08-public-speaking.html> | ✅ 206 |
+| 9 | `Amzshghh-09-speech-anxiety.html` | Amzshghh-09-speech-anxiety.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-09-speech-anxiety.html> | ✅ 206 |
+| 10 | `Amzshghh-10-formal-email.html` | Amzshghh-10-formal-email.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-10-formal-email.html> | ✅ 206 |
+| 11 | `Amzshghh-11-active-listening.html` | Amzshghh-11-active-listening.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-11-active-listening.html> | ✅ 206 |
+| 12 | `Amzshghh-12-mental-math.html` | Amzshghh-12-mental-math.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-12-mental-math.html> | ✅ 206 |
+| 13 | `Amzshghh-13-memory-boost.html` | Amzshghh-13-memory-boost.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-13-memory-boost.html> | ✅ 206 |
+| 14 | `Amzshghh-14-problem-solving.html` | Amzshghh-14-problem-solving.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-14-problem-solving.html> | ✅ 206 |
+| 15 | `Amzshghh-15-relationships.html` | Amzshghh-15-relationships.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-15-relationships.html> | ✅ 206 |
+| 16 | `Amzshghh-16-self-awareness.html` | Amzshghh-16-self-awareness.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-16-self-awareness.html> | ✅ 206 |
+| 17 | `Amzshghh-17-mental-traps.html` | Amzshghh-17-mental-traps.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-17-mental-traps.html> | ✅ 206 |
+| 18 | `Amzshghh-18-resilience.html` | Amzshghh-18-resilience.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-18-resilience.html> | ✅ 206 |
+| 19 | `Amzshghh-19-daily-planning.html` | Amzshghh-19-daily-planning.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-19-daily-planning.html> | ✅ 206 |
+| 20 | `Amzshghh-20-habit-building.html` | Amzshghh-20-habit-building.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-20-habit-building.html> | ✅ 206 |
+| 21 | `Amzshghh-21-study-space.html` | Amzshghh-21-study-space.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-21-study-space.html> | ✅ 206 |
+| 22 | `Amzshghh-22-windows-basics.html` | Amzshghh-22-windows-basics.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-22-windows-basics.html> | ✅ 206 |
+| 23 | `Amzshghh-23-ai-literacy.html` | Amzshghh-23-ai-literacy.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-23-ai-literacy.html> | ✅ 206 |
+| 24 | `Amzshghh-24-smart-search.html` | Amzshghh-24-smart-search.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-24-smart-search.html> | ✅ 206 |
+| 25 | `Amzshghh-25-online-safety.html` | Amzshghh-25-online-safety.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-25-online-safety.html> | ✅ 206 |
+| 26 | `Amzshghh-26-fake-news.html` | Amzshghh-26-fake-news.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-26-fake-news.html> | ✅ 206 |
+| 27 | `Amzshghh-27-teamwork.html` | Amzshghh-27-teamwork.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-27-teamwork.html> | ✅ 206 |
+| 28 | `Amzshghh-28-conflict-friends.html` | Amzshghh-28-conflict-friends.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-28-conflict-friends.html> | ✅ 206 |
+| 29 | `Amzshghh-29-saying-no.html` | Amzshghh-29-saying-no.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-29-saying-no.html> | ✅ 206 |
+| 30 | `Amzshghh-30-budgeting.html` | Amzshghh-30-budgeting.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-30-budgeting.html> | ✅ 206 |
+| 31 | `Amzshghh-31-needs-vs-wants.html` | Amzshghh-31-needs-vs-wants.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-31-needs-vs-wants.html> | ✅ 206 |
+| 32 | `Amzshghh-32-brainstorming.html` | Amzshghh-32-brainstorming.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-32-brainstorming.html> | ✅ 206 |
+| 33 | `Amzshghh-33-creative-thinking.html` | Amzshghh-33-creative-thinking.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-33-creative-thinking.html> | ✅ 206 |
+| 34 | `Amzshghh-34-music-theory.html` | Amzshghh-34-music-theory.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-34-music-theory.html> | ✅ 206 |
+| 35 | `Background-music.html` | Background-music.html | 8.2 MB | <https://c539776.parspack.net/common/mirror/Background-music.html> | ✅ 206 |
+| 36 | `br-01.html` | br-01.html | 801 KB | <https://c539776.parspack.net/common/mirror/br-01.html> | ✅ 206 |
+| 37 | `br-02.html` | br-02.html | 659 KB | <https://c539776.parspack.net/common/mirror/br-02.html> | ✅ 206 |
+| 38 | `br-03.html` | br-03.html | 901 KB | <https://c539776.parspack.net/common/mirror/br-03.html> | ✅ 206 |
+| 39 | `br-04.html` | br-04.html | 774 KB | <https://c539776.parspack.net/common/mirror/br-04.html> | ✅ 206 |
+| 40 | `br-05.html` | br-05.html | 781 KB | <https://c539776.parspack.net/common/mirror/br-05.html> | ✅ 206 |
+| 41 | `br-06.html` | br-06.html | 722 KB | <https://c539776.parspack.net/common/mirror/br-06.html> | ✅ 206 |
+| 42 | `br-07.html` | br-07.html | 732 KB | <https://c539776.parspack.net/common/mirror/br-07.html> | ✅ 206 |
+| 43 | `br-08.html` | br-08.html | 803 KB | <https://c539776.parspack.net/common/mirror/br-08.html> | ✅ 206 |
+| 44 | `ex-01.html` | ex-01.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-01.html> | ✅ 206 |
+| 45 | `ex-02.html` | ex-02.html | 1.6 MB | <https://c539776.parspack.net/common/mirror/ex-02.html> | ✅ 206 |
+| 46 | `ex-03.html` | ex-03.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-03.html> | ✅ 206 |
+| 47 | `ex-04.html` | ex-04.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/ex-04.html> | ✅ 206 |
+| 48 | `ex-05.html` | ex-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/ex-05.html> | ✅ 206 |
+| 49 | `ex-06.html` | ex-06.html | 1.9 MB | <https://c539776.parspack.net/common/mirror/ex-06.html> | ✅ 206 |
+| 50 | `ex-07.html` | ex-07.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-07.html> | ✅ 206 |
+| 51 | `ex-08.html` | ex-08.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-08.html> | ✅ 206 |
+| 52 | `ex-09.html` | ex-09.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-09.html> | ✅ 206 |
+| 53 | `ex-10.html` | ex-10.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-10.html> | ✅ 206 |
+| 54 | `ex-11.html` | ex-11.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-11.html> | ✅ 206 |
+| 55 | `ex-12.html` | ex-12.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-12.html> | ✅ 206 |
+| 56 | `ex-13.html` | ex-13.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-13.html> | ✅ 206 |
+| 57 | `ex-14.html` | ex-14.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-14.html> | ✅ 206 |
+| 58 | `ex-15.html` | ex-15.html | 1.5 MB | <https://c539776.parspack.net/common/mirror/ex-15.html> | ✅ 206 |
+| 59 | `yg-01.html` | yg-01.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/yg-01.html> | ✅ 206 |
+| 60 | `yg-02.html` | yg-02.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/yg-02.html> | ✅ 206 |
+| 61 | `yg-03.html` | yg-03.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-03.html> | ✅ 206 |
+| 62 | `yg-04.html` | yg-04.html | 2.5 MB | <https://c539776.parspack.net/common/mirror/yg-04.html> | ✅ 206 |
+| 63 | `yg-05.html` | yg-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-05.html> | ✅ 206 |
+| 64 | `yg-06.html` | yg-06.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-06.html> | ✅ 206 |
+| 65 | `yg-07.html` | yg-07.html | 2.3 MB | <https://c539776.parspack.net/common/mirror/yg-07.html> | ✅ 206 |
+| 66 | `yg-08.html` | yg-08.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/yg-08.html> | ✅ 206 |
+| 67 | `yg-09.html` | yg-09.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-09.html> | ✅ 206 |
+| 68 | `yg-10.html` | yg-10.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-10.html> | ✅ 206 |
+| 69 | `yg-11.html` | yg-11.html | 3.4 MB | <https://c539776.parspack.net/common/mirror/yg-11.html> | ✅ 206 |
+| 70 | `yg-12.html` | yg-12.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-12.html> | ✅ 206 |
+| 71 | `yg-13.html` | yg-13.html | 3.5 MB | <https://c539776.parspack.net/common/mirror/yg-13.html> | ✅ 206 |
+| 72 | `yg-14.html` | yg-14.html | 2.7 MB | <https://c539776.parspack.net/common/mirror/yg-14.html> | ✅ 206 |
+| 73 | `yg-15.html` | yg-15.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/yg-15.html> | ✅ 206 |
 | 74 | `ryazif01d01.html` | ryazif01d01.html | 58 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d01.html> | ✅ 206 |
 | 75 | `ryazif01d02.html` | ryazif01d02.html | 61 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d02.html> | ✅ 206 |
 | 76 | `ryazif01d03.html` | ryazif01d03.html | 72 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d03.html> | ✅ 206 |
@@ -265,34 +293,34 @@
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `ex-01.jpg` | ex-01.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-01.jpg> | ❌ 404 |
-| 2 | `ex-02.jpg` | ex-02.jpg | 67 KB | <https://c539776.parspack.net/common/mirror/ex-02.jpg> | ❌ 404 |
-| 3 | `ex-03.jpg` | ex-03.jpg | 71 KB | <https://c539776.parspack.net/common/mirror/ex-03.jpg> | ❌ 404 |
-| 4 | `ex-04.jpg` | ex-04.jpg | 77 KB | <https://c539776.parspack.net/common/mirror/ex-04.jpg> | ❌ 404 |
-| 5 | `ex-05.jpg` | ex-05.jpg | 60 KB | <https://c539776.parspack.net/common/mirror/ex-05.jpg> | ❌ 404 |
-| 6 | `ex-06.jpg` | ex-06.jpg | 52 KB | <https://c539776.parspack.net/common/mirror/ex-06.jpg> | ❌ 404 |
-| 7 | `ex-07.jpg` | ex-07.jpg | 90 KB | <https://c539776.parspack.net/common/mirror/ex-07.jpg> | ❌ 404 |
-| 8 | `ex-08.jpg` | ex-08.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-08.jpg> | ❌ 404 |
-| 9 | `ex-09.jpg` | ex-09.jpg | 64 KB | <https://c539776.parspack.net/common/mirror/ex-09.jpg> | ❌ 404 |
-| 10 | `ex-10.jpg` | ex-10.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-10.jpg> | ❌ 404 |
-| 11 | `ex-11.jpg` | ex-11.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-11.jpg> | ❌ 404 |
-| 12 | `ex-12.jpg` | ex-12.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-12.jpg> | ❌ 404 |
-| 13 | `ex-13.jpg` | ex-13.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-13.jpg> | ❌ 404 |
-| 14 | `ex-14.jpg` | ex-14.jpg | 73 KB | <https://c539776.parspack.net/common/mirror/ex-14.jpg> | ❌ 404 |
-| 15 | `ex-15.jpg` | ex-15.jpg | 74 KB | <https://c539776.parspack.net/common/mirror/ex-15.jpg> | ❌ 404 |
-| 16 | `yg-01.jpg` | yg-01.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-01.jpg> | ❌ 404 |
-| 17 | `yg-02.jpg` | yg-02.jpg | 142 KB | <https://c539776.parspack.net/common/mirror/yg-02.jpg> | ❌ 404 |
-| 18 | `yg-03.jpg` | yg-03.jpg | 149 KB | <https://c539776.parspack.net/common/mirror/yg-03.jpg> | ❌ 404 |
-| 19 | `yg-04.jpg` | yg-04.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-04.jpg> | ❌ 404 |
-| 20 | `yg-07.jpg` | yg-07.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-07.jpg> | ❌ 404 |
-| 21 | `yg-08.jpg` | yg-08.jpg | 156 KB | <https://c539776.parspack.net/common/mirror/yg-08.jpg> | ❌ 404 |
-| 22 | `yg-09.jpg` | yg-09.jpg | 144 KB | <https://c539776.parspack.net/common/mirror/yg-09.jpg> | ❌ 404 |
-| 23 | `yg-10.jpg` | yg-10.jpg | 145 KB | <https://c539776.parspack.net/common/mirror/yg-10.jpg> | ❌ 404 |
-| 24 | `yg-11.jpg` | yg-11.jpg | 160 KB | <https://c539776.parspack.net/common/mirror/yg-11.jpg> | ❌ 404 |
-| 25 | `yg-12.jpg` | yg-12.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-12.jpg> | ❌ 404 |
-| 26 | `yg-13.jpg` | yg-13.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-13.jpg> | ❌ 404 |
-| 27 | `yg-14.jpg` | yg-14.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-14.jpg> | ❌ 404 |
-| 28 | `yg-15.jpg` | yg-15.jpg | 164 KB | <https://c539776.parspack.net/common/mirror/yg-15.jpg> | ❌ 404 |
+| 1 | `ex-01.jpg` | ex-01.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-01.jpg> | ✅ 206 |
+| 2 | `ex-02.jpg` | ex-02.jpg | 67 KB | <https://c539776.parspack.net/common/mirror/ex-02.jpg> | ✅ 206 |
+| 3 | `ex-03.jpg` | ex-03.jpg | 71 KB | <https://c539776.parspack.net/common/mirror/ex-03.jpg> | ✅ 206 |
+| 4 | `ex-04.jpg` | ex-04.jpg | 77 KB | <https://c539776.parspack.net/common/mirror/ex-04.jpg> | ✅ 206 |
+| 5 | `ex-05.jpg` | ex-05.jpg | 60 KB | <https://c539776.parspack.net/common/mirror/ex-05.jpg> | ✅ 206 |
+| 6 | `ex-06.jpg` | ex-06.jpg | 52 KB | <https://c539776.parspack.net/common/mirror/ex-06.jpg> | ✅ 206 |
+| 7 | `ex-07.jpg` | ex-07.jpg | 90 KB | <https://c539776.parspack.net/common/mirror/ex-07.jpg> | ✅ 206 |
+| 8 | `ex-08.jpg` | ex-08.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-08.jpg> | ✅ 206 |
+| 9 | `ex-09.jpg` | ex-09.jpg | 64 KB | <https://c539776.parspack.net/common/mirror/ex-09.jpg> | ✅ 206 |
+| 10 | `ex-10.jpg` | ex-10.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-10.jpg> | ✅ 206 |
+| 11 | `ex-11.jpg` | ex-11.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-11.jpg> | ✅ 206 |
+| 12 | `ex-12.jpg` | ex-12.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-12.jpg> | ✅ 206 |
+| 13 | `ex-13.jpg` | ex-13.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-13.jpg> | ✅ 206 |
+| 14 | `ex-14.jpg` | ex-14.jpg | 73 KB | <https://c539776.parspack.net/common/mirror/ex-14.jpg> | ✅ 206 |
+| 15 | `ex-15.jpg` | ex-15.jpg | 74 KB | <https://c539776.parspack.net/common/mirror/ex-15.jpg> | ✅ 206 |
+| 16 | `yg-01.jpg` | yg-01.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-01.jpg> | ✅ 206 |
+| 17 | `yg-02.jpg` | yg-02.jpg | 142 KB | <https://c539776.parspack.net/common/mirror/yg-02.jpg> | ✅ 206 |
+| 18 | `yg-03.jpg` | yg-03.jpg | 149 KB | <https://c539776.parspack.net/common/mirror/yg-03.jpg> | ✅ 206 |
+| 19 | `yg-04.jpg` | yg-04.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-04.jpg> | ✅ 206 |
+| 20 | `yg-07.jpg` | yg-07.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-07.jpg> | ✅ 206 |
+| 21 | `yg-08.jpg` | yg-08.jpg | 156 KB | <https://c539776.parspack.net/common/mirror/yg-08.jpg> | ✅ 206 |
+| 22 | `yg-09.jpg` | yg-09.jpg | 144 KB | <https://c539776.parspack.net/common/mirror/yg-09.jpg> | ✅ 206 |
+| 23 | `yg-10.jpg` | yg-10.jpg | 145 KB | <https://c539776.parspack.net/common/mirror/yg-10.jpg> | ✅ 206 |
+| 24 | `yg-11.jpg` | yg-11.jpg | 160 KB | <https://c539776.parspack.net/common/mirror/yg-11.jpg> | ✅ 206 |
+| 25 | `yg-12.jpg` | yg-12.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-12.jpg> | ✅ 206 |
+| 26 | `yg-13.jpg` | yg-13.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-13.jpg> | ✅ 206 |
+| 27 | `yg-14.jpg` | yg-14.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-14.jpg> | ✅ 206 |
+| 28 | `yg-15.jpg` | yg-15.jpg | 164 KB | <https://c539776.parspack.net/common/mirror/yg-15.jpg> | ✅ 206 |
 | 29 | `isp-01` | اسکوات آرام | 59 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A7%D8%B3%DA%A9%D9%88%D8%A7%D8%AA%20%D8%A2%D8%B1%D8%A7%D9%85.jpg> | ✅ 206 |
 | 30 | `isp-02` | بالا بردن پاشنه‌ها | 67 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A8%D8%A7%D9%84%D8%A7%20%D8%A8%D8%B1%D8%AF%D9%86%20%D9%BE%D8%A7%D8%B4%D9%86%D9%87%E2%80%8C%D9%87%D8%A7.jpg> | ✅ 206 |
 | 31 | `isp-03` | جامپینگ‌جک بدون پرش | 71 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%AC%D8%A7%D9%85%D9%BE%DB%8C%D9%86%DA%AF%E2%80%8C%D8%AC%DA%A9%20%D8%A8%D8%AF%D9%88%D9%86%20%D9%BE%D8%B1%D8%B4.jpg> | ✅ 206 |
@@ -339,31 +367,31 @@
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `C905-fehrest.pdf` | فهرست ریاضی نهم | 144 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905-fehrest.pdf> | ❌ 404 |
-| 2 | `C905f01d01.pdf` | ریاضی نهم — فصل 01، درس 01 | 151 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d01.pdf> | ❌ 404 |
-| 3 | `C905f01d02.pdf` | ریاضی نهم — فصل 01، درس 02 | 227 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d02.pdf> | ❌ 404 |
-| 4 | `C905f01d03.pdf` | ریاضی نهم — فصل 01، درس 03 | 221 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d03.pdf> | ❌ 404 |
-| 5 | `C905f01d04.pdf` | ریاضی نهم — فصل 01، درس 04 | 245 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d04.pdf> | ❌ 404 |
-| 6 | `C905f02d01.pdf` | ریاضی نهم — فصل 02، درس 01 | 252 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d01.pdf> | ❌ 404 |
-| 7 | `C905f02d02.pdf` | ریاضی نهم — فصل 02، درس 02 | 311 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d02.pdf> | ❌ 404 |
-| 8 | `C905f02d03.pdf` | ریاضی نهم — فصل 02، درس 03 | 278 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d03.pdf> | ❌ 404 |
-| 9 | `C905f03d01.pdf` | ریاضی نهم — فصل 03، درس 01 | 122 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d01.pdf> | ❌ 404 |
-| 10 | `C905f03d02.pdf` | ریاضی نهم — فصل 03، درس 02 | 257 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d02.pdf> | ❌ 404 |
-| 11 | `C905f03d03.pdf` | ریاضی نهم — فصل 03، درس 03 | 226 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d03.pdf> | ❌ 404 |
-| 12 | `C905f03d04.pdf` | ریاضی نهم — فصل 03، درس 04 | 198 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d04.pdf> | ❌ 404 |
-| 13 | `C905f03d05.pdf` | ریاضی نهم — فصل 03، درس 05 | 354 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d05.pdf> | ❌ 404 |
-| 14 | `C905f04d01.pdf` | ریاضی نهم — فصل 04، درس 01 | 273 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d01.pdf> | ❌ 404 |
-| 15 | `C905f04d02.pdf` | ریاضی نهم — فصل 04، درس 02 | 159 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d02.pdf> | ❌ 404 |
-| 16 | `C905f04d03.pdf` | ریاضی نهم — فصل 04، درس 03 | 233 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d03.pdf> | ❌ 404 |
-| 17 | `C905f04d04.pdf` | ریاضی نهم — فصل 04، درس 04 | 372 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d04.pdf> | ❌ 404 |
-| 18 | `C905f05d01.pdf` | ریاضی نهم — فصل 05، درس 01 | 251 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d01.pdf> | ❌ 404 |
-| 19 | `C905f05d02.pdf` | ریاضی نهم — فصل 05، درس 02 | 197 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d02.pdf> | ❌ 404 |
-| 20 | `C905f05d03.pdf` | ریاضی نهم — فصل 05، درس 03 | 414 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d03.pdf> | ❌ 404 |
-| 21 | `C905f06d01.pdf` | ریاضی نهم — فصل 06، درس 01 | 215 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d01.pdf> | ❌ 404 |
-| 22 | `C905f06d02.pdf` | ریاضی نهم — فصل 06، درس 02 | 269 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d02.pdf> | ❌ 404 |
-| 23 | `C905f06d03.pdf` | ریاضی نهم — فصل 06، درس 03 | 2.0 MB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d03.pdf> | ❌ 404 |
-| 24 | `C905f07d01.pdf` | ریاضی نهم — فصل 07، درس 01 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d01.pdf> | ❌ 404 |
-| 25 | `C905f07d03.pdf` | ریاضی نهم — فصل 07، درس 03 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d03.pdf> | ❌ 404 |
+| 1 | `C905-fehrest.pdf` | فهرست ریاضی نهم | 144 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905-fehrest.pdf> | ✅ 206 |
+| 2 | `C905f01d01.pdf` | ریاضی نهم — فصل 01، درس 01 | 151 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d01.pdf> | ✅ 206 |
+| 3 | `C905f01d02.pdf` | ریاضی نهم — فصل 01، درس 02 | 227 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d02.pdf> | ✅ 206 |
+| 4 | `C905f01d03.pdf` | ریاضی نهم — فصل 01، درس 03 | 221 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d03.pdf> | ✅ 206 |
+| 5 | `C905f01d04.pdf` | ریاضی نهم — فصل 01، درس 04 | 245 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d04.pdf> | ✅ 206 |
+| 6 | `C905f02d01.pdf` | ریاضی نهم — فصل 02، درس 01 | 252 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d01.pdf> | ✅ 206 |
+| 7 | `C905f02d02.pdf` | ریاضی نهم — فصل 02، درس 02 | 311 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d02.pdf> | ✅ 206 |
+| 8 | `C905f02d03.pdf` | ریاضی نهم — فصل 02، درس 03 | 278 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d03.pdf> | ✅ 206 |
+| 9 | `C905f03d01.pdf` | ریاضی نهم — فصل 03، درس 01 | 122 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d01.pdf> | ✅ 206 |
+| 10 | `C905f03d02.pdf` | ریاضی نهم — فصل 03، درس 02 | 257 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d02.pdf> | ✅ 206 |
+| 11 | `C905f03d03.pdf` | ریاضی نهم — فصل 03، درس 03 | 226 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d03.pdf> | ✅ 206 |
+| 12 | `C905f03d04.pdf` | ریاضی نهم — فصل 03، درس 04 | 198 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d04.pdf> | ✅ 206 |
+| 13 | `C905f03d05.pdf` | ریاضی نهم — فصل 03، درس 05 | 354 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d05.pdf> | ✅ 206 |
+| 14 | `C905f04d01.pdf` | ریاضی نهم — فصل 04، درس 01 | 273 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d01.pdf> | ✅ 206 |
+| 15 | `C905f04d02.pdf` | ریاضی نهم — فصل 04، درس 02 | 159 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d02.pdf> | ✅ 206 |
+| 16 | `C905f04d03.pdf` | ریاضی نهم — فصل 04، درس 03 | 233 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d03.pdf> | ✅ 206 |
+| 17 | `C905f04d04.pdf` | ریاضی نهم — فصل 04، درس 04 | 372 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d04.pdf> | ✅ 206 |
+| 18 | `C905f05d01.pdf` | ریاضی نهم — فصل 05، درس 01 | 251 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d01.pdf> | ✅ 206 |
+| 19 | `C905f05d02.pdf` | ریاضی نهم — فصل 05، درس 02 | 197 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d02.pdf> | ✅ 206 |
+| 20 | `C905f05d03.pdf` | ریاضی نهم — فصل 05، درس 03 | 414 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d03.pdf> | ✅ 206 |
+| 21 | `C905f06d01.pdf` | ریاضی نهم — فصل 06، درس 01 | 215 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d01.pdf> | ✅ 206 |
+| 22 | `C905f06d02.pdf` | ریاضی نهم — فصل 06، درس 02 | 269 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d02.pdf> | ✅ 206 |
+| 23 | `C905f06d03.pdf` | ریاضی نهم — فصل 06، درس 03 | 2.0 MB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d03.pdf> | ✅ 206 |
+| 24 | `C905f07d01.pdf` | ریاضی نهم — فصل 07، درس 01 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d01.pdf> | ✅ 206 |
+| 25 | `C905f07d03.pdf` | ریاضی نهم — فصل 07، درس 03 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d03.pdf> | ✅ 206 |
 | 26 | `C905f08d01.pdf` | C905f08d01.pdf | 183 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d01.pdf> | ✅ 206 |
 | 27 | `C905f08d02.pdf` | C905f08d02.pdf | 274 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d02.pdf> | ✅ 206 |
 | 28 | `C905f08d03.pdf` | C905f08d03.pdf | 282 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d03.pdf> | ✅ 206 |
