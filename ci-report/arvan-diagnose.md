@@ -24,13 +24,13 @@
 - **path-style** → HTTP 400
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?><Error><Code>InvalidArgument</Code><Message></Message><BucketName>hamyar-e-man</BucketName><RequestId>tx000006b0ce6b38bca406f-006abc6eeb-3164336851-ir-thr-at1</RequestId><HostId>3164336851-ir-thr-at1-ir-thr</HostId></Error>
+<?xml version="1.0" encoding="UTF-8"?><Error><Code>InvalidArgument</Code><Message></Message><BucketName>hamyar-e-man</BucketName><RequestId>tx00000a3626a3e96d36658-006abc6f7d-3164905057-ir-thr-at1</RequestId><HostId>3164905057-ir-thr-at1-ir-thr</HostId></Error>
 ```
 
 - **virtual-host** → HTTP 400
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?><Error><Code>InvalidArgument</Code><Message></Message><BucketName>hamyar-e-man</BucketName><RequestId>tx00000ccb605bd519103bf-006abc6eec-3164329961-ir-thr-at1</RequestId><HostId>3164329961-ir-thr-at1-ir-thr</HostId></Error>
+<?xml version="1.0" encoding="UTF-8"?><Error><Code>InvalidArgument</Code><Message></Message><BucketName>hamyar-e-man</BucketName><RequestId>tx00000590cc7f2c804872e-006abc6f7f-3164929517-ir-thr-at1</RequestId><HostId>3164929517-ir-thr-at1-ir-thr</HostId></Error>
 ```
 
 ### ۴-صفر) پاسخ خام آروان به یک PutObject کمینه
@@ -52,16 +52,16 @@
 
 ```json
 {
-  "date": "Wed, 30 Sep 2026 02:07:41 GMT",
+  "date": "Wed, 30 Sep 2026 02:10:07 GMT",
   "content-type": "application/xml",
   "content-length": "261",
   "connection": "keep-alive",
   "keep-alive": "timeout=65",
-  "x-amz-request-id": "tx0000076acb4c22e6d89b2-006abc6eed-3164195419-ir-thr-at1",
+  "x-amz-request-id": "tx000003f1c212b231b9d1b-006abc6f7f-3164929517-ir-thr-at1",
   "x-robots-tag": "noindex, nofollow",
   "server": "ArvanCloud",
-  "server-timing": "total;dur=420",
-  "x-request-id": "b7beaa0e54d60287cb71d3e64c26fb28",
+  "server-timing": "total;dur=454",
+  "x-request-id": "fc7d828dd318a2a155336ab387100793",
   "x-sid": "6980"
 }
 ```
@@ -71,14 +71,14 @@
 ```json
 {
   "method": "PUT",
-  "url": "https://s3.ir-thr-at1.arvanstorage.ir/hamyar-e-man/apk/_diagnose/45f56280a55c4cb29fcb5b9d95f261b0.bin",
+  "url": "https://s3.ir-thr-at1.arvanstorage.ir/hamyar-e-man/apk/_diagnose/a9273499c3004d9ca5cb21813f134bd7.bin",
   "headers": {
-    "User-Agent": "Boto3/1.43.105 md/Botocore#1.43.105 ua/2.1 os/linux#6.8.0-1064-azure md/arch#x86_64 lang/python#3.12.14 md/pyimpl#CPython m/N,E,e,a,c cfg/retry-mode#standard Botocore/1.43.105",
+    "User-Agent": "Boto3/1.43.105 md/Botocore#1.43.105 ua/2.1 os/linux#6.8.0-1064-azure md/arch#x86_64 lang/python#3.12.14 md/pyimpl#CPython m/E,a,N,c,e cfg/retry-mode#standard Botocore/1.43.105",
     "Expect": "100-continue",
-    "X-Amz-Date": "20260930T020740Z",
+    "X-Amz-Date": "20260930T021007Z",
     "X-Amz-Content-SHA256": "<redacted>",
     "Authorization": "<redacted>",
-    "amz-sdk-invocation-id": "df6a80a7-19c1-4830-be0c-c86a8178edab",
+    "amz-sdk-invocation-id": "5b7827e6-5a91-4589-b6b8-68a3ded46591",
     "amz-sdk-request": "attempt=1",
     "Content-Length": "1"
   }
@@ -99,7 +99,7 @@
 اگر ساختن باکت تازه و نوشتن در آن کار کند، ایراد فقط مال باکت فعلی است؛
 اگر آن هم رد شود، نوشتن در کل حساب بسته است (اعتبار/طرح/تعلیق).
 
-- ✅ CreateBucket موفق (`hamyar-diag-d0a89483ceae`)
+- ✅ CreateBucket موفق (`hamyar-diag-7bfea3f33127`)
 - ✅ PutObject در باکت تازه موفق → **ایراد فقط مال باکت `hamyar-e-man` است**
 - 🧹 باکت آزمایشی پاک شد
 
@@ -117,8 +117,20 @@
 
 - ❌ **ir-thr-at1** — `InvalidArgument` (HTTP 400) — 
 - ❌ **ir-tbz-sh1** — `RecursionError` — maximum recursion depth exceeded
-- ❌ **ir-thr-ba1** — `EndpointConnectionError` — Could not connect to the endpoint URL: "https://s3.ir-thr-ba1.arvanstorage.ir/hamyar-e-man/apk/_diagnose/f4600c12c2b341f7badaa8eff049a438.bin"
-- ❌ **ir-bnd-ba1** — `EndpointConnectionError` — Could not connect to the endpoint URL: "https://s3.ir-bnd-ba1.arvanstorage.ir/hamyar-e-man/apk/_diagnose/db2654b858284259994a25666977214d.bin"
+- ❌ **ir-thr-ba1** — `EndpointConnectionError` — Could not connect to the endpoint URL: "https://s3.ir-thr-ba1.arvanstorage.ir/hamyar-e-man/apk/_diagnose/fe83cad2554243149f92843e67cc3e81.bin"
+- ❌ **ir-bnd-ba1** — `EndpointConnectionError` — Could not connect to the endpoint URL: "https://s3.ir-bnd-ba1.arvanstorage.ir/hamyar-e-man/apk/_diagnose/2ddf876f34a1403ebd6953d5f504b5ec.bin"
+
+## ۴-ج) آیا نسخه‌بندی مقصر است؟
+
+- ✅ باکت تازه بدون نسخه‌بندی — نوشتن موفق
+- ✅ نسخه‌بندی روشن شد
+- ✅ نوشتن بعد از روشن‌کردن نسخه‌بندی هم موفق → **نسخه‌بندی مقصر نیست**
+- 🧹 باکت آزمایشی پاک شد
+
+## ۴-چ) حجم و تعداد اشیای باکت اصلی (بررسی سهمیه)
+
+- نسخهٔ جاری: **275** شیء، **0.41 GB**
+- با همهٔ نسخه‌های قدیمی: **277** نسخه، **0.53 GB**
 
 ## ۵) وضعیت APKهای موجود روی آروان
 
