@@ -235,8 +235,11 @@ private object SafeBackupCodec {
                 .put("mime", old.optString("mime"))
                 .put("addedAt", old.optLong("addedAt"))
                 .put("file", exportedName)
-                .put("sourcePath", file.absolutePath)
-            if (includeMediaBytes) row.put("data", Base64.encodeToString(file.readBytes(), Base64.NO_WRAP))
+            if (includeMediaBytes) {
+                row.put("data", Base64.encodeToString(file.readBytes(), Base64.NO_WRAP))
+            } else {
+                row.put("sourcePath", file.absolutePath)
+            }
             media.put(row)
         }
         root.put("media", media)
