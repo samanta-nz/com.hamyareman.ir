@@ -22,8 +22,9 @@ from botocore.exceptions import ClientError
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from s3_targets import target  # noqa: E402
 
-ADDRESSING = ("path", "virtual")
-REGIONS = ("us-east-1", "default", "ir-thr-c1", "")
+ADDRESSING = ("path",)          # virtual-host روی این endpoint اصلاً DNS ندارد
+REGIONS = ("us-east-1", "")
+SIGNATURES = ("s3v4", "s3")     # بعضی نصب‌های Ceph هنوز فقط SigV2 را می‌پذیرند
 
 lines: list[str] = ["# آمادگی‌سنجی سرور داخلی", ""]
 
@@ -40,7 +41,7 @@ def label(exc: BaseException) -> str:
     return f"`{type(exc).__name__}` {str(exc)[:200]}"
 
 
-def build(endpoint: str, region: str, addressing: str, access: str, secret: str):
+def build(endpoint: str, region: str, addressing: str, access: str, secret: str, signature: str = "s3v4"):
     return boto3.client(
         "s3",
         endpoint_url=endpoint,
@@ -48,6 +49,7 @@ def build(endpoint: str, region: str, addressing: str, access: str, secret: str)
         aws_access_key_id=access,
         aws_secret_access_key=secret,
         config=Config(
+            signature_version=signature,
             request_checksum_calculation="when_required",
             response_checksum_validation="when_required",
             s3={"addressing_style": addressing},
@@ -56,6 +58,15 @@ def build(endpoint: str, region: str, addressing: str, access: str, secret: str)
             retries={"max_attempts": 1, "mode": "standard"},
         ),
     )
+
+
+def raw_look(url: str) -> str:
+    try:
+        response = requests.get(url, timeout=30)
+        body = response.text.strip().replace("\n", " ")[:300]
+        return f"HTTP {response.status_code} — `{body}`"
+    except Exception as exc:  # noqa: BLE001
+        return f"{type(exc).__name__}: {str(exc)[:150]}"
 
 
 def main() -> int:
@@ -67,21 +78,27 @@ def main() -> int:
 
     say("## ۱) کدام ترکیبِ «سبک نشانی × منطقهٔ امضا» کار می‌کند؟")
     say()
-    say("| سبک | منطقه | ListBuckets | نتیجه |")
-    say("|---|---|---|---|")
-    winner: tuple[str, str] | None = None
+    say("| امضا | منطقه | ListBuckets |")
+    say("|---|---|---|")
+    winner = None
     buckets: list[str] = []
-    for addressing in ADDRESSING:
+    for signature in SIGNATURES:
         for region in REGIONS:
-            client = build(where.endpoint, region, addressing, access, secret)
+            client = build(where.endpoint, region, "path", access, secret, signature)
             try:
                 names = [b["Name"] for b in client.list_buckets().get("Buckets", [])]
-                say(f"| `{addressing}` | `{region or '—'}` | ✅ | {len(names)} باکت |")
+                say(f"| `{signature}` | `{region or '—'}` | ✅ {len(names)} باکت: {', '.join(names) or '—'} |")
                 if winner is None:
-                    winner = (addressing, region)
+                    winner = (signature, region)
                     buckets = names
             except Exception as exc:  # noqa: BLE001
-                say(f"| `{addressing}` | `{region or '—'}` | ❌ | {label(exc)} |")
+                say(f"| `{signature}` | `{region or '—'}` | ❌ {label(exc)} |")
+    say()
+    say("### نگاه خام و ناشناس به سرور")
+    say()
+    say(f"- ریشهٔ endpoint: {raw_look(where.endpoint)}")
+    say(f"- مسیر باکت: {raw_look(where.endpoint.rstrip('/') + '/' + where.bucket)}")
+    say(f"- باکتِ قطعاً ناموجود: {raw_look(where.endpoint.rstrip('/') + '/bucket-that-does-not-exist-x9')}")
     say()
 
     if winner is None:
@@ -94,12 +111,12 @@ def main() -> int:
     bucket = where.bucket
     say(f"باکت هدف: `{bucket}`" + (f" · باکت‌های دیده‌شده: {', '.join(f'`{b}`' for b in buckets)}" if buckets else ""))
     say()
-    say("| سبک | منطقه | HeadBucket | CreateBucket | PutObject |")
+    say("| امضا | منطقه | HeadBucket | CreateBucket | PutObject |")
     say("|---|---|---|---|---|")
-    working: tuple[str, str] | None = None
-    for addressing in ADDRESSING:
+    working = None
+    for addressing in SIGNATURES:
         for region in REGIONS:
-            client = build(where.endpoint, region, addressing, access, secret)
+            client = build(where.endpoint, region, "path", access, secret, addressing)
             try:
                 client.head_bucket(Bucket=bucket)
                 head = "✅"
@@ -140,9 +157,9 @@ def main() -> int:
         return 1
 
     addressing, region = working
-    say(f"**ترکیب درست: سبک `{addressing}` · منطقهٔ امضا `{region or 'پیش‌فرض'}`**")
+    say(f"**ترکیب درست: امضای `{addressing}` · منطقهٔ `{region or 'پیش‌فرض'}` · سبک path**")
     say()
-    client = build(where.endpoint, region, addressing, access, secret)
+    client = build(where.endpoint, region, "path", access, secret, addressing)
 
     say("## ۳) نشانی عمومی")
     say()
@@ -204,7 +221,8 @@ def main() -> int:
             {
                 "endpoint": where.endpoint,
                 "bucket": bucket,
-                "addressingStyle": addressing,
+                "addressingStyle": "path",
+                "signatureVersion": addressing,
                 "signingRegion": region,
                 "objectAcl": acl_ok,
                 "publicUrlStyle": working_styles[0] if working_styles else None,
