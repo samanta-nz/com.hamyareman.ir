@@ -52,6 +52,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.hamyareman.ir.R
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
@@ -134,16 +139,45 @@ private fun downloadPdfBlocking(ctx: android.content.Context, fileId: String, on
     remoteSizeCache[fileId] = target.length()
 }
 
+/**
+ * تمام متن‌های این صفحه ۴ واحد کوچک‌تر و با «وزیرمتن لایت» نوشته می‌شوند —
+ * فونت دست‌نویس سراسری اپ (badkhat) اینجا جای خود را به فونت خوانا می‌دهد.
+ */
 @Composable
-fun DownloadsScreen(onBack: () -> Unit) {
-    // v1.18: فونت همه‌ی متن‌های این صفحه ۱٫۵ برابر (فقط متن — چیدمان ثابت می‌ماند).
-    val baseDensity = androidx.compose.ui.platform.LocalDensity.current
-    androidx.compose.runtime.CompositionLocalProvider(
-        androidx.compose.ui.platform.LocalDensity provides
-            androidx.compose.ui.unit.Density(baseDensity.density, baseDensity.fontScale * 1.5f),
-    ) {
-        DownloadsScreenInner(onBack)
-    }
+private fun DownloadsTypography(content: @Composable () -> Unit) {
+    val vazir = remember { FontFamily(Font(R.font.vazirmatn_light, FontWeight.Light)) }
+    val base = MaterialTheme.typography
+    fun TextStyle.tune() = copy(
+        fontFamily = vazir,
+        fontWeight = FontWeight.Light,
+        // ۱٫۵ برابرِ قبلی بود؛ حالا همان منهای ۴ واحد.
+        fontSize = (fontSize.value * 1.5f - 4f).coerceAtLeast(9f).sp,
+        lineHeight = if (lineHeight.isSpecified) (lineHeight.value * 1.5f - 4f).coerceAtLeast(12f).sp else lineHeight,
+    )
+    MaterialTheme(
+        typography = base.copy(
+            displayLarge = base.displayLarge.tune(), displayMedium = base.displayMedium.tune(),
+            displaySmall = base.displaySmall.tune(), headlineLarge = base.headlineLarge.tune(),
+            headlineMedium = base.headlineMedium.tune(), headlineSmall = base.headlineSmall.tune(),
+            titleLarge = base.titleLarge.tune(), titleMedium = base.titleMedium.tune(),
+            titleSmall = base.titleSmall.tune(), bodyLarge = base.bodyLarge.tune(),
+            bodyMedium = base.bodyMedium.tune(), bodySmall = base.bodySmall.tune(),
+            labelLarge = base.labelLarge.tune(), labelMedium = base.labelMedium.tune(),
+            labelSmall = base.labelSmall.tune(),
+        ),
+        content = content,
+    )
+}
+
+@Composable
+fun DownloadsScreen(onBack: () -> Unit) = DownloadsTypography {
+    DownloadsScreenBody(onBack)
+}
+
+@Composable
+private fun DownloadsScreenBody(onBack: () -> Unit) {
+    // ترفند fontScale حذف شد؛ اندازه‌ها مستقیم در DownloadsTypography تعیین می‌شوند.
+    DownloadsScreenInner(onBack)
 }
 
 @Composable

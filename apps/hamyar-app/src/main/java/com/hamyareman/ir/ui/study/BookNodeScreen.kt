@@ -31,6 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -90,6 +95,10 @@ private fun RemoteHtmlPage(bucketKey: String) {
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
                 settings.useWideViewPort = true
                 settings.loadWithOverviewMode = true
+                // زوم دو انگشتی + دابل‌تپ؛ دکمه‌های روی صفحه نمایش داده نمی‌شوند.
+                settings.setSupportZoom(true)
+                settings.builtInZoomControls = true
+                settings.displayZoomControls = false
                 webViewClient = HmkWebViewClient(c.applicationContext, HmkWebViewClient.bucketHost())
                 loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
@@ -160,8 +169,9 @@ private fun BookPdfPages(bucketKey: String) {
 
         // PDF همیشه روی زمینهٔ سفید رندر می‌شود؛ تم تاریک اپ نباید روی صفحهٔ
         // کتاب درسی بیفتد (خواسته: هیچ PDF ای هرگز تم تاریک نگیرد).
-        is BookPdfState.Ready -> LazyColumn(
-            Modifier.fillMaxSize().background(Color.White),
+        is BookPdfState.Ready -> ZoomPanBox(Modifier.fillMaxSize().background(Color.White)) {
+          LazyColumn(
+            Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items((0 until s.pages).toList()) { index ->
@@ -189,6 +199,47 @@ private fun BookPdfPages(bucketKey: String) {
                     )
                 }
             }
+          }
         }
     }
+}
+
+/**
+ * زوم دو انگشتی، جابه‌جایی تک‌انگشتی وقتی زوم است، و دابل‌تپ برای بازگشت به
+ * اندازهٔ اصلی. روی PDF و هر محتوای تصویری دیگر قابل استفاده است.
+ */
+@Composable
+fun ZoomPanBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+    Box(
+        modifier
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        if (scale > 1.01f) {
+                            scale = 1f; offsetX = 0f; offsetY = 0f
+                        } else {
+                            scale = 2.5f
+                        }
+                    },
+                )
+            }
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, zoom, _ ->
+                    scale = (scale * zoom).coerceIn(1f, 6f)
+                    if (scale > 1.01f) {
+                        offsetX += pan.x
+                        offsetY += pan.y
+                    } else {
+                        offsetX = 0f; offsetY = 0f
+                    }
+                }
+            }
+            .graphicsLayer {
+                scaleX = scale; scaleY = scale
+                translationX = offsetX; translationY = offsetY
+            },
+    ) { content() }
 }
