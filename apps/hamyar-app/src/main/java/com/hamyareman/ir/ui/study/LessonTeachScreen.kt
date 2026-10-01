@@ -732,7 +732,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                         "${teachMmss(if (dragMs >= 0) dragMs else posMs)} از ${teachMmss(durMs)}",
                         style = MaterialTheme.typography.bodySmall,
                         // نمایش زمان ۸ واحد کوچک‌تر از قبل؛ بقیهٔ پلیر دست‌نخورده.
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 1.5f - 8.sp,
+                        fontSize = (MaterialTheme.typography.bodySmall.fontSize.value * 1.5f - 8f).sp,
                         maxLines = 1,
                     )
                     Spacer(Modifier.width(10.dp))

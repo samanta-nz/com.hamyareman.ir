@@ -1,0 +1,48 @@
+== مرحلهٔ ۳: بایگانی hamyar-grade9-2.3-debug.apk (72106964 بایت)
+-- تلاش 1
+asset hamyar-grade9-2.3-debug.apk not found in release ci-apk
+   اندازهٔ روی ریلیز: 72106964
+✓ آپلود ریلیز تأیید شد
+آپلود شد: apk/grade9/hamyar-grade9-2.3-debug.apk (68.8 MB)
+خواندن ناشناس: HTTP 206 — https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.3-debug.apk
+https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.3-debug.apk
+{
+  "rowId": "app_release_grade9",
+  "versionCode": 230,
+  "versionName": "2.3",
+  "min": 230,
+  "forced": true,
+  "size": 72106964,
+  "sha256": "398922ae82c087e38831e47a595b6b904a7b8da8679924fdb7f620bdd52dee4b",
+  "externalUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.3-debug.apk",
+  "internalUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.3-debug.apk",
+  "checks": {
+    "external": "HTTP 206",
+    "internal": "HTTP 206"
+  },
+  "previous": {
+    "latest": 220,
+    "name": "2.2",
+    "min": 220
+  },
+  "payload": {
+    "latest": 230,
+    "name": "2.3",
+    "min": 230,
+    "url": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.3-debug.apk",
+    "externalUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.3-debug.apk",
+    "internalUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.3-debug.apk",
+    "size": 72106964,
+    "sha256": "398922ae82c087e38831e47a595b6b904a7b8da8679924fdb7f620bdd52dee4b",
+    "chan": "stable",
+    "rollout": 100,
+    "notes": [
+      "آپدیت اجباری نسخهٔ ۲٫۲",
+      "میزبانی هم‌زمان روی سرور داخلی و خارجی"
+    ],
+    "packageName": "com.hamyareman.p09",
+    "gradeId": "grade9",
+    "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959"
+  },
+  "published": true
+}

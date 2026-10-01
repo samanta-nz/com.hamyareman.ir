@@ -1,0 +1,176 @@
+{
+ "fetched": [
+  {
+   "key": "Bucket/Pdf-files/G09/g9-arabic/menu.txt",
+   "size": 3917
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-arabic/menu.json",
+   "size": 8726
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-art/menu.txt",
+   "size": 9919
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-art/menu.json",
+   "size": 25918
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-defa/menu.txt",
+   "size": 3744
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-defa/menu.json",
+   "size": 9642
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-english/menu.txt",
+   "size": 2233
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-english/menu.json",
+   "size": 6342
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-english-workbook/menu.txt",
+   "size": 1829
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-english-workbook/menu.json",
+   "size": 5023
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-farsi/menu.txt",
+   "size": 8435
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-farsi/menu.json",
+   "size": 21116
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-hedye/menu.txt",
+   "size": 3224
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-hedye/menu.json",
+   "size": 7024
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-karfan/menu.txt",
+   "size": 3059
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-karfan/menu.json",
+   "size": 6555
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-math/menu.txt",
+   "size": 10860
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-math/menu.json",
+   "size": 27626
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-negar/menu.txt",
+   "size": 2566
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-negar/menu.json",
+   "size": 5661
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-payam/menu.txt",
+   "size": 5198
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-payam/menu.json",
+   "size": 13353
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-quran/menu.txt",
+   "size": 2086
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-quran/menu.json",
+   "size": 5588
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-sci/menu.txt",
+   "size": 3989
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-sci/menu.json",
+   "size": 8731
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-soc/menu.txt",
+   "size": 11826
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-soc/menu.json",
+   "size": 29697
+  }
+ ],
+ "missing": [
+  {
+   "key": "Bucket/Pdf-files/G09/g9-arabic/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-art/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-defa/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-english/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-english-workbook/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-farsi/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-hedye/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-karfan/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-math/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-negar/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-payam/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-quran/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-sci/files.json",
+   "code": "NoSuchKey"
+  },
+  {
+   "key": "Bucket/Pdf-files/G09/g9-soc/files.json",
+   "code": "NoSuchKey"
+  }
+ ],
+ "audioRefsInMenus": [],
+ "examFound": []
+}
