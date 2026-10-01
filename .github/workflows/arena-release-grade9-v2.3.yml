@@ -23,8 +23,8 @@ concurrency:
 
 env:
   VERSION_NAME: '2.3'
-  VERSION_CODE: '231'
-  MIN_CODE: '231'          # هر نصبِ زیر ۲۳۱ → آپدیت اجباری
+  VERSION_CODE: '232'
+  MIN_CODE: '232'          # هر نصبِ زیر ۲۳۲ → آپدیت اجباری
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
