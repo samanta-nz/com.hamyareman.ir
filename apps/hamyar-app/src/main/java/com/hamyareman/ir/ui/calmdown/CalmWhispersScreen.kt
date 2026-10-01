@@ -1,7 +1,7 @@
 package com.hamyareman.ir.ui.calmdown
 
 import android.annotation.SuppressLint
-import android.graphics.Color
+import android.graphics.Color as AndroidColor
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.compose.BackHandler
@@ -52,7 +52,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.graphicsLayer
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -157,7 +158,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
         AndroidView(
             factory = { viewContext ->
                 WebView(viewContext).apply {
-                    setBackgroundColor(Color.TRANSPARENT)
+                    setBackgroundColor(AndroidColor.TRANSPARENT)
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.mediaPlaybackRequiresUserGesture = false
