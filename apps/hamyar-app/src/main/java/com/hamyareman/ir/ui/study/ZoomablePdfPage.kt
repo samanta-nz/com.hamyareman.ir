@@ -7,13 +7,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
 /**
- * زوم PDF روی [PdfZoomHost] — Compose از ژست خبر ندارد و Pager را وسط پینچ
- * از نو نمی‌سازد. [onZoomed] دیگر استفاده نمی‌شود (عمداً؛ همان callback حلقهٔ ANR بود).
+ * زوم PDF روی [PdfZoomHost] انجام می‌شود تا پینچ و دابل‌تپ از Lazy/Pager عبور
+ * نکنند. خودِ View هم فقط هنگام زوم، پَن را می‌گیرد؛ در اندازهٔ اصلی اسکرول
+ * والد برقرار می‌ماند.
  */
 @Composable
 internal fun ZoomablePdfPage(
     bitmap: Bitmap,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxSize(),
     onZoomed: (Boolean) -> Unit = {},
 ) {
     if (bitmap.isRecycled || bitmap.width < 1 || bitmap.height < 1) return
@@ -22,6 +23,6 @@ internal fun ZoomablePdfPage(
             PdfZoomHost(ctx).apply { page.bind(bitmap) }
         },
         update = { host -> host.page.bind(bitmap) },
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
     )
 }

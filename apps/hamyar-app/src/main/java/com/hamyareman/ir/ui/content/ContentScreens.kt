@@ -170,7 +170,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         if (item != null) {
             AndroidView(
                 factory = { c ->
-                    WebView(c).apply {
+                    com.hamyareman.ir.ui.study.ZoomResetWebView(c).apply {
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.setSupportZoom(true)
@@ -189,6 +189,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                             com.hamyareman.ir.ui.study.HmkWebViewClient.bucketHost(),
                         ) {
                             override fun onPageFinished(view: WebView, url: String) {
+                                super.onPageFinished(view, url)
                                 view.bindManagedMediaLifecycle()
                                 // درس بعدی که کاربر با لینک نسبی به آن رفته را در وضعیت اپ
                                 // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()

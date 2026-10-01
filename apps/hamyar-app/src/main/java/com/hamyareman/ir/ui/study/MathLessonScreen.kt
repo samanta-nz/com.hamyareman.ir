@@ -438,7 +438,7 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
             } else if (teachHtml.isNotBlank()) {
                 AndroidView(
                     factory = { c ->
-                        WebView(c).apply {
+                        ZoomResetWebView(c).apply {
                             webViewClient = object : WebViewClient() {
                                 override fun onPageFinished(view: WebView, url: String) {
                                     view.bindManagedMediaLifecycle()
@@ -690,7 +690,7 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
     Column(Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
-                WebView(ctx).apply {
+                ZoomResetWebView(ctx).apply {
                     webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
                             view.bindManagedMediaLifecycle()

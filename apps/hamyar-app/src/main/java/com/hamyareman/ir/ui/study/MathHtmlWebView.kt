@@ -35,7 +35,7 @@ internal fun MathInteractiveHtml(
     }
     AndroidView(
         factory = { c ->
-            WebView(c).apply {
+            ZoomResetWebView(c).apply {
                 webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
 

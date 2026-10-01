@@ -5,15 +5,15 @@ import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.webkit.WebSettings
-import android.webkit.WebView
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,19 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -67,19 +61,18 @@ fun BookNodeScreen(
     BackHandler(onBack = onBack)
     Column(Modifier.fillMaxSize()) {
         if (audioKey.isNotBlank()) {
-            val fileId = audioKey.substringAfterLast('/')
+            val packId = remember(audioKey) { "book-" + StudyMedia.bookCacheKey("track", audioKey) }
+            val cacheKey = remember(audioKey) { StudyMedia.bookCacheKey("book-audio", audioKey) }
+            // برخلاف نسخهٔ قبل، کلید کامل باکت پاس داده می‌شود؛ basename در
+            // server-map نبود و پلیر صوت‌های تدریس ریاضی را «غایب» می‌دید.
             TeachAudioBar(
-                packId = fileId.substringBeforeLast('.'),
+                packId = packId,
                 screenTitle = title,
                 bookTitle = "",
-                tracks = listOf(TeachTrack("صوت درس", fileId, fileId)),
+                tracks = listOf(TeachTrack("صوت تدریس", audioKey, cacheKey)),
             )
         }
-        if (BooksMenu.isPdf(bucketKey)) {
-            BookPdfPages(bucketKey)
-        } else {
-            RemoteHtmlPage(bucketKey)
-        }
+        if (BooksMenu.isPdf(bucketKey)) BookPdfPages(bucketKey) else RemoteHtmlPage(bucketKey)
     }
 }
 
@@ -88,18 +81,17 @@ fun BookNodeScreen(
 private fun RemoteHtmlPage(bucketKey: String) {
     SecureWebEffect()
     AndroidView(
-        factory = { c ->
-            WebView(c).apply {
+        factory = { context ->
+            ZoomResetWebView(context).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
                 settings.useWideViewPort = true
                 settings.loadWithOverviewMode = true
-                // زوم دو انگشتی + دابل‌تپ؛ دکمه‌های روی صفحه نمایش داده نمی‌شوند.
                 settings.setSupportZoom(true)
                 settings.builtInZoomControls = true
                 settings.displayZoomControls = false
-                webViewClient = HmkWebViewClient(c.applicationContext, HmkWebViewClient.bucketHost())
+                webViewClient = HmkWebViewClient(context.applicationContext, HmkWebViewClient.bucketHost())
                 loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
         },
@@ -116,15 +108,17 @@ private sealed interface BookPdfState {
 
 @Composable
 private fun BookPdfPages(bucketKey: String) {
-    val ctx = LocalContext.current
-    val fileId = remember(bucketKey) { bucketKey.substringAfterLast('/') }
-    var state by remember(fileId) { mutableStateOf<BookPdfState>(BookPdfState.Loading) }
-    var progress by remember(fileId) { mutableStateOf(0) }
-    var renderer by remember(fileId) { mutableStateOf<PdfRenderer?>(null) }
-    val lock = remember(fileId) { Any() }
-    var retry by remember(fileId) { mutableStateOf(0) }
+    val context = LocalContext.current
+    // مسیر کامل، نه نام فایل: نام‌های یکسان در چند کتاب نباید cache یکدیگر را
+    // بازنویسی کنند. DownloadsScreen هم دقیقاً همین کلید را استفاده می‌کند.
+    val cacheId = remember(bucketKey) { StudyMedia.bookCacheKey("book-pdf", bucketKey) }
+    var state by remember(cacheId) { mutableStateOf<BookPdfState>(BookPdfState.Loading) }
+    var progress by remember(cacheId) { mutableIntStateOf(0) }
+    var renderer by remember(cacheId) { mutableStateOf<PdfRenderer?>(null) }
+    val lock = remember(cacheId) { Any() }
+    var retry by remember(cacheId) { mutableIntStateOf(0) }
 
-    DisposableEffect(fileId) {
+    DisposableEffect(cacheId) {
         onDispose {
             synchronized(lock) {
                 runCatching { renderer?.close() }
@@ -133,26 +127,29 @@ private fun BookPdfPages(bucketKey: String) {
         }
     }
 
-    LaunchedEffect(fileId, retry) {
+    LaunchedEffect(cacheId, retry) {
         state = BookPdfState.Loading
         progress = 0
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val result = withContext(Dispatchers.IO) {
             runCatching {
-                val file = StudyPdfCache.obtain(ctx, fileId) { p -> handler.post { progress = p } }
-                val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-                PdfRenderer(fd)
+                val file = StudyPdfCache.obtain(
+                    context,
+                    cacheId,
+                    StudyMedia.candidateUrls(bucketKey),
+                ) { percent -> handler.post { progress = percent } }
+                PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
             }
         }
-        result.onSuccess { r ->
-            synchronized(lock) { renderer = r }
-            state = BookPdfState.Ready(r.pageCount)
+        result.onSuccess { pdf ->
+            synchronized(lock) { renderer = pdf }
+            state = BookPdfState.Ready(pdf.pageCount)
         }.onFailure {
             state = BookPdfState.Failed(it.message?.take(180) ?: "دریافت این فایل ممکن نشد.")
         }
     }
 
-    when (val s = state) {
+    when (val current = state) {
         is BookPdfState.Loading -> Box(
             Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center,
@@ -163,83 +160,43 @@ private fun BookPdfPages(bucketKey: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(s.message, color = MaterialTheme.colorScheme.error)
+            Text(current.message, color = MaterialTheme.colorScheme.error)
             TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
         }
 
-        // PDF همیشه روی زمینهٔ سفید رندر می‌شود؛ تم تاریک اپ نباید روی صفحهٔ
-        // کتاب درسی بیفتد (خواسته: هیچ PDF ای هرگز تم تاریک نگیرد).
-        is BookPdfState.Ready -> ZoomPanBox(Modifier.fillMaxSize().background(Color.White)) {
-          LazyColumn(
-            Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items((0 until s.pages).toList()) { index ->
-                val bitmap = remember(fileId, index) {
-                    synchronized(lock) {
-                        val r = renderer ?: return@synchronized null
-                        runCatching {
-                            r.openPage(index).use { page ->
-                                val width = 1080
-                                val height = (width.toLong() * page.height / page.width).toInt().coerceAtLeast(1)
-                                val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                                bmp.eraseColor(android.graphics.Color.WHITE)
-                                page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                                bmp
-                            }
-                        }.getOrNull()
+        // PDF همیشه سفید است؛ تم تاریک اپ هرگز روی محتوای کتاب درسی نمی‌افتد.
+        is BookPdfState.Ready -> BoxWithConstraints(Modifier.fillMaxSize().background(Color.White)) {
+            LazyColumn(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items((0 until current.pages).toList(), key = { it }) { index ->
+                    val bitmap = remember(cacheId, index) {
+                        synchronized(lock) {
+                            val pdf = renderer ?: return@synchronized null
+                            runCatching {
+                                pdf.openPage(index).use { page ->
+                                    val width = 1080
+                                    val height = (width.toLong() * page.height / page.width).toInt().coerceAtLeast(1)
+                                    Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { image ->
+                                        image.eraseColor(android.graphics.Color.WHITE)
+                                        page.render(image, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                                    }
+                                }
+                            }.getOrNull()
+                        }
+                    }
+                    if (bitmap != null) {
+                        val ratio = bitmap.height.toFloat() / bitmap.width.toFloat().coerceAtLeast(1f)
+                        // هر صفحه View مستقل دارد: pinch و پَن واقعی روی همان صفحه
+                        // است و LazyColumn در اندازهٔ اصلی همچنان طبیعی اسکرول می‌شود.
+                        ZoomablePdfPage(
+                            bitmap = bitmap,
+                            modifier = Modifier.fillMaxWidth().height(maxWidth * ratio),
+                        )
                     }
                 }
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "صفحهٔ ${index + 1}",
-                        modifier = Modifier.fillMaxWidth(),
-                        contentScale = ContentScale.FillWidth,
-                    )
-                }
             }
-          }
         }
     }
-}
-
-/**
- * زوم دو انگشتی، جابه‌جایی تک‌انگشتی وقتی زوم است، و دابل‌تپ برای بازگشت به
- * اندازهٔ اصلی. روی PDF و هر محتوای تصویری دیگر قابل استفاده است.
- */
-@Composable
-fun ZoomPanBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    var offsetY by remember { mutableFloatStateOf(0f) }
-    Box(
-        modifier
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        if (scale > 1.01f) {
-                            scale = 1f; offsetX = 0f; offsetY = 0f
-                        } else {
-                            scale = 2.5f
-                        }
-                    },
-                )
-            }
-            .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(1f, 6f)
-                    if (scale > 1.01f) {
-                        offsetX += pan.x
-                        offsetY += pan.y
-                    } else {
-                        offsetX = 0f; offsetY = 0f
-                    }
-                }
-            }
-            .graphicsLayer {
-                scaleX = scale; scaleY = scale
-                translationX = offsetX; translationY = offsetY
-            },
-    ) { content() }
 }

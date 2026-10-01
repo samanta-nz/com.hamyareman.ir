@@ -44,8 +44,12 @@ open class HmkWebViewClient(
         val isHtml = path.endsWith(".html", ignoreCase = true)
         val isMusic = path.contains("background-music", ignoreCase = true)
 
-        // ۳) پیش‌دانلود درس بعدی: فقط کش کن، رمزگشایی نکن.
-        if (isHtml && !request.isForMainFrame && !isMusic) {
+        // iframe یک HTML واقعی است، نه «درس بعدی»: پاسخِ خالی در نسخهٔ قبل
+        // مخصوصاً iframeهای background-music/music-background داخل یوگا و ورزش
+        // را نامرئی می‌کرد. پیش‌دانلود فقط با هدر صریح ممکن است؛ HTMLهای فعلی
+        // چنین هدرِ داخلی ندارند، پس همهٔ frameها سند واقعی‌شان را می‌گیرند.
+        val explicitPrefetch = request.requestHeaders["X-Hy-Prefetch"] == "1"
+        if (isHtml && !request.isForMainFrame && explicitPrefetch && !isMusic) {
             LessonCache.ensure(appContext, url)
             return empty200()
         }
@@ -128,6 +132,15 @@ open class HmkWebViewClient(
         return WebResourceResponse(
             "text/html", "utf-8", 200, "OK", htmlHeaders(), ByteArrayInputStream(body),
         )
+    }
+
+    override fun onPageFinished(view: WebView, url: String) {
+        super.onPageFinished(view, url)
+        // HTMLها دست‌نخورده‌اند؛ این پل فقط در میزبان WebView قرار می‌گیرد. وقتی
+        // mini-player داخل iframe باز می‌شود، خود iframe پیام state می‌فرستد و
+        // میزبان آن را تا تمام viewport بزرگ می‌کند. بنابراین sheet پشت iframe
+        // کوچک یا پشت صفحهٔ یوگا/ورزش گم نمی‌شود.
+        view.installMusicFrameOverlayBridge()
     }
 
     companion object {

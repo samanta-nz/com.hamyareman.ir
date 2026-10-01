@@ -45,6 +45,19 @@ def main() -> int:
                             hit_for_slug += 1
                         except Exception:  # noqa: BLE001
                             pass
+                # مرور فصل به‌جای dNN، با fNNreview نام‌گذاری شده است.
+                review = f"{slug}f{f:02d}review"
+                for ext in EXTS:
+                    key = f"{BASE}/{book}/exam/{review}.{ext}"
+                    tried += 1
+                    try:
+                        h = client.head_object(Bucket=tgt.bucket, Key=key)
+                        found.append({"book": book, "slug": slug, "f": f, "d": "review",
+                                      "ext": ext, "key": key,
+                                      "size": int(h["ContentLength"])})
+                        hit_for_slug += 1
+                    except Exception:  # noqa: BLE001
+                        pass
                 # اگر برای این فصل هیچ چیز نبود و قبلاً هم چیزی نیافته‌ایم، slug غلط است
                 if f >= 2 and hit_for_slug == 0:
                     break

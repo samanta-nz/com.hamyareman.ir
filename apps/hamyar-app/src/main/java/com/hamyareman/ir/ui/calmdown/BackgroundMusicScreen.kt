@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
@@ -37,16 +38,24 @@ private class MusicSheetBridge(private val onExpanded: (Boolean) -> Unit) {
 fun BackgroundMusicHost(
     modifier: Modifier = Modifier,
     startExpanded: Boolean = false,
+    onExpandedChanged: (Boolean) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(startExpanded) }
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val webRef = remember { arrayOfNulls<WebView>(1) }
+    fun setExpanded(value: Boolean) {
+        expanded = value
+        onExpandedChanged(value)
+    }
     DisposableEffect(Unit) {
         onDispose { webRef[0]?.stopManagedMedia() }
     }
     val hostModifier = modifier.then(
         when {
-            expanded && startExpanded -> Modifier.fillMaxSize()
-            expanded -> Modifier.fillMaxWidth().height(620.dp)
+            // در «بشنو و بخواب» این ارتفاع تا پایین viewport می‌رود و والد
+            // محتوای زیرین را هنگام باز بودن پنهان می‌کند؛ sheet دیگر بریده یا
+            // پشت صفحهٔ میزبان نمی‌ماند.
+            expanded -> Modifier.fillMaxWidth().height((screenHeight - 56.dp).coerceAtLeast(420.dp))
             else -> Modifier.fillMaxWidth().height(92.dp)
         },
     )
@@ -60,7 +69,7 @@ fun BackgroundMusicHost(
                     settings.mediaPlaybackRequiresUserGesture = false
                     settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                     addJavascriptInterface(
-                        MusicSheetBridge { value -> post { expanded = value } },
+                        MusicSheetBridge { value -> post { setExpanded(value) } },
                         "HamyarMusicHost",
                     )
                     webViewClient = object : android.webkit.WebViewClient() {

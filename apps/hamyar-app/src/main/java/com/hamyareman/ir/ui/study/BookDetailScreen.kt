@@ -414,7 +414,7 @@ private fun BookMenuNode(
                     // فصلی که PDF خودش را دارد، آن را به‌صورت یک ردیف جدا نشان
                     // می‌دهد تا با باز شدن زیرشاخه‌ها دسترسی به خودش از بین نرود.
                     if (node.hasContent) {
-                        LeafRow("متن کامل: ${node.title}", node.key, node.ready, depth + 1, "", onOpen)
+                        LeafRow(node.title, node.key, node.ready, depth + 1, "", onOpen)
                     }
                     node.tabs.forEach { tab ->
                         // سربرگ «تدریس» اگر صفحهٔ آمادهٔ exam داشته باشد، به همان

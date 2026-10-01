@@ -70,10 +70,13 @@ fun SleepNightScreen(onBack: () -> Unit) {
         }
     }
 
+    // بازشدن انتخابگر صدا باید واقعاً تمام فضای محتوای این صفحه را بگیرد؛ در
+    // حالت قدیمی، sheet فقط در قاب ۹۲dp می‌ماند و پشت میزبان پنهان می‌شد.
+    var musicSheetOpen by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize()) {
         AppTopBar("بشنو و بخواب", onBack)
-        BackgroundMusicHost()
-        Column(
+        BackgroundMusicHost(onExpandedChanged = { musicSheetOpen = it })
+        if (!musicSheetOpen) Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -83,16 +86,18 @@ fun SleepNightScreen(onBack: () -> Unit) {
                 audioTracks.firstOrNull { it.uri.isNotBlank() }?.let { play(it) }
             }
         }
-        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { if (state.playing) playback.pause() else playback.play() }, modifier = Modifier.weight(1f)) {
-                Text(if (state.playing) "استوپ" else "پلی")
+        if (!musicSheetOpen) {
+            Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { if (state.playing) playback.pause() else playback.play() }, modifier = Modifier.weight(1f)) {
+                    Text(if (state.playing) "استوپ" else "پلی")
+                }
+                OutlinedButton(onClick = { playback.stop() }, modifier = Modifier.weight(1f)) {
+                    Text("بستن")
+                }
             }
-            OutlinedButton(onClick = { playback.stop() }, modifier = Modifier.weight(1f)) {
-                Text("بستن")
+            state.error?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = AppTypography.pageBody.style, modifier = Modifier.padding(horizontal = 16.dp))
             }
-        }
-        state.error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, style = AppTypography.pageBody.style, modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
 }

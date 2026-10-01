@@ -74,10 +74,16 @@ def convert(items: list, folder: str, exists: dict[str, bool], stats: collection
         else:
             lesson_no += 1
 
-        # صفحهٔ تدریس و صوت از پوشهٔ exam: <slug>f<فصل>d<درس>.{html,mp3}
+        # صفحهٔ تدریس و صوت از پوشهٔ exam:
+        # - درس:      <slug>f<فصل>d<درس>.{html,mp3}
+        # - مرور فصل: <slug>f<فصل>review.{html,mp3}
+        # فایل‌های review متعلق به «جمع‌بندی فصل» هستند، نه درسِ بعدی؛ در نسخهٔ
+        # قبل فقط الگوی dNN آزموده می‌شد و مرورهای f01/f02/f03 اصلاً لینک نمی‌شدند.
         teach_key = audio_key = None
         if slug and not is_container and it.get("tabs") and chapter[0] > 0:
-            stem = f"{BASE}/{folder}/exam/{slug}f{chapter[0]:02d}d{lesson_no:02d}"
+            is_review = it.get("kind") == "wrapup" or it.get("title", "").strip().startswith("جمع")
+            suffix = f"f{chapter[0]:02d}review" if is_review else f"f{chapter[0]:02d}d{lesson_no:02d}"
+            stem = f"{BASE}/{folder}/exam/{slug}{suffix}"
             if exists.get(stem + ".html"):
                 teach_key = stem + ".html"
                 stats["teach"] += 1
@@ -130,6 +136,11 @@ def main() -> int:
                     stem = f"{BASE}/{folder}/exam/{slug}f{c:02d}d{d:02d}"
                     wanted.add(stem + ".html")
                     wanted.add(stem + ".mp3")
+                # جمع‌بندی/مرور هر فصل الگوی جدا دارد و هر دو پسوندش ممکن است
+                # مستقل از فایل‌های dNN وجود داشته باشند.
+                review = f"{BASE}/{folder}/exam/{slug}f{c:02d}review"
+                wanted.add(review + ".html")
+                wanted.add(review + ".mp3")
 
     exists: dict[str, bool] = {}
     if args.no_probe:
