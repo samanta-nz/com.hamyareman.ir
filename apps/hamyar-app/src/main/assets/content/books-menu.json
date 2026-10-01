@@ -11,22 +11,8 @@
      "title": "فهرست: الفهرس",
      "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
      "ready": true,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "سخنی با دبیران، مدیران، گروه‌های آموزشی و اولیای دانش‌آموزان",
-     "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-students-1.pdf",
-     "ready": false,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "سخنی با دانش‌آموزان",
-     "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-students-2.pdf",
-     "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -35,6 +21,8 @@
      "title": "درس اوّل: مراجعة دروس الصفّین السابع و الثامن؛ أهلاً و سهلاً بالخریف",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -74,6 +62,8 @@
      "title": "درس دوم: اَلْعُبورُ الْمِنْ",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -113,6 +103,8 @@
      "title": "درس سوم: جِسْرُ اَلصَّداقَة",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -152,6 +144,8 @@
      "title": "درس چهارم: اَلصَّبْرُ مِفتاحُ اَلْفَرَج",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -191,6 +185,8 @@
      "title": "درس پنجم: اَلرَّجاء",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -230,6 +226,8 @@
      "title": "درس ششم: تَغییرُ اَلْحَیاة",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -269,6 +267,8 @@
      "title": "درس هفتم: ثَمَرَةُ اَلْجِدّ",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -308,6 +308,8 @@
      "title": "درس هشتم: حِوارٌ بَیْنَ اَلزّائِرِ وَ سائِقِ سَیّارَةِ اَلْأُجْرَة",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -347,6 +349,8 @@
      "title": "درس نهم: نُصوصٌ حَوْلَ اَلصِّحَّة",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -386,6 +390,8 @@
      "title": "درس دهم: رِسالَةُ اَلشَّهیدِ سُلَیمانی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -425,6 +431,8 @@
      "title": "پیام پایانی: فی أمانِ الله",
      "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p11.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -440,6 +448,8 @@
      "title": "تابلوی هنری: نقاشی رنگ‌وروغن ـ استاد کیخسرو خروش",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -448,6 +458,8 @@
      "title": "فهرست مطالب",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-index.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -456,6 +468,8 @@
      "title": "بخش اوّل: هنرهای تجسّمی",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec1.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -463,6 +477,8 @@
        "title": "فصل اوّل: طرّاحی",
        "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f01-1.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": [
         {
@@ -470,6 +486,8 @@
          "title": "فصل اوّل درس اوّل: فضا و عمق",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -499,6 +517,8 @@
          "title": "فصل اوّل درس دوم: نور و حجم",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -528,6 +548,8 @@
          "title": "فصل اوّل درس سوم: ابزارهای ترسیم",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -557,6 +579,8 @@
          "title": "فصل اوّل درس چهارم: تعریف و کاربردهای طرّاحی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -588,6 +612,8 @@
        "title": "فصل دوم: نگاشتار (گرافیک)",
        "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f02-1.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": [
         {
@@ -595,6 +621,8 @@
          "title": "فصل دوم درس اوّل: نگاشتار (گرافیک) و تبلیغات",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -624,6 +652,8 @@
          "title": "فصل دوم درس دوم: اعلان و صفحه‌آرایی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -653,6 +683,8 @@
          "title": "فصل دوم درس سوم: نگاشتار (گرافیک) محیطی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -684,6 +716,8 @@
        "title": "فصل سوم: عکّاسی",
        "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f03-1.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": [
         {
@@ -691,6 +725,8 @@
          "title": "فصل سوم درس اوّل: عکس‌های ترکیبی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -720,6 +756,8 @@
          "title": "فصل سوم درس دوم: عکاسی روایی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -749,6 +787,8 @@
          "title": "فصل سوم درس سوم: گرایش‌های عکاسی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -782,6 +822,8 @@
      "title": "بخش دوم: خوشنویسی",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec2.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -789,6 +831,8 @@
        "title": "بخش دوم درس اوّل: نحوهٔ تراشیدن قلم ــ قالب‌های اجرایی خوشنویسی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -818,6 +862,8 @@
        "title": "بخش دوم درس دوم: معرفی خط نستعلیق و مشق سطرنویسی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -847,6 +893,8 @@
        "title": "بخش دوم درس سوم: معرفی خط شکستهٔ نستعلیق و مشق دو سطری‌نویسی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -876,6 +924,8 @@
        "title": "بخش دوم درس چهارم: گرایش‌های هنری با بنیان خوشنویسی و مشق دفتری‌نویسی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -907,6 +957,8 @@
      "title": "بخش سوم: هنرهای سنتی",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec3.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -914,6 +966,8 @@
        "title": "فصل اوّل: طرّاحی نقوش تزیینی",
        "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f01-2.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": [
         {
@@ -921,6 +975,8 @@
          "title": "فصل اوّل درس اوّل: چهارلنگه",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -950,6 +1006,8 @@
          "title": "فصل اوّل درس دوم: گره هشت و چهارلنگه",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -979,6 +1037,8 @@
          "title": "فصل اوّل درس سوم: بته (بته‌جقه)",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1010,6 +1070,8 @@
        "title": "فصل دوم: هنرهای زیرالکی",
        "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f02-2.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": [
         {
@@ -1017,6 +1079,8 @@
          "title": "فصل دوم درس اوّل: جلدسازی سنتی (زیرالکی با روش لایه‌های کاغذ)",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1046,6 +1110,8 @@
          "title": "فصل دوم درس دوم: جعبه‌های روغنی (زیرالکی با روش نوار کاغذ)",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1075,6 +1141,8 @@
          "title": "فصل دوم درس سوم: اشیای روغنی (زیرالکی روی چوب)",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1106,6 +1174,8 @@
        "title": "فصل سوم: سوزن‌دوزی‌های سنتی ایران",
        "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f03-2.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": [
         {
@@ -1113,6 +1183,8 @@
          "title": "فصل سوم درس اوّل: درویش‌دوزی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1142,6 +1214,8 @@
          "title": "فصل سوم درس دوم: زرتشتی‌دوزی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1171,6 +1245,8 @@
          "title": "فصل سوم درس سوم: پته‌دوزی",
          "key": null,
          "ready": null,
+         "teachKey": null,
+         "audioKey": null,
          "tabs": [
           {
            "title": "تدریس",
@@ -1204,6 +1280,8 @@
      "title": "بخش چهارم: هنرهای آوایی",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec4.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -1211,6 +1289,8 @@
        "title": "بخش چهارم درس اوّل: آواهای قومی (مردمی)",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1240,6 +1320,8 @@
        "title": "بخش چهارم درس دوم: ردیف دستگاهی ایران",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1269,6 +1351,8 @@
        "title": "بخش چهارم درس سوم: آواهای دینی ایران",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1298,6 +1382,8 @@
        "title": "بخش چهارم درس چهارم: وزن و ریتم در آواهای ایرانی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1327,6 +1413,8 @@
        "title": "بخش چهارم درس پنجم: شکل (فرم) و گونه (ژانر)های آوایی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1358,6 +1446,8 @@
      "title": "بخش پنجم: هنرهای نمایشی",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec5.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -1365,6 +1455,8 @@
        "title": "بخش پنجم درس اوّل: کارگردانی و انتخاب نمایشنامه",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1394,6 +1486,8 @@
        "title": "بخش پنجم درس دوم: انتخاب بازیگر و خواندن متن",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1423,6 +1517,8 @@
        "title": "بخش پنجم درس سوم: حرکت و چیدمان روی صحنه",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1454,6 +1550,8 @@
      "title": "واژه‌نامه",
      "key": "Bucket/Pdf-files/G09/g9-art/g9-art-dict.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -1469,14 +1567,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-index.pdf",
      "ready": true,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "سخنی با دبیران گرامی",
-     "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p01.pdf",
-     "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -1485,6 +1577,8 @@
      "title": "فصل اول: مفاهیم و ضرورت آمادگی دفاعی",
      "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -1492,6 +1586,8 @@
        "title": "فصل اول درس یکم: تهدید چیست؟ دشمن کیست؟",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1521,6 +1617,8 @@
        "title": "فصل اول درس دوم: موقعیت ایران و تهدیدهای آن",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1550,6 +1648,8 @@
        "title": "جمع‌بندی فصل اول",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1591,6 +1691,8 @@
      "title": "فصل دوم: فرهنگ دفاعی ما",
      "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f02.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -1598,6 +1700,8 @@
        "title": "فصل دوم درس سوم: روایت فتح",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1627,6 +1731,8 @@
        "title": "فصل دوم درس چهارم: باید برخاست",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1656,6 +1762,8 @@
        "title": "فصل دوم درس پنجم: رویارویی قدرت‌ها",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1685,6 +1793,8 @@
        "title": "جمع‌بندی فصل دوم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1726,6 +1836,8 @@
      "title": "فصل سوم: مهارت‌های دفاعی",
      "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f03.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -1733,6 +1845,8 @@
        "title": "فصل سوم درس ششم: نظام جمع و مهارت‌های رزم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1762,6 +1876,8 @@
        "title": "فصل سوم درس هفتم: پدافند غیرعامل",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1791,6 +1907,8 @@
        "title": "فصل سوم درس هشتم: جنگ پنهان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1820,6 +1938,8 @@
        "title": "فصل سوم درس نهم: امداد و نجات",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1849,6 +1969,8 @@
        "title": "جمع‌بندی فصل سوم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -1897,14 +2019,8 @@
      "title": "آیه قرآن",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p01.pdf",
      "ready": true,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "مقدمه: بسمه تعالی",
-     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-intro.pdf",
-     "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -1913,6 +2029,8 @@
      "title": "توصیه به دبیران",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p02.pdf",
      "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -1921,6 +2039,8 @@
      "title": "نقشهٔ کتاب: Map of Prospect 3",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p03.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -1929,6 +2049,8 @@
      "title": "صفحهٔ Spotlight: خوش‌آمد",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p04.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -1937,6 +2059,8 @@
      "title": "درس یکم: Lesson 1: Personality",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -1981,6 +2105,8 @@
      "title": "درس دوم: Lesson 2: Travel",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2025,6 +2151,8 @@
      "title": "مرور یکم: Review 1",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p07.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2033,6 +2161,8 @@
      "title": "درس سوم: Lesson 3",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2077,6 +2207,8 @@
      "title": "درس چهارم: Lesson 4: Services",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2121,6 +2253,8 @@
      "title": "مرور دوم: Review 2",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p10.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2129,6 +2263,8 @@
      "title": "درس پنجم: Lesson 5: Media",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2173,6 +2309,8 @@
      "title": "درس ششم: Lesson 6",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2217,6 +2355,8 @@
      "title": "مرور سوم: Review 3",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p13.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2225,6 +2365,8 @@
      "title": "فرهنگ تصویری: Photo Dictionary",
      "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p14.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -2240,6 +2382,8 @@
      "title": "صفحه عنوان: Workbook: English for Schools 3",
      "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-titlepage.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2248,6 +2392,8 @@
      "title": "درس یکم: Lesson 1",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2292,6 +2438,8 @@
      "title": "درس دوم: Lesson 2",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2336,6 +2484,8 @@
      "title": "درس سوم: Lesson 3",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2380,6 +2530,8 @@
      "title": "درس چهارم: Lesson 4",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2424,6 +2576,8 @@
      "title": "درس پنجم: Lesson 5",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2468,6 +2622,8 @@
      "title": "درس ششم: Lesson 6",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "Lesson Teaching",
@@ -2519,6 +2675,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-index.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2527,6 +2685,8 @@
      "title": "پیشگفتار",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-preface.pdf",
      "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2535,6 +2695,8 @@
      "title": "ستایش",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-praise.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -2543,6 +2705,8 @@
      "title": "فصل اول: زیبایی آفرینش",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -2550,6 +2714,8 @@
        "title": "فصل اول درس یکم: آفرینش همه تنبیه خداوندِ دل است",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2589,6 +2755,8 @@
        "title": "حکایت: سفر",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st01.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       },
@@ -2597,6 +2765,8 @@
        "title": "فصل اول درس دوم: عجایبِ صنعِ حق تعالی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2636,6 +2806,8 @@
        "title": "شعرخوانی: پرواز",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh01.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -2646,6 +2818,8 @@
      "title": "فصل دوم: شکفتن",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f02.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -2653,6 +2827,8 @@
        "title": "فصل دوم درس سوم: مثل آینه، کار و شایستگی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2692,6 +2868,8 @@
        "title": "حکایت: باغبانِ نیک‌اندیش",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st02.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       },
@@ -2700,6 +2878,8 @@
        "title": "فصل دوم درس چهارم: هم‌نشین",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2739,6 +2919,8 @@
        "title": "روان‌خوانی: دریچه‌های شکوفایی",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv01.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -2749,6 +2931,8 @@
      "title": "فصل آزاد: ادبیات بومی ۱",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad1.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -2756,6 +2940,8 @@
        "title": "فصل آزاد درس پنجم: درس آزاد (۱)",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2795,6 +2981,8 @@
        "title": "حکایت: ادبیات بومی ۱",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st03.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       },
@@ -2803,6 +2991,8 @@
        "title": "شعرخوانی: ادبیات بومی ۱",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh02.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -2813,6 +3003,8 @@
      "title": "فصل سوم: سبکِ زندگی",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f03.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -2820,6 +3012,8 @@
        "title": "فصل سوم درس ششم: آداب زندگی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2859,6 +3053,8 @@
        "title": "حکایت: شو، خطرکن!",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st04.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       },
@@ -2867,6 +3063,8 @@
        "title": "فصل سوم درس هفتم: پرتوِ امید",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2906,6 +3104,8 @@
        "title": "فصل سوم درس هشتم: همزیستی با مامِ میهن",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -2945,6 +3145,8 @@
        "title": "شعرخوانی: دوراندیشی",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh03.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -2955,6 +3157,8 @@
      "title": "فصل چهارم: نام‌ها و یادها",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f04.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -2962,6 +3166,8 @@
        "title": "فصل چهارم درس نهم: راز موفّقیت",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3001,6 +3207,8 @@
        "title": "فصل چهارم درس دهم: آرشی دیگر",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3040,6 +3248,8 @@
        "title": "حکایت: نیک رایان",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st05.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       },
@@ -3048,6 +3258,8 @@
        "title": "فصل چهارم درس یازدهم: زنِ پارسا",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3087,6 +3299,8 @@
        "title": "روان‌خوانی: دروازه‌ای به آسمان",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv02.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -3097,6 +3311,8 @@
      "title": "فصل پنجم: اسلام و انقلاب اسلامی",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f05.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -3104,6 +3320,8 @@
        "title": "فصل پنجم درس دوازدهم: پیام‌آور رحمت",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3143,6 +3361,8 @@
        "title": "حکایت: سیرت سلمان",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st06.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       },
@@ -3151,6 +3371,8 @@
        "title": "فصل پنجم درس سیزدهم: آشنای غریبان، میلادِ گل",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3190,6 +3412,8 @@
        "title": "فصل پنجم درس چهاردهم: پیدای پنهان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3229,6 +3453,8 @@
        "title": "شعرخوانی: بُوَد قدر تو افزون از مالِک",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh04.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -3239,6 +3465,8 @@
      "title": "فصل آزاد: ادبیات بومی ۲",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad2.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -3246,6 +3474,8 @@
        "title": "فصل آزاد درس پانزدهم: درس آزاد (۲)",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3285,6 +3515,8 @@
        "title": "روان‌خوانی: ادبیات بومی ۲",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv03.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -3295,6 +3527,8 @@
      "title": "فصل ششم: ادبیات جهان",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f06.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -3302,6 +3536,8 @@
        "title": "فصل ششم درس شانزدهم: آرزو",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3341,6 +3577,8 @@
        "title": "فصل ششم درس هفدهم: شازده کوچولو",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -3380,6 +3618,8 @@
        "title": "روان‌خوانی: دو نقّاش",
        "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv04.pdf",
        "ready": true,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [],
        "children": []
       }
@@ -3390,6 +3630,8 @@
      "title": "نیایش: بیا تا برآریم دستی ز دل",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-pray.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -3398,6 +3640,8 @@
      "title": "واژه‌نامه",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-dict.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -3406,6 +3650,8 @@
      "title": "اعلام: اشخاص، آثار",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-ann.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -3414,6 +3660,8 @@
      "title": "کتاب‌نامه",
      "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-biblio.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -3429,6 +3677,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-index.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -3437,6 +3687,8 @@
      "title": "درس یکم: شروع یک ماجرا",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3466,6 +3718,8 @@
      "title": "درس دوم: توطئه‌ای به نام بازی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3495,6 +3749,8 @@
      "title": "درس سوم: کاروان سرنوشت",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3524,6 +3780,8 @@
      "title": "درس چهارم: فرار به سوی خدا",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3553,6 +3811,8 @@
      "title": "درس پنجم: مهمانی رسوایی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3582,6 +3842,8 @@
      "title": "درس ششم: پیروزی تأمل‌برانگیز",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3611,6 +3873,8 @@
      "title": "درس هفتم: کلاس توحید در زندان",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3640,6 +3904,8 @@
      "title": "درس هشتم: رؤیای سرنوشت‌ساز",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3669,6 +3935,8 @@
      "title": "درس نهم: اسیری که امیر شد",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3698,6 +3966,8 @@
      "title": "درس دهم: دیدارها تازه می‌شود",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3727,6 +3997,8 @@
      "title": "درس یازدهم: ماجرای ظرف قیمتی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3756,6 +4028,8 @@
      "title": "درس دوازدهم: پایان یک ماجرا",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3792,6 +4066,8 @@
      "title": "فهرست مطالب",
      "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-index.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -3800,6 +4076,8 @@
      "title": "پودمان یکم: الگوریتم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3829,6 +4107,8 @@
      "title": "پودمان دوم: ترسیم با رایانه",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3858,6 +4138,8 @@
      "title": "پودمان سوم: ساز و کارهای حرکتی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3887,6 +4169,8 @@
      "title": "پودمان چهارم: برنامه‌نویسی پایتون (۳)",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3916,6 +4200,8 @@
      "title": "پودمان پنجم: هدایت تحصیلی ــ حرفه‌ای",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3945,6 +4231,8 @@
      "title": "پودمان ششم: برق",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -3974,6 +4262,8 @@
      "title": "پودمان هفتم: تأسیسات مکانیکی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -4003,6 +4293,8 @@
      "title": "پودمان هشتم: عمران",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -4032,6 +4324,8 @@
      "title": "پودمان نهم: خودرو",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -4061,6 +4355,8 @@
      "title": "پودمان دهم: پایش رشد و تکامل کودک",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -4090,6 +4386,8 @@
      "title": "پودمان یازدهم: صنایع دستی (برجسته‌کاری روی فلز مس)",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -4126,14 +4424,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-index.pdf",
      "ready": true,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "سخنی با معلّم",
-     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-teacher.pdf",
-     "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -4142,6 +4434,8 @@
      "title": "فصل ۱: مجموعه‌ها",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -4149,6 +4443,8 @@
        "title": "فصل ۱ درس اوّل: معرفی مجموعه",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d01.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d01.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4178,6 +4474,8 @@
        "title": "فصل ۱ درس دوم: مجموعه‌های برابر و نمایش مجموعه‌ها",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d02.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d02.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4207,6 +4505,8 @@
        "title": "فصل ۱ درس سوم: اجتماع، اشتراک و تفاضلِ مجموعه‌ها",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d03.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d03.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4236,6 +4536,8 @@
        "title": "فصل ۱ درس چهارم: مجموعه‌ها و احتمال",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d04.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01d04.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4265,6 +4567,8 @@
        "title": "جمع‌بندی فصل ۱",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4306,6 +4610,8 @@
      "title": "فصل ۲: عددهای حقیقی",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f02.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -4313,6 +4619,8 @@
        "title": "فصل ۲ درس اوّل: عددهای گویا",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02d01.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02d01.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4342,6 +4650,8 @@
        "title": "فصل ۲ درس دوم: عددهای حقیقی",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02d02.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02d02.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4371,6 +4681,8 @@
        "title": "فصل ۲ درس سوم: قدر مطلق و محاسبهٔ تقریبی",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02d03.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02d03.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4400,6 +4712,8 @@
        "title": "جمع‌بندی فصل ۲",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4441,6 +4755,8 @@
      "title": "فصل ۳: استدلال و اثبات در هندسه",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f03.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -4448,6 +4764,8 @@
        "title": "فصل ۳ درس اوّل: استدلال",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif03d01.html",
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4477,6 +4795,8 @@
        "title": "فصل ۳ درس دوم: آشنایی با اثبات در هندسه",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif03d02.html",
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4506,6 +4826,8 @@
        "title": "فصل ۳ درس سوم: هم‌نهشتی مثلث‌ها",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif03d03.html",
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4535,6 +4857,8 @@
        "title": "فصل ۳ درس چهارم: حل مسئله در هندسه",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif03d04.html",
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4564,6 +4888,8 @@
        "title": "فصل ۳ درس پنجم: شکل‌های متشابه",
        "key": null,
        "ready": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif03d05.html",
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4593,6 +4919,8 @@
        "title": "جمع‌بندی فصل ۳",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4634,6 +4962,8 @@
      "title": "فصل ۴: توان و ریشه",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f04.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -4641,6 +4971,8 @@
        "title": "فصل ۴ درس اوّل: توان صحیح",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4670,6 +5002,8 @@
        "title": "فصل ۴ درس دوم: نماد علمی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4699,6 +5033,8 @@
        "title": "فصل ۴ درس سوم: ریشه‌گیری",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4728,6 +5064,8 @@
        "title": "فصل ۴ درس چهارم: جمع و تفریق رادیکال‌ها",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4757,6 +5095,8 @@
        "title": "جمع‌بندی فصل ۴",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4798,6 +5138,8 @@
      "title": "فصل ۵: عبارت‌های جبری",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f05.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -4805,6 +5147,8 @@
        "title": "فصل ۵ درس اوّل: عبارت‌های جبری و مفهوم اتحاد",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4834,6 +5178,8 @@
        "title": "فصل ۵ درس دوم: چند اتحاد دیگر، تجزیه و کاربردها",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4863,6 +5209,8 @@
        "title": "فصل ۵ درس سوم: نابرابری‌ها و نامعادله‌ها",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4892,6 +5240,8 @@
        "title": "جمع‌بندی فصل ۵",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4933,6 +5283,8 @@
      "title": "فصل ۶: خط و معادله‌های خطی",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f06.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -4940,6 +5292,8 @@
        "title": "فصل ۶ درس اوّل: معادلهٔ خط",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4969,6 +5323,8 @@
        "title": "فصل ۶ درس دوم: شیب خط و عرض از مبدأ",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -4998,6 +5354,8 @@
        "title": "فصل ۶ درس سوم: دستگاه معادله‌های خطی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5027,6 +5385,8 @@
        "title": "جمع‌بندی فصل ۶",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5068,6 +5428,8 @@
      "title": "فصل ۷: عبارت‌های گویا",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f07.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -5075,6 +5437,8 @@
        "title": "فصل ۷ درس اوّل: معرفی و ساده‌کردن عبارت‌های گویا",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5104,6 +5468,8 @@
        "title": "فصل ۷ درس دوم: محاسبات عبارت‌های گویا",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5133,6 +5499,8 @@
        "title": "فصل ۷ درس سوم: تقسیم چندجمله‌ای‌ها",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5162,6 +5530,8 @@
        "title": "جمع‌بندی فصل ۷",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5203,6 +5573,8 @@
      "title": "فصل ۸: حجم و مساحت",
      "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f08.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -5210,6 +5582,8 @@
        "title": "فصل ۸ درس اوّل: حجم و مساحت کره",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5239,6 +5613,8 @@
        "title": "فصل ۸ درس دوم: حجم هرم و مخروط",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5268,6 +5644,8 @@
        "title": "فصل ۸ درس سوم: سطح و حجم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5297,6 +5675,8 @@
        "title": "جمع‌بندی فصل ۸",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5345,14 +5725,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-index.pdf",
      "ready": true,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "مقدّمه: سخنی با دبیران ارجمند",
-     "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-intro.pdf",
-     "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -5361,6 +5735,8 @@
      "title": "ستایش",
      "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-praise.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -5369,6 +5745,8 @@
      "title": "درس یکم: با نظام ذهنی «پرورده» و «مند» بنویسیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5398,6 +5776,8 @@
      "title": "درس دوم: واژه‌ها را بشناسیم، گزینش کنیم و به کار بگیریم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5427,6 +5807,8 @@
      "title": "درس سوم: نوعِ زبانِ نوشته را انتخاب کنیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5456,6 +5838,8 @@
      "title": "درس چهارم: فضا و رنگِ نوشته را تغییر دهیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5485,6 +5869,8 @@
      "title": "درس پنجم: نوشته را خوش آغاز کنیم؛ زیبا به پایان ببریم و نیکو نام‌گذاری کنیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5514,6 +5900,8 @@
      "title": "درس ششم: قالبی برای نوشتن برگزینیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5543,6 +5931,8 @@
      "title": "درس هفتم: وسعت و عمق نوشته را بیشتر کنیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5572,6 +5962,8 @@
      "title": "درس هشتم: نوشته را ویرایش کنیم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -5601,6 +5993,8 @@
      "title": "نیایش",
      "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-pray.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -5609,6 +6003,8 @@
      "title": "کتاب‌نامه",
      "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-biblio.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -5624,6 +6020,8 @@
      "title": "فصل اول: خداشناسی",
      "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -5631,6 +6029,8 @@
        "title": "فصل اول درس یکم: تو را چگونه بشناسم؟",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5660,6 +6060,8 @@
        "title": "فصل اول درس دوم: در پناه ایمان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5689,6 +6091,8 @@
        "title": "جمع‌بندی فصل اول",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5730,6 +6134,8 @@
      "title": "فصل دوم: راهنماشناسی",
      "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f02.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -5737,6 +6143,8 @@
        "title": "فصل دوم درس سوم: راهنمایان الهی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5766,6 +6174,8 @@
        "title": "فصل دوم درس چهارم: خورشید پنهان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5795,6 +6205,8 @@
        "title": "فصل دوم درس پنجم: رهبری در دوران غیبت",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5824,6 +6236,8 @@
        "title": "جمع‌بندی فصل دوم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5865,6 +6279,8 @@
      "title": "فصل سوم: راه و توشه",
      "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f03.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -5872,6 +6288,8 @@
        "title": "فصل سوم درس ششم: وضو، غسل و تیمم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5901,6 +6319,8 @@
        "title": "فصل سوم درس هفتم: احکام نماز",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5930,6 +6350,8 @@
        "title": "جمع‌بندی فصل سوم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -5971,6 +6393,8 @@
      "title": "فصل چهارم: اخلاق",
      "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f04.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -5978,6 +6402,8 @@
        "title": "فصل چهارم درس هشتم: همدلی و همراهی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6007,6 +6433,8 @@
        "title": "جمع‌بندی فصل چهارم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6048,6 +6476,8 @@
      "title": "فصل پنجم: جامعه اسلامی",
      "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f05.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -6055,6 +6485,8 @@
        "title": "فصل پنجم درس نهم: انقلاب اسلامی ایران",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6084,6 +6516,8 @@
        "title": "فصل پنجم درس دهم: مسئولیت همگانی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6113,6 +6547,8 @@
        "title": "فصل پنجم درس یازدهم: انفاق",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6142,6 +6578,8 @@
        "title": "فصل پنجم درس دوازدهم: جهاد",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6171,6 +6609,8 @@
        "title": "جمع‌بندی فصل پنجم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -6219,22 +6659,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-index.pdf",
      "ready": true,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "سخنی با دانش‌آموزان",
-     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-students.pdf",
-     "ready": false,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
-     "title": "سخنی با دبیران و اولیای گرامی",
-     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-p01.pdf",
-     "ready": false,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -6243,6 +6669,8 @@
      "title": "درس یکم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6267,6 +6695,8 @@
      "title": "درس دوم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6291,6 +6721,8 @@
      "title": "درس سوم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6315,6 +6747,8 @@
      "title": "درس چهارم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6339,6 +6773,8 @@
      "title": "درس پنجم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6363,6 +6799,8 @@
      "title": "درس ششم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6387,6 +6825,8 @@
      "title": "درس هفتم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6411,6 +6851,8 @@
      "title": "درس هشتم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6435,6 +6877,8 @@
      "title": "درس نهم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6459,6 +6903,8 @@
      "title": "درس دهم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6483,6 +6929,8 @@
      "title": "درس یازدهم",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6507,6 +6955,8 @@
      "title": "نیایش: دعای ختم قرآن کریم",
      "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-pray.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -6515,6 +6965,8 @@
      "title": "فهرست کلمات",
      "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-vocab.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -6530,6 +6982,8 @@
      "title": "فصل اول: مواد و نقش آنها در زندگی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6559,6 +7013,8 @@
      "title": "فصل دوم: رفتار اتم‌ها با یکدیگر",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6588,6 +7044,8 @@
      "title": "فصل سوم: به دنبال محیطی بهتر برای زندگی",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6617,6 +7075,8 @@
      "title": "فصل چهارم: حرکت چیست؟",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6646,6 +7106,8 @@
      "title": "فصل پنجم: نیرو",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6675,6 +7137,8 @@
      "title": "فصل ششم: زمین‌ساخت ورقه‌ای",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6704,6 +7168,8 @@
      "title": "فصل هفتم: آثاری از گذشته زمین",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6733,6 +7199,8 @@
      "title": "فصل هشتم: فشار و آثار آن",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6762,6 +7230,8 @@
      "title": "فصل نهم: ماشین‌ها",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6791,6 +7261,8 @@
      "title": "فصل دهم: نگاهی به فضا",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6820,6 +7292,8 @@
      "title": "فصل یازدهم: گوناگونی جانداران",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6849,6 +7323,8 @@
      "title": "فصل دوازدهم: دنیای گیاهان",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6878,6 +7354,8 @@
      "title": "فصل سیزدهم: جانوران بی‌مهره",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6907,6 +7385,8 @@
      "title": "فصل چهاردهم: جانوران مهره‌دار",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6936,6 +7416,8 @@
      "title": "فصل پانزدهم: باهم‌زیستن",
      "key": null,
      "ready": null,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [
       {
        "title": "تدریس",
@@ -6965,6 +7447,8 @@
      "title": "پیوست: جدول تناوبی عناصر",
      "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-appendix.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
@@ -6980,6 +7464,8 @@
      "title": "فهرست",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-index.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -6988,6 +7474,8 @@
      "title": "فصل اول: سیارهٔ ما، زمین",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -6995,6 +7483,8 @@
        "title": "فصل اول درس ۱: زمین، مهد زیبای انسان‌ها",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7024,6 +7514,8 @@
        "title": "فصل اول درس ۲: حرکات زمین",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7053,6 +7545,8 @@
        "title": "جمع‌بندی فصل اول",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7094,6 +7588,8 @@
      "title": "فصل دوم: سنگ‌کره، آب‌کره، هواکره",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f02.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7101,6 +7597,8 @@
        "title": "فصل دوم درس ۳: چهرهٔ زمین",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7130,6 +7628,8 @@
        "title": "فصل دوم درس ۴: آب فراوان، هوای پاک",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7159,6 +7659,8 @@
        "title": "جمع‌بندی فصل دوم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7200,6 +7702,8 @@
      "title": "فصل سوم: زیست‌کره، تنوع شگفت‌انگیز",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f03.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7207,6 +7711,8 @@
        "title": "فصل سوم درس ۵: پراکندگی زیست‌بوم‌های جهان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7236,6 +7742,8 @@
        "title": "فصل سوم درس ۶: زیست‌بوم‌ها در خطرند",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7265,6 +7773,8 @@
        "title": "جمع‌بندی فصل سوم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7306,6 +7816,8 @@
      "title": "فصل چهارم: ساکنان سیارهٔ زمین",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f04.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7313,6 +7825,8 @@
        "title": "فصل چهارم درس ۷: جمعیت جهان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7342,6 +7856,8 @@
        "title": "فصل چهارم درس ۸: بی‌عدالتی و نابرابری در جهان",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7371,6 +7887,8 @@
        "title": "جمع‌بندی فصل چهارم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7412,6 +7930,8 @@
      "title": "فصل پنجم: عصر یکپارچگی و شکوفایی",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f05.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7419,6 +7939,8 @@
        "title": "فصل پنجم درس ۹: ایرانی متحد و یکپارچه",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7448,6 +7970,8 @@
        "title": "فصل پنجم درس ۱۰: اوضاع اجتماعی، اقتصادی، علمی و فرهنگی ایران در عصر صفوی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7477,6 +8001,8 @@
        "title": "جمع‌بندی فصل پنجم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7518,6 +8044,8 @@
      "title": "فصل ششم: ایران از عهد نادرشاه تا ناصرالدین‌شاه",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f06.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7525,6 +8053,8 @@
        "title": "فصل ششم درس ۱۱: تلاش برای حفظ استقلال و اتحاد سیاسی ایران",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7554,6 +8084,8 @@
        "title": "فصل ششم درس ۱۲: در جست‌وجوی پیشرفت و رهایی از سلطهٔ خارجی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7583,6 +8115,8 @@
        "title": "جمع‌بندی فصل ششم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7624,6 +8158,8 @@
      "title": "فصل هفتم: ایران در عصر مشروطه",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f07.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7631,6 +8167,8 @@
        "title": "فصل هفتم درس ۱۳: نهضت مشروطه",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7660,6 +8198,8 @@
        "title": "فصل هفتم درس ۱۴: ایران در دوران حکومت پهلوی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7689,6 +8229,8 @@
        "title": "جمع‌بندی فصل هفتم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7730,6 +8272,8 @@
      "title": "فصل هشتم: سقوط حکومت شاهنشاهی و شکل‌گیری نظام جمهوری اسلامی",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f08.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7737,6 +8281,8 @@
        "title": "فصل هشتم درس ۱۵: انقلاب اسلامی ایران",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7766,6 +8312,8 @@
        "title": "فصل هشتم درس ۱۶: ایران در دوران پس از پیروزی انقلاب اسلامی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7795,6 +8343,8 @@
        "title": "جمع‌بندی فصل هشتم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7836,6 +8386,8 @@
      "title": "فصل نهم: فرهنگ و هویت",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f09.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7843,6 +8395,8 @@
        "title": "فصل نهم درس ۱۷: فرهنگ",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7872,6 +8426,8 @@
        "title": "فصل نهم درس ۱۸: هویت",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7901,6 +8457,8 @@
        "title": "جمع‌بندی فصل نهم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7942,6 +8500,8 @@
      "title": "فصل دهم: خانواده و جامعه",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f10.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -7949,6 +8509,8 @@
        "title": "فصل دهم درس ۱۹: ارزش‌ها و کارکردهای خانواده",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -7978,6 +8540,8 @@
        "title": "فصل دهم درس ۲۰: آرامش در خانواده",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8007,6 +8571,8 @@
        "title": "جمع‌بندی فصل دهم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8048,6 +8614,8 @@
      "title": "فصل یازدهم: حکومت و مردم",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f11.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -8055,6 +8623,8 @@
        "title": "فصل یازدهم درس ۲۱: نهاد حکومت",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8084,6 +8654,8 @@
        "title": "فصل یازدهم درس ۲۲: حقوق و تکالیف شهروندی",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8113,6 +8685,8 @@
        "title": "جمع‌بندی فصل یازدهم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8154,6 +8728,8 @@
      "title": "فصل دوازدهم: بهره‌وری",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f12.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": [
       {
@@ -8161,6 +8737,8 @@
        "title": "فصل دوازدهم درس ۲۳: بهره‌وری چیست؟",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8190,6 +8768,8 @@
        "title": "فصل دوازدهم درس ۲۴: اقتصاد و بهره‌وری",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8219,6 +8799,8 @@
        "title": "جمع‌بندی فصل دوازدهم",
        "key": null,
        "ready": null,
+       "teachKey": null,
+       "audioKey": null,
        "tabs": [
         {
          "title": "تدریس",
@@ -8260,6 +8842,8 @@
      "title": "کاربرگه‌های فعّالیت",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-ws01.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     },
@@ -8268,6 +8852,8 @@
      "title": "واژه‌نامه",
      "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-dict.pdf",
      "ready": true,
+     "teachKey": null,
+     "audioKey": null,
      "tabs": [],
      "children": []
     }
