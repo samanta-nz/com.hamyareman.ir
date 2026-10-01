@@ -1,2 +1,6 @@
-usage: sync_bucket_menus.py [-h] [--out OUT] [--report REPORT]
-sync_bucket_menus.py: error: unrecognized arguments: --prefix Bucket/
+تلاش‌های فهرست‌برداری:
+    virtual/v1: 500 — Internal Server Error
+    virtual/v2: 500 — Internal Server Error
+    path/v1: 404 — Not Found
+    path/v2: 404 — Not Found
+❌ هیچ ترکیبی از فهرست‌برداری جواب نداد.

@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir -p ci-report
           set -o pipefail
-          python3 scripts/sync_bucket_menus.py --prefix "Bucket/" --out bucket-sync 2>&1 | tee ci-report/bucket-sync.log
+          python3 scripts/sync_bucket_menus.py --out bucket-sync 2>&1 | tee ci-report/bucket-sync.log
       - name: خلاصه
         if: always()
         run: |
