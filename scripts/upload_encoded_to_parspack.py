@@ -21,7 +21,7 @@ import requests
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from s3_targets import Target  # noqa: E402
+from s3_targets import target as load_target  # noqa: E402
 
 MAGIC = b"HMK1"
 
@@ -44,22 +44,6 @@ def fetch_key() -> bytes:
     raise SystemExit("❌ کلید ۳۲ بایتی از Appwrite خوانده نشد.")
 
 
-def target() -> Target:
-    return Target(
-        name="parspack",
-        label="ParsPack",
-        endpoint=os.environ.get("PARSPACK_ENDPOINT", "https://parspack.net"),
-        region=os.environ.get("PARSPACK_REGION", "us-east-1"),
-        bucket=os.environ.get("PARSPACK_BUCKET", "c539776"),
-        public_url_style="virtual-host",
-        access_key=os.environ["PARSPACK_ACCESS_KEY"],
-        secret_key=os.environ["PARSPACK_SECRET_KEY"],
-        addressing_style="path",
-        # این نصب Ceph فقط SigV2 را درست امضا می‌کند.
-        signature_version=os.environ.get("PARSPACK_SIGNATURE", "s3"),
-    )
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", required=True, help="ریشهٔ فایل‌های خام")
@@ -77,7 +61,7 @@ def main() -> int:
     if not files:
         raise SystemExit(f"❌ فایلی در {src} نیست.")
 
-    tgt = target()
+    tgt = load_target("parspack")
     client = None if args.dry_run else tgt.client()
     rows = []
     for p in files:
@@ -98,7 +82,10 @@ def main() -> int:
                 head = client.head_object(Bucket=tgt.bucket, Key=remote)
                 status = "ok" if head["ContentLength"] == len(blob) else f"اندازه {head['ContentLength']}"
             except Exception as exc:  # noqa: BLE001
-                status = f"خطا: {type(exc).__name__}"
+                detail = getattr(exc, "response", {}).get("Error", {}) if hasattr(exc, "response") else {}
+                code = detail.get("Code") or type(exc).__name__
+                msg = (detail.get("Message") or str(exc))[:120]
+                status = f"خطا {code}: {msg}"
         rows.append((remote, len(plain), len(blob), ok_round, status))
 
     rep = Path(args.report)
