@@ -1,70 +1,70 @@
-> Task :core-designsystem:preBuild UP-TO-DATE
-> Task :core-appwrite:preBuild UP-TO-DATE
 > Task :feature-pairing:preBuild UP-TO-DATE
 > Task :core-common:preBuild UP-TO-DATE
-> Task :core-appwrite:preDebugBuild UP-TO-DATE
-> Task :core-designsystem:preDebugBuild UP-TO-DATE
+> Task :core-designsystem:preBuild UP-TO-DATE
+> Task :core-appwrite:preBuild UP-TO-DATE
 > Task :core-common:preDebugBuild UP-TO-DATE
+> Task :core-appwrite:preDebugBuild UP-TO-DATE
 > Task :feature-pairing:preDebugBuild UP-TO-DATE
+> Task :core-designsystem:preDebugBuild UP-TO-DATE
 > Task :core-appwrite:generateDebugResources FROM-CACHE
-> Task :core-common:generateDebugResources FROM-CACHE
 > Task :core-designsystem:generateDebugResources FROM-CACHE
 > Task :feature-pairing:generateDebugResources FROM-CACHE
+> Task :core-common:generateDebugResources FROM-CACHE
+> Task :core-common:processDebugNavigationResources FROM-CACHE
+> Task :core-common:javaPreCompileDebug FROM-CACHE
+> Task :core-common:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature-pairing:packageDebugResources FROM-CACHE
+> Task :core-appwrite:packageDebugResources FROM-CACHE
+> Task :core-common:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :core-designsystem:packageDebugResources FROM-CACHE
 > Task :feature-pairing:processDebugNavigationResources FROM-CACHE
-> Task :core-common:packageDebugResources FROM-CACHE
-> Task :core-appwrite:packageDebugResources FROM-CACHE
-> Task :core-designsystem:processDebugNavigationResources FROM-CACHE
-> Task :core-common:processDebugNavigationResources FROM-CACHE
 > Task :core-appwrite:processDebugNavigationResources FROM-CACHE
-> Task :feature-pairing:packageDebugResources FROM-CACHE
+> Task :core-designsystem:processDebugNavigationResources FROM-CACHE
+> Task :core-common:packageDebugResources FROM-CACHE
 > Task :core-designsystem:parseDebugLocalResources FROM-CACHE
 > Task :core-appwrite:parseDebugLocalResources FROM-CACHE
+> Task :feature-pairing:parseDebugLocalResources FROM-CACHE
 > Task :core-common:parseDebugLocalResources FROM-CACHE
 > Task :core-designsystem:generateDebugRFile FROM-CACHE
-> Task :core-designsystem:javaPreCompileDebug FROM-CACHE
+> Task :core-appwrite:generateDebugRFile FROM-CACHE
+> Task :core-appwrite:javaPreCompileDebug FROM-CACHE
 > Task :core-sync:preBuild UP-TO-DATE
 > Task :core-sync:preDebugBuild UP-TO-DATE
-> Task :core-appwrite:generateDebugRFile FROM-CACHE
-> Task :core-common:generateDebugRFile FROM-CACHE
-> Task :core-sync:generateDebugResources FROM-CACHE
-> Task :feature-pairing:parseDebugLocalResources FROM-CACHE
-> Task :core-appwrite:javaPreCompileDebug FROM-CACHE
+> Task :core-designsystem:javaPreCompileDebug FROM-CACHE
+> Task :feature-pairing:generateDebugRFile FROM-CACHE
 > Task :feature-playback:preBuild UP-TO-DATE
 > Task :feature-playback:preDebugBuild UP-TO-DATE
-> Task :core-sync:packageDebugResources FROM-CACHE
-> Task :core-sync:processDebugNavigationResources FROM-CACHE
-> Task :feature-playback:generateDebugResources FROM-CACHE
-> Task :core-sync:parseDebugLocalResources FROM-CACHE
-> Task :feature-pairing:generateDebugRFile FROM-CACHE
+> Task :core-common:generateDebugRFile FROM-CACHE
+> Task :core-sync:generateDebugResources FROM-CACHE
 > Task :feature-pairing:javaPreCompileDebug FROM-CACHE
 > Task :feature-pairing:preDebugUnitTestBuild UP-TO-DATE
-> Task :core-sync:generateDebugRFile FROM-CACHE
+> Task :feature-playback:generateDebugResources FROM-CACHE
+> Task :core-sync:packageDebugResources FROM-CACHE
+> Task :core-sync:processDebugNavigationResources FROM-CACHE
 > Task :feature-playback:packageDebugResources FROM-CACHE
+> Task :core-sync:parseDebugLocalResources FROM-CACHE
 > Task :feature-playback:processDebugNavigationResources FROM-CACHE
+> Task :feature-playback:parseDebugLocalResources FROM-CACHE
+> Task :core-sync:generateDebugRFile FROM-CACHE
 > Task :core-sync:javaPreCompileDebug FROM-CACHE
 > Task :feature-study:preBuild UP-TO-DATE
-> Task :feature-study:preDebugBuild UP-TO-DATE
-> Task :feature-playback:parseDebugLocalResources FROM-CACHE
-> Task :feature-study:generateDebugResources FROM-CACHE
 > Task :feature-playback:generateDebugRFile FROM-CACHE
-> Task :feature-study:packageDebugResources FROM-CACHE
+> Task :feature-study:preDebugBuild UP-TO-DATE
 > Task :feature-playback:javaPreCompileDebug FROM-CACHE
 > Task :feature-playback:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature-study:generateDebugResources FROM-CACHE
+> Task :feature-study:packageDebugResources FROM-CACHE
 > Task :feature-study:processDebugNavigationResources FROM-CACHE
 > Task :feature-study:parseDebugLocalResources FROM-CACHE
 > Task :feature-study:generateDebugRFile FROM-CACHE
 > Task :feature-study:javaPreCompileDebug FROM-CACHE
 > Task :feature-study:preDebugUnitTestBuild UP-TO-DATE
 > Task :core-common:compileDebugKotlin FROM-CACHE
-> Task :core-common:javaPreCompileDebug FROM-CACHE
 > Task :core-common:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-common:bundleLibRuntimeToJarDebug
 > Task :core-common:bundleLibCompileToJarDebug
-> Task :core-common:preDebugUnitTestBuild UP-TO-DATE
 > Task :core-common:generateDebugUnitTestStubRFile FROM-CACHE
 > Task :core-common:compileDebugUnitTestKotlin FROM-CACHE
-> Task :core-common:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :core-common:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :core-common:processDebugJavaRes
 > Task :core-common:processDebugUnitTestJavaRes
@@ -99,17 +99,10 @@
 > Task :core-security:preBuild UP-TO-DATE
 > Task :core-security:preDebugBuild UP-TO-DATE
 > Task :core-security:generateDebugResources FROM-CACHE
-> Task :feature-pairing:compileDebugKotlin FROM-CACHE
-> Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-pairing:bundleLibRuntimeToJarDebug
-> Task :feature-pairing:bundleLibCompileToJarDebug
-> Task :feature-pairing:javaPreCompileDebugUnitTest FROM-CACHE
-> Task :feature-pairing:processDebugJavaRes
 > Task :core-security:packageDebugResources FROM-CACHE
 > Task :core-security:processDebugNavigationResources FROM-CACHE
 > Task :core-security:parseDebugLocalResources FROM-CACHE
 > Task :core-security:generateDebugRFile FROM-CACHE
-> Task :feature-pairing:generateDebugUnitTestStubRFile
 > Task :core-security:compileDebugKotlin FROM-CACHE
 > Task :core-security:javaPreCompileDebug FROM-CACHE
 > Task :core-security:compileDebugJavaWithJavac NO-SOURCE
@@ -123,6 +116,12 @@
 > Task :feature-calls:parseDebugLocalResources FROM-CACHE
 > Task :feature-calls:generateDebugRFile FROM-CACHE
 > Task :feature-calls:compileDebugKotlin FROM-CACHE
+> Task :feature-pairing:compileDebugKotlin FROM-CACHE
+> Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature-pairing:bundleLibRuntimeToJarDebug
+> Task :feature-pairing:bundleLibCompileToJarDebug
+> Task :feature-pairing:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :feature-pairing:processDebugJavaRes
 > Task :feature-calls:javaPreCompileDebug FROM-CACHE
 > Task :feature-calls:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-calls:bundleLibRuntimeToJarDebug
@@ -133,6 +132,7 @@
 > Task :feature-hearttoheart:packageDebugResources FROM-CACHE
 > Task :feature-hearttoheart:processDebugNavigationResources FROM-CACHE
 > Task :feature-hearttoheart:parseDebugLocalResources FROM-CACHE
+> Task :feature-pairing:generateDebugUnitTestStubRFile
 > Task :feature-hearttoheart:generateDebugRFile FROM-CACHE
 > Task :feature-hearttoheart:compileDebugKotlin FROM-CACHE
 > Task :feature-hearttoheart:javaPreCompileDebug FROM-CACHE
@@ -145,7 +145,7 @@
 > Task :feature-hearttoheart:bundleLibCompileToJarDebug
 > Task :hamyar-app:preBuild UP-TO-DATE
 > Task :hamyar-app:preP09DebugBuild UP-TO-DATE
-> Task :hamyar-app:generateP09DebugBuildConfig FROM-CACHE
+> Task :hamyar-app:generateP09DebugBuildConfig
 > Task :hamyar-app:generateP09DebugResValues FROM-CACHE
 > Task :hamyar-app:generateP09DebugResources FROM-CACHE
 > Task :hamyar-app:packageP09DebugResources FROM-CACHE
@@ -205,279 +205,244 @@
 > Task :hamyar-app:extractDeepLinksP09Debug FROM-CACHE
 > Task :hamyar-app:preP09DebugUnitTestBuild UP-TO-DATE
 > Task :hamyar-app:javaPreCompileP09DebugUnitTest FROM-CACHE
-> Task :feature-study:generateDebugUnitTestStubRFile
 > Task :feature-playback:generateDebugUnitTestStubRFile
+> Task :feature-study:generateDebugUnitTestStubRFile
 > Task :feature-playback:compileDebugKotlin FROM-CACHE
-> Task :feature-playback:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-playback:bundleLibRuntimeToJarDebug
 > Task :feature-study:compileDebugKotlin FROM-CACHE
+> Task :feature-playback:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-study:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-playback:bundleLibCompileToJarDebug
-> Task :feature-playback:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :feature-playback:bundleLibRuntimeToJarDebug
 > Task :feature-study:bundleLibRuntimeToJarDebug
+> Task :feature-playback:bundleLibCompileToJarDebug
 > Task :feature-study:bundleLibCompileToJarDebug
+> Task :feature-playback:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :feature-study:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :feature-pairing:compileDebugUnitTestKotlin
 > Task :feature-pairing:compileDebugUnitTestJavaWithJavac NO-SOURCE
-> Task :feature-pairing:processDebugUnitTestJavaRes
-> Task :feature-playback:compileDebugUnitTestKotlin
-> Task :feature-playback:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :feature-study:compileDebugUnitTestKotlin
-> Task :feature-playback:processDebugJavaRes
+> Task :feature-playback:compileDebugUnitTestKotlin
 > Task :feature-study:compileDebugUnitTestJavaWithJavac NO-SOURCE
-> Task :feature-playback:processDebugUnitTestJavaRes
+> Task :feature-pairing:processDebugUnitTestJavaRes
+> Task :feature-playback:processDebugJavaRes
+> Task :feature-playback:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :feature-study:processDebugJavaRes
+> Task :feature-playback:processDebugUnitTestJavaRes
 > Task :feature-study:processDebugUnitTestJavaRes
 > Task :feature-pairing:testDebugUnitTest
 > Task :feature-playback:testDebugUnitTest
 > Task :feature-playback:mapDebugSourceSetPaths
 > Task :feature-playback:compileDebugLibraryResources FROM-CACHE
-> Task :feature-playback:extractDeepLinksDebug FROM-CACHE
 > Task :feature-playback:writeDebugAarMetadata
-> Task :feature-study:testDebugUnitTest
+> Task :feature-playback:extractDeepLinksDebug FROM-CACHE
 > Task :feature-playback:processDebugManifest FROM-CACHE
+> Task :feature-study:testDebugUnitTest
 > Task :feature-study:mapDebugSourceSetPaths
 > Task :feature-study:compileDebugLibraryResources FROM-CACHE
 > Task :feature-study:writeDebugAarMetadata
 > Task :feature-study:extractDeepLinksDebug FROM-CACHE
 > Task :feature-study:processDebugManifest FROM-CACHE
 > Task :hamyar-app:checkP09DebugAarMetadata
-> Task :hamyar-app:processP09DebugMainManifest FROM-CACHE
-> Task :hamyar-app:processP09DebugManifest FROM-CACHE
-> Task :hamyar-app:processP09DebugManifestForPackage FROM-CACHE
-> Task :hamyar-app:processP09DebugResources FROM-CACHE
-> Task :hamyar-app:compileP09DebugKotlin
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/FontFloater.kt:147:56 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:487:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:489:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/cycle/PeriodTrainingScreen.kt:74:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LearningScreens.kt:94:8 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LessonPlayerScreen.kt:302:30 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/IranPlaces.kt:101:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/JalaliBirthDateFields.kt:115:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:42 Condition is always 'true'.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:57 Condition is always 'true'.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt:92:9 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/FreeReadingScreen.kt:23:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:148:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:693:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'StudyPack.Question'.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:55 'val Icons.Filled.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:83 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/MathLessonScreen.kt:328:5 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:93:34 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:95:19 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:96:50 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:97:35 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:98:35 'static field SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:99:35 'static field SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:100:35 'static field SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:101:35 'static field SYSTEM_UI_FLAG_LAYOUT_STABLE: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:104:38 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/ApkUpdate.kt:364:36 'static field ACTION_INSTALL_PACKAGE: String' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/UpdateGate.kt:109:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessScreen.kt:187:49 The corresponding parameter in the supertype 'WellnessLogSink' is named 'move'. This may cause problems when calling this function with named arguments.
-> Task :hamyar-app:compileP09DebugJavaWithJavac
-> Task :hamyar-app:processP09DebugJavaRes
-> Task :hamyar-app:bundleP09DebugClassesToRuntimeJar
-> Task :hamyar-app:bundleP09DebugClassesToCompileJar
-> Task :hamyar-app:compileP09DebugUnitTestKotlin
-> Task :hamyar-app:compileP09DebugUnitTestJavaWithJavac NO-SOURCE
-> Task :hamyar-app:processP09DebugUnitTestJavaRes
-> Task :hamyar-app:testP09DebugUnitTest
-BUILD SUCCESSFUL in 1m 18s
+> Task :hamyar-app:processP09DebugMainManifest
+> Task :hamyar-app:processP09DebugManifest
+> Task :hamyar-app:processP09DebugManifestForPackage
+> Task :hamyar-app:processP09DebugResources
+> Task :hamyar-app:compileP09DebugKotlin FAILED
+e: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:735:87 Unresolved reference 'minus' for operator '-'.
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 51s
+> Task :core-common:preBuild UP-TO-DATE
+> Task :core-common:preDebugBuild UP-TO-DATE
 > Task :core-designsystem:preBuild UP-TO-DATE
 > Task :core-designsystem:preDebugBuild UP-TO-DATE
 > Task :core-security:preBuild UP-TO-DATE
 > Task :core-security:preDebugBuild UP-TO-DATE
-> Task :core-common:preBuild UP-TO-DATE
-> Task :core-common:preDebugBuild UP-TO-DATE
 > Task :core-appwrite:preBuild UP-TO-DATE
 > Task :core-appwrite:preDebugBuild UP-TO-DATE
-> Task :core-designsystem:mergeDebugJniLibFolders
 > Task :core-security:mergeDebugJniLibFolders
 > Task :core-appwrite:mergeDebugJniLibFolders
-> Task :core-designsystem:mergeDebugNativeLibs NO-SOURCE
 > Task :core-security:mergeDebugNativeLibs NO-SOURCE
-> Task :core-appwrite:mergeDebugNativeLibs NO-SOURCE
-> Task :core-appwrite:stripDebugDebugSymbols NO-SOURCE
-> Task :core-designsystem:stripDebugDebugSymbols NO-SOURCE
+> Task :core-designsystem:mergeDebugJniLibFolders
 > Task :core-security:stripDebugDebugSymbols NO-SOURCE
+> Task :core-appwrite:mergeDebugNativeLibs NO-SOURCE
 > Task :core-common:checkDebugAarMetadata
-> Task :core-security:copyDebugJniLibsProjectAndLocalJars
-> Task :core-designsystem:copyDebugJniLibsProjectAndLocalJars
-> Task :core-appwrite:copyDebugJniLibsProjectAndLocalJars
+> Task :core-appwrite:stripDebugDebugSymbols NO-SOURCE
+> Task :core-designsystem:mergeDebugNativeLibs NO-SOURCE
+> Task :core-designsystem:stripDebugDebugSymbols NO-SOURCE
 > Task :core-common:mergeDebugJniLibFolders
 > Task :core-common:mergeDebugNativeLibs NO-SOURCE
 > Task :core-common:stripDebugDebugSymbols NO-SOURCE
-> Task :core-appwrite:generateDebugResources UP-TO-DATE
-> Task :core-designsystem:generateDebugResources UP-TO-DATE
-> Task :core-security:generateDebugResources UP-TO-DATE
+> Task :core-designsystem:copyDebugJniLibsProjectAndLocalJars
+> Task :core-security:copyDebugJniLibsProjectAndLocalJars
+> Task :core-appwrite:copyDebugJniLibsProjectAndLocalJars
 > Task :core-common:copyDebugJniLibsProjectAndLocalJars
+> Task :core-security:generateDebugResources UP-TO-DATE
+> Task :core-appwrite:generateDebugResources UP-TO-DATE
 > Task :core-common:generateDebugResources UP-TO-DATE
+> Task :core-designsystem:generateDebugResources UP-TO-DATE
+> Task :core-security:packageDebugResources UP-TO-DATE
+> Task :core-security:processDebugNavigationResources UP-TO-DATE
+> Task :core-appwrite:packageDebugResources UP-TO-DATE
+> Task :core-appwrite:processDebugNavigationResources UP-TO-DATE
+> Task :core-common:packageDebugResources UP-TO-DATE
+> Task :core-designsystem:processDebugNavigationResources UP-TO-DATE
 > Task :core-common:processDebugNavigationResources UP-TO-DATE
 > Task :core-designsystem:packageDebugResources UP-TO-DATE
-> Task :core-security:packageDebugResources UP-TO-DATE
-> Task :core-appwrite:packageDebugResources UP-TO-DATE
-> Task :core-designsystem:processDebugNavigationResources UP-TO-DATE
-> Task :core-appwrite:processDebugNavigationResources UP-TO-DATE
-> Task :core-common:extractDeepLinksForAarDebug
-> Task :core-security:processDebugNavigationResources UP-TO-DATE
+> Task :core-security:parseDebugLocalResources UP-TO-DATE
 > Task :core-appwrite:parseDebugLocalResources UP-TO-DATE
-> Task :core-designsystem:parseDebugLocalResources UP-TO-DATE
-> Task :core-common:packageDebugResources UP-TO-DATE
+> Task :core-security:generateDebugRFile UP-TO-DATE
 > Task :core-common:parseDebugLocalResources UP-TO-DATE
 > Task :core-appwrite:generateDebugRFile UP-TO-DATE
+> Task :core-common:generateDebugRFile UP-TO-DATE
+> Task :core-designsystem:parseDebugLocalResources UP-TO-DATE
 > Task :core-designsystem:generateDebugRFile UP-TO-DATE
-> Task :core-security:parseDebugLocalResources UP-TO-DATE
+> Task :core-designsystem:extractDeepLinksForAarDebug
+> Task :core-security:extractDeepLinksForAarDebug
+> Task :core-designsystem:generateDebugAssets UP-TO-DATE
+> Task :core-security:generateDebugAssets UP-TO-DATE
 > Task :core-appwrite:extractDeepLinksForAarDebug FROM-CACHE
 > Task :core-appwrite:generateDebugAssets UP-TO-DATE
-> Task :core-common:generateDebugRFile UP-TO-DATE
-> Task :core-security:generateDebugRFile UP-TO-DATE
-> Task :core-designsystem:extractDeepLinksForAarDebug FROM-CACHE
-> Task :core-designsystem:generateDebugAssets UP-TO-DATE
-> Task :core-security:extractDeepLinksForAarDebug FROM-CACHE
-> Task :core-security:generateDebugAssets UP-TO-DATE
-> Task :core-appwrite:mergeDebugAssets
-> Task :core-appwrite:javaPreCompileDebug UP-TO-DATE
 > Task :core-security:mergeDebugAssets
-> Task :core-appwrite:prepareDebugArtProfile
 > Task :core-designsystem:mergeDebugAssets
 > Task :core-security:javaPreCompileDebug UP-TO-DATE
 > Task :core-designsystem:javaPreCompileDebug UP-TO-DATE
+> Task :core-appwrite:mergeDebugAssets
+> Task :core-appwrite:javaPreCompileDebug UP-TO-DATE
 > Task :core-security:prepareDebugArtProfile
 > Task :core-designsystem:prepareDebugArtProfile
+> Task :core-appwrite:prepareDebugArtProfile
+> Task :core-security:prepareLintJarForPublish
 > Task :core-designsystem:prepareLintJarForPublish
 > Task :core-appwrite:prepareLintJarForPublish
-> Task :core-security:prepareLintJarForPublish
 > Task :core-designsystem:processDebugManifest UP-TO-DATE
-> Task :core-designsystem:writeDebugAarMetadata UP-TO-DATE
-> Task :core-notifications:preBuild UP-TO-DATE
-> Task :core-notifications:preDebugBuild UP-TO-DATE
 > Task :core-appwrite:processDebugManifest UP-TO-DATE
-> Task :core-appwrite:writeDebugAarMetadata UP-TO-DATE
-> Task :core-sync:preBuild UP-TO-DATE
-> Task :core-sync:preDebugBuild UP-TO-DATE
 > Task :core-security:processDebugManifest UP-TO-DATE
+> Task :core-designsystem:writeDebugAarMetadata UP-TO-DATE
 > Task :core-security:writeDebugAarMetadata UP-TO-DATE
+> Task :core-notifications:preBuild UP-TO-DATE
+> Task :core-sync:preBuild UP-TO-DATE
+> Task :core-notifications:preDebugBuild UP-TO-DATE
+> Task :core-sync:preDebugBuild UP-TO-DATE
+> Task :core-appwrite:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-pairing:preBuild UP-TO-DATE
 > Task :feature-pairing:preDebugBuild UP-TO-DATE
 > Task :core-notifications:mergeDebugJniLibFolders
-> Task :core-notifications:mergeDebugNativeLibs NO-SOURCE
-> Task :core-notifications:stripDebugDebugSymbols NO-SOURCE
 > Task :core-sync:mergeDebugJniLibFolders
-> Task :core-notifications:copyDebugJniLibsProjectAndLocalJars
-> Task :feature-pairing:mergeDebugJniLibFolders
-> Task :core-notifications:generateDebugResources UP-TO-DATE
-> Task :core-notifications:packageDebugResources UP-TO-DATE
-> Task :core-notifications:processDebugNavigationResources UP-TO-DATE
+> Task :core-notifications:mergeDebugNativeLibs NO-SOURCE
 > Task :core-sync:mergeDebugNativeLibs NO-SOURCE
-> Task :feature-pairing:mergeDebugNativeLibs NO-SOURCE
+> Task :core-notifications:stripDebugDebugSymbols NO-SOURCE
 > Task :core-sync:stripDebugDebugSymbols NO-SOURCE
-> Task :feature-pairing:stripDebugDebugSymbols NO-SOURCE
-> Task :core-notifications:parseDebugLocalResources UP-TO-DATE
-> Task :core-notifications:generateDebugRFile UP-TO-DATE
-> Task :feature-pairing:copyDebugJniLibsProjectAndLocalJars
-> Task :core-sync:copyDebugJniLibsProjectAndLocalJars
+> Task :feature-pairing:mergeDebugJniLibFolders
+> Task :core-notifications:copyDebugJniLibsProjectAndLocalJars
+> Task :feature-pairing:mergeDebugNativeLibs NO-SOURCE
 > Task :core-sync:generateDebugResources UP-TO-DATE
-> Task :feature-pairing:generateDebugResources UP-TO-DATE
-> Task :core-notifications:extractDeepLinksForAarDebug FROM-CACHE
-> Task :core-notifications:generateDebugAssets UP-TO-DATE
+> Task :core-sync:copyDebugJniLibsProjectAndLocalJars
+> Task :core-notifications:generateDebugResources UP-TO-DATE
+> Task :feature-pairing:stripDebugDebugSymbols NO-SOURCE
 > Task :core-sync:packageDebugResources UP-TO-DATE
 > Task :core-sync:processDebugNavigationResources UP-TO-DATE
-> Task :feature-pairing:packageDebugResources UP-TO-DATE
-> Task :feature-pairing:processDebugNavigationResources UP-TO-DATE
 > Task :core-sync:parseDebugLocalResources UP-TO-DATE
+> Task :core-notifications:packageDebugResources UP-TO-DATE
+> Task :feature-pairing:copyDebugJniLibsProjectAndLocalJars
+> Task :core-notifications:processDebugNavigationResources UP-TO-DATE
+> Task :core-notifications:parseDebugLocalResources UP-TO-DATE
+> Task :feature-pairing:generateDebugResources UP-TO-DATE
 > Task :core-sync:generateDebugRFile UP-TO-DATE
-> Task :feature-pairing:parseDebugLocalResources UP-TO-DATE
-> Task :feature-pairing:generateDebugRFile UP-TO-DATE
+> Task :core-notifications:generateDebugRFile UP-TO-DATE
 > Task :core-sync:extractDeepLinksForAarDebug FROM-CACHE
 > Task :core-sync:generateDebugAssets UP-TO-DATE
-> Task :feature-pairing:extractDeepLinksForAarDebug FROM-CACHE
-> Task :feature-pairing:generateDebugAssets UP-TO-DATE
+> Task :feature-pairing:packageDebugResources UP-TO-DATE
+> Task :feature-pairing:processDebugNavigationResources UP-TO-DATE
+> Task :core-notifications:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature-pairing:parseDebugLocalResources UP-TO-DATE
+> Task :core-notifications:generateDebugAssets UP-TO-DATE
+> Task :feature-pairing:generateDebugRFile UP-TO-DATE
+> Task :core-sync:mergeDebugAssets
+> Task :core-sync:javaPreCompileDebug UP-TO-DATE
 > Task :core-notifications:mergeDebugAssets
 > Task :core-notifications:javaPreCompileDebug UP-TO-DATE
+> Task :feature-pairing:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature-pairing:generateDebugAssets UP-TO-DATE
 > Task :core-notifications:prepareDebugArtProfile
-> Task :core-sync:mergeDebugAssets
-> Task :feature-pairing:mergeDebugAssets
-> Task :core-sync:javaPreCompileDebug UP-TO-DATE
-> Task :core-notifications:prepareLintJarForPublish
-> Task :feature-pairing:javaPreCompileDebug UP-TO-DATE
-> Task :core-notifications:processDebugManifest UP-TO-DATE
 > Task :core-sync:prepareDebugArtProfile
-> Task :core-notifications:writeDebugAarMetadata UP-TO-DATE
+> Task :core-notifications:prepareLintJarForPublish
+> Task :core-sync:prepareLintJarForPublish
+> Task :feature-pairing:mergeDebugAssets
+> Task :core-sync:processDebugManifest UP-TO-DATE
+> Task :core-sync:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-hearttoheart:preBuild UP-TO-DATE
 > Task :feature-hearttoheart:preDebugBuild UP-TO-DATE
-> Task :feature-pairing:prepareDebugArtProfile
-> Task :core-sync:prepareLintJarForPublish
-> Task :core-sync:processDebugManifest UP-TO-DATE
-> Task :feature-pairing:prepareLintJarForPublish
-> Task :core-sync:writeDebugAarMetadata UP-TO-DATE
+> Task :feature-pairing:javaPreCompileDebug UP-TO-DATE
+> Task :core-notifications:processDebugManifest UP-TO-DATE
+> Task :core-notifications:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-calls:preBuild UP-TO-DATE
 > Task :feature-calls:preDebugBuild UP-TO-DATE
-> Task :feature-pairing:processDebugManifest UP-TO-DATE
+> Task :feature-pairing:prepareDebugArtProfile
 > Task :feature-hearttoheart:mergeDebugJniLibFolders
-> Task :feature-pairing:writeDebugAarMetadata UP-TO-DATE
-> Task :feature-playback:preBuild UP-TO-DATE
-> Task :feature-playback:preDebugBuild UP-TO-DATE
 > Task :feature-hearttoheart:mergeDebugNativeLibs NO-SOURCE
 > Task :feature-hearttoheart:stripDebugDebugSymbols NO-SOURCE
 > Task :feature-calls:mergeDebugJniLibFolders
-> Task :feature-calls:mergeDebugNativeLibs NO-SOURCE
-> Task :feature-hearttoheart:generateDebugResources UP-TO-DATE
-> Task :feature-playback:mergeDebugJniLibFolders
+> Task :feature-pairing:prepareLintJarForPublish
+> Task :feature-pairing:processDebugManifest UP-TO-DATE
 > Task :feature-hearttoheart:copyDebugJniLibsProjectAndLocalJars
+> Task :feature-pairing:writeDebugAarMetadata UP-TO-DATE
+> Task :feature-hearttoheart:generateDebugResources UP-TO-DATE
+> Task :feature-calls:mergeDebugNativeLibs NO-SOURCE
 > Task :feature-calls:stripDebugDebugSymbols NO-SOURCE
 > Task :feature-hearttoheart:packageDebugResources UP-TO-DATE
+> Task :feature-playback:preBuild UP-TO-DATE
+> Task :feature-playback:preDebugBuild UP-TO-DATE
 > Task :feature-hearttoheart:processDebugNavigationResources UP-TO-DATE
-> Task :feature-playback:mergeDebugNativeLibs NO-SOURCE
-> Task :feature-playback:stripDebugDebugSymbols NO-SOURCE
 > Task :feature-calls:copyDebugJniLibsProjectAndLocalJars
-> Task :feature-hearttoheart:parseDebugLocalResources UP-TO-DATE
 > Task :feature-calls:generateDebugResources UP-TO-DATE
-> Task :feature-calls:packageDebugResources UP-TO-DATE
+> Task :feature-hearttoheart:parseDebugLocalResources UP-TO-DATE
 > Task :feature-hearttoheart:generateDebugRFile UP-TO-DATE
-> Task :feature-playback:copyDebugJniLibsProjectAndLocalJars
-> Task :feature-calls:processDebugNavigationResources UP-TO-DATE
-> Task :feature-playback:generateDebugResources UP-TO-DATE
+> Task :feature-calls:packageDebugResources UP-TO-DATE
 > Task :feature-hearttoheart:extractDeepLinksForAarDebug FROM-CACHE
 > Task :feature-hearttoheart:generateDebugAssets UP-TO-DATE
-> Task :feature-playback:packageDebugResources UP-TO-DATE
+> Task :feature-calls:processDebugNavigationResources UP-TO-DATE
 > Task :feature-calls:parseDebugLocalResources UP-TO-DATE
-> Task :feature-playback:processDebugNavigationResources UP-TO-DATE
+> Task :feature-playback:mergeDebugJniLibFolders
 > Task :feature-calls:generateDebugRFile UP-TO-DATE
-> Task :feature-playback:parseDebugLocalResources UP-TO-DATE
 > Task :feature-hearttoheart:mergeDebugAssets
 > Task :feature-hearttoheart:javaPreCompileDebug UP-TO-DATE
-> Task :feature-playback:generateDebugRFile UP-TO-DATE
 > Task :feature-calls:extractDeepLinksForAarDebug FROM-CACHE
 > Task :feature-calls:generateDebugAssets UP-TO-DATE
-> Task :feature-playback:extractDeepLinksForAarDebug FROM-CACHE
-> Task :feature-playback:generateDebugAssets UP-TO-DATE
+> Task :feature-playback:mergeDebugNativeLibs NO-SOURCE
+> Task :feature-playback:stripDebugDebugSymbols NO-SOURCE
 > Task :feature-hearttoheart:prepareDebugArtProfile
 > Task :feature-hearttoheart:prepareLintJarForPublish
+> Task :feature-playback:copyDebugJniLibsProjectAndLocalJars
 > Task :feature-calls:mergeDebugAssets
+> Task :feature-playback:generateDebugResources UP-TO-DATE
 > Task :feature-calls:javaPreCompileDebug UP-TO-DATE
+> Task :feature-playback:packageDebugResources UP-TO-DATE
+> Task :feature-playback:processDebugNavigationResources UP-TO-DATE
+> Task :feature-calls:prepareDebugArtProfile
 > Task :feature-hearttoheart:processDebugManifest UP-TO-DATE
-> Task :feature-playback:mergeDebugAssets
-> Task :feature-playback:javaPreCompileDebug UP-TO-DATE
 > Task :feature-hearttoheart:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-study:preBuild UP-TO-DATE
+> Task :feature-playback:parseDebugLocalResources UP-TO-DATE
+> Task :feature-playback:generateDebugRFile UP-TO-DATE
+> Task :feature-calls:prepareLintJarForPublish
 > Task :feature-study:preDebugBuild UP-TO-DATE
-> Task :feature-calls:prepareDebugArtProfile
-> Task :feature-playback:prepareDebugArtProfile
+> Task :feature-playback:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature-playback:generateDebugAssets UP-TO-DATE
 > Task :feature-calls:processDebugManifest UP-TO-DATE
 > Task :feature-calls:writeDebugAarMetadata UP-TO-DATE
-> Task :feature-calls:prepareLintJarForPublish
-> Task :feature-playback:processDebugManifest UP-TO-DATE
-> Task :feature-playback:prepareLintJarForPublish
-> Task :feature-playback:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-study:mergeDebugJniLibFolders
 > Task :feature-study:mergeDebugNativeLibs NO-SOURCE
+> Task :feature-playback:mergeDebugAssets
 > Task :feature-study:stripDebugDebugSymbols NO-SOURCE
+> Task :feature-playback:javaPreCompileDebug UP-TO-DATE
 > Task :feature-study:generateDebugResources UP-TO-DATE
+> Task :feature-playback:prepareDebugArtProfile
 > Task :feature-study:copyDebugJniLibsProjectAndLocalJars
 > Task :feature-study:packageDebugResources UP-TO-DATE
 > Task :feature-study:processDebugNavigationResources UP-TO-DATE
+> Task :feature-playback:prepareLintJarForPublish
+> Task :feature-playback:processDebugManifest UP-TO-DATE
+> Task :feature-playback:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-study:parseDebugLocalResources UP-TO-DATE
 > Task :feature-study:generateDebugRFile UP-TO-DATE
 > Task :feature-study:extractDeepLinksForAarDebug FROM-CACHE
@@ -489,6 +454,7 @@ BUILD SUCCESSFUL in 1m 18s
 > Task :feature-study:processDebugManifest UP-TO-DATE
 > Task :feature-study:writeDebugAarMetadata UP-TO-DATE
 > Task :core-common:extractDebugAnnotations
+> Task :core-common:extractDeepLinksForAarDebug FROM-CACHE
 > Task :core-common:generateDebugAssets UP-TO-DATE
 > Task :core-common:mergeDebugAssets
 > Task :core-common:compileDebugKotlin UP-TO-DATE
@@ -503,8 +469,8 @@ BUILD SUCCESSFUL in 1m 18s
 > Task :core-common:writeDebugAarMetadata UP-TO-DATE
 > Task :core-common:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :core-common:mergeDebugJavaResource
-> Task :core-appwrite:checkDebugAarMetadata
 > Task :core-common:syncDebugLibJars
+> Task :core-appwrite:checkDebugAarMetadata
 > Task :core-common:bundleDebugAar
 > Task :core-common:assembleDebug
 > Task :core-notifications:checkDebugAarMetadata
@@ -516,67 +482,67 @@ BUILD SUCCESSFUL in 1m 18s
 > Task :core-notifications:processDebugJavaRes UP-TO-DATE
 > Task :core-notifications:mergeDebugJavaResource
 > Task :core-notifications:syncDebugLibJars
-> Task :core-appwrite:extractDebugAnnotations
 > Task :core-notifications:bundleDebugAar
 > Task :core-notifications:assembleDebug
+> Task :core-sync:checkDebugAarMetadata
+> Task :core-appwrite:extractDebugAnnotations
+> Task :feature-pairing:checkDebugAarMetadata
 > Task :core-appwrite:compileDebugKotlin UP-TO-DATE
 > Task :core-appwrite:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-appwrite:mergeDebugGeneratedProguardFiles
 > Task :core-appwrite:mergeDebugConsumerProguardFiles
 > Task :core-appwrite:processDebugJavaRes UP-TO-DATE
 > Task :core-appwrite:mergeDebugJavaResource
-> Task :core-sync:checkDebugAarMetadata
+> Task :feature-hearttoheart:checkDebugAarMetadata
 > Task :core-appwrite:syncDebugLibJars
+> Task :feature-calls:checkDebugAarMetadata
 > Task :core-appwrite:bundleDebugAar
 > Task :core-appwrite:assembleDebug
 > Task :core-appwrite:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature-playback:checkDebugAarMetadata
 > Task :core-sync:extractDebugAnnotations
-> Task :feature-pairing:checkDebugAarMetadata
 > Task :core-sync:compileDebugKotlin UP-TO-DATE
 > Task :core-sync:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-sync:mergeDebugGeneratedProguardFiles
+> Task :feature-study:checkDebugAarMetadata
 > Task :core-sync:mergeDebugConsumerProguardFiles
 > Task :core-sync:processDebugJavaRes UP-TO-DATE
+> Task :core-sync:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :core-sync:mergeDebugJavaResource
 > Task :core-sync:syncDebugLibJars
 > Task :core-sync:bundleDebugAar
 > Task :core-sync:assembleDebug
-> Task :feature-hearttoheart:checkDebugAarMetadata
-> Task :feature-calls:checkDebugAarMetadata
-> Task :core-sync:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :feature-study:checkDebugAarMetadata
-> Task :feature-study:extractDebugAnnotations
-> Task :feature-playback:checkDebugAarMetadata
-> Task :feature-study:compileDebugKotlin UP-TO-DATE
 > Task :feature-playback:extractDebugAnnotations
-> Task :feature-study:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-study:mergeDebugGeneratedProguardFiles
 > Task :feature-playback:compileDebugKotlin UP-TO-DATE
 > Task :feature-playback:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-playback:mergeDebugGeneratedProguardFiles
-> Task :feature-study:mergeDebugConsumerProguardFiles
+> Task :feature-study:extractDebugAnnotations
 > Task :feature-playback:mergeDebugConsumerProguardFiles
-> Task :feature-study:processDebugJavaRes UP-TO-DATE
+> Task :core-security:checkDebugAarMetadata
 > Task :feature-playback:processDebugJavaRes UP-TO-DATE
+> Task :feature-study:compileDebugKotlin UP-TO-DATE
+> Task :feature-study:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature-study:mergeDebugGeneratedProguardFiles
 > Task :feature-playback:mergeDebugJavaResource
+> Task :feature-study:mergeDebugConsumerProguardFiles
+> Task :feature-study:processDebugJavaRes UP-TO-DATE
 > Task :feature-study:mergeDebugJavaResource
 > Task :feature-playback:syncDebugLibJars
-> Task :feature-study:syncDebugLibJars
-> Task :feature-playback:bundleDebugAar
-> Task :feature-playback:assembleDebug
-> Task :feature-study:bundleDebugAar
-> Task :feature-study:assembleDebug
-> Task :core-security:checkDebugAarMetadata
 > Task :core-security:extractDebugAnnotations
 > Task :core-security:compileDebugKotlin UP-TO-DATE
 > Task :core-security:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-security:mergeDebugGeneratedProguardFiles
+> Task :feature-playback:bundleDebugAar
+> Task :feature-playback:assembleDebug
 > Task :core-security:mergeDebugConsumerProguardFiles
 > Task :core-security:processDebugJavaRes UP-TO-DATE
 > Task :core-security:mergeDebugJavaResource
 > Task :core-security:syncDebugLibJars
+> Task :feature-study:syncDebugLibJars
 > Task :core-security:bundleDebugAar
 > Task :core-security:assembleDebug
+> Task :feature-study:bundleDebugAar
+> Task :feature-study:assembleDebug
 > Task :core-designsystem:checkDebugAarMetadata
 > Task :core-designsystem:extractDebugAnnotations
 > Task :core-designsystem:compileDebugKotlin UP-TO-DATE
@@ -588,295 +554,294 @@ BUILD SUCCESSFUL in 1m 18s
 > Task :core-designsystem:mergeDebugJavaResource
 > Task :feature-hearttoheart:extractDebugAnnotations
 > Task :core-designsystem:syncDebugLibJars
-> Task :feature-pairing:extractDebugAnnotations
 > Task :core-designsystem:bundleDebugAar
 > Task :core-designsystem:assembleDebug
+> Task :feature-pairing:extractDebugAnnotations
+> Task :feature-pairing:compileDebugKotlin UP-TO-DATE
+> Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature-calls:extractDebugAnnotations
+> Task :feature-pairing:mergeDebugGeneratedProguardFiles
+> Task :feature-pairing:mergeDebugConsumerProguardFiles
+> Task :feature-pairing:processDebugJavaRes UP-TO-DATE
 > Task :feature-hearttoheart:compileDebugKotlin UP-TO-DATE
 > Task :feature-hearttoheart:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-hearttoheart:mergeDebugGeneratedProguardFiles
-> Task :feature-pairing:compileDebugKotlin UP-TO-DATE
-> Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-hearttoheart:mergeDebugConsumerProguardFiles
-> Task :feature-pairing:mergeDebugGeneratedProguardFiles
-> Task :feature-hearttoheart:processDebugJavaRes UP-TO-DATE
-> Task :feature-calls:extractDebugAnnotations
-> Task :feature-pairing:mergeDebugConsumerProguardFiles
-> Task :feature-pairing:processDebugJavaRes UP-TO-DATE
-> Task :feature-hearttoheart:mergeDebugJavaResource
-> Task :feature-pairing:mergeDebugJavaResource
 > Task :feature-calls:compileDebugKotlin UP-TO-DATE
 > Task :feature-calls:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature-pairing:mergeDebugJavaResource
+> Task :feature-hearttoheart:mergeDebugConsumerProguardFiles
 > Task :feature-calls:mergeDebugGeneratedProguardFiles
-> Task :feature-pairing:syncDebugLibJars
+> Task :feature-hearttoheart:processDebugJavaRes UP-TO-DATE
 > Task :feature-calls:mergeDebugConsumerProguardFiles
 > Task :feature-calls:processDebugJavaRes UP-TO-DATE
-> Task :feature-hearttoheart:syncDebugLibJars
+> Task :feature-hearttoheart:mergeDebugJavaResource
+> Task :feature-pairing:syncDebugLibJars
+> Task :feature-calls:mergeDebugJavaResource
 > Task :feature-pairing:bundleDebugAar
 > Task :feature-pairing:assembleDebug
-> Task :feature-calls:mergeDebugJavaResource
+> Task :feature-hearttoheart:syncDebugLibJars
+> Task :feature-calls:syncDebugLibJars
 > Task :feature-hearttoheart:bundleDebugAar
 > Task :feature-hearttoheart:assembleDebug
-> Task :feature-calls:syncDebugLibJars
 > Task :feature-calls:bundleDebugAar
 > Task :feature-calls:assembleDebug
 BUILD SUCCESSFUL in 9s
-> Task :core-common:preBuild UP-TO-DATE
 > Task :core-appwrite:preBuild UP-TO-DATE
-> Task :core-common:preDebugBuild UP-TO-DATE
-> Task :core-designsystem:preBuild UP-TO-DATE
-> Task :core-designsystem:preDebugBuild UP-TO-DATE
+> Task :core-appwrite:preDebugBuild UP-TO-DATE
 > Task :hamyar-app:preBuild UP-TO-DATE
 > Task :hamyar-app:preP09DebugBuild UP-TO-DATE
-> Task :core-appwrite:preDebugBuild UP-TO-DATE
 > Task :core-appwrite:generateDebugResources UP-TO-DATE
+> Task :core-common:preBuild UP-TO-DATE
+> Task :core-common:preDebugBuild UP-TO-DATE
 > Task :core-common:generateDebugResources UP-TO-DATE
-> Task :core-designsystem:generateDebugResources UP-TO-DATE
 > Task :hamyar-app:mergeP09DebugNativeDebugMetadata NO-SOURCE
+> Task :core-designsystem:preBuild UP-TO-DATE
+> Task :core-designsystem:preDebugBuild UP-TO-DATE
 > Task :core-notifications:preBuild UP-TO-DATE
 > Task :core-notifications:preDebugBuild UP-TO-DATE
-> Task :core-designsystem:packageDebugResources UP-TO-DATE
+> Task :core-designsystem:generateDebugResources UP-TO-DATE
 > Task :core-notifications:generateDebugResources UP-TO-DATE
-> Task :core-designsystem:processDebugNavigationResources UP-TO-DATE
-> Task :core-notifications:packageDebugResources UP-TO-DATE
 > Task :core-common:packageDebugResources UP-TO-DATE
 > Task :core-appwrite:packageDebugResources UP-TO-DATE
 > Task :core-common:processDebugNavigationResources UP-TO-DATE
-> Task :core-appwrite:processDebugNavigationResources UP-TO-DATE
+> Task :core-designsystem:packageDebugResources UP-TO-DATE
+> Task :core-designsystem:processDebugNavigationResources UP-TO-DATE
+> Task :core-notifications:packageDebugResources UP-TO-DATE
 > Task :core-notifications:processDebugNavigationResources UP-TO-DATE
+> Task :core-appwrite:processDebugNavigationResources UP-TO-DATE
+> Task :core-designsystem:parseDebugLocalResources UP-TO-DATE
 > Task :core-common:parseDebugLocalResources UP-TO-DATE
-> Task :core-notifications:parseDebugLocalResources UP-TO-DATE
-> Task :core-common:generateDebugRFile UP-TO-DATE
-> Task :core-notifications:generateDebugRFile UP-TO-DATE
-> Task :core-notifications:javaPreCompileDebug UP-TO-DATE
+> Task :core-appwrite:parseDebugLocalResources UP-TO-DATE
+> Task :core-appwrite:generateDebugRFile UP-TO-DATE
+> Task :core-appwrite:javaPreCompileDebug UP-TO-DATE
 > Task :core-security:preBuild UP-TO-DATE
 > Task :core-security:preDebugBuild UP-TO-DATE
+> Task :core-designsystem:generateDebugRFile UP-TO-DATE
+> Task :core-notifications:parseDebugLocalResources UP-TO-DATE
 > Task :core-security:generateDebugResources UP-TO-DATE
+> Task :core-designsystem:javaPreCompileDebug UP-TO-DATE
+> Task :core-common:generateDebugRFile UP-TO-DATE
 > Task :core-security:packageDebugResources UP-TO-DATE
 > Task :core-security:processDebugNavigationResources UP-TO-DATE
-> Task :core-appwrite:parseDebugLocalResources UP-TO-DATE
-> Task :core-security:parseDebugLocalResources UP-TO-DATE
-> Task :core-designsystem:parseDebugLocalResources UP-TO-DATE
-> Task :core-appwrite:generateDebugRFile UP-TO-DATE
-> Task :core-security:generateDebugRFile UP-TO-DATE
-> Task :core-designsystem:generateDebugRFile UP-TO-DATE
-> Task :core-security:javaPreCompileDebug UP-TO-DATE
-> Task :core-appwrite:javaPreCompileDebug UP-TO-DATE
-> Task :core-designsystem:javaPreCompileDebug UP-TO-DATE
-> Task :feature-calls:preBuild UP-TO-DATE
-> Task :feature-hearttoheart:preBuild UP-TO-DATE
-> Task :feature-calls:preDebugBuild UP-TO-DATE
-> Task :feature-hearttoheart:preDebugBuild UP-TO-DATE
 > Task :core-sync:preBuild UP-TO-DATE
 > Task :core-sync:preDebugBuild UP-TO-DATE
+> Task :core-notifications:generateDebugRFile UP-TO-DATE
 > Task :core-sync:generateDebugResources UP-TO-DATE
-> Task :feature-hearttoheart:generateDebugResources UP-TO-DATE
-> Task :feature-calls:generateDebugResources UP-TO-DATE
+> Task :core-notifications:javaPreCompileDebug UP-TO-DATE
+> Task :feature-calls:preBuild UP-TO-DATE
+> Task :feature-calls:preDebugBuild UP-TO-DATE
 > Task :core-sync:packageDebugResources UP-TO-DATE
+> Task :feature-calls:generateDebugResources UP-TO-DATE
 > Task :core-sync:processDebugNavigationResources UP-TO-DATE
-> Task :feature-calls:packageDebugResources UP-TO-DATE
-> Task :feature-calls:processDebugNavigationResources UP-TO-DATE
-> Task :feature-hearttoheart:packageDebugResources UP-TO-DATE
+> Task :core-security:parseDebugLocalResources UP-TO-DATE
 > Task :core-sync:parseDebugLocalResources UP-TO-DATE
+> Task :core-security:generateDebugRFile UP-TO-DATE
+> Task :feature-calls:packageDebugResources UP-TO-DATE
+> Task :core-security:javaPreCompileDebug UP-TO-DATE
+> Task :feature-calls:processDebugNavigationResources UP-TO-DATE
+> Task :feature-hearttoheart:preBuild UP-TO-DATE
+> Task :feature-hearttoheart:preDebugBuild UP-TO-DATE
+> Task :feature-hearttoheart:generateDebugResources UP-TO-DATE
 > Task :feature-calls:parseDebugLocalResources UP-TO-DATE
 > Task :core-sync:generateDebugRFile UP-TO-DATE
-> Task :feature-calls:generateDebugRFile UP-TO-DATE
 > Task :core-sync:javaPreCompileDebug UP-TO-DATE
 > Task :feature-pairing:preBuild UP-TO-DATE
 > Task :feature-pairing:preDebugBuild UP-TO-DATE
+> Task :feature-hearttoheart:packageDebugResources UP-TO-DATE
+> Task :feature-pairing:generateDebugResources UP-TO-DATE
 > Task :feature-hearttoheart:processDebugNavigationResources UP-TO-DATE
+> Task :feature-calls:generateDebugRFile UP-TO-DATE
+> Task :feature-pairing:packageDebugResources UP-TO-DATE
+> Task :feature-pairing:processDebugNavigationResources UP-TO-DATE
 > Task :feature-calls:javaPreCompileDebug UP-TO-DATE
 > Task :feature-playback:preBuild UP-TO-DATE
 > Task :feature-playback:preDebugBuild UP-TO-DATE
-> Task :feature-pairing:generateDebugResources UP-TO-DATE
-> Task :feature-hearttoheart:parseDebugLocalResources UP-TO-DATE
 > Task :feature-playback:generateDebugResources UP-TO-DATE
-> Task :feature-pairing:packageDebugResources UP-TO-DATE
-> Task :feature-playback:packageDebugResources UP-TO-DATE
-> Task :feature-playback:processDebugNavigationResources UP-TO-DATE
-> Task :feature-pairing:processDebugNavigationResources UP-TO-DATE
-> Task :feature-playback:parseDebugLocalResources UP-TO-DATE
+> Task :feature-pairing:parseDebugLocalResources UP-TO-DATE
+> Task :feature-hearttoheart:parseDebugLocalResources UP-TO-DATE
 > Task :feature-hearttoheart:generateDebugRFile UP-TO-DATE
-> Task :core-common:compileDebugKotlin UP-TO-DATE
+> Task :feature-pairing:generateDebugRFile UP-TO-DATE
 > Task :feature-hearttoheart:javaPreCompileDebug UP-TO-DATE
 > Task :feature-study:preBuild UP-TO-DATE
 > Task :feature-study:preDebugBuild UP-TO-DATE
-> Task :core-common:javaPreCompileDebug UP-TO-DATE
-> Task :core-common:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-playback:generateDebugRFile UP-TO-DATE
+> Task :feature-playback:packageDebugResources UP-TO-DATE
+> Task :feature-playback:processDebugNavigationResources UP-TO-DATE
+> Task :feature-pairing:javaPreCompileDebug UP-TO-DATE
 > Task :feature-study:generateDebugResources UP-TO-DATE
-> Task :core-common:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :feature-pairing:parseDebugLocalResources UP-TO-DATE
-> Task :feature-playback:javaPreCompileDebug UP-TO-DATE
+> Task :hamyar-app:generateP09DebugBuildConfig UP-TO-DATE
 > Task :feature-study:packageDebugResources UP-TO-DATE
+> Task :hamyar-app:generateP09DebugResValues UP-TO-DATE
+> Task :feature-playback:parseDebugLocalResources UP-TO-DATE
+> Task :feature-study:processDebugNavigationResources UP-TO-DATE
+> Task :hamyar-app:generateP09DebugResources UP-TO-DATE
+> Task :feature-study:parseDebugLocalResources UP-TO-DATE
+> Task :feature-playback:generateDebugRFile UP-TO-DATE
+> Task :hamyar-app:packageP09DebugResources UP-TO-DATE
+> Task :feature-playback:javaPreCompileDebug UP-TO-DATE
+> Task :core-appwrite:generateDebugAssets UP-TO-DATE
+> Task :core-appwrite:mergeDebugAssets UP-TO-DATE
+> Task :core-designsystem:generateDebugAssets UP-TO-DATE
+> Task :core-designsystem:mergeDebugAssets UP-TO-DATE
+> Task :core-notifications:generateDebugAssets UP-TO-DATE
+> Task :feature-study:generateDebugRFile UP-TO-DATE
+> Task :core-notifications:mergeDebugAssets UP-TO-DATE
+> Task :core-security:generateDebugAssets UP-TO-DATE
+> Task :feature-study:javaPreCompileDebug UP-TO-DATE
+> Task :core-sync:generateDebugAssets UP-TO-DATE
+> Task :core-common:compileDebugKotlin UP-TO-DATE
+> Task :core-sync:mergeDebugAssets UP-TO-DATE
+> Task :feature-calls:generateDebugAssets UP-TO-DATE
+> Task :core-common:javaPreCompileDebug UP-TO-DATE
+> Task :feature-calls:mergeDebugAssets UP-TO-DATE
+> Task :core-security:mergeDebugAssets UP-TO-DATE
+> Task :feature-hearttoheart:generateDebugAssets UP-TO-DATE
+> Task :feature-pairing:generateDebugAssets UP-TO-DATE
+> Task :feature-hearttoheart:mergeDebugAssets UP-TO-DATE
+> Task :feature-playback:generateDebugAssets UP-TO-DATE
+> Task :feature-playback:mergeDebugAssets UP-TO-DATE
+> Task :core-common:compileDebugJavaWithJavac NO-SOURCE
+> Task :core-common:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature-pairing:mergeDebugAssets UP-TO-DATE
 > Task :core-notifications:compileDebugKotlin UP-TO-DATE
 > Task :core-notifications:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-notifications:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :feature-pairing:generateDebugRFile UP-TO-DATE
-> Task :feature-pairing:javaPreCompileDebug UP-TO-DATE
-> Task :feature-study:processDebugNavigationResources UP-TO-DATE
-> Task :feature-study:parseDebugLocalResources UP-TO-DATE
-> Task :feature-study:generateDebugRFile UP-TO-DATE
-> Task :feature-study:javaPreCompileDebug UP-TO-DATE
-> Task :hamyar-app:generateP09DebugBuildConfig UP-TO-DATE
-> Task :hamyar-app:generateP09DebugResValues UP-TO-DATE
-> Task :hamyar-app:generateP09DebugResources UP-TO-DATE
-> Task :hamyar-app:packageP09DebugResources UP-TO-DATE
-> Task :core-security:compileDebugKotlin UP-TO-DATE
-> Task :core-security:compileDebugJavaWithJavac NO-SOURCE
-> Task :core-security:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :core-common:generateDebugAssets UP-TO-DATE
-> Task :core-common:mergeDebugAssets UP-TO-DATE
-> Task :core-notifications:generateDebugAssets UP-TO-DATE
-> Task :core-notifications:mergeDebugAssets UP-TO-DATE
-> Task :core-security:generateDebugAssets UP-TO-DATE
-> Task :core-security:mergeDebugAssets UP-TO-DATE
-> Task :core-sync:generateDebugAssets UP-TO-DATE
-> Task :core-sync:mergeDebugAssets UP-TO-DATE
-> Task :feature-calls:generateDebugAssets UP-TO-DATE
-> Task :feature-calls:mergeDebugAssets UP-TO-DATE
-> Task :feature-hearttoheart:generateDebugAssets UP-TO-DATE
-> Task :feature-hearttoheart:mergeDebugAssets UP-TO-DATE
-> Task :feature-pairing:generateDebugAssets UP-TO-DATE
-> Task :feature-pairing:mergeDebugAssets UP-TO-DATE
-> Task :feature-playback:generateDebugAssets UP-TO-DATE
-> Task :feature-playback:mergeDebugAssets UP-TO-DATE
-> Task :feature-study:generateDebugAssets UP-TO-DATE
-> Task :feature-study:mergeDebugAssets UP-TO-DATE
 > Task :core-appwrite:compileDebugKotlin UP-TO-DATE
 > Task :core-appwrite:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-appwrite:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :core-sync:compileDebugKotlin UP-TO-DATE
 > Task :core-sync:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-sync:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core-security:compileDebugKotlin UP-TO-DATE
+> Task :core-security:compileDebugJavaWithJavac NO-SOURCE
+> Task :core-security:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :core-designsystem:compileDebugKotlin UP-TO-DATE
 > Task :core-designsystem:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-designsystem:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :core-security:bundleLibRuntimeToDirDebug
 > Task :feature-playback:compileDebugKotlin UP-TO-DATE
+> Task :feature-study:compileDebugKotlin UP-TO-DATE
+> Task :feature-hearttoheart:compileDebugKotlin UP-TO-DATE
+> Task :feature-hearttoheart:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature-hearttoheart:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :feature-calls:compileDebugKotlin UP-TO-DATE
 > Task :feature-calls:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-calls:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature-study:compileDebugJavaWithJavac NO-SOURCE
+> Task :hamyar-app:processP09DebugNavigationResources UP-TO-DATE
+> Task :feature-study:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core-common:generateDebugAssets UP-TO-DATE
+> Task :core-common:mergeDebugAssets UP-TO-DATE
+> Task :feature-study:generateDebugAssets UP-TO-DATE
+> Task :feature-pairing:compileDebugKotlin UP-TO-DATE
+> Task :feature-study:mergeDebugAssets UP-TO-DATE
+> Task :hamyar-app:parseP09DebugLocalResources UP-TO-DATE
+> Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
+> Task :hamyar-app:generateP09DebugRFile UP-TO-DATE
+> Task :feature-pairing:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :hamyar-app:javaPreCompileP09Debug UP-TO-DATE
+> Task :hamyar-app:generateP09DebugAssets UP-TO-DATE
 > Task :feature-playback:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-playback:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :feature-study:compileDebugKotlin UP-TO-DATE
-> Task :feature-study:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-study:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :core-appwrite:generateDebugAssets UP-TO-DATE
-> Task :feature-hearttoheart:compileDebugKotlin UP-TO-DATE
-> Task :feature-hearttoheart:compileDebugJavaWithJavac NO-SOURCE
-> Task :core-appwrite:mergeDebugAssets UP-TO-DATE
-> Task :core-designsystem:generateDebugAssets UP-TO-DATE
-> Task :feature-hearttoheart:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :core-designsystem:mergeDebugAssets UP-TO-DATE
-> Task :feature-calls:bundleLibRuntimeToDirDebug
-> Task :feature-pairing:compileDebugKotlin UP-TO-DATE
-> Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-pairing:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :hamyar-app:processP09DebugNavigationResources UP-TO-DATE
-> Task :feature-hearttoheart:bundleLibRuntimeToDirDebug
-> Task :hamyar-app:parseP09DebugLocalResources UP-TO-DATE
-> Task :hamyar-app:generateP09DebugRFile UP-TO-DATE
 > Task :feature-pairing:bundleLibRuntimeToDirDebug
-> Task :core-designsystem:bundleLibRuntimeToDirDebug
-> Task :hamyar-app:compileP09DebugKotlin UP-TO-DATE
-> Task :core-sync:bundleLibRuntimeToDirDebug
-> Task :hamyar-app:javaPreCompileP09Debug UP-TO-DATE
+> Task :feature-hearttoheart:bundleLibRuntimeToDirDebug
+> Task :feature-calls:bundleLibRuntimeToDirDebug
 > Task :feature-playback:bundleLibRuntimeToDirDebug
-> Task :hamyar-app:compileP09DebugJavaWithJavac UP-TO-DATE
-> Task :hamyar-app:generateP09DebugAssets UP-TO-DATE
+> Task :core-designsystem:bundleLibRuntimeToDirDebug
 > Task :feature-study:bundleLibRuntimeToDirDebug
-> Task :core-notifications:bundleLibRuntimeToDirDebug
+> Task :core-sync:bundleLibRuntimeToDirDebug
 > Task :core-appwrite:bundleLibRuntimeToDirDebug
+> Task :core-security:bundleLibRuntimeToDirDebug
+> Task :core-notifications:bundleLibRuntimeToDirDebug
 > Task :core-appwrite:processDebugJavaRes UP-TO-DATE
 > Task :core-common:processDebugJavaRes UP-TO-DATE
-> Task :core-common:bundleLibRuntimeToDirDebug
 > Task :core-designsystem:processDebugJavaRes UP-TO-DATE
+> Task :core-common:bundleLibRuntimeToDirDebug
 > Task :core-notifications:processDebugJavaRes UP-TO-DATE
 > Task :core-security:processDebugJavaRes UP-TO-DATE
 > Task :core-sync:processDebugJavaRes UP-TO-DATE
-> Task :feature-hearttoheart:processDebugJavaRes UP-TO-DATE
 > Task :feature-calls:processDebugJavaRes UP-TO-DATE
 > Task :feature-pairing:processDebugJavaRes UP-TO-DATE
-> Task :feature-study:processDebugJavaRes UP-TO-DATE
 > Task :feature-playback:processDebugJavaRes UP-TO-DATE
+> Task :feature-hearttoheart:processDebugJavaRes UP-TO-DATE
+> Task :core-appwrite:mapDebugSourceSetPaths UP-TO-DATE
+> Task :feature-study:processDebugJavaRes UP-TO-DATE
 > Task :core-common:mapDebugSourceSetPaths UP-TO-DATE
 > Task :core-common:compileDebugLibraryResources UP-TO-DATE
-> Task :core-designsystem:mapDebugSourceSetPaths UP-TO-DATE
-> Task :core-appwrite:mapDebugSourceSetPaths UP-TO-DATE
 > Task :core-appwrite:compileDebugLibraryResources UP-TO-DATE
-> Task :core-designsystem:compileDebugLibraryResources UP-TO-DATE
-> Task :core-sync:mapDebugSourceSetPaths UP-TO-DATE
-> Task :core-security:mapDebugSourceSetPaths UP-TO-DATE
+> Task :core-designsystem:mapDebugSourceSetPaths UP-TO-DATE
 > Task :core-notifications:mapDebugSourceSetPaths UP-TO-DATE
-> Task :core-sync:compileDebugLibraryResources UP-TO-DATE
+> Task :core-notifications:compileDebugLibraryResources UP-TO-DATE
+> Task :core-designsystem:compileDebugLibraryResources UP-TO-DATE
+> Task :core-security:mapDebugSourceSetPaths UP-TO-DATE
+> Task :core-security:compileDebugLibraryResources UP-TO-DATE
+> Task :core-sync:mapDebugSourceSetPaths UP-TO-DATE
 > Task :feature-calls:mapDebugSourceSetPaths UP-TO-DATE
 > Task :feature-calls:compileDebugLibraryResources UP-TO-DATE
-> Task :core-notifications:compileDebugLibraryResources UP-TO-DATE
-> Task :core-security:compileDebugLibraryResources UP-TO-DATE
 > Task :feature-hearttoheart:mapDebugSourceSetPaths UP-TO-DATE
-> Task :feature-pairing:mapDebugSourceSetPaths UP-TO-DATE
 > Task :feature-hearttoheart:compileDebugLibraryResources UP-TO-DATE
+> Task :core-sync:compileDebugLibraryResources UP-TO-DATE
+> Task :feature-pairing:mapDebugSourceSetPaths UP-TO-DATE
 > Task :feature-pairing:compileDebugLibraryResources UP-TO-DATE
+> Task :feature-study:mapDebugSourceSetPaths UP-TO-DATE
 > Task :feature-playback:mapDebugSourceSetPaths UP-TO-DATE
 > Task :feature-playback:compileDebugLibraryResources UP-TO-DATE
-> Task :feature-study:mapDebugSourceSetPaths UP-TO-DATE
-> Task :core-appwrite:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-study:compileDebugLibraryResources UP-TO-DATE
-> Task :core-designsystem:writeDebugAarMetadata UP-TO-DATE
+> Task :core-appwrite:writeDebugAarMetadata UP-TO-DATE
 > Task :core-common:writeDebugAarMetadata UP-TO-DATE
+> Task :core-designsystem:writeDebugAarMetadata UP-TO-DATE
 > Task :core-notifications:writeDebugAarMetadata UP-TO-DATE
-> Task :core-sync:writeDebugAarMetadata UP-TO-DATE
 > Task :core-security:writeDebugAarMetadata UP-TO-DATE
+> Task :core-sync:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-calls:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-hearttoheart:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-pairing:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-playback:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-study:writeDebugAarMetadata UP-TO-DATE
 > Task :core-appwrite:extractDeepLinksDebug UP-TO-DATE
-> Task :core-designsystem:extractDeepLinksDebug UP-TO-DATE
 > Task :core-common:extractDeepLinksDebug UP-TO-DATE
 > Task :core-appwrite:processDebugManifest UP-TO-DATE
+> Task :core-common:processDebugManifest UP-TO-DATE
+> Task :core-designsystem:extractDeepLinksDebug UP-TO-DATE
 > Task :core-notifications:extractDeepLinksDebug UP-TO-DATE
 > Task :core-designsystem:processDebugManifest UP-TO-DATE
-> Task :core-common:processDebugManifest UP-TO-DATE
 > Task :core-notifications:processDebugManifest UP-TO-DATE
-> Task :core-sync:extractDeepLinksDebug UP-TO-DATE
 > Task :core-security:extractDeepLinksDebug UP-TO-DATE
-> Task :feature-calls:extractDeepLinksDebug UP-TO-DATE
+> Task :core-sync:extractDeepLinksDebug UP-TO-DATE
 > Task :core-security:processDebugManifest UP-TO-DATE
+> Task :core-sync:processDebugManifest UP-TO-DATE
+> Task :feature-calls:extractDeepLinksDebug UP-TO-DATE
 > Task :feature-hearttoheart:extractDeepLinksDebug UP-TO-DATE
+> Task :feature-calls:processDebugManifest UP-TO-DATE
 > Task :feature-hearttoheart:processDebugManifest UP-TO-DATE
 > Task :feature-pairing:extractDeepLinksDebug UP-TO-DATE
-> Task :feature-calls:processDebugManifest UP-TO-DATE
-> Task :core-sync:processDebugManifest UP-TO-DATE
-> Task :feature-pairing:processDebugManifest UP-TO-DATE
 > Task :feature-playback:extractDeepLinksDebug UP-TO-DATE
+> Task :feature-pairing:processDebugManifest UP-TO-DATE
+> Task :feature-study:extractDeepLinksDebug UP-TO-DATE
 > Task :feature-playback:processDebugManifest UP-TO-DATE
+> Task :feature-study:processDebugManifest UP-TO-DATE
 > Task :core-common:mergeDebugJniLibFolders UP-TO-DATE
 > Task :core-common:mergeDebugNativeLibs NO-SOURCE
-> Task :feature-study:extractDeepLinksDebug UP-TO-DATE
 > Task :core-appwrite:mergeDebugJniLibFolders UP-TO-DATE
 > Task :core-appwrite:mergeDebugNativeLibs NO-SOURCE
-> Task :feature-study:processDebugManifest UP-TO-DATE
-> Task :core-designsystem:mergeDebugJniLibFolders UP-TO-DATE
 > Task :core-common:copyDebugJniLibsProjectOnly
-> Task :core-notifications:mergeDebugJniLibFolders UP-TO-DATE
-> Task :core-notifications:mergeDebugNativeLibs NO-SOURCE
-> Task :core-designsystem:mergeDebugNativeLibs NO-SOURCE
 > Task :core-appwrite:copyDebugJniLibsProjectOnly
+> Task :hamyar-app:mergeP09DebugAssets
 > Task :core-security:mergeDebugJniLibFolders UP-TO-DATE
 > Task :core-security:mergeDebugNativeLibs NO-SOURCE
-> Task :core-notifications:copyDebugJniLibsProjectOnly
-> Task :core-sync:mergeDebugJniLibFolders UP-TO-DATE
-> Task :core-designsystem:copyDebugJniLibsProjectOnly
-> Task :feature-calls:mergeDebugJniLibFolders UP-TO-DATE
-> Task :core-sync:mergeDebugNativeLibs NO-SOURCE
-> Task :feature-calls:mergeDebugNativeLibs NO-SOURCE
+> Task :core-notifications:mergeDebugJniLibFolders UP-TO-DATE
+> Task :core-notifications:mergeDebugNativeLibs NO-SOURCE
+> Task :core-designsystem:mergeDebugJniLibFolders UP-TO-DATE
+> Task :core-designsystem:mergeDebugNativeLibs NO-SOURCE
 > Task :core-security:copyDebugJniLibsProjectOnly
+> Task :core-sync:mergeDebugJniLibFolders UP-TO-DATE
+> Task :core-sync:mergeDebugNativeLibs NO-SOURCE
+> Task :core-notifications:copyDebugJniLibsProjectOnly
+> Task :feature-calls:mergeDebugJniLibFolders UP-TO-DATE
+> Task :feature-calls:mergeDebugNativeLibs NO-SOURCE
+> Task :core-designsystem:copyDebugJniLibsProjectOnly
 > Task :core-sync:copyDebugJniLibsProjectOnly
 > Task :feature-hearttoheart:mergeDebugJniLibFolders UP-TO-DATE
-> Task :feature-hearttoheart:mergeDebugNativeLibs NO-SOURCE
 > Task :feature-pairing:mergeDebugJniLibFolders UP-TO-DATE
+> Task :feature-hearttoheart:mergeDebugNativeLibs NO-SOURCE
 > Task :feature-pairing:mergeDebugNativeLibs NO-SOURCE
 > Task :feature-calls:copyDebugJniLibsProjectOnly
 > Task :feature-playback:mergeDebugJniLibFolders UP-TO-DATE
@@ -884,45 +849,64 @@ BUILD SUCCESSFUL in 9s
 > Task :feature-pairing:copyDebugJniLibsProjectOnly
 > Task :feature-hearttoheart:copyDebugJniLibsProjectOnly
 > Task :hamyar-admin:preBuild UP-TO-DATE
+> Task :hamyar-admin:preDebugBuild UP-TO-DATE
 > Task :feature-study:mergeDebugJniLibFolders UP-TO-DATE
 > Task :feature-playback:copyDebugJniLibsProjectOnly
-> Task :hamyar-admin:preDebugBuild UP-TO-DATE
-> Task :feature-study:mergeDebugNativeLibs NO-SOURCE
 > Task :hamyar-admin:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :feature-study:mergeDebugNativeLibs NO-SOURCE
 > Task :feature-study:copyDebugJniLibsProjectOnly
 > Task :hamyar-admin:generateDebugBuildConfig
 > Task :hamyar-admin:generateDebugResources
-> Task :hamyar-app:mergeP09DebugAssets
-> Task :hamyar-admin:packageDebugResources
 > Task :hamyar-app:generateP09DebugGlobalSynthetics FROM-CACHE
-> Task :hamyar-app:desugarP09DebugFileDependencies FROM-CACHE
-> Task :hamyar-app:processP09DebugJavaRes UP-TO-DATE
+> Task :hamyar-admin:packageDebugResources
 > Task :hamyar-app:checkP09DebugDuplicateClasses
+> Task :hamyar-app:desugarP09DebugFileDependencies FROM-CACHE
 > Task :hamyar-app:mergeExtDexP09Debug FROM-CACHE
 > Task :hamyar-admin:processDebugNavigationResources
+> Task :hamyar-app:compressP09DebugAssets
+> Task :hamyar-admin:javaPreCompileDebug FROM-CACHE
+> Task :hamyar-admin:generateDebugAssets UP-TO-DATE
 > Task :hamyar-app:mergeLibDexP09Debug FROM-CACHE
 > Task :hamyar-app:checkP09DebugAarMetadata UP-TO-DATE
+> Task :hamyar-admin:mergeDebugAssets
 > Task :hamyar-app:mapP09DebugSourceSetPaths UP-TO-DATE
 > Task :hamyar-app:compileP09DebugNavigationResources UP-TO-DATE
+> Task :hamyar-admin:parseDebugLocalResources
 > Task :hamyar-app:mergeP09DebugResources UP-TO-DATE
+> Task :hamyar-admin:compressDebugAssets
 > Task :hamyar-app:createP09DebugCompatibleScreenManifests UP-TO-DATE
 > Task :hamyar-app:extractDeepLinksP09Debug UP-TO-DATE
-> Task :hamyar-admin:parseDebugLocalResources
+> Task :hamyar-admin:generateDebugGlobalSynthetics FROM-CACHE
 > Task :hamyar-admin:generateDebugRFile
 > Task :hamyar-app:processP09DebugMainManifest UP-TO-DATE
 > Task :hamyar-app:processP09DebugManifest UP-TO-DATE
 > Task :hamyar-app:processP09DebugManifestForPackage UP-TO-DATE
-> Task :hamyar-app:processP09DebugResources UP-TO-DATE
-> Task :hamyar-app:compressP09DebugAssets
-> Task :hamyar-admin:javaPreCompileDebug FROM-CACHE
-> Task :hamyar-admin:generateDebugAssets UP-TO-DATE
-> Task :hamyar-app:mergeP09DebugJavaResource
-> Task :hamyar-admin:mergeDebugAssets
-> Task :hamyar-admin:generateDebugGlobalSynthetics FROM-CACHE
-> Task :hamyar-admin:compressDebugAssets
-> Task :hamyar-admin:desugarDebugFileDependencies FROM-CACHE
 > Task :hamyar-admin:checkDebugDuplicateClasses
+> Task :hamyar-app:processP09DebugResources UP-TO-DATE
+> Task :hamyar-app:mergeP09DebugJniLibFolders
+> Task :hamyar-app:validateSigningP09Debug
+> Task :hamyar-app:writeP09DebugAppMetadata
+> Task :hamyar-app:writeP09DebugSigningConfigVersions
+> Task :hamyar-app:mergeP09DebugNativeLibs
+> Task :hamyar-admin:desugarDebugFileDependencies FROM-CACHE
+> Task :hamyar-app:stripP09DebugDebugSymbols
+> Task :hamyar-admin:mergeLibDexDebug
 > Task :hamyar-admin:checkDebugAarMetadata
+> Task :hamyar-admin:mapDebugSourceSetPaths
+> Task :hamyar-admin:compileDebugNavigationResources FROM-CACHE
+> Task :hamyar-admin:mergeDebugResources
+> Task :hamyar-admin:createDebugCompatibleScreenManifests
+> Task :hamyar-admin:extractDeepLinksDebug
+> Task :hamyar-admin:processDebugMainManifest
+> Task :hamyar-admin:processDebugManifest
+> Task :hamyar-admin:processDebugManifestForPackage
+> Task :hamyar-admin:processDebugResources
+> Task :hamyar-admin:mergeDebugJniLibFolders
+> Task :hamyar-admin:mergeDebugNativeLibs
+> Task :hamyar-admin:stripDebugDebugSymbols
+> Task :hamyar-admin:validateSigningDebug
+> Task :hamyar-admin:writeDebugAppMetadata
+> Task :hamyar-admin:writeDebugSigningConfigVersions
 > Task :hamyar-admin:compileDebugKotlin
 w: apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:104:29 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:122:30 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
@@ -930,130 +914,107 @@ w: apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:199:19 'when
 w: apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:343:13 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.
 w: apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:739:9 Expression is unused.
 w: apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminConsoleScreens.kt:57:12 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.
-> Task :hamyar-admin:mergeLibDexDebug
+> Task :hamyar-app:compileP09DebugKotlin FAILED
+e: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:735:87 Unresolved reference 'minus' for operator '-'.
 > Task :hamyar-admin:compileDebugJavaWithJavac
 > Task :hamyar-admin:processDebugJavaRes
-> Task :hamyar-admin:mergeDebugJavaResource
-> Task :hamyar-admin:mapDebugSourceSetPaths
-> Task :hamyar-admin:compileDebugNavigationResources FROM-CACHE
-> Task :hamyar-admin:createDebugCompatibleScreenManifests
-> Task :hamyar-admin:extractDeepLinksDebug
-> Task :hamyar-admin:processDebugMainManifest
-> Task :hamyar-admin:processDebugManifest
-> Task :hamyar-admin:processDebugManifestForPackage
-> Task :hamyar-admin:mergeDebugResources
-> Task :hamyar-admin:mergeDebugJniLibFolders
-> Task :hamyar-admin:processDebugResources
-> Task :hamyar-app:dexBuilderP09Debug
-> Task :hamyar-admin:dexBuilderDebug
-> Task :hamyar-admin:mergeDebugNativeLibs
-> Task :hamyar-admin:mergeProjectDexDebug
-> Task :hamyar-admin:validateSigningDebug
-> Task :hamyar-admin:writeDebugAppMetadata
-> Task :hamyar-admin:writeDebugSigningConfigVersions
-> Task :hamyar-admin:stripDebugDebugSymbols
-> Task :hamyar-app:mergeP09DebugJniLibFolders
-> Task :hamyar-app:validateSigningP09Debug
-> Task :hamyar-app:writeP09DebugAppMetadata
-> Task :hamyar-app:writeP09DebugSigningConfigVersions
-> Task :hamyar-app:mergeP09DebugNativeLibs
 > Task :hamyar-admin:mergeExtDexDebug
-> Task :hamyar-app:stripP09DebugDebugSymbols
-> Task :hamyar-app:mergeProjectDexP09Debug
-> Task :hamyar-app:packageP09Debug
-> Task :hamyar-app:createP09DebugApkListingFileRedirect
-> Task :hamyar-app:assembleP09Debug
+> Task :hamyar-admin:mergeDebugJavaResource
+> Task :hamyar-admin:dexBuilderDebug
+> Task :hamyar-admin:mergeProjectDexDebug
 > Task :hamyar-admin:packageDebug
 > Task :hamyar-admin:createDebugApkListingFileRedirect
 > Task :hamyar-admin:assembleDebug
-BUILD SUCCESSFUL in 38s
-> Task :core-appwrite:preBuild UP-TO-DATE
-> Task :core-notifications:preBuild UP-TO-DATE
-> Task :core-appwrite:preReleaseBuild UP-TO-DATE
-> Task :core-notifications:preReleaseBuild UP-TO-DATE
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 32s
 > Task :core-designsystem:preBuild UP-TO-DATE
+> Task :core-appwrite:preBuild UP-TO-DATE
 > Task :core-designsystem:preReleaseBuild UP-TO-DATE
+> Task :core-appwrite:preReleaseBuild UP-TO-DATE
 > Task :core-common:preBuild UP-TO-DATE
 > Task :core-common:preReleaseBuild UP-TO-DATE
+> Task :core-notifications:preBuild UP-TO-DATE
+> Task :core-notifications:preReleaseBuild UP-TO-DATE
 > Task :core-designsystem:mergeReleaseJniLibFolders
 > Task :core-common:mergeReleaseJniLibFolders
-> Task :core-notifications:mergeReleaseJniLibFolders
 > Task :core-appwrite:mergeReleaseJniLibFolders
-> Task :core-designsystem:mergeReleaseNativeLibs NO-SOURCE
-> Task :core-notifications:mergeReleaseNativeLibs NO-SOURCE
 > Task :core-common:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-designsystem:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-notifications:mergeReleaseJniLibFolders
 > Task :core-appwrite:mergeReleaseNativeLibs NO-SOURCE
-> Task :core-designsystem:copyReleaseJniLibsProjectOnly
+> Task :core-notifications:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-notifications:copyReleaseJniLibsProjectOnly
+> Task :core-common:copyReleaseJniLibsProjectOnly
 > Task :core-security:preBuild UP-TO-DATE
 > Task :core-security:preReleaseBuild UP-TO-DATE
-> Task :core-notifications:copyReleaseJniLibsProjectOnly
 > Task :core-sync:preBuild UP-TO-DATE
 > Task :core-sync:preReleaseBuild UP-TO-DATE
-> Task :core-appwrite:copyReleaseJniLibsProjectOnly
+> Task :core-designsystem:copyReleaseJniLibsProjectOnly
 > Task :feature-calls:preBuild UP-TO-DATE
 > Task :feature-calls:preReleaseBuild UP-TO-DATE
-> Task :core-common:copyReleaseJniLibsProjectOnly
+> Task :core-appwrite:copyReleaseJniLibsProjectOnly
 > Task :feature-hearttoheart:preBuild UP-TO-DATE
 > Task :feature-hearttoheart:preReleaseBuild UP-TO-DATE
+> Task :core-security:mergeReleaseJniLibFolders
+> Task :feature-hearttoheart:mergeReleaseJniLibFolders
 > Task :feature-calls:mergeReleaseJniLibFolders
 > Task :core-sync:mergeReleaseJniLibFolders
-> Task :core-security:mergeReleaseJniLibFolders
-> Task :feature-calls:mergeReleaseNativeLibs NO-SOURCE
-> Task :core-sync:mergeReleaseNativeLibs NO-SOURCE
-> Task :feature-hearttoheart:mergeReleaseJniLibFolders
 > Task :core-security:mergeReleaseNativeLibs NO-SOURCE
-> Task :feature-calls:copyReleaseJniLibsProjectOnly
+> Task :feature-calls:mergeReleaseNativeLibs NO-SOURCE
+> Task :feature-hearttoheart:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-sync:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-security:copyReleaseJniLibsProjectOnly
 > Task :feature-pairing:preBuild UP-TO-DATE
 > Task :feature-pairing:preReleaseBuild UP-TO-DATE
-> Task :core-security:copyReleaseJniLibsProjectOnly
+> Task :feature-hearttoheart:copyReleaseJniLibsProjectOnly
 > Task :feature-playback:preBuild UP-TO-DATE
 > Task :feature-playback:preReleaseBuild UP-TO-DATE
-> Task :feature-hearttoheart:mergeReleaseNativeLibs NO-SOURCE
 > Task :core-sync:copyReleaseJniLibsProjectOnly
 > Task :feature-study:preBuild UP-TO-DATE
 > Task :feature-study:preReleaseBuild UP-TO-DATE
-> Task :feature-pairing:mergeReleaseJniLibFolders
-> Task :feature-hearttoheart:copyReleaseJniLibsProjectOnly
-> Task :feature-pairing:mergeReleaseNativeLibs NO-SOURCE
+> Task :feature-calls:copyReleaseJniLibsProjectOnly
 > Task :hamyar-app:preBuild UP-TO-DATE
 > Task :hamyar-app:preP09ReleaseBuild UP-TO-DATE
-> Task :feature-study:mergeReleaseJniLibFolders
-> Task :feature-pairing:copyReleaseJniLibsProjectOnly
+> Task :feature-pairing:mergeReleaseJniLibFolders
+> Task :feature-pairing:mergeReleaseNativeLibs NO-SOURCE
 > Task :feature-playback:mergeReleaseJniLibFolders
-> Task :core-appwrite:generateReleaseResources FROM-CACHE
-> Task :hamyar-app:mergeP09ReleaseJniLibFolders
-> Task :feature-study:mergeReleaseNativeLibs NO-SOURCE
 > Task :feature-playback:mergeReleaseNativeLibs NO-SOURCE
+> Task :feature-pairing:copyReleaseJniLibsProjectOnly
+> Task :feature-study:mergeReleaseJniLibFolders
 > Task :feature-playback:copyReleaseJniLibsProjectOnly
+> Task :hamyar-app:mergeP09ReleaseJniLibFolders
+> Task :core-appwrite:generateReleaseResources FROM-CACHE
+> Task :core-designsystem:generateReleaseResources FROM-CACHE
+> Task :feature-study:mergeReleaseNativeLibs NO-SOURCE
 > Task :core-common:generateReleaseResources FROM-CACHE
 > Task :feature-study:copyReleaseJniLibsProjectOnly
-> Task :core-designsystem:generateReleaseResources FROM-CACHE
-> Task :core-appwrite:packageReleaseResources
 > Task :core-common:packageReleaseResources
-> Task :core-appwrite:processReleaseNavigationResources FROM-CACHE
+> Task :core-appwrite:packageReleaseResources
 > Task :core-common:processReleaseNavigationResources FROM-CACHE
-> Task :core-appwrite:parseReleaseLocalResources FROM-CACHE
 > Task :core-designsystem:packageReleaseResources
-> Task :core-common:parseReleaseLocalResources FROM-CACHE
+> Task :core-appwrite:processReleaseNavigationResources FROM-CACHE
 > Task :core-designsystem:processReleaseNavigationResources FROM-CACHE
-> Task :core-common:generateReleaseRFile FROM-CACHE
-> Task :core-appwrite:generateReleaseRFile FROM-CACHE
+> Task :core-common:parseReleaseLocalResources FROM-CACHE
 > Task :core-designsystem:parseReleaseLocalResources FROM-CACHE
-> Task :core-appwrite:javaPreCompileRelease FROM-CACHE
-> Task :feature-pairing:generateReleaseResources FROM-CACHE
 > Task :core-designsystem:generateReleaseRFile FROM-CACHE
+> Task :core-appwrite:parseReleaseLocalResources FROM-CACHE
+> Task :core-common:generateReleaseRFile FROM-CACHE
 > Task :core-designsystem:javaPreCompileRelease FROM-CACHE
+> Task :core-appwrite:generateReleaseRFile FROM-CACHE
+> Task :feature-pairing:generateReleaseResources FROM-CACHE
+> Task :core-appwrite:javaPreCompileRelease FROM-CACHE
 > Task :feature-hearttoheart:generateReleaseResources FROM-CACHE
 > Task :feature-pairing:packageReleaseResources
-> Task :feature-pairing:processReleaseNavigationResources FROM-CACHE
 > Task :feature-hearttoheart:packageReleaseResources
+> Task :feature-pairing:processReleaseNavigationResources FROM-CACHE
+> Task :core-common:javaPreCompileRelease FROM-CACHE
 > Task :feature-hearttoheart:processReleaseNavigationResources FROM-CACHE
 > Task :feature-pairing:parseReleaseLocalResources FROM-CACHE
-> Task :feature-pairing:generateReleaseRFile FROM-CACHE
 > Task :feature-hearttoheart:parseReleaseLocalResources FROM-CACHE
+> Task :feature-pairing:generateReleaseRFile FROM-CACHE
 > Task :feature-pairing:javaPreCompileRelease FROM-CACHE
 > Task :feature-hearttoheart:generateReleaseRFile FROM-CACHE
-> Task :core-common:javaPreCompileRelease FROM-CACHE
 > Task :feature-hearttoheart:javaPreCompileRelease FROM-CACHE
 > Task :feature-calls:generateReleaseResources FROM-CACHE
 > Task :core-sync:generateReleaseResources FROM-CACHE
@@ -1063,42 +1024,42 @@ BUILD SUCCESSFUL in 38s
 > Task :feature-calls:processReleaseNavigationResources FROM-CACHE
 > Task :core-sync:parseReleaseLocalResources FROM-CACHE
 > Task :feature-calls:parseReleaseLocalResources FROM-CACHE
-> Task :core-sync:generateReleaseRFile FROM-CACHE
 > Task :feature-calls:generateReleaseRFile FROM-CACHE
-> Task :core-sync:javaPreCompileRelease FROM-CACHE
+> Task :core-sync:generateReleaseRFile FROM-CACHE
 > Task :feature-calls:javaPreCompileRelease FROM-CACHE
 > Task :feature-playback:generateReleaseResources FROM-CACHE
+> Task :core-sync:javaPreCompileRelease FROM-CACHE
 > Task :feature-study:generateReleaseResources FROM-CACHE
 > Task :feature-study:packageReleaseResources
-> Task :feature-playback:packageReleaseResources
-> Task :feature-playback:processReleaseNavigationResources FROM-CACHE
 > Task :feature-study:processReleaseNavigationResources FROM-CACHE
-> Task :feature-playback:parseReleaseLocalResources FROM-CACHE
 > Task :feature-study:parseReleaseLocalResources FROM-CACHE
-> Task :feature-playback:generateReleaseRFile FROM-CACHE
 > Task :feature-study:generateReleaseRFile FROM-CACHE
-> Task :feature-playback:javaPreCompileRelease FROM-CACHE
 > Task :feature-study:javaPreCompileRelease FROM-CACHE
-> Task :core-notifications:generateReleaseResources FROM-CACHE
 > Task :core-security:generateReleaseResources FROM-CACHE
 > Task :core-security:packageReleaseResources
 > Task :core-security:processReleaseNavigationResources FROM-CACHE
 > Task :core-security:parseReleaseLocalResources FROM-CACHE
 > Task :core-security:generateReleaseRFile FROM-CACHE
 > Task :core-security:javaPreCompileRelease FROM-CACHE
+> Task :core-notifications:generateReleaseResources FROM-CACHE
 > Task :hamyar-app:mergeP09ReleaseNativeLibs
 > Task :core-notifications:packageReleaseResources
+> Task :feature-playback:packageReleaseResources
 > Task :core-notifications:processReleaseNavigationResources FROM-CACHE
+> Task :feature-playback:processReleaseNavigationResources FROM-CACHE
 > Task :core-notifications:parseReleaseLocalResources FROM-CACHE
+> Task :feature-playback:parseReleaseLocalResources FROM-CACHE
 > Task :core-notifications:generateReleaseRFile FROM-CACHE
 > Task :core-notifications:javaPreCompileRelease FROM-CACHE
+> Task :feature-playback:generateReleaseRFile FROM-CACHE
+> Task :feature-playback:javaPreCompileRelease FROM-CACHE
+> Task :core-appwrite:prepareReleaseArtProfile
+> Task :core-common:prepareReleaseArtProfile
+> Task :core-designsystem:prepareReleaseArtProfile
 > Task :hamyar-app:generateP09ReleaseBuildConfig
 > Task :hamyar-app:generateP09ReleaseResValues FROM-CACHE
 > Task :hamyar-app:generateP09ReleaseResources FROM-CACHE
 > Task :hamyar-app:checkP09ReleaseDuplicateClasses
-> Task :core-appwrite:prepareReleaseArtProfile
-> Task :core-common:prepareReleaseArtProfile
-> Task :core-designsystem:prepareReleaseArtProfile
 > Task :core-notifications:prepareReleaseArtProfile
 > Task :core-security:prepareReleaseArtProfile
 > Task :core-sync:prepareReleaseArtProfile
@@ -1113,65 +1074,65 @@ BUILD SUCCESSFUL in 38s
 > Task :core-common:compileReleaseLibraryResources FROM-CACHE
 > Task :core-designsystem:mapReleaseSourceSetPaths
 > Task :core-designsystem:compileReleaseLibraryResources FROM-CACHE
-> Task :core-notifications:mapReleaseSourceSetPaths
-> Task :core-notifications:compileReleaseLibraryResources
 > Task :hamyar-app:stripP09ReleaseDebugSymbols
-> Task :core-sync:mapReleaseSourceSetPaths
+> Task :core-notifications:mapReleaseSourceSetPaths
 > Task :core-security:mapReleaseSourceSetPaths
-> Task :core-sync:compileReleaseLibraryResources FROM-CACHE
+> Task :core-notifications:compileReleaseLibraryResources
 > Task :core-security:compileReleaseLibraryResources FROM-CACHE
+> Task :core-sync:mapReleaseSourceSetPaths
 > Task :feature-calls:mapReleaseSourceSetPaths
+> Task :core-sync:compileReleaseLibraryResources FROM-CACHE
 > Task :feature-hearttoheart:mapReleaseSourceSetPaths
 > Task :feature-hearttoheart:compileReleaseLibraryResources FROM-CACHE
 > Task :feature-pairing:mapReleaseSourceSetPaths
-> Task :feature-calls:compileReleaseLibraryResources
 > Task :feature-pairing:compileReleaseLibraryResources FROM-CACHE
-> Task :feature-study:mapReleaseSourceSetPaths
+> Task :feature-calls:compileReleaseLibraryResources
 > Task :feature-playback:mapReleaseSourceSetPaths
-> Task :feature-study:compileReleaseLibraryResources FROM-CACHE
-> Task :core-appwrite:writeReleaseAarMetadata
+> Task :feature-study:mapReleaseSourceSetPaths
 > Task :feature-playback:compileReleaseLibraryResources
+> Task :core-appwrite:writeReleaseAarMetadata
+> Task :feature-study:compileReleaseLibraryResources FROM-CACHE
 > Task :core-common:writeReleaseAarMetadata
 > Task :core-designsystem:writeReleaseAarMetadata
 > Task :core-notifications:writeReleaseAarMetadata
 > Task :core-sync:writeReleaseAarMetadata
 > Task :core-security:writeReleaseAarMetadata
 > Task :feature-calls:writeReleaseAarMetadata
-> Task :feature-hearttoheart:writeReleaseAarMetadata
 > Task :feature-pairing:writeReleaseAarMetadata
+> Task :feature-hearttoheart:writeReleaseAarMetadata
 > Task :feature-playback:writeReleaseAarMetadata
 > Task :feature-study:writeReleaseAarMetadata
 > Task :core-appwrite:extractDeepLinksRelease FROM-CACHE
 > Task :core-common:extractDeepLinksRelease FROM-CACHE
 > Task :core-appwrite:processReleaseManifest FROM-CACHE
-> Task :core-common:processReleaseManifest FROM-CACHE
 > Task :core-designsystem:extractDeepLinksRelease FROM-CACHE
+> Task :core-common:processReleaseManifest FROM-CACHE
 > Task :core-notifications:extractDeepLinksRelease FROM-CACHE
 > Task :core-designsystem:processReleaseManifest FROM-CACHE
-> Task :core-security:extractDeepLinksRelease FROM-CACHE
 > Task :core-notifications:processReleaseManifest FROM-CACHE
 > Task :core-sync:extractDeepLinksRelease FROM-CACHE
+> Task :core-security:extractDeepLinksRelease FROM-CACHE
 > Task :core-security:processReleaseManifest FROM-CACHE
-> Task :feature-calls:extractDeepLinksRelease FROM-CACHE
 > Task :core-sync:processReleaseManifest FROM-CACHE
-> Task :feature-calls:processReleaseManifest FROM-CACHE
 > Task :feature-hearttoheart:extractDeepLinksRelease FROM-CACHE
-> Task :feature-pairing:extractDeepLinksRelease FROM-CACHE
+> Task :feature-calls:extractDeepLinksRelease FROM-CACHE
+> Task :feature-calls:processReleaseManifest FROM-CACHE
 > Task :feature-hearttoheart:processReleaseManifest FROM-CACHE
-> Task :feature-pairing:processReleaseManifest FROM-CACHE
-> Task :feature-study:extractDeepLinksRelease FROM-CACHE
 > Task :feature-playback:extractDeepLinksRelease FROM-CACHE
+> Task :feature-pairing:extractDeepLinksRelease FROM-CACHE
+> Task :feature-pairing:processReleaseManifest FROM-CACHE
 > Task :feature-playback:processReleaseManifest FROM-CACHE
 > Task :core-appwrite:generateReleaseAssets UP-TO-DATE
-> Task :feature-study:processReleaseManifest FROM-CACHE
-> Task :core-common:generateReleaseAssets UP-TO-DATE
+> Task :feature-study:extractDeepLinksRelease FROM-CACHE
 > Task :core-appwrite:mergeReleaseAssets
+> Task :core-common:generateReleaseAssets UP-TO-DATE
+> Task :feature-study:processReleaseManifest FROM-CACHE
 > Task :core-designsystem:generateReleaseAssets UP-TO-DATE
-> Task :core-common:mergeReleaseAssets
-> Task :core-notifications:generateReleaseAssets UP-TO-DATE
 > Task :core-designsystem:mergeReleaseAssets
-> Task :core-security:generateReleaseAssets UP-TO-DATE
+> Task :core-notifications:generateReleaseAssets UP-TO-DATE
+> Task :core-common:mergeReleaseAssets
 > Task :core-notifications:mergeReleaseAssets
+> Task :core-security:generateReleaseAssets UP-TO-DATE
 > Task :core-sync:generateReleaseAssets UP-TO-DATE
 > Task :core-sync:mergeReleaseAssets
 > Task :feature-calls:generateReleaseAssets UP-TO-DATE
@@ -1183,34 +1144,34 @@ BUILD SUCCESSFUL in 38s
 > Task :feature-playback:generateReleaseAssets UP-TO-DATE
 > Task :feature-pairing:mergeReleaseAssets
 > Task :feature-study:generateReleaseAssets UP-TO-DATE
-> Task :feature-playback:mergeReleaseAssets
 > Task :feature-study:mergeReleaseAssets
-> Task :core-common:extractProguardFiles
-> Task :core-common:prepareLintJarForPublish UP-TO-DATE
+> Task :feature-playback:mergeReleaseAssets
 > Task :core-appwrite:extractProguardFiles
 > Task :core-appwrite:prepareLintJarForPublish UP-TO-DATE
 > Task :core-designsystem:extractProguardFiles
-> Task :core-common:checkReleaseAarMetadata
 > Task :core-designsystem:prepareLintJarForPublish UP-TO-DATE
-> Task :core-common:extractDeepLinksForAarRelease FROM-CACHE
+> Task :core-common:extractProguardFiles
+> Task :core-common:prepareLintJarForPublish UP-TO-DATE
 > Task :core-notifications:extractProguardFiles
 > Task :core-notifications:prepareLintJarForPublish UP-TO-DATE
+> Task :core-common:checkReleaseAarMetadata
+> Task :core-common:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-security:extractProguardFiles
 > Task :core-security:prepareLintJarForPublish UP-TO-DATE
-> Task :core-common:extractReleaseAnnotations FROM-CACHE
 > Task :core-sync:extractProguardFiles
+> Task :core-common:extractReleaseAnnotations FROM-CACHE
 > Task :core-common:writeReleaseLintModelMetadata
 > Task :core-sync:prepareLintJarForPublish UP-TO-DATE
 > Task :feature-calls:extractProguardFiles
+> Task :core-appwrite:checkReleaseAarMetadata
 > Task :core-designsystem:checkReleaseAarMetadata
 > Task :core-designsystem:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-designsystem:writeReleaseLintModelMetadata
-> Task :core-appwrite:checkReleaseAarMetadata
 > Task :feature-calls:prepareLintJarForPublish UP-TO-DATE
 > Task :core-appwrite:extractDeepLinksForAarRelease FROM-CACHE
+> Task :core-appwrite:writeReleaseLintModelMetadata
 > Task :feature-hearttoheart:extractProguardFiles
 > Task :feature-hearttoheart:prepareLintJarForPublish UP-TO-DATE
-> Task :core-appwrite:writeReleaseLintModelMetadata
 > Task :feature-playback:extractProguardFiles
 > Task :feature-pairing:extractProguardFiles
 > Task :feature-pairing:prepareLintJarForPublish UP-TO-DATE
@@ -1220,53 +1181,47 @@ BUILD SUCCESSFUL in 38s
 > Task :core-sync:checkReleaseAarMetadata
 > Task :core-sync:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-sync:writeReleaseLintModelMetadata
+> Task :hamyar-app:packageP09ReleaseResources
 > Task :feature-pairing:checkReleaseAarMetadata
-> Task :feature-pairing:extractDeepLinksForAarRelease FROM-CACHE
 > Task :feature-hearttoheart:checkReleaseAarMetadata
+> Task :hamyar-app:extractP09ReleaseNativeSymbolTables
+> Task :feature-pairing:extractDeepLinksForAarRelease FROM-CACHE
 > Task :feature-hearttoheart:extractDeepLinksForAarRelease FROM-CACHE
+> Task :hamyar-app:processP09ReleaseNavigationResources FROM-CACHE
+> Task :hamyar-app:mergeP09ReleaseNativeDebugMetadata NO-SOURCE
+> Task :hamyar-app:parseP09ReleaseLocalResources FROM-CACHE
+> Task :hamyar-app:generateP09ReleaseRFile FROM-CACHE
 > Task :feature-calls:checkReleaseAarMetadata
+> Task :hamyar-app:javaPreCompileP09Release FROM-CACHE
 > Task :feature-calls:extractDeepLinksForAarRelease FROM-CACHE
 > Task :feature-playback:checkReleaseAarMetadata
 > Task :feature-playback:extractDeepLinksForAarRelease FROM-CACHE
 > Task :feature-study:checkReleaseAarMetadata
 > Task :feature-study:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-security:checkReleaseAarMetadata
-> Task :core-security:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-notifications:checkReleaseAarMetadata
-> Task :core-notifications:extractDeepLinksForAarRelease FROM-CACHE
+> Task :core-security:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-security:writeReleaseLintModelMetadata
+> Task :core-notifications:extractDeepLinksForAarRelease FROM-CACHE
 > Task :core-notifications:writeReleaseLintModelMetadata
 > Task :feature-hearttoheart:writeReleaseLintModelMetadata
 > Task :feature-calls:writeReleaseLintModelMetadata
-> Task :feature-playback:writeReleaseLintModelMetadata
 > Task :feature-pairing:writeReleaseLintModelMetadata
+> Task :feature-playback:writeReleaseLintModelMetadata
 > Task :feature-study:writeReleaseLintModelMetadata
-> Task :hamyar-app:packageP09ReleaseResources
-> Task :hamyar-app:extractP09ReleaseNativeSymbolTables
-> Task :hamyar-app:processP09ReleaseNavigationResources FROM-CACHE
-> Task :hamyar-app:mergeP09ReleaseNativeDebugMetadata NO-SOURCE
-> Task :hamyar-app:parseP09ReleaseLocalResources FROM-CACHE
-> Task :hamyar-app:generateP09ReleaseRFile FROM-CACHE
-> Task :hamyar-app:javaPreCompileP09Release FROM-CACHE
 > Task :hamyar-app:mergeP09ReleaseArtProfile
 > Task :hamyar-app:checkP09ReleaseAarMetadata
 > Task :hamyar-app:mapP09ReleaseSourceSetPaths
 > Task :hamyar-app:compileP09ReleaseNavigationResources FROM-CACHE
 > Task :core-common:compileReleaseKotlin
 > Task :core-common:compileReleaseJavaWithJavac NO-SOURCE
-> Task :core-common:mergeReleaseGeneratedProguardFiles
 > Task :core-common:bundleLibCompileToJarRelease
-> Task :core-common:exportReleaseConsumerProguardFiles
+> Task :core-common:mergeReleaseGeneratedProguardFiles
 > Task :core-security:compileReleaseKotlin
 > Task :core-security:compileReleaseJavaWithJavac NO-SOURCE
 > Task :core-security:mergeReleaseGeneratedProguardFiles
-> Task :core-security:exportReleaseConsumerProguardFiles
 > Task :core-designsystem:compileReleaseKotlin
 > Task :core-designsystem:compileReleaseJavaWithJavac NO-SOURCE
-> Task :core-notifications:compileReleaseKotlin
-w: shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
-w: shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
-> Task :core-designsystem:mergeReleaseGeneratedProguardFiles
 > Task :core-appwrite:compileReleaseKotlin
 w: shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:461:21 'suspend fun createVerification(url: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.createEmailVerification` instead.
 w: shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:474:21 'suspend fun updateVerification(userId: String, secret: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.updateEmailVerification` instead.
@@ -1277,33 +1232,45 @@ w: shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/T
 w: shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:113:9 Expression is unused.
 w: shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:129:9 Expression is unused.
 w: shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:138:9 Expression is unused.
-> Task :core-designsystem:exportReleaseConsumerProguardFiles
 > Task :core-designsystem:bundleLibCompileToJarRelease
-> Task :core-notifications:compileReleaseJavaWithJavac NO-SOURCE
-> Task :core-notifications:mergeReleaseGeneratedProguardFiles
+> Task :core-security:exportReleaseConsumerProguardFiles
+> Task :core-designsystem:mergeReleaseGeneratedProguardFiles
 > Task :core-appwrite:compileReleaseJavaWithJavac NO-SOURCE
-> Task :core-notifications:exportReleaseConsumerProguardFiles
-> Task :core-common:bundleLibRuntimeToJarRelease
-> Task :core-appwrite:bundleLibCompileToJarRelease
+> Task :core-designsystem:exportReleaseConsumerProguardFiles
 > Task :core-appwrite:mergeReleaseGeneratedProguardFiles
-> Task :core-designsystem:bundleLibRuntimeToJarRelease
-> Task :core-notifications:bundleLibCompileToJarRelease
+> Task :core-appwrite:bundleLibCompileToJarRelease
+> Task :core-appwrite:exportReleaseConsumerProguardFiles
+> Task :core-notifications:compileReleaseKotlin
+w: shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
+w: shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
 > Task :feature-pairing:compileReleaseKotlin
 > Task :feature-pairing:compileReleaseJavaWithJavac NO-SOURCE
 > Task :feature-pairing:mergeReleaseGeneratedProguardFiles
-> Task :feature-calls:compileReleaseKotlin
-w: shared/feature-calls/src/main/java/com/hamyareman/ir/platform/feature/calls/CallEngine.kt:389:58 The corresponding parameter in the supertype 'SdpAdapter' is named 'sdp'. This may cause problems when calling this function with named arguments.
 > Task :feature-pairing:exportReleaseConsumerProguardFiles
-> Task :feature-calls:compileReleaseJavaWithJavac NO-SOURCE
-> Task :feature-calls:mergeReleaseGeneratedProguardFiles
-> Task :feature-calls:exportReleaseConsumerProguardFiles
-> Task :core-appwrite:exportReleaseConsumerProguardFiles
+> Task :core-sync:compileReleaseKotlin
+> Task :core-sync:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core-sync:bundleLibCompileToJarRelease
+> Task :feature-hearttoheart:compileReleaseKotlin
+> Task :feature-hearttoheart:compileReleaseJavaWithJavac NO-SOURCE
+> Task :feature-hearttoheart:mergeReleaseGeneratedProguardFiles
+> Task :feature-hearttoheart:exportReleaseConsumerProguardFiles
+> Task :hamyar-app:mergeP09ReleaseResources
+> Task :core-sync:mergeReleaseGeneratedProguardFiles
+> Task :core-sync:exportReleaseConsumerProguardFiles
+> Task :core-notifications:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core-notifications:mergeReleaseGeneratedProguardFiles
+> Task :core-notifications:exportReleaseConsumerProguardFiles
+> Task :core-common:exportReleaseConsumerProguardFiles
 > Task :core-appwrite:bundleLibRuntimeToJarRelease
+> Task :core-common:bundleLibRuntimeToJarRelease
+> Task :core-designsystem:bundleLibRuntimeToJarRelease
+> Task :core-notifications:bundleLibCompileToJarRelease
 > Task :core-notifications:bundleLibRuntimeToJarRelease
 > Task :core-security:bundleLibCompileToJarRelease
 > Task :core-security:bundleLibRuntimeToJarRelease
-> Task :feature-calls:bundleLibCompileToJarRelease
-> Task :feature-calls:bundleLibRuntimeToJarRelease
+> Task :core-sync:bundleLibRuntimeToJarRelease
+> Task :feature-hearttoheart:bundleLibCompileToJarRelease
+> Task :feature-hearttoheart:bundleLibRuntimeToJarRelease
 > Task :feature-pairing:bundleLibCompileToJarRelease
 > Task :feature-pairing:bundleLibRuntimeToJarRelease
 > Task :hamyar-app:createP09ReleaseCompatibleScreenManifests
@@ -1311,115 +1278,64 @@ w: shared/feature-calls/src/main/java/com/hamyareman/ir/platform/feature/calls/C
 > Task :hamyar-app:processP09ReleaseMainManifest
 > Task :hamyar-app:processP09ReleaseManifest
 > Task :hamyar-app:processP09ReleaseManifestForPackage
+> Task :feature-calls:compileReleaseKotlin
+w: shared/feature-calls/src/main/java/com/hamyareman/ir/platform/feature/calls/CallEngine.kt:389:58 The corresponding parameter in the supertype 'SdpAdapter' is named 'sdp'. This may cause problems when calling this function with named arguments.
+> Task :feature-calls:compileReleaseJavaWithJavac NO-SOURCE
+> Task :feature-calls:mergeReleaseGeneratedProguardFiles
+> Task :feature-calls:exportReleaseConsumerProguardFiles
+> Task :feature-calls:bundleLibCompileToJarRelease
+> Task :feature-calls:bundleLibRuntimeToJarRelease
 > Task :hamyar-app:extractProguardFiles
 > Task :core-appwrite:processReleaseJavaRes
 > Task :core-common:processReleaseJavaRes
 > Task :core-designsystem:processReleaseJavaRes
 > Task :core-notifications:processReleaseJavaRes
 > Task :core-security:processReleaseJavaRes
+> Task :core-sync:processReleaseJavaRes
 > Task :feature-calls:processReleaseJavaRes
+> Task :feature-hearttoheart:processReleaseJavaRes
 > Task :feature-pairing:processReleaseJavaRes
 > Task :hamyar-app:mergeP09ReleaseStartupProfile
 > Task :hamyar-app:generateP09ReleaseAssets UP-TO-DATE
-> Task :core-sync:compileReleaseKotlin
-> Task :core-sync:compileReleaseJavaWithJavac NO-SOURCE
-> Task :core-sync:bundleLibCompileToJarRelease
 > Task :hamyar-app:mergeP09ReleaseAssets
-> Task :hamyar-app:mergeP09ReleaseResources
-> Task :core-sync:mergeReleaseGeneratedProguardFiles
-> Task :core-sync:exportReleaseConsumerProguardFiles
-> Task :core-sync:bundleLibRuntimeToJarRelease
-> Task :hamyar-app:processP09ReleaseResources
-> Task :core-sync:processReleaseJavaRes
-> Task :feature-hearttoheart:compileReleaseKotlin
-> Task :feature-hearttoheart:compileReleaseJavaWithJavac NO-SOURCE
-> Task :feature-hearttoheart:mergeReleaseGeneratedProguardFiles
-> Task :feature-hearttoheart:exportReleaseConsumerProguardFiles
-> Task :feature-hearttoheart:bundleLibCompileToJarRelease
-> Task :feature-hearttoheart:bundleLibRuntimeToJarRelease
-> Task :feature-hearttoheart:processReleaseJavaRes
-> Task :hamyar-app:extractP09ReleaseVersionControlInfo
-> Task :core-common:createFullJarRelease
 > Task :feature-playback:compileReleaseKotlin
 w: shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:123:58 'constructor(p0: MediaSession): MediaSession.ConnectionResult.AcceptedResultBuilder' is deprecated. Deprecated in Java.
 w: shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:145:30 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
 w: shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:158:34 'fun onPlayerCommandRequest(p0: MediaSession, p1: MediaSession.ControllerInfo, p2: Int): Int' is deprecated. Deprecated in Java.
 w: shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/SleepPlaybackService.kt:61:58 'constructor(p0: MediaSession): MediaSession.ConnectionResult.AcceptedResultBuilder' is deprecated. Deprecated in Java.
+> Task :hamyar-app:processP09ReleaseResources
 > Task :feature-playback:compileReleaseJavaWithJavac NO-SOURCE
 > Task :feature-playback:mergeReleaseGeneratedProguardFiles
 > Task :feature-playback:exportReleaseConsumerProguardFiles
 > Task :feature-playback:bundleLibCompileToJarRelease
 > Task :feature-playback:bundleLibRuntimeToJarRelease
 > Task :feature-playback:processReleaseJavaRes
+> Task :core-common:createFullJarRelease
+> Task :hamyar-app:extractP09ReleaseVersionControlInfo
 > Task :core-appwrite:createFullJarRelease
 > Task :core-appwrite:extractReleaseAnnotations FROM-CACHE
 > Task :core-appwrite:mergeReleaseConsumerProguardFiles
-> Task :core-common:generateReleaseLintModel
-> Task :core-common:mergeReleaseConsumerProguardFiles
 > Task :core-appwrite:mergeReleaseJavaResource
-> Task :core-common:mergeReleaseJavaResource
-> Task :core-common:syncReleaseLibJars
-> Task :core-common:bundleReleaseLocalLintAar
-> Task :core-common:generateReleaseLintVitalModel
-> Task :feature-study:compileReleaseKotlin
-> Task :feature-study:compileReleaseJavaWithJavac NO-SOURCE
-> Task :feature-study:mergeReleaseGeneratedProguardFiles
-> Task :feature-study:exportReleaseConsumerProguardFiles
-> Task :hamyar-app:compressP09ReleaseAssets
-> Task :feature-study:bundleLibCompileToJarRelease
-> Task :feature-study:bundleLibRuntimeToJarRelease
-> Task :core-appwrite:generateReleaseLintVitalModel
-> Task :feature-study:processReleaseJavaRes
-> Task :core-designsystem:generateReleaseLintVitalModel
-> Task :core-common:lintVitalAnalyzeRelease
-> Task :core-designsystem:lintVitalAnalyzeRelease
-> Task :core-notifications:generateReleaseLintVitalModel
-> Task :core-security:generateReleaseLintVitalModel
-> Task :core-security:lintVitalAnalyzeRelease
-> Task :core-appwrite:generateReleaseLintModel
-> Task :core-sync:generateReleaseLintVitalModel
 > Task :core-appwrite:syncReleaseLibJars
 > Task :core-appwrite:bundleReleaseLocalLintAar
-> Task :core-sync:lintVitalAnalyzeRelease
 > Task :core-designsystem:createFullJarRelease
-> Task :core-designsystem:generateReleaseLintModel
-> Task :core-appwrite:lintVitalAnalyzeRelease
 > Task :core-designsystem:extractReleaseAnnotations
 > Task :core-designsystem:mergeReleaseConsumerProguardFiles
 > Task :core-designsystem:mergeReleaseJavaResource
 > Task :core-designsystem:syncReleaseLibJars
 > Task :core-designsystem:bundleReleaseLocalLintAar
-> Task :feature-calls:generateReleaseLintVitalModel
-> Task :feature-hearttoheart:generateReleaseLintVitalModel
-> Task :core-notifications:lintVitalAnalyzeRelease
-> Task :feature-pairing:generateReleaseLintVitalModel
-> Task :feature-pairing:lintVitalAnalyzeRelease
 > Task :core-sync:createFullJarRelease
-> Task :core-sync:generateReleaseLintModel
-> Task :feature-playback:generateReleaseLintVitalModel
 > Task :core-sync:extractReleaseAnnotations FROM-CACHE
 > Task :core-sync:mergeReleaseConsumerProguardFiles
 > Task :core-sync:mergeReleaseJavaResource
 > Task :core-sync:syncReleaseLibJars
 > Task :core-sync:bundleReleaseLocalLintAar
-> Task :hamyar-app:compileP09ReleaseKotlin
-> Task :feature-hearttoheart:lintVitalAnalyzeRelease
-> Task :feature-study:generateReleaseLintVitalModel
-> Task :feature-calls:lintVitalAnalyzeRelease
 > Task :core-notifications:createFullJarRelease
-> Task :core-notifications:generateReleaseLintModel
 > Task :core-security:createFullJarRelease
-> Task :core-security:generateReleaseLintModel
 > Task :feature-calls:createFullJarRelease
-> Task :feature-calls:generateReleaseLintModel
 > Task :feature-hearttoheart:createFullJarRelease
-> Task :feature-hearttoheart:generateReleaseLintModel
 > Task :feature-pairing:createFullJarRelease
-> Task :feature-pairing:generateReleaseLintModel
 > Task :feature-playback:createFullJarRelease
-> Task :feature-playback:generateReleaseLintModel
-> Task :feature-study:createFullJarRelease
-> Task :feature-study:generateReleaseLintModel
 > Task :feature-pairing:extractReleaseAnnotations
 > Task :feature-pairing:mergeReleaseConsumerProguardFiles
 > Task :feature-pairing:mergeReleaseJavaResource
@@ -1434,127 +1350,72 @@ w: shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/play
 > Task :feature-calls:mergeReleaseConsumerProguardFiles
 > Task :feature-calls:mergeReleaseJavaResource
 > Task :feature-calls:syncReleaseLibJars
+> Task :hamyar-app:compressP09ReleaseAssets
 > Task :feature-calls:bundleReleaseLocalLintAar
+> Task :core-common:generateReleaseLintModel
 > Task :feature-playback:extractReleaseAnnotations FROM-CACHE
-> Task :feature-playback:mergeReleaseConsumerProguardFiles
-> Task :feature-playback:mergeReleaseJavaResource
-> Task :feature-playback:syncReleaseLibJars
-> Task :feature-playback:bundleReleaseLocalLintAar
-> Task :feature-study:extractReleaseAnnotations FROM-CACHE
-> Task :feature-study:mergeReleaseConsumerProguardFiles
-> Task :feature-study:mergeReleaseJavaResource
-> Task :feature-study:syncReleaseLibJars
-> Task :feature-study:bundleReleaseLocalLintAar
-> Task :core-security:extractReleaseAnnotations FROM-CACHE
-> Task :core-security:mergeReleaseConsumerProguardFiles
-> Task :core-security:mergeReleaseJavaResource
-> Task :core-security:syncReleaseLibJars
-> Task :core-security:bundleReleaseLocalLintAar
-> Task :core-notifications:extractReleaseAnnotations FROM-CACHE
-> Task :core-notifications:mergeReleaseConsumerProguardFiles
-> Task :core-notifications:mergeReleaseJavaResource
-> Task :core-notifications:syncReleaseLibJars
-> Task :core-notifications:bundleReleaseLocalLintAar
-> Task :hamyar-app:optimizeP09ReleaseResources
-> Task :hamyar-app:collectP09ReleaseDependencies
-> Task :hamyar-app:sdkP09ReleaseDependencyData
-> Task :hamyar-app:validateSigningP09Release
-> Task :hamyar-app:writeP09ReleaseAppMetadata
-> Task :hamyar-app:writeP09ReleaseSigningConfigVersions
-> Task :feature-playback:lintVitalAnalyzeRelease
-> Task :feature-study:lintVitalAnalyzeRelease
+> Task :core-common:mergeReleaseConsumerProguardFiles
+> Task :core-common:mergeReleaseJavaResource
+> Task :feature-study:compileReleaseKotlin
+> Task :feature-study:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core-common:syncReleaseLibJars
+> Task :feature-study:mergeReleaseGeneratedProguardFiles
+> Task :feature-study:exportReleaseConsumerProguardFiles
+> Task :core-common:bundleReleaseLocalLintAar
+> Task :feature-study:bundleLibCompileToJarRelease
+> Task :feature-study:bundleLibRuntimeToJarRelease
+> Task :feature-study:processReleaseJavaRes
+> Task :core-common:generateReleaseLintVitalModel
+> Task :core-designsystem:generateReleaseLintVitalModel
+> Task :core-appwrite:generateReleaseLintVitalModel
+> Task :core-common:lintVitalAnalyzeRelease
+> Task :core-designsystem:lintVitalAnalyzeRelease
+> Task :core-notifications:generateReleaseLintVitalModel
+> Task :core-security:generateReleaseLintVitalModel
 > Task :hamyar-app:compileP09ReleaseKotlin
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/FontFloater.kt:147:56 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:487:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:489:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/cycle/PeriodTrainingScreen.kt:74:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LearningScreens.kt:94:8 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LessonPlayerScreen.kt:302:30 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/IranPlaces.kt:101:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/JalaliBirthDateFields.kt:115:48 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:42 Condition is always 'true'.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/profile/StudentProfileScreen.kt:257:57 Condition is always 'true'.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt:92:9 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/FreeReadingScreen.kt:23:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:148:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonStudyScreens.kt:693:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'StudyPack.Question'.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:55 'val Icons.Filled.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:628:83 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/MathLessonScreen.kt:328:5 'fun ScrollableTabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., edgePadding: Dp = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryScrollableTabRow and SecondaryScrollableTabRow tab variants.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:93:34 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:95:19 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:96:50 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:97:35 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:98:35 'static field SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:99:35 'static field SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:100:35 'static field SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:101:35 'static field SYSTEM_UI_FLAG_LAYOUT_STABLE: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/VideoTeachScreen.kt:104:38 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/ApkUpdate.kt:364:36 'static field ACTION_INSTALL_PACKAGE: String' is deprecated. Deprecated in Java.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/UpdateGate.kt:109:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
-w: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessScreen.kt:187:49 The corresponding parameter in the supertype 'WellnessLogSink' is named 'move'. This may cause problems when calling this function with named arguments.
-> Task :hamyar-app:compileP09ReleaseJavaWithJavac
-> Task :hamyar-app:mergeP09ReleaseGeneratedProguardFiles
-> Task :hamyar-app:processP09ReleaseJavaRes
-> Task :hamyar-app:mergeP09ReleaseJavaResource
-> Task :hamyar-app:generateP09ReleaseLintVitalReportModel
-> Task :hamyar-app:expandP09ReleaseArtProfileWildcards
-> Task :hamyar-app:produceP09ReleaseComposeMapping
-> Task :hamyar-app:reportP09ReleaseComposeMappingErrors
-> Task :hamyar-app:lintVitalAnalyzeP09Release
-> Task :hamyar-app:minifyP09ReleaseWithR8
-> Task :hamyar-app:lintVitalReportP09Release
-> Task :hamyar-app:lintVitalP09Release
-> Task :hamyar-app:mergeP09ReleaseComposeMapping
-> Task :hamyar-app:compileP09ReleaseArtProfile
-> Task :hamyar-app:packageP09Release
-> Task :hamyar-app:createP09ReleaseApkListingFileRedirect
-> Task :hamyar-app:assembleP09Release
-BUILD SUCCESSFUL in 3m 52s
-> Task :core-common:preBuild UP-TO-DATE
+e: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:735:87 Unresolved reference 'minus' for operator '-'.
+> Task :hamyar-app:compileP09ReleaseKotlin FAILED
+> Task :core-security:lintVitalAnalyzeRelease
+> Task :core-appwrite:lintVitalAnalyzeRelease
+> Task :core-notifications:lintVitalAnalyzeRelease
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 40s
 > Task :core-notifications:preBuild UP-TO-DATE
-> Task :core-designsystem:preBuild UP-TO-DATE
+> Task :core-notifications:preDebugBuild UP-TO-DATE
+> Task :core-common:preBuild UP-TO-DATE
 > Task :core-common:preDebugBuild UP-TO-DATE
+> Task :core-notifications:generateDebugResources UP-TO-DATE
 > Task :core-appwrite:preBuild UP-TO-DATE
+> Task :core-designsystem:preBuild UP-TO-DATE
+> Task :core-appwrite:preDebugBuild UP-TO-DATE
 > Task :core-designsystem:preDebugBuild UP-TO-DATE
 > Task :core-common:writeDebugAarMetadata UP-TO-DATE
+> Task :core-appwrite:generateDebugResources UP-TO-DATE
 > Task :core-designsystem:generateDebugResources UP-TO-DATE
 > Task :core-common:generateDebugResources UP-TO-DATE
-> Task :core-notifications:preDebugBuild UP-TO-DATE
-> Task :core-appwrite:preDebugBuild UP-TO-DATE
+> Task :core-notifications:packageDebugResources UP-TO-DATE
 > Task :core-common:packageDebugResources UP-TO-DATE
 > Task :core-common:processDebugNavigationResources UP-TO-DATE
 > Task :core-common:parseDebugLocalResources UP-TO-DATE
 > Task :core-common:generateDebugRFile UP-TO-DATE
 > Task :core-notifications:checkDebugAarMetadata UP-TO-DATE
-> Task :core-notifications:generateDebugResources UP-TO-DATE
-> Task :core-notifications:packageDebugResources UP-TO-DATE
 > Task :core-notifications:processDebugNavigationResources UP-TO-DATE
 > Task :core-notifications:parseDebugLocalResources UP-TO-DATE
 > Task :core-notifications:generateDebugRFile UP-TO-DATE
 > Task :core-notifications:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :core-notifications:generateDebugAssets UP-TO-DATE
-> Task :core-notifications:mergeDebugAssets UP-TO-DATE
-> Task :core-notifications:javaPreCompileDebug UP-TO-DATE
-> Task :core-notifications:prepareDebugArtProfile UP-TO-DATE
-> Task :core-notifications:prepareLintJarForPublish UP-TO-DATE
-> Task :core-notifications:processDebugManifest UP-TO-DATE
-> Task :core-notifications:writeDebugAarMetadata UP-TO-DATE
-> Task :core-notifications:preDebugAndroidTestBuild UP-TO-DATE
-> Task :core-notifications:writeDebugLintModelMetadata
-> Task :core-notifications:extractProguardFiles UP-TO-DATE
-> Task :core-notifications:preDebugUnitTestBuild UP-TO-DATE
-> Task :core-security:preBuild UP-TO-DATE
-> Task :core-security:preDebugBuild UP-TO-DATE
 > Task :core-common:compileDebugKotlin UP-TO-DATE
 > Task :core-common:javaPreCompileDebug UP-TO-DATE
 > Task :core-common:compileDebugJavaWithJavac NO-SOURCE
+> Task :core-notifications:mergeDebugAssets UP-TO-DATE
 > Task :core-common:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core-notifications:javaPreCompileDebug UP-TO-DATE
 > Task :core-common:checkDebugAarMetadata UP-TO-DATE
+> Task :core-notifications:extractDebugAnnotations UP-TO-DATE
 > Task :core-common:extractDebugAnnotations UP-TO-DATE
 > Task :core-common:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :core-common:generateDebugAssets UP-TO-DATE
-> Task :core-security:checkDebugAarMetadata UP-TO-DATE
 > Task :core-common:mergeDebugAssets UP-TO-DATE
 > Task :core-common:mergeDebugGeneratedProguardFiles UP-TO-DATE
 > Task :core-common:mergeDebugConsumerProguardFiles UP-TO-DATE
@@ -1564,28 +1425,37 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :core-common:processDebugJavaRes UP-TO-DATE
 > Task :core-common:mergeDebugJavaResource UP-TO-DATE
 > Task :core-common:syncDebugLibJars UP-TO-DATE
+> Task :core-notifications:compileDebugKotlin UP-TO-DATE
+> Task :core-notifications:compileDebugJavaWithJavac NO-SOURCE
+> Task :core-notifications:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :core-notifications:mergeDebugConsumerProguardFiles UP-TO-DATE
 > Task :core-designsystem:checkDebugAarMetadata UP-TO-DATE
+> Task :core-notifications:prepareDebugArtProfile UP-TO-DATE
+> Task :core-notifications:prepareLintJarForPublish UP-TO-DATE
+> Task :core-notifications:processDebugManifest UP-TO-DATE
+> Task :core-notifications:processDebugJavaRes UP-TO-DATE
+> Task :core-notifications:mergeDebugJavaResource UP-TO-DATE
+> Task :core-notifications:syncDebugLibJars UP-TO-DATE
 > Task :core-designsystem:packageDebugResources UP-TO-DATE
+> Task :core-notifications:writeDebugAarMetadata UP-TO-DATE
+> Task :core-designsystem:processDebugNavigationResources UP-TO-DATE
+> Task :core-designsystem:parseDebugLocalResources UP-TO-DATE
 > Task :core-common:bundleDebugLocalLintAar
 > Task :core-appwrite:checkDebugAarMetadata UP-TO-DATE
-> Task :core-notifications:extractDebugAnnotations UP-TO-DATE
-> Task :core-appwrite:generateDebugResources UP-TO-DATE
 > Task :core-common:bundleLibRuntimeToJarDebug UP-TO-DATE
 > Task :core-appwrite:packageDebugResources UP-TO-DATE
 > Task :core-appwrite:processDebugNavigationResources UP-TO-DATE
-> Task :core-designsystem:processDebugNavigationResources UP-TO-DATE
+> Task :core-notifications:bundleDebugLocalLintAar
+> Task :core-designsystem:generateDebugRFile UP-TO-DATE
 > Task :core-appwrite:parseDebugLocalResources UP-TO-DATE
 > Task :core-appwrite:generateDebugRFile UP-TO-DATE
-> Task :core-designsystem:parseDebugLocalResources UP-TO-DATE
-> Task :core-designsystem:generateDebugRFile UP-TO-DATE
+> Task :core-notifications:bundleLibRuntimeToJarDebug UP-TO-DATE
 > Task :core-common:createFullJarDebug
-> Task :core-notifications:compileDebugKotlin UP-TO-DATE
-> Task :core-notifications:compileDebugJavaWithJavac NO-SOURCE
+> Task :core-notifications:createFullJarDebug
+> Task :core-notifications:preDebugAndroidTestBuild UP-TO-DATE
+> Task :core-notifications:writeDebugLintModelMetadata
 > Task :core-common:writeDebugLintModelMetadata
 > Task :core-common:extractProguardFiles UP-TO-DATE
-> Task :core-notifications:mergeDebugGeneratedProguardFiles UP-TO-DATE
-> Task :core-notifications:mergeDebugConsumerProguardFiles UP-TO-DATE
-> Task :core-notifications:processDebugJavaRes UP-TO-DATE
 > Task :core-appwrite:extractDebugAnnotations UP-TO-DATE
 > Task :core-appwrite:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :core-appwrite:generateDebugAssets UP-TO-DATE
@@ -1593,9 +1463,8 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :core-designsystem:extractDebugAnnotations UP-TO-DATE
 > Task :core-designsystem:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :core-designsystem:generateDebugAssets UP-TO-DATE
-> Task :core-notifications:mergeDebugJavaResource UP-TO-DATE
 > Task :core-designsystem:mergeDebugAssets UP-TO-DATE
-> Task :core-notifications:syncDebugLibJars UP-TO-DATE
+> Task :core-common:generateDebugLintModel
 > Task :core-appwrite:compileDebugKotlin UP-TO-DATE
 > Task :core-appwrite:javaPreCompileDebug UP-TO-DATE
 > Task :core-appwrite:compileDebugJavaWithJavac NO-SOURCE
@@ -1604,46 +1473,43 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :core-appwrite:prepareDebugArtProfile UP-TO-DATE
 > Task :core-appwrite:prepareLintJarForPublish UP-TO-DATE
 > Task :core-appwrite:processDebugManifest UP-TO-DATE
-> Task :core-notifications:bundleDebugLocalLintAar
+> Task :core-designsystem:compileDebugKotlin UP-TO-DATE
+> Task :core-common:preDebugAndroidTestBuild UP-TO-DATE
 > Task :core-appwrite:processDebugJavaRes UP-TO-DATE
 > Task :core-appwrite:mergeDebugJavaResource UP-TO-DATE
 > Task :core-appwrite:syncDebugLibJars UP-TO-DATE
-> Task :core-designsystem:compileDebugKotlin UP-TO-DATE
 > Task :core-appwrite:writeDebugAarMetadata UP-TO-DATE
+> Task :core-notifications:generateDebugAndroidTestLintModel
 > Task :core-designsystem:javaPreCompileDebug UP-TO-DATE
 > Task :core-designsystem:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-designsystem:mergeDebugGeneratedProguardFiles UP-TO-DATE
 > Task :core-designsystem:mergeDebugConsumerProguardFiles UP-TO-DATE
 > Task :core-designsystem:prepareDebugArtProfile UP-TO-DATE
 > Task :core-designsystem:prepareLintJarForPublish UP-TO-DATE
-> Task :core-common:generateDebugLintModel
-> Task :core-notifications:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :core-designsystem:processDebugManifest UP-TO-DATE
-> Task :core-designsystem:processDebugJavaRes UP-TO-DATE
-> Task :core-designsystem:mergeDebugJavaResource UP-TO-DATE
 > Task :core-appwrite:bundleDebugLocalLintAar
-> Task :core-designsystem:syncDebugLibJars UP-TO-DATE
-> Task :core-notifications:createFullJarDebug
+> Task :core-designsystem:processDebugManifest UP-TO-DATE
 > Task :core-appwrite:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :core-appwrite:createFullJarDebug
-> Task :core-appwrite:preDebugAndroidTestBuild UP-TO-DATE
-> Task :core-appwrite:writeDebugLintModelMetadata
-> Task :core-appwrite:extractProguardFiles UP-TO-DATE
-> Task :core-common:preDebugAndroidTestBuild UP-TO-DATE
-> Task :core-designsystem:writeDebugAarMetadata UP-TO-DATE
-> Task :core-designsystem:bundleDebugLocalLintAar
-> Task :core-designsystem:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :core-appwrite:generateDebugLintModel
+> Task :core-designsystem:processDebugJavaRes UP-TO-DATE
 > Task :core-common:generateDebugAndroidTestLintModel
 > Task :core-common:preDebugUnitTestBuild UP-TO-DATE
+> Task :core-appwrite:createFullJarDebug
+> Task :core-appwrite:preDebugAndroidTestBuild UP-TO-DATE
+> Task :core-designsystem:mergeDebugJavaResource UP-TO-DATE
+> Task :core-designsystem:syncDebugLibJars UP-TO-DATE
+> Task :core-designsystem:writeDebugAarMetadata UP-TO-DATE
+> Task :core-appwrite:writeDebugLintModelMetadata
+> Task :core-designsystem:bundleDebugLocalLintAar
+> Task :core-designsystem:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core-common:generateDebugUnitTestLintModel
 > Task :core-designsystem:createFullJarDebug
 > Task :core-designsystem:preDebugAndroidTestBuild UP-TO-DATE
 > Task :core-designsystem:writeDebugLintModelMetadata
-> Task :core-common:generateDebugUnitTestLintModel
 > Task :core-appwrite:generateDebugAndroidTestLintModel
+> Task :core-appwrite:extractProguardFiles UP-TO-DATE
+> Task :core-appwrite:generateDebugLintModel
 > Task :core-appwrite:preDebugUnitTestBuild UP-TO-DATE
-> Task :core-appwrite:generateDebugUnitTestLintModel
 > Task :core-designsystem:generateDebugAndroidTestLintModel
+> Task :core-appwrite:generateDebugUnitTestLintModel
 > Task :core-appwrite:lintAnalyzeDebugAndroidTest
 > Task :core-common:lintAnalyzeDebugAndroidTest
 > Task :core-designsystem:extractProguardFiles UP-TO-DATE
@@ -1652,17 +1518,27 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :core-designsystem:generateDebugUnitTestLintModel
 > Task :core-appwrite:lintAnalyzeDebugUnitTest
 > Task :core-designsystem:lintAnalyzeDebugAndroidTest
+> Task :core-notifications:extractProguardFiles UP-TO-DATE
+> Task :core-notifications:generateDebugLintModel
+> Task :core-notifications:preDebugUnitTestBuild UP-TO-DATE
+> Task :core-notifications:generateDebugUnitTestLintModel
 > Task :core-designsystem:lintAnalyzeDebugUnitTest
+> Task :core-notifications:lintAnalyzeDebugUnitTest
+> Task :core-security:preBuild UP-TO-DATE
+> Task :core-security:preDebugBuild UP-TO-DATE
+> Task :core-security:checkDebugAarMetadata UP-TO-DATE
 > Task :core-security:generateDebugResources UP-TO-DATE
 > Task :core-security:packageDebugResources UP-TO-DATE
 > Task :core-security:processDebugNavigationResources UP-TO-DATE
 > Task :core-security:parseDebugLocalResources UP-TO-DATE
 > Task :core-security:generateDebugRFile UP-TO-DATE
-> Task :core-notifications:generateDebugAndroidTestLintModel
 > Task :core-security:extractDebugAnnotations UP-TO-DATE
 > Task :core-security:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :core-security:generateDebugAssets UP-TO-DATE
 > Task :core-security:mergeDebugAssets UP-TO-DATE
+> Task :core-notifications:lintAnalyzeDebugAndroidTest
+> Task :core-sync:preBuild UP-TO-DATE
+> Task :core-sync:preDebugBuild UP-TO-DATE
 > Task :core-security:compileDebugKotlin UP-TO-DATE
 > Task :core-security:javaPreCompileDebug UP-TO-DATE
 > Task :core-security:compileDebugJavaWithJavac NO-SOURCE
@@ -1675,43 +1551,24 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :core-security:mergeDebugJavaResource UP-TO-DATE
 > Task :core-security:syncDebugLibJars UP-TO-DATE
 > Task :core-security:writeDebugAarMetadata UP-TO-DATE
-> Task :core-notifications:generateDebugLintModel
-> Task :core-security:bundleDebugLocalLintAar
-> Task :core-security:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :core-security:createFullJarDebug
-> Task :core-security:preDebugAndroidTestBuild UP-TO-DATE
-> Task :core-security:writeDebugLintModelMetadata
-> Task :core-notifications:generateDebugUnitTestLintModel
-> Task :core-security:generateDebugAndroidTestLintModel
-> Task :core-notifications:lintAnalyzeDebugUnitTest
-> Task :core-security:extractProguardFiles UP-TO-DATE
-> Task :core-security:generateDebugLintModel
-> Task :core-security:preDebugUnitTestBuild UP-TO-DATE
-> Task :core-notifications:lintAnalyzeDebugAndroidTest
-> Task :core-sync:preBuild UP-TO-DATE
-> Task :core-sync:preDebugBuild UP-TO-DATE
-> Task :core-security:generateDebugUnitTestLintModel
 > Task :core-sync:checkDebugAarMetadata UP-TO-DATE
 > Task :core-appwrite:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core-security:bundleDebugLocalLintAar
 > Task :core-sync:generateDebugResources UP-TO-DATE
+> Task :core-security:bundleLibRuntimeToJarDebug UP-TO-DATE
 > Task :core-sync:packageDebugResources UP-TO-DATE
 > Task :core-sync:processDebugNavigationResources UP-TO-DATE
 > Task :core-sync:parseDebugLocalResources UP-TO-DATE
 > Task :core-sync:generateDebugRFile UP-TO-DATE
+> Task :core-security:createFullJarDebug
+> Task :core-security:preDebugAndroidTestBuild UP-TO-DATE
+> Task :core-security:writeDebugLintModelMetadata
 > Task :core-sync:extractDebugAnnotations UP-TO-DATE
-> Task :core-common:lintAnalyzeDebugUnitTest
 > Task :core-sync:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :core-sync:generateDebugAssets UP-TO-DATE
 > Task :core-sync:mergeDebugAssets UP-TO-DATE
-> Task :core-security:lintAnalyzeDebugUnitTest
-> Task :feature-calls:preBuild UP-TO-DATE
-> Task :feature-calls:preDebugBuild UP-TO-DATE
 > Task :core-sync:compileDebugKotlin UP-TO-DATE
 > Task :core-sync:javaPreCompileDebug UP-TO-DATE
-> Task :core-security:lintAnalyzeDebugAndroidTest
-> Task :core-designsystem:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :feature-hearttoheart:preBuild UP-TO-DATE
-> Task :feature-hearttoheart:preDebugBuild UP-TO-DATE
 > Task :core-sync:compileDebugJavaWithJavac NO-SOURCE
 > Task :core-sync:mergeDebugGeneratedProguardFiles UP-TO-DATE
 > Task :core-sync:mergeDebugConsumerProguardFiles UP-TO-DATE
@@ -1724,31 +1581,65 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :core-sync:writeDebugAarMetadata UP-TO-DATE
 > Task :core-sync:bundleDebugLocalLintAar
 > Task :core-sync:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core-security:generateDebugAndroidTestLintModel
+> Task :core-security:extractProguardFiles UP-TO-DATE
 > Task :core-sync:createFullJarDebug
 > Task :core-sync:preDebugAndroidTestBuild UP-TO-DATE
 > Task :core-sync:writeDebugLintModelMetadata
+> Task :core-security:generateDebugLintModel
+> Task :core-security:preDebugUnitTestBuild UP-TO-DATE
+> Task :core-security:generateDebugUnitTestLintModel
+> Task :core-sync:generateDebugAndroidTestLintModel
+> Task :core-security:lintAnalyzeDebugAndroidTest
+> Task :core-sync:extractProguardFiles UP-TO-DATE
+> Task :core-security:lintAnalyzeDebugUnitTest
+> Task :feature-calls:preBuild UP-TO-DATE
+> Task :feature-calls:preDebugBuild UP-TO-DATE
+> Task :core-sync:generateDebugLintModel
+> Task :core-sync:preDebugUnitTestBuild UP-TO-DATE
 > Task :feature-calls:checkDebugAarMetadata UP-TO-DATE
-> Task :feature-hearttoheart:checkDebugAarMetadata UP-TO-DATE
+> Task :core-designsystem:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :feature-calls:generateDebugResources UP-TO-DATE
-> Task :feature-hearttoheart:generateDebugResources UP-TO-DATE
 > Task :feature-calls:packageDebugResources UP-TO-DATE
 > Task :feature-calls:processDebugNavigationResources UP-TO-DATE
 > Task :feature-calls:parseDebugLocalResources UP-TO-DATE
+> Task :feature-calls:generateDebugRFile UP-TO-DATE
+> Task :feature-calls:extractDebugAnnotations UP-TO-DATE
+> Task :feature-calls:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :feature-calls:generateDebugAssets UP-TO-DATE
+> Task :feature-calls:mergeDebugAssets UP-TO-DATE
+> Task :core-sync:generateDebugUnitTestLintModel
+> Task :feature-calls:compileDebugKotlin UP-TO-DATE
+> Task :feature-calls:javaPreCompileDebug UP-TO-DATE
+> Task :feature-calls:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature-calls:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :feature-calls:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :feature-calls:prepareDebugArtProfile UP-TO-DATE
+> Task :feature-calls:prepareLintJarForPublish UP-TO-DATE
+> Task :feature-calls:processDebugManifest UP-TO-DATE
+> Task :feature-calls:processDebugJavaRes UP-TO-DATE
+> Task :feature-calls:mergeDebugJavaResource UP-TO-DATE
+> Task :feature-calls:syncDebugLibJars UP-TO-DATE
+> Task :feature-calls:writeDebugAarMetadata UP-TO-DATE
+> Task :feature-calls:bundleDebugLocalLintAar
+> Task :feature-calls:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :feature-calls:createFullJarDebug
+> Task :feature-calls:preDebugAndroidTestBuild UP-TO-DATE
+> Task :feature-calls:writeDebugLintModelMetadata
+> Task :core-sync:lintAnalyzeDebugAndroidTest
+> Task :core-sync:lintAnalyzeDebugUnitTest
+> Task :feature-hearttoheart:preBuild UP-TO-DATE
+> Task :feature-hearttoheart:preDebugBuild UP-TO-DATE
+> Task :feature-hearttoheart:checkDebugAarMetadata UP-TO-DATE
+> Task :feature-hearttoheart:generateDebugResources UP-TO-DATE
 > Task :feature-hearttoheart:packageDebugResources UP-TO-DATE
 > Task :feature-hearttoheart:processDebugNavigationResources UP-TO-DATE
 > Task :feature-hearttoheart:parseDebugLocalResources UP-TO-DATE
-> Task :feature-calls:generateDebugRFile UP-TO-DATE
 > Task :feature-hearttoheart:generateDebugRFile UP-TO-DATE
 > Task :feature-hearttoheart:extractDebugAnnotations UP-TO-DATE
 > Task :feature-hearttoheart:extractDeepLinksForAarDebug UP-TO-DATE
-> Task :feature-calls:extractDebugAnnotations UP-TO-DATE
 > Task :feature-hearttoheart:generateDebugAssets UP-TO-DATE
-> Task :feature-calls:extractDeepLinksForAarDebug UP-TO-DATE
-> Task :feature-calls:generateDebugAssets UP-TO-DATE
 > Task :feature-hearttoheart:mergeDebugAssets UP-TO-DATE
-> Task :core-sync:generateDebugAndroidTestLintModel
-> Task :core-sync:extractProguardFiles UP-TO-DATE
-> Task :feature-calls:mergeDebugAssets UP-TO-DATE
 > Task :feature-hearttoheart:compileDebugKotlin UP-TO-DATE
 > Task :feature-hearttoheart:javaPreCompileDebug UP-TO-DATE
 > Task :feature-hearttoheart:compileDebugJavaWithJavac NO-SOURCE
@@ -1761,71 +1652,36 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :feature-hearttoheart:mergeDebugJavaResource UP-TO-DATE
 > Task :feature-hearttoheart:syncDebugLibJars UP-TO-DATE
 > Task :feature-hearttoheart:writeDebugAarMetadata UP-TO-DATE
-> Task :feature-calls:compileDebugKotlin UP-TO-DATE
 > Task :feature-hearttoheart:bundleDebugLocalLintAar
-> Task :feature-calls:javaPreCompileDebug UP-TO-DATE
-> Task :feature-calls:compileDebugJavaWithJavac NO-SOURCE
-> Task :feature-calls:mergeDebugGeneratedProguardFiles UP-TO-DATE
 > Task :feature-hearttoheart:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :feature-calls:mergeDebugConsumerProguardFiles UP-TO-DATE
-> Task :feature-calls:prepareDebugArtProfile UP-TO-DATE
-> Task :feature-calls:prepareLintJarForPublish UP-TO-DATE
-> Task :feature-calls:processDebugManifest UP-TO-DATE
-> Task :core-sync:generateDebugLintModel
 > Task :feature-hearttoheart:createFullJarDebug
-> Task :core-sync:preDebugUnitTestBuild UP-TO-DATE
 > Task :feature-hearttoheart:preDebugAndroidTestBuild UP-TO-DATE
-> Task :feature-calls:processDebugJavaRes UP-TO-DATE
 > Task :feature-hearttoheart:writeDebugLintModelMetadata
-> Task :feature-calls:mergeDebugJavaResource UP-TO-DATE
-> Task :feature-calls:syncDebugLibJars UP-TO-DATE
-> Task :feature-calls:writeDebugAarMetadata UP-TO-DATE
-> Task :feature-calls:bundleDebugLocalLintAar
-> Task :feature-calls:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :core-sync:generateDebugUnitTestLintModel
-> Task :feature-calls:createFullJarDebug
-> Task :feature-calls:preDebugAndroidTestBuild UP-TO-DATE
-> Task :feature-calls:writeDebugLintModelMetadata
 > Task :feature-hearttoheart:generateDebugAndroidTestLintModel
+> Task :feature-hearttoheart:extractProguardFiles UP-TO-DATE
+> Task :feature-hearttoheart:generateDebugLintModel
+> Task :feature-hearttoheart:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature-hearttoheart:generateDebugUnitTestLintModel
+> Task :feature-hearttoheart:lintAnalyzeDebugAndroidTest
 > Task :feature-calls:generateDebugAndroidTestLintModel
 > Task :feature-calls:extractProguardFiles UP-TO-DATE
 > Task :feature-calls:generateDebugLintModel
 > Task :feature-calls:preDebugUnitTestBuild UP-TO-DATE
-> Task :core-sync:lintAnalyzeDebugAndroidTest
-> Task :feature-hearttoheart:extractProguardFiles UP-TO-DATE
-> Task :feature-hearttoheart:generateDebugLintModel
-> Task :feature-hearttoheart:preDebugUnitTestBuild UP-TO-DATE
 > Task :feature-calls:generateDebugUnitTestLintModel
-> Task :feature-hearttoheart:generateDebugUnitTestLintModel
-> Task :core-sync:lintAnalyzeDebugUnitTest
-> Task :feature-calls:lintAnalyzeDebugAndroidTest
-> Task :feature-hearttoheart:lintAnalyzeDebugAndroidTest
+> Task :feature-hearttoheart:lintAnalyzeDebugUnitTest
 > Task :feature-pairing:preBuild UP-TO-DATE
 > Task :feature-pairing:preDebugBuild UP-TO-DATE
-> Task :feature-calls:lintAnalyzeDebugUnitTest
-> Task :feature-playback:preBuild UP-TO-DATE
-> Task :feature-playback:preDebugBuild UP-TO-DATE
+> Task :core-common:lintAnalyzeDebugUnitTest
 > Task :feature-pairing:checkDebugAarMetadata UP-TO-DATE
 > Task :feature-pairing:generateDebugResources UP-TO-DATE
 > Task :feature-pairing:packageDebugResources UP-TO-DATE
 > Task :feature-pairing:processDebugNavigationResources UP-TO-DATE
 > Task :feature-pairing:parseDebugLocalResources UP-TO-DATE
-> Task :feature-playback:checkDebugAarMetadata UP-TO-DATE
 > Task :feature-pairing:generateDebugRFile UP-TO-DATE
-> Task :core-sync:bundleLibCompileToJarDebug UP-TO-DATE
-> Task :feature-playback:generateDebugResources UP-TO-DATE
-> Task :feature-playback:packageDebugResources UP-TO-DATE
-> Task :feature-playback:processDebugNavigationResources UP-TO-DATE
-> Task :feature-playback:parseDebugLocalResources UP-TO-DATE
-> Task :feature-playback:generateDebugRFile UP-TO-DATE
 > Task :feature-pairing:extractDebugAnnotations UP-TO-DATE
 > Task :feature-pairing:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :feature-pairing:generateDebugAssets UP-TO-DATE
 > Task :feature-pairing:mergeDebugAssets UP-TO-DATE
-> Task :feature-playback:extractDebugAnnotations UP-TO-DATE
-> Task :feature-playback:extractDeepLinksForAarDebug UP-TO-DATE
-> Task :feature-playback:generateDebugAssets UP-TO-DATE
-> Task :feature-playback:mergeDebugAssets UP-TO-DATE
 > Task :feature-pairing:compileDebugKotlin UP-TO-DATE
 > Task :feature-pairing:javaPreCompileDebug UP-TO-DATE
 > Task :feature-pairing:compileDebugJavaWithJavac NO-SOURCE
@@ -1833,45 +1689,65 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :feature-pairing:mergeDebugConsumerProguardFiles UP-TO-DATE
 > Task :feature-pairing:prepareDebugArtProfile UP-TO-DATE
 > Task :feature-pairing:prepareLintJarForPublish UP-TO-DATE
+> Task :feature-pairing:processDebugManifest UP-TO-DATE
+> Task :feature-pairing:processDebugJavaRes UP-TO-DATE
+> Task :feature-pairing:mergeDebugJavaResource UP-TO-DATE
+> Task :feature-pairing:syncDebugLibJars UP-TO-DATE
+> Task :feature-pairing:writeDebugAarMetadata UP-TO-DATE
+> Task :feature-pairing:bundleDebugLocalLintAar
+> Task :feature-pairing:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :feature-pairing:createFullJarDebug
+> Task :feature-pairing:preDebugAndroidTestBuild UP-TO-DATE
+> Task :feature-pairing:writeDebugLintModelMetadata
+> Task :feature-pairing:generateDebugAndroidTestLintModel
+> Task :feature-pairing:extractProguardFiles UP-TO-DATE
+> Task :feature-pairing:generateDebugLintModel
+> Task :feature-pairing:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature-calls:lintAnalyzeDebugAndroidTest
+> Task :feature-playback:preBuild UP-TO-DATE
+> Task :feature-playback:preDebugBuild UP-TO-DATE
+> Task :feature-pairing:generateDebugUnitTestLintModel
+> Task :feature-calls:lintAnalyzeDebugUnitTest
+> Task :core-sync:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature-study:preBuild UP-TO-DATE
+> Task :feature-study:preDebugBuild UP-TO-DATE
+> Task :feature-playback:checkDebugAarMetadata UP-TO-DATE
+> Task :feature-playback:generateDebugResources UP-TO-DATE
+> Task :feature-playback:packageDebugResources UP-TO-DATE
+> Task :feature-playback:processDebugNavigationResources UP-TO-DATE
+> Task :feature-playback:parseDebugLocalResources UP-TO-DATE
+> Task :feature-study:checkDebugAarMetadata UP-TO-DATE
+> Task :feature-playback:generateDebugRFile UP-TO-DATE
+> Task :feature-playback:extractDebugAnnotations UP-TO-DATE
+> Task :feature-playback:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :feature-playback:generateDebugAssets UP-TO-DATE
+> Task :feature-playback:mergeDebugAssets UP-TO-DATE
 > Task :feature-playback:compileDebugKotlin UP-TO-DATE
 > Task :feature-playback:javaPreCompileDebug UP-TO-DATE
 > Task :feature-playback:compileDebugJavaWithJavac NO-SOURCE
 > Task :feature-playback:mergeDebugGeneratedProguardFiles UP-TO-DATE
 > Task :feature-playback:mergeDebugConsumerProguardFiles UP-TO-DATE
 > Task :feature-playback:prepareDebugArtProfile UP-TO-DATE
-> Task :feature-pairing:processDebugManifest UP-TO-DATE
 > Task :feature-playback:prepareLintJarForPublish UP-TO-DATE
 > Task :feature-playback:processDebugManifest UP-TO-DATE
 > Task :feature-playback:processDebugJavaRes UP-TO-DATE
-> Task :feature-pairing:processDebugJavaRes UP-TO-DATE
 > Task :feature-playback:mergeDebugJavaResource UP-TO-DATE
-> Task :feature-pairing:mergeDebugJavaResource UP-TO-DATE
-> Task :feature-pairing:syncDebugLibJars UP-TO-DATE
 > Task :feature-playback:syncDebugLibJars UP-TO-DATE
-> Task :feature-pairing:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-playback:writeDebugAarMetadata UP-TO-DATE
-> Task :feature-hearttoheart:lintAnalyzeDebugUnitTest
-> Task :feature-study:preBuild UP-TO-DATE
-> Task :feature-study:preDebugBuild UP-TO-DATE
-> Task :feature-pairing:bundleDebugLocalLintAar
-> Task :feature-study:checkDebugAarMetadata UP-TO-DATE
 > Task :feature-playback:bundleDebugLocalLintAar
-> Task :feature-pairing:bundleLibRuntimeToJarDebug UP-TO-DATE
-> Task :feature-pairing:createFullJarDebug
-> Task :feature-pairing:preDebugAndroidTestBuild UP-TO-DATE
-> Task :feature-pairing:writeDebugLintModelMetadata
-> Task :feature-study:generateDebugResources UP-TO-DATE
 > Task :feature-playback:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :feature-playback:createFullJarDebug
+> Task :feature-playback:preDebugAndroidTestBuild UP-TO-DATE
+> Task :feature-playback:writeDebugLintModelMetadata
+> Task :feature-pairing:lintAnalyzeDebugAndroidTest
+> Task :feature-study:generateDebugResources UP-TO-DATE
 > Task :feature-study:packageDebugResources UP-TO-DATE
 > Task :feature-study:processDebugNavigationResources UP-TO-DATE
 > Task :feature-study:parseDebugLocalResources UP-TO-DATE
 > Task :feature-study:generateDebugRFile UP-TO-DATE
-> Task :feature-playback:createFullJarDebug
-> Task :feature-playback:preDebugAndroidTestBuild UP-TO-DATE
 > Task :feature-study:extractDebugAnnotations UP-TO-DATE
 > Task :feature-study:extractDeepLinksForAarDebug UP-TO-DATE
 > Task :feature-study:generateDebugAssets UP-TO-DATE
-> Task :feature-playback:writeDebugLintModelMetadata
 > Task :feature-study:mergeDebugAssets UP-TO-DATE
 > Task :feature-study:compileDebugKotlin UP-TO-DATE
 > Task :feature-study:javaPreCompileDebug UP-TO-DATE
@@ -1882,33 +1758,27 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :feature-study:prepareLintJarForPublish UP-TO-DATE
 > Task :feature-study:processDebugManifest UP-TO-DATE
 > Task :feature-study:processDebugJavaRes UP-TO-DATE
-> Task :feature-pairing:generateDebugAndroidTestLintModel
-> Task :feature-pairing:extractProguardFiles UP-TO-DATE
 > Task :feature-study:mergeDebugJavaResource UP-TO-DATE
 > Task :feature-study:syncDebugLibJars UP-TO-DATE
 > Task :feature-study:writeDebugAarMetadata UP-TO-DATE
 > Task :feature-study:bundleDebugLocalLintAar
-> Task :feature-pairing:generateDebugLintModel
-> Task :feature-pairing:preDebugUnitTestBuild UP-TO-DATE
 > Task :feature-study:bundleLibRuntimeToJarDebug UP-TO-DATE
 > Task :feature-study:createFullJarDebug
 > Task :feature-study:preDebugAndroidTestBuild UP-TO-DATE
-> Task :feature-playback:generateDebugAndroidTestLintModel
-> Task :feature-playback:extractProguardFiles UP-TO-DATE
 > Task :feature-study:writeDebugLintModelMetadata
-> Task :feature-pairing:generateDebugUnitTestLintModel
-> Task :feature-playback:generateDebugLintModel
-> Task :feature-playback:preDebugUnitTestBuild UP-TO-DATE
 > Task :feature-study:generateDebugAndroidTestLintModel
 > Task :feature-study:extractProguardFiles UP-TO-DATE
-> Task :feature-playback:generateDebugUnitTestLintModel
 > Task :feature-study:generateDebugLintModel
-> Task :feature-pairing:lintAnalyzeDebugAndroidTest
-> Task :feature-playback:lintAnalyzeDebugAndroidTest
 > Task :feature-study:preDebugUnitTestBuild UP-TO-DATE
 > Task :feature-study:generateDebugUnitTestLintModel
+> Task :feature-playback:generateDebugAndroidTestLintModel
+> Task :feature-playback:extractProguardFiles UP-TO-DATE
+> Task :feature-playback:generateDebugLintModel
+> Task :feature-playback:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature-playback:generateDebugUnitTestLintModel
 > Task :feature-pairing:lintAnalyzeDebugUnitTest
 > Task :feature-study:lintAnalyzeDebugAndroidTest
+> Task :feature-playback:lintAnalyzeDebugAndroidTest
 > Task :core-notifications:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :core-security:bundleLibCompileToJarDebug UP-TO-DATE
 > Task :feature-calls:bundleLibCompileToJarDebug UP-TO-DATE
@@ -1925,9 +1795,8 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :hamyar-app:processP09DebugNavigationResources UP-TO-DATE
 > Task :hamyar-app:parseP09DebugLocalResources UP-TO-DATE
 > Task :hamyar-app:generateP09DebugRFile UP-TO-DATE
-> Task :hamyar-app:compileP09DebugKotlin UP-TO-DATE
+> Task :feature-playback:lintAnalyzeDebugUnitTest
 > Task :hamyar-app:javaPreCompileP09Debug UP-TO-DATE
-> Task :hamyar-app:compileP09DebugJavaWithJavac UP-TO-DATE
 > Task :core-appwrite:mapDebugSourceSetPaths UP-TO-DATE
 > Task :core-appwrite:compileDebugLibraryResources UP-TO-DATE
 > Task :core-common:mapDebugSourceSetPaths UP-TO-DATE
@@ -1971,21 +1840,14 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :hamyar-app:processP09DebugManifest UP-TO-DATE
 > Task :hamyar-app:processP09DebugManifestForPackage UP-TO-DATE
 > Task :hamyar-app:processP09DebugResources UP-TO-DATE
-> Task :hamyar-app:bundleP09DebugClassesToCompileJar UP-TO-DATE
 > Task :hamyar-app:preP09DebugAndroidTestBuild SKIPPED
 > Task :hamyar-app:generateP09DebugAndroidTestResValues FROM-CACHE
-> Task :hamyar-app:generateP09DebugAndroidTestLintModel
 > Task :hamyar-app:extractProguardFiles UP-TO-DATE
-> Task :hamyar-app:generateP09DebugLintReportModel
 > Task :hamyar-app:preP09DebugUnitTestBuild UP-TO-DATE
-> Task :hamyar-app:generateP09DebugUnitTestLintModel
-> Task :feature-playback:lintAnalyzeDebugUnitTest
-> Task :feature-study:lintAnalyzeDebugUnitTest
 > Task :hamyar-admin:preBuild UP-TO-DATE
 > Task :hamyar-admin:preDebugBuild UP-TO-DATE
 > Task :hamyar-admin:generateDebugBuildConfig UP-TO-DATE
 > Task :hamyar-admin:generateDebugResources UP-TO-DATE
-> Task :hamyar-app:lintAnalyzeP09DebugAndroidTest
 > Task :hamyar-admin:packageDebugResources UP-TO-DATE
 > Task :hamyar-admin:processDebugNavigationResources UP-TO-DATE
 > Task :hamyar-admin:parseDebugLocalResources UP-TO-DATE
@@ -2003,31 +1865,32 @@ BUILD SUCCESSFUL in 3m 52s
 > Task :hamyar-admin:processDebugManifest UP-TO-DATE
 > Task :hamyar-admin:processDebugManifestForPackage UP-TO-DATE
 > Task :hamyar-admin:processDebugResources UP-TO-DATE
-> Task :hamyar-admin:preDebugAndroidTestBuild SKIPPED
-> Task :hamyar-admin:extractProguardFiles
 > Task :hamyar-admin:bundleDebugClassesToCompileJar
-> Task :hamyar-admin:generateDebugLintReportModel
+> Task :hamyar-admin:preDebugAndroidTestBuild SKIPPED
 > Task :hamyar-admin:generateDebugAndroidTestLintModel
+> Task :hamyar-admin:extractProguardFiles
+> Task :feature-study:lintAnalyzeDebugUnitTest
+> Task :hamyar-admin:generateDebugLintReportModel
 > Task :hamyar-admin:preDebugUnitTestBuild UP-TO-DATE
 > Task :hamyar-admin:generateDebugUnitTestLintModel
-> Task :hamyar-admin:lintAnalyzeDebugAndroidTest
 > Task :hamyar-admin:lintAnalyzeDebugUnitTest
+> Task :hamyar-admin:lintAnalyzeDebugAndroidTest
 > Task :core-common:lintAnalyzeDebug
-> Task :hamyar-app:lintAnalyzeP09DebugUnitTest
-> Task :core-security:lintAnalyzeDebug
 > Task :core-notifications:lintAnalyzeDebug
-> Task :core-appwrite:lintAnalyzeDebug
+> Task :hamyar-app:compileP09DebugKotlin FAILED
+e: apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/LessonTeachScreen.kt:735:87 Unresolved reference 'minus' for operator '-'.
+> Task :core-security:lintAnalyzeDebug
 > Task :core-designsystem:lintAnalyzeDebug
+> Task :core-appwrite:lintAnalyzeDebug
 > Task :core-sync:lintAnalyzeDebug
 > Task :feature-pairing:lintAnalyzeDebug
-> Task :feature-playback:lintAnalyzeDebug
 > Task :feature-hearttoheart:lintAnalyzeDebug
+> Task :feature-playback:lintAnalyzeDebug
 > Task :feature-calls:lintAnalyzeDebug
 > Task :feature-study:lintAnalyzeDebug
 > Task :hamyar-admin:lintAnalyzeDebug
 > Task :hamyar-admin:lintReportDebug
 > Task :hamyar-admin:lintDebug
-> Task :hamyar-app:lintAnalyzeP09Debug
-> Task :hamyar-app:lintReportP09Debug
-> Task :hamyar-app:lintP09Debug
-BUILD SUCCESSFUL in 2m 19s
+FAILURE: Build failed with an exception.
+* What went wrong:
+BUILD FAILED in 1m 3s
