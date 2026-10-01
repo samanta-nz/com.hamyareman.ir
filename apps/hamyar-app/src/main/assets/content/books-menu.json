@@ -1,0 +1,8277 @@
+{
+ "source": "ParsPack Bucket/Pdf-files/G09",
+ "books": [
+  {
+   "folder": "g9-arabic",
+   "code": "909",
+   "subject": "عربی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست: الفهرس",
+     "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "سخنی با دبیران، مدیران، گروه‌های آموزشی و اولیای دانش‌آموزان",
+     "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-students-1.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "سخنی با دانش‌آموزان",
+     "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-students-2.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس اوّل: مراجعة دروس الصفّین السابع و الثامن؛ أهلاً و سهلاً بالخریف",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p01.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوم: اَلْعُبورُ الْمِنْ",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p02.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس سوم: جِسْرُ اَلصَّداقَة",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p03.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس چهارم: اَلصَّبْرُ مِفتاحُ اَلْفَرَج",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس پنجم: اَلرَّجاء",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس ششم: تَغییرُ اَلْحَیاة",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هفتم: ثَمَرَةُ اَلْجِدّ",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p07.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هشتم: حِوارٌ بَیْنَ اَلزّائِرِ وَ سائِقِ سَیّارَةِ اَلْأُجْرَة",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس نهم: نُصوصٌ حَوْلَ اَلصِّحَّة",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p09.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دهم: رِسالَةُ اَلشَّهیدِ سُلَیمانی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "تمرینات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات گرامری",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خلاصه درس و نکات امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات جامع درس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p10.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "پیام پایانی: فی أمانِ الله",
+     "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-p11.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-art",
+   "code": "912",
+   "subject": "فرهنگ و هنر نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "تابلوی هنری: نقاشی رنگ‌وروغن ـ استاد کیخسرو خروش",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "فهرست مطالب",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "container",
+     "title": "بخش اوّل: هنرهای تجسّمی",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec1.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "container",
+       "title": "فصل اوّل: طرّاحی",
+       "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f01-1.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": [
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس اوّل: فضا و عمق",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p03.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس دوم: نور و حجم",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p04.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس سوم: ابزارهای ترسیم",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p05.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس چهارم: تعریف و کاربردهای طرّاحی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p06.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        }
+       ]
+      },
+      {
+       "kind": "container",
+       "title": "فصل دوم: نگاشتار (گرافیک)",
+       "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f02-1.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": [
+        {
+         "kind": "lesson",
+         "title": "فصل دوم درس اوّل: نگاشتار (گرافیک) و تبلیغات",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p07.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل دوم درس دوم: اعلان و صفحه‌آرایی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p08.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل دوم درس سوم: نگاشتار (گرافیک) محیطی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p09.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        }
+       ]
+      },
+      {
+       "kind": "container",
+       "title": "فصل سوم: عکّاسی",
+       "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f03-1.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": [
+        {
+         "kind": "lesson",
+         "title": "فصل سوم درس اوّل: عکس‌های ترکیبی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p10.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل سوم درس دوم: عکاسی روایی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p11.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل سوم درس سوم: گرایش‌های عکاسی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p12.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "بخش دوم: خوشنویسی",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec2.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "بخش دوم درس اوّل: نحوهٔ تراشیدن قلم ــ قالب‌های اجرایی خوشنویسی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p13.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش دوم درس دوم: معرفی خط نستعلیق و مشق سطرنویسی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p14.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش دوم درس سوم: معرفی خط شکستهٔ نستعلیق و مشق دو سطری‌نویسی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p15.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش دوم درس چهارم: گرایش‌های هنری با بنیان خوشنویسی و مشق دفتری‌نویسی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p16.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "بخش سوم: هنرهای سنتی",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec3.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "container",
+       "title": "فصل اوّل: طرّاحی نقوش تزیینی",
+       "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f01-2.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": [
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس اوّل: چهارلنگه",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p17.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس دوم: گره هشت و چهارلنگه",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p18.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل اوّل درس سوم: بته (بته‌جقه)",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p19.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        }
+       ]
+      },
+      {
+       "kind": "container",
+       "title": "فصل دوم: هنرهای زیرالکی",
+       "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f02-2.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": [
+        {
+         "kind": "lesson",
+         "title": "فصل دوم درس اوّل: جلدسازی سنتی (زیرالکی با روش لایه‌های کاغذ)",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p20.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل دوم درس دوم: جعبه‌های روغنی (زیرالکی با روش نوار کاغذ)",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p21.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل دوم درس سوم: اشیای روغنی (زیرالکی روی چوب)",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p22.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        }
+       ]
+      },
+      {
+       "kind": "container",
+       "title": "فصل سوم: سوزن‌دوزی‌های سنتی ایران",
+       "key": "Bucket/Pdf-files/G09/g9-art/g9-art-f03-2.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": [
+        {
+         "kind": "lesson",
+         "title": "فصل سوم درس اوّل: درویش‌دوزی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p23.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل سوم درس دوم: زرتشتی‌دوزی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p24.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        },
+        {
+         "kind": "lesson",
+         "title": "فصل سوم درس سوم: پته‌دوزی",
+         "key": null,
+         "ready": null,
+         "tabs": [
+          {
+           "title": "تدریس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه‌های این درس",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "نمونه سوالات آزمونی",
+           "key": null,
+           "ready": null
+          },
+          {
+           "title": "کتاب درسی",
+           "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p25.pdf",
+           "ready": true
+          }
+         ],
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "بخش چهارم: هنرهای آوایی",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec4.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "بخش چهارم درس اوّل: آواهای قومی (مردمی)",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p26.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش چهارم درس دوم: ردیف دستگاهی ایران",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p27.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش چهارم درس سوم: آواهای دینی ایران",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p28.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش چهارم درس چهارم: وزن و ریتم در آواهای ایرانی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p29.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش چهارم درس پنجم: شکل (فرم) و گونه (ژانر)های آوایی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p30.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "بخش پنجم: هنرهای نمایشی",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-sec5.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "بخش پنجم درس اوّل: کارگردانی و انتخاب نمایشنامه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p31.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش پنجم درس دوم: انتخاب بازیگر و خواندن متن",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p32.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "بخش پنجم درس سوم: حرکت و چیدمان روی صحنه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه‌های این درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-art/g9-art-p33.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "plain",
+     "title": "واژه‌نامه",
+     "key": "Bucket/Pdf-files/G09/g9-art/g9-art-dict.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-defa",
+   "code": "915",
+   "subject": "آمادگی دفاعی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "سخنی با دبیران گرامی",
+     "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p01.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "container",
+     "title": "فصل اول: مفاهیم و ضرورت آمادگی دفاعی",
+     "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس یکم: تهدید چیست؟ دشمن کیست؟",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس دوم: موقعیت ایران و تهدیدهای آن",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل اول",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f01.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل دوم: فرهنگ دفاعی ما",
+     "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f02.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس سوم: روایت فتح",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس چهارم: باید برخاست",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس پنجم: رویارویی قدرت‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل دوم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل سوم: مهارت‌های دفاعی",
+     "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f03.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس ششم: نظام جمع و مهارت‌های رزم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس هفتم: پدافند غیرعامل",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس هشتم: جنگ پنهان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p09.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس نهم: امداد و نجات",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-p10.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل سوم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-defa/g9-defa-f03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "folder": "g9-english",
+   "code": "910",
+   "subject": "انگلیسی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "آیه قرآن",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "مقدمه: بسمه تعالی",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-intro.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "توصیه به دبیران",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p02.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "نقشهٔ کتاب: Map of Prospect 3",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p03.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "صفحهٔ Spotlight: خوش‌آمد",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p04.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یکم: Lesson 1: Personality",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوم: Lesson 2: Travel",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "مرور یکم: Review 1",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p07.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس سوم: Lesson 3",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس چهارم: Lesson 4: Services",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p09.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "مرور دوم: Review 2",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p10.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس پنجم: Lesson 5: Media",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p11.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس ششم: Lesson 6",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Textbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p12.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "مرور سوم: Review 3",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p13.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "فرهنگ تصویری: Photo Dictionary",
+     "key": "Bucket/Pdf-files/G09/g9-english/g9-english-p14.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-english-workbook",
+   "code": "913",
+   "subject": "کتاب کار انگلیسی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "صفحه عنوان: Workbook: English for Schools 3",
+     "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-titlepage.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یکم: Lesson 1",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p01.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوم: Lesson 2",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p02.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس سوم: Lesson 3",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p03.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس چهارم: Lesson 4",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس پنجم: Lesson 5",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس ششم: Lesson 6",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "Lesson Teaching",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook Exercises",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Grammar Notes",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Pronunciation Practice",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Lesson Summary & Exam Tips",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Comprehensive Lesson Test",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "Workbook PDF",
+       "key": "Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-farsi",
+   "code": "903",
+   "subject": "فارسی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "پیشگفتار",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-preface.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "ستایش",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-praise.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "container",
+     "title": "فصل اول: زیبایی آفرینش",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس یکم: آفرینش همه تنبیه خداوندِ دل است",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p01.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "حکایت: سفر",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st01.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس دوم: عجایبِ صنعِ حق تعالی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "شعرخوانی: پرواز",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh01.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل دوم: شکفتن",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f02.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس سوم: مثل آینه، کار و شایستگی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "حکایت: باغبانِ نیک‌اندیش",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st02.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس چهارم: هم‌نشین",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "روان‌خوانی: دریچه‌های شکوفایی",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv01.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل آزاد: ادبیات بومی ۱",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad1.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل آزاد درس پنجم: درس آزاد (۱)",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "حکایت: ادبیات بومی ۱",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st03.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "شعرخوانی: ادبیات بومی ۱",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh02.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل سوم: سبکِ زندگی",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f03.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس ششم: آداب زندگی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "حکایت: شو، خطرکن!",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st04.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس هفتم: پرتوِ امید",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس هشتم: همزیستی با مامِ میهن",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "شعرخوانی: دوراندیشی",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh03.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل چهارم: نام‌ها و یادها",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f04.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل چهارم درس نهم: راز موفّقیت",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p09.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل چهارم درس دهم: آرشی دیگر",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p10.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "حکایت: نیک رایان",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st05.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل چهارم درس یازدهم: زنِ پارسا",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p11.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "روان‌خوانی: دروازه‌ای به آسمان",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv02.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل پنجم: اسلام و انقلاب اسلامی",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f05.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس دوازدهم: پیام‌آور رحمت",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p12.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "حکایت: سیرت سلمان",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st06.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس سیزدهم: آشنای غریبان، میلادِ گل",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p13.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس چهاردهم: پیدای پنهان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p14.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "شعرخوانی: بُوَد قدر تو افزون از مالِک",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh04.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل آزاد: ادبیات بومی ۲",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad2.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل آزاد درس پانزدهم: درس آزاد (۲)",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p15.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "روان‌خوانی: ادبیات بومی ۲",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv03.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ششم: ادبیات جهان",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-f06.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ششم درس شانزدهم: آرزو",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p16.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ششم درس هفدهم: شازده کوچولو",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "تمرینات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی و گرامری",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه درس و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع درس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p17.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "plain",
+       "title": "روان‌خوانی: دو نقّاش",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv04.pdf",
+       "ready": true,
+       "tabs": [],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "plain",
+     "title": "نیایش: بیا تا برآریم دستی ز دل",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-pray.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "واژه‌نامه",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-dict.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "اعلام: اشخاص، آثار",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-ann.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "کتاب‌نامه",
+     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-biblio.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-hedye",
+   "code": "941",
+   "subject": "هدیه‌های آسمان نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یکم: شروع یک ماجرا",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوم: توطئه‌ای به نام بازی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس سوم: کاروان سرنوشت",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس چهارم: فرار به سوی خدا",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p07.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس پنجم: مهمانی رسوایی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس ششم: پیروزی تأمل‌برانگیز",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p09.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هفتم: کلاس توحید در زندان",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p10.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هشتم: رؤیای سرنوشت‌ساز",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p11.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس نهم: اسیری که امیر شد",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p12.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دهم: دیدارها تازه می‌شود",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p13.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یازدهم: ماجرای ظرف قیمتی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p14.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوازدهم: پایان یک ماجرا",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p15.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-karfan",
+   "code": "917",
+   "subject": "کار و فناوری نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست مطالب",
+     "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان یکم: الگوریتم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod01.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان دوم: ترسیم با رایانه",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod02.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان سوم: ساز و کارهای حرکتی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod03.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان چهارم: برنامه‌نویسی پایتون (۳)",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان پنجم: هدایت تحصیلی ــ حرفه‌ای",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان ششم: برق",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان هفتم: تأسیسات مکانیکی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod07.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان هشتم: عمران",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان نهم: خودرو",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod09.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان دهم: پایش رشد و تکامل کودک",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod10.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "پودمان یازدهم: صنایع دستی (برجسته‌کاری روی فلز مس)",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-karfan/g9-karfan-pod11.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-math",
+   "code": "905",
+   "subject": "ریاضی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "سخنی با معلّم",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-teacher.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۱: مجموعه‌ها",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۱ درس اوّل: معرفی مجموعه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p01.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۱ درس دوم: مجموعه‌های برابر و نمایش مجموعه‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۱ درس سوم: اجتماع، اشتراک و تفاضلِ مجموعه‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۱ درس چهارم: مجموعه‌ها و احتمال",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۱",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f01.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۲: عددهای حقیقی",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f02.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۲ درس اوّل: عددهای گویا",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۲ درس دوم: عددهای حقیقی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۲ درس سوم: قدر مطلق و محاسبهٔ تقریبی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۲",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۳: استدلال و اثبات در هندسه",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f03.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۳ درس اوّل: استدلال",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۳ درس دوم: آشنایی با اثبات در هندسه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p09.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۳ درس سوم: هم‌نهشتی مثلث‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p10.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۳ درس چهارم: حل مسئله در هندسه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p11.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۳ درس پنجم: شکل‌های متشابه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p12.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۳",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۴: توان و ریشه",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f04.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۴ درس اوّل: توان صحیح",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p13.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۴ درس دوم: نماد علمی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p14.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۴ درس سوم: ریشه‌گیری",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p15.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۴ درس چهارم: جمع و تفریق رادیکال‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p16.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۴",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۵: عبارت‌های جبری",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f05.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۵ درس اوّل: عبارت‌های جبری و مفهوم اتحاد",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p17.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۵ درس دوم: چند اتحاد دیگر، تجزیه و کاربردها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p18.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۵ درس سوم: نابرابری‌ها و نامعادله‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p19.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۵",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۶: خط و معادله‌های خطی",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f06.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۶ درس اوّل: معادلهٔ خط",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p20.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۶ درس دوم: شیب خط و عرض از مبدأ",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p21.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۶ درس سوم: دستگاه معادله‌های خطی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p22.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۶",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۷: عبارت‌های گویا",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f07.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۷ درس اوّل: معرفی و ساده‌کردن عبارت‌های گویا",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p23.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۷ درس دوم: محاسبات عبارت‌های گویا",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p24.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۷ درس سوم: تقسیم چندجمله‌ای‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p25.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۷",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ۸: حجم و مساحت",
+     "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f08.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ۸ درس اوّل: حجم و مساحت کره",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p26.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۸ درس دوم: حجم هرم و مخروط",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p27.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ۸ درس سوم: سطح و حجم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-p28.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ۸",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-math/g9-math-f08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "folder": "g9-negar",
+   "code": "904",
+   "subject": "نگارش نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "مقدّمه: سخنی با دبیران ارجمند",
+     "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-intro.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "ستایش",
+     "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-praise.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یکم: با نظام ذهنی «پرورده» و «مند» بنویسیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p01.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوم: واژه‌ها را بشناسیم، گزینش کنیم و به کار بگیریم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p02.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس سوم: نوعِ زبانِ نوشته را انتخاب کنیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p03.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس چهارم: فضا و رنگِ نوشته را تغییر دهیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس پنجم: نوشته را خوش آغاز کنیم؛ زیبا به پایان ببریم و نیکو نام‌گذاری کنیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس ششم: قالبی برای نوشتن برگزینیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هفتم: وسعت و عمق نوشته را بیشتر کنیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p07.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هشتم: نوشته را ویرایش کنیم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-p08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "نیایش",
+     "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-pray.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "کتاب‌نامه",
+     "key": "Bucket/Pdf-files/G09/g9-negar/g9-negar-biblio.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-payam",
+   "code": "902",
+   "subject": "پیام‌های آسمان نهم",
+   "items": [
+    {
+     "kind": "container",
+     "title": "فصل اول: خداشناسی",
+     "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس یکم: تو را چگونه بشناسم؟",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس دوم: در پناه ایمان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل اول",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f01.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل دوم: راهنماشناسی",
+     "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f02.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس سوم: راهنمایان الهی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس چهارم: خورشید پنهان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس پنجم: رهبری در دوران غیبت",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل دوم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل سوم: راه و توشه",
+     "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f03.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس ششم: وضو، غسل و تیمم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس هفتم: احکام نماز",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل سوم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل چهارم: اخلاق",
+     "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f04.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل چهارم درس هشتم: همدلی و همراهی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p09.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل چهارم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل پنجم: جامعه اسلامی",
+     "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f05.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس نهم: انقلاب اسلامی ایران",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p10.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس دهم: مسئولیت همگانی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p11.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس یازدهم: انفاق",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p12.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس دوازدهم: جهاد",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-p13.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل پنجم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-payam/g9-hedy-f05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "folder": "g9-quran",
+   "code": "901",
+   "subject": "آموزش قرآن نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "سخنی با دانش‌آموزان",
+     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-students.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "سخنی با دبیران و اولیای گرامی",
+     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-p01.pdf",
+     "ready": false,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یکم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l01.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دوم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l02.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس سوم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l03.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس چهارم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس پنجم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس ششم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هفتم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l07.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس هشتم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس نهم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l09.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس دهم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l10.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "درس یازدهم",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "خانه‌های نورانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-l11.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "نیایش: دعای ختم قرآن کریم",
+     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-pray.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "فهرست کلمات",
+     "key": "Bucket/Pdf-files/G09/g9-quran/g9-quran-vocab.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-sci",
+   "code": "906",
+   "subject": "علوم تجربی نهم",
+   "items": [
+    {
+     "kind": "lesson",
+     "title": "فصل اول: مواد و نقش آنها در زندگی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f01.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل دوم: رفتار اتم‌ها با یکدیگر",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f02.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل سوم: به دنبال محیطی بهتر برای زندگی",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f03.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل چهارم: حرکت چیست؟",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f04.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل پنجم: نیرو",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f05.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل ششم: زمین‌ساخت ورقه‌ای",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f06.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل هفتم: آثاری از گذشته زمین",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f07.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل هشتم: فشار و آثار آن",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f08.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل نهم: ماشین‌ها",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f09.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل دهم: نگاهی به فضا",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f10.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل یازدهم: گوناگونی جانداران",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f11.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل دوازدهم: دنیای گیاهان",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f12.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل سیزدهم: جانوران بی‌مهره",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f13.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل چهاردهم: جانوران مهره‌دار",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f14.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "lesson",
+     "title": "فصل پانزدهم: باهم‌زیستن",
+     "key": null,
+     "ready": null,
+     "tabs": [
+      {
+       "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات کتابی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نمونه سوالات آزمونی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-f15.pdf",
+       "ready": true
+      }
+     ],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "پیوست: جدول تناوبی عناصر",
+     "key": "Bucket/Pdf-files/G09/g9-sci/g9-sci-appendix.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  },
+  {
+   "folder": "g9-soc",
+   "code": "907",
+   "subject": "مطالعات اجتماعی نهم",
+   "items": [
+    {
+     "kind": "plain",
+     "title": "فهرست",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-index.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "container",
+     "title": "فصل اول: سیارهٔ ما، زمین",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس ۱: زمین، مهد زیبای انسان‌ها",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل اول درس ۲: حرکات زمین",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل اول",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f01.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل دوم: سنگ‌کره، آب‌کره، هواکره",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f02.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس ۳: چهرهٔ زمین",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوم درس ۴: آب فراوان، هوای پاک",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل دوم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f02.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل سوم: زیست‌کره، تنوع شگفت‌انگیز",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f03.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس ۵: پراکندگی زیست‌بوم‌های جهان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل سوم درس ۶: زیست‌بوم‌ها در خطرند",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل سوم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f03.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل چهارم: ساکنان سیارهٔ زمین",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f04.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل چهارم درس ۷: جمعیت جهان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل چهارم درس ۸: بی‌عدالتی و نابرابری در جهان",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p09.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل چهارم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f04.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل پنجم: عصر یکپارچگی و شکوفایی",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f05.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس ۹: ایرانی متحد و یکپارچه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p10.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل پنجم درس ۱۰: اوضاع اجتماعی، اقتصادی، علمی و فرهنگی ایران در عصر صفوی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p11.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل پنجم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f05.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل ششم: ایران از عهد نادرشاه تا ناصرالدین‌شاه",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f06.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل ششم درس ۱۱: تلاش برای حفظ استقلال و اتحاد سیاسی ایران",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p12.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل ششم درس ۱۲: در جست‌وجوی پیشرفت و رهایی از سلطهٔ خارجی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p13.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل ششم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f06.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل هفتم: ایران در عصر مشروطه",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f07.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل هفتم درس ۱۳: نهضت مشروطه",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p14.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل هفتم درس ۱۴: ایران در دوران حکومت پهلوی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p15.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل هفتم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f07.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل هشتم: سقوط حکومت شاهنشاهی و شکل‌گیری نظام جمهوری اسلامی",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f08.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل هشتم درس ۱۵: انقلاب اسلامی ایران",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p16.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل هشتم درس ۱۶: ایران در دوران پس از پیروزی انقلاب اسلامی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p17.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل هشتم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f08.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل نهم: فرهنگ و هویت",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f09.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل نهم درس ۱۷: فرهنگ",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p18.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل نهم درس ۱۸: هویت",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p19.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل نهم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f09.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل دهم: خانواده و جامعه",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f10.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل دهم درس ۱۹: ارزش‌ها و کارکردهای خانواده",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p20.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دهم درس ۲۰: آرامش در خانواده",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p21.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل دهم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f10.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل یازدهم: حکومت و مردم",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f11.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل یازدهم درس ۲۱: نهاد حکومت",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p22.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل یازدهم درس ۲۲: حقوق و تکالیف شهروندی",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p23.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل یازدهم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f11.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "container",
+     "title": "فصل دوازدهم: بهره‌وری",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f12.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": [
+      {
+       "kind": "lesson",
+       "title": "فصل دوازدهم درس ۲۳: بهره‌وری چیست؟",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p24.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "lesson",
+       "title": "فصل دوازدهم درس ۲۴: اقتصاد و بهره‌وری",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات کتابی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات آزمونی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-p25.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      },
+      {
+       "kind": "wrapup",
+       "title": "جمع‌بندی فصل دوازدهم",
+       "key": null,
+       "ready": null,
+       "tabs": [
+        {
+         "title": "تدریس",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "فلش کارت",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خلاصه فصل و نکات امتحانی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نمونه سوالات جامع فصل",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "خودآزمایی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-f12.pdf",
+         "ready": true
+        }
+       ],
+       "children": []
+      }
+     ]
+    },
+    {
+     "kind": "plain",
+     "title": "کاربرگه‌های فعّالیت",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-ws01.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    },
+    {
+     "kind": "plain",
+     "title": "واژه‌نامه",
+     "key": "Bucket/Pdf-files/G09/g9-soc/g9-soc-dict.pdf",
+     "ready": true,
+     "tabs": [],
+     "children": []
+    }
+   ]
+  }
+ ]
+}
