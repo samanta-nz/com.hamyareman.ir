@@ -1,0 +1,761 @@
+{
+  "subject": "فارسی نهم",
+  "code": "903",
+  "items": [
+    {
+      "kind": "plain",
+      "title": "فهرست",
+      "pdf": "g9-farsi-index.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "پیشگفتار",
+      "pdf": "g9-farsi-preface.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "ستایش",
+      "pdf": "g9-farsi-praise.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "container",
+      "title": "فصل اول: زیبایی آفرینش",
+      "pdf": "g9-farsi-f01.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل اول درس یکم: آفرینش همه تنبیه خداوندِ دل است",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p01.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "حکایت: سفر",
+          "pdf": "g9-farsi-st01.pdf",
+          "tabs": [],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل اول درس دوم: عجایبِ صنعِ حق تعالی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p02.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "شعرخوانی: پرواز",
+          "pdf": "g9-farsi-sh01.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل دوم: شکفتن",
+      "pdf": "g9-farsi-f02.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس سوم: مثل آینه، کار و شایستگی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p03.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "حکایت: باغبانِ نیک‌اندیش",
+          "pdf": "g9-farsi-st02.pdf",
+          "tabs": [],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس چهارم: هم‌نشین",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p04.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "روان‌خوانی: دریچه‌های شکوفایی",
+          "pdf": "g9-farsi-rv01.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل آزاد: ادبیات بومی ۱",
+      "pdf": "g9-farsi-azad1.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل آزاد درس پنجم: درس آزاد (۱)",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p05.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "حکایت: ادبیات بومی ۱",
+          "pdf": "g9-farsi-st03.pdf",
+          "tabs": [],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "شعرخوانی: ادبیات بومی ۱",
+          "pdf": "g9-farsi-sh02.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل سوم: سبکِ زندگی",
+      "pdf": "g9-farsi-f03.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس ششم: آداب زندگی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p06.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "حکایت: شو، خطرکن!",
+          "pdf": "g9-farsi-st04.pdf",
+          "tabs": [],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس هفتم: پرتوِ امید",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p07.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس هشتم: همزیستی با مامِ میهن",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p08.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "شعرخوانی: دوراندیشی",
+          "pdf": "g9-farsi-sh03.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل چهارم: نام‌ها و یادها",
+      "pdf": "g9-farsi-f04.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل چهارم درس نهم: راز موفّقیت",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p09.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل چهارم درس دهم: آرشی دیگر",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p10.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "حکایت: نیک رایان",
+          "pdf": "g9-farsi-st05.pdf",
+          "tabs": [],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل چهارم درس یازدهم: زنِ پارسا",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p11.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "روان‌خوانی: دروازه‌ای به آسمان",
+          "pdf": "g9-farsi-rv02.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل پنجم: اسلام و انقلاب اسلامی",
+      "pdf": "g9-farsi-f05.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس دوازدهم: پیام‌آور رحمت",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p12.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "حکایت: سیرت سلمان",
+          "pdf": "g9-farsi-st06.pdf",
+          "tabs": [],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس سیزدهم: آشنای غریبان، میلادِ گل",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p13.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس چهاردهم: پیدای پنهان",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p14.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "شعرخوانی: بُوَد قدر تو افزون از مالِک",
+          "pdf": "g9-farsi-sh04.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل آزاد: ادبیات بومی ۲",
+      "pdf": "g9-farsi-azad2.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل آزاد درس پانزدهم: درس آزاد (۲)",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p15.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "روان‌خوانی: ادبیات بومی ۲",
+          "pdf": "g9-farsi-rv03.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل ششم: ادبیات جهان",
+      "pdf": "g9-farsi-f06.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل ششم درس شانزدهم: آرزو",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p16.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل ششم درس هفدهم: شازده کوچولو",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "تمرینات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی و گرامری",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه درس و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع درس",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-p17.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "plain",
+          "title": "روان‌خوانی: دو نقّاش",
+          "pdf": "g9-farsi-rv04.pdf",
+          "tabs": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "plain",
+      "title": "نیایش: بیا تا برآریم دستی ز دل",
+      "pdf": "g9-farsi-pray.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "واژه‌نامه",
+      "pdf": "g9-farsi-dict.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "اعلام: اشخاص، آثار",
+      "pdf": "g9-farsi-ann.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "کتاب‌نامه",
+      "pdf": "g9-farsi-biblio.pdf",
+      "tabs": [],
+      "children": []
+    }
+  ]
+}
