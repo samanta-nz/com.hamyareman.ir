@@ -4567,8 +4567,8 @@
        "title": "جمع‌بندی فصل ۱",
        "key": null,
        "ready": null,
-       "teachKey": null,
-       "audioKey": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01review.html",
+       "audioKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif01review.mp3",
        "tabs": [
         {
          "title": "تدریس",
@@ -4712,7 +4712,7 @@
        "title": "جمع‌بندی فصل ۲",
        "key": null,
        "ready": null,
-       "teachKey": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif02review.html",
        "audioKey": null,
        "tabs": [
         {
@@ -4919,7 +4919,7 @@
        "title": "جمع‌بندی فصل ۳",
        "key": null,
        "ready": null,
-       "teachKey": null,
+       "teachKey": "Bucket/Pdf-files/G09/g9-math/exam/ryazif03review.html",
        "audioKey": null,
        "tabs": [
         {
