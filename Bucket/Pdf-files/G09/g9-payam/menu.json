@@ -1,0 +1,494 @@
+{
+  "subject": "پیام‌های آسمان نهم",
+  "code": "902",
+  "items": [
+    {
+      "kind": "container",
+      "title": "فصل اول: خداشناسی",
+      "pdf": "g9-hedy-f01.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل اول درس یکم: تو را چگونه بشناسم؟",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p02.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل اول درس دوم: در پناه ایمان",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p03.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل اول",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-f01.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل دوم: راهنماشناسی",
+      "pdf": "g9-hedy-f02.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس سوم: راهنمایان الهی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p04.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس چهارم: خورشید پنهان",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p05.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس پنجم: رهبری در دوران غیبت",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p06.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل دوم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-f02.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل سوم: راه و توشه",
+      "pdf": "g9-hedy-f03.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس ششم: وضو، غسل و تیمم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p07.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس هفتم: احکام نماز",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p08.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل سوم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-f03.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل چهارم: اخلاق",
+      "pdf": "g9-hedy-f04.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل چهارم درس هشتم: همدلی و همراهی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p09.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل چهارم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-f04.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل پنجم: جامعه اسلامی",
+      "pdf": "g9-hedy-f05.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس نهم: انقلاب اسلامی ایران",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p10.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس دهم: مسئولیت همگانی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p11.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس یازدهم: انفاق",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p12.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس دوازدهم: جهاد",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-p13.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل پنجم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-hedy-f05.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
