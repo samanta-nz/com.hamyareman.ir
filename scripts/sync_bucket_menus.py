@@ -15,6 +15,7 @@ import argparse
 import collections
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -25,127 +26,91 @@ MENU_NAMES = ("menu.txt", "menu.json", "files.json")
 AUDIO_EXT = (".mp3", ".m4a", ".aac", ".ogg", ".opus", ".wav")
 
 
+BOOKS = [
+    "g9-arabic", "g9-art", "g9-defa", "g9-english", "g9-english-workbook",
+    "g9-farsi", "g9-hedye", "g9-karfan", "g9-math", "g9-negar",
+    "g9-payam", "g9-quran", "g9-sci", "g9-soc",
+]
+BASE = "Bucket/Pdf-files/G09"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--prefix", default="Bucket/")
     ap.add_argument("--out", default="bucket-sync")
     ap.add_argument("--report", default="ci-report/bucket-inventory")
     args = ap.parse_args()
 
     tgt = load_target("parspack")
+    client = tgt.client()
 
-    # این نصب Ceph سر فهرست‌برداری حساس است؛ ترکیب‌ها را امتحان می‌کنیم و
-    # اولین چیزی که واقعاً جواب بدهد برنده است. خطاها چاپ می‌شوند، بلعیده نه.
-    objects = []
-    client = None
-    attempts = []
-    for addressing in ("virtual", "path"):
-        c = tgt.client(addressing=addressing)
-        for version in (1, 2):
-            try:
-                if version == 2:
-                    found = []
-                    for page in c.get_paginator("list_objects_v2").paginate(
-                        Bucket=tgt.bucket, Prefix=args.prefix
-                    ):
-                        found.extend(page.get("Contents") or [])
-                else:
-                    found = []
-                    marker = ""
-                    while True:
-                        kw = {"Bucket": tgt.bucket, "Prefix": args.prefix}
-                        if marker:
-                            kw["Marker"] = marker
-                        resp = c.list_objects(**kw)
-                        batch = resp.get("Contents") or []
-                        found.extend(batch)
-                        if not resp.get("IsTruncated"):
-                            break
-                        marker = batch[-1]["Key"]
-                attempts.append(f"{addressing}/v{version}: {len(found)} شیء")
-                if found:
-                    objects, client = found, c
-                    break
-            except Exception as exc:  # noqa: BLE001
-                detail = getattr(exc, "response", {}).get("Error", {}) if hasattr(exc, "response") else {}
-                attempts.append(
-                    f"{addressing}/v{version}: {detail.get('Code') or type(exc).__name__}"
-                    f" — {(detail.get('Message') or str(exc))[:90]}"
-                )
-        if objects:
-            break
-
-    print("تلاش‌های فهرست‌برداری:")
-    for a in attempts:
-        print("   ", a)
-    if not objects:
-        raise SystemExit("❌ هیچ ترکیبی از فهرست‌برداری جواب نداد.")
-
-    keys = sorted((o["Key"], int(o.get("Size") or 0)) for o in objects)
-    print(f"اشیاء زیر «{args.prefix}»: {len(keys)}")
-
+    # فهرست‌برداری روی این باکت جواب نمی‌دهد (virtual→500، path→404)، پس فقط
+    # کلیدهای شناخته‌شده را مستقیم می‌خوانیم.
     out_dir = Path(args.out)
-    fetched = []
-    for key, size in keys:
-        if os.path.basename(key) in MENU_NAMES:
+    fetched, missing = [], []
+    for book in BOOKS:
+        for name in MENU_NAMES:
+            key = f"{BASE}/{book}/{name}"
+            try:
+                body = client.get_object(Bucket=tgt.bucket, Key=key)["Body"].read()
+            except Exception as exc:  # noqa: BLE001
+                code = getattr(exc, "response", {}).get("Error", {}).get("Code", type(exc).__name__)
+                missing.append((key, str(code)))
+                continue
             dest = out_dir / key
             dest.parent.mkdir(parents=True, exist_ok=True)
-            body = client.get_object(Bucket=tgt.bucket, Key=key)["Body"].read()
             dest.write_bytes(body)
             fetched.append((key, len(body)))
 
-    # ---- آمار ----
-    by_ext = collections.Counter(os.path.splitext(k)[1].lower() or "(بدون پسوند)" for k, _ in keys)
-    by_top = collections.Counter(k.split("/")[1] if k.count("/") > 1 else "(ریشه)" for k, _ in keys)
+    # هر ارجاع صوتی/exam که داخل منوهای تازه آمده باشد را بیرون می‌کشیم و
+    # وجودش را با head تک‌به‌تک می‌سنجیم (چون نمی‌شود پوشه را فهرست کرد).
+    refs: set[str] = set()
+    for key, _ in fetched:
+        text = (out_dir / key).read_bytes().decode("utf-8-sig", "replace")
+        for m in re.finditer(r"[\w\-. ]+\.(?:mp3|m4a|aac|ogg|opus|wav)", text, re.IGNORECASE):
+            refs.add(m.group(0).strip())
+    probes = []
+    for book in BOOKS:
+        for name in sorted(refs):
+            key = f"{BASE}/{book}/exam/{name}"
+            try:
+                head = client.head_object(Bucket=tgt.bucket, Key=key)
+                probes.append((key, int(head["ContentLength"]), "ok"))
+            except Exception:  # noqa: BLE001
+                pass
 
-    # پوشه‌های exam و فایل‌های صوتی داخلشان
-    exam = collections.defaultdict(list)
-    for key, size in keys:
-        parts = key.split("/")
-        if any(p.lower() == "exam" for p in parts):
-            book = parts[3] if len(parts) > 3 else "(?)"
-            exam[book].append((key, size))
-    audio = [(k, s) for k, s in keys if k.lower().endswith(AUDIO_EXT)]
-
-    inv = {
-        "prefix": args.prefix,
-        "total": len(keys),
-        "menus": [k for k, _ in fetched],
-        "exam": {b: [{"key": k, "size": s} for k, s in v] for b, v in sorted(exam.items())},
-        "audio": [{"key": k, "size": s} for k, s in audio],
-        "keys": [{"key": k, "size": s} for k, s in keys],
-    }
     rep = Path(args.report)
     rep.parent.mkdir(parents=True, exist_ok=True)
+    inv = {
+        "fetched": [{"key": k, "size": s} for k, s in fetched],
+        "missing": [{"key": k, "code": c} for k, c in missing],
+        "audioRefsInMenus": sorted(refs),
+        "examFound": [{"key": k, "size": s} for k, s, _ in probes],
+    }
     rep.with_suffix(".json").write_text(json.dumps(inv, ensure_ascii=False, indent=1), encoding="utf-8")
 
-    md = ["# فهرست باکت پارس", "",
-          f"- پیشوند: `{args.prefix}` · شیء: **{len(keys)}**",
-          f"- فایل منوی آورده‌شده: **{len(fetched)}**",
-          f"- فایل صوتی در کل باکت: **{len(audio)}**",
-          f"- پوشهٔ exam: **{len(exam)}** کتاب", "",
-          "## پسوندها", "", "| پسوند | تعداد |", "|---|---:|"]
-    for e, n in by_ext.most_common():
-        md.append(f"| `{e}` | {n} |")
-    md += ["", "## پوشه‌های سطح دو", "", "| پوشه | تعداد |", "|---|---:|"]
-    for t, n in by_top.most_common():
-        md.append(f"| `{t}` | {n} |")
-    if exam:
-        md += ["", "## محتوای پوشه‌های exam", "", "| کتاب | فایل | حجم |", "|---|---|---:|"]
-        for book, items in sorted(exam.items()):
-            for k, s in items:
-                md.append(f"| `{book}` | `{os.path.basename(k)}` | {s:,} |")
-    else:
-        md += ["", "> هیچ پوشهٔ `exam` روی باکت پیدا نشد."]
-    if audio:
-        md += ["", "## همهٔ فایل‌های صوتی", "", "| کلید | حجم |", "|---|---:|"]
-        for k, s in audio:
+    md = ["# منوهای تازه از باکت پارس", "",
+          "> فهرست‌برداری روی این باکت ممکن نیست (virtual→500، path→404)؛",
+          "> فقط کلیدهای شناخته‌شده مستقیم خوانده شدند.", "",
+          f"- فایل آورده‌شده: **{len(fetched)}** · نبود: **{len(missing)}**",
+          f"- ارجاع صوتی داخل منوها: **{len(refs)}** · فایل exam پیداشده: **{len(probes)}**", "",
+          "| فایل | حجم |", "|---|---:|"]
+    for k, s in fetched:
+        md.append(f"| `{k}` | {s:,} |")
+    if missing:
+        md += ["", "## نبودها", "", "| کلید | کد |", "|---|---|"]
+        for k, c in missing:
+            md.append(f"| `{k}` | {c} |")
+    if refs:
+        md += ["", "## ارجاع‌های صوتی داخل منوها", ""] + [f"- `{r}`" for r in sorted(refs)]
+    if probes:
+        md += ["", "## فایل‌های exam که واقعاً روی باکت‌اند", "", "| کلید | حجم |", "|---|---:|"]
+        for k, s, _ in probes:
             md.append(f"| `{k}` | {s:,} |")
     rep.with_suffix(".md").write_text("\n".join(md) + "\n", encoding="utf-8")
 
-    print(json.dumps({"objects": len(keys), "menus": len(fetched),
-                      "exam_books": len(exam), "audio": len(audio)}, ensure_ascii=False))
-    return 0
+    print(json.dumps({"fetched": len(fetched), "missing": len(missing),
+                      "audioRefs": len(refs), "examFound": len(probes)}, ensure_ascii=False))
+    return 0 if fetched else 1
 
 
 if __name__ == "__main__":
