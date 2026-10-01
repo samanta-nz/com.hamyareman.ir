@@ -9,8 +9,9 @@
 انجام نمی‌شود چون `HtmlCodec` خروجی رمزگشایی را مستقیم به WebView می‌دهد و
 هیچ لایهٔ gzip در اپ وجود ندارد — دقیقاً مطابق فایل‌های فعلی روی باکت.
 
-مسیر هر فایل در زیپ از `server-map.json` و بر اساس نام فایل پیدا می‌شود تا
-خروجی عیناً روی ساختار باکت بنشیند.
+چیدمان خروجی با `--layout` انتخاب می‌شود:
+  repo   — عیناً همان ساختار پوشهٔ منبع (پیش‌فرض)
+  bucket — نگاشت به مسیرهای `server-map.json`
 
 کلید از Appwrite (ردیف app_state/html_media_key) خوانده می‌شود؛ اگر در دسترس
 نبود از متغیر HTML_MEDIA_KEY_B64 استفاده می‌شود. کلید هرگز چاپ نمی‌شود.
@@ -20,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import gzip
 import hashlib
 import json
 import os
@@ -46,6 +48,15 @@ ZIP_NAMES = {
 }
 UNMAPPED_DIR = "_بدون-نگاشت"
 UNMAPPED_ZIP = "html-unmapped"
+
+ROOT_LABEL = "(ریشه)"
+
+# نام زیپ در حالت repo — انگلیسی، تا پیدا کردنش آسان باشد.
+REPO_ZIP_NAMES = {
+    ROOT_LABEL: "Html-files-root",
+    "آموزشگاه": "Html-files-academy",
+    "تمرینات تنفسی": "Html-files-breathing",
+}
 
 
 def fp(raw: bytes) -> str:
@@ -108,6 +119,9 @@ def main() -> int:
     ap.add_argument("--server-map", default="apps/hamyar-app/src/main/assets/content/server-map.json")
     ap.add_argument("--zips", default="dist-zips")
     ap.add_argument("--report", default="ci-report/html-encode-report.md")
+    ap.add_argument("--layout", choices=("repo", "bucket"), default="repo",
+                    help="repo = همان ساختار پوشهٔ منبع | bucket = مسیرهای server-map")
+    ap.add_argument("--prefix", default="Html-files", help="نام ریشهٔ خروجی در حالت repo")
     args = ap.parse_args()
 
     raw_key = key_from_appwrite()
@@ -134,6 +148,8 @@ def main() -> int:
     groups: dict[str, list[tuple[str, bytes]]] = {}
     rows = []
     bad = 0
+    gz_total = 0
+    plain_total = 0
     for p in files:
         plain = p.read_bytes()
         iv = os.urandom(12)
@@ -145,25 +161,45 @@ def main() -> int:
         if not ok:
             bad += 1
 
+        rel = p.relative_to(src).as_posix()
         bucket_key = layout.get(p.name)
-        if bucket_key:
+        if args.layout == "repo":
+            folder = os.path.dirname(rel) or ROOT_LABEL
+            arc = f"{args.prefix}/{rel}" if args.prefix else rel
+        elif bucket_key:
             folder = os.path.dirname(bucket_key)
             arc = bucket_key
         else:
             folder = UNMAPPED_DIR
-            arc = f"{UNMAPPED_DIR}/{p.relative_to(src).as_posix()}"
+            arc = f"{UNMAPPED_DIR}/{rel}"
         groups.setdefault(folder, []).append((arc, blob))
+        gz_total += len(gzip.compress(plain, 6))
         rows.append((arc, len(plain), len(blob), ok, bool(bucket_key)))
+        plain_total += len(plain)
+
+    def zip_name(folder: str, idx: int) -> str:
+        if args.layout == "repo":
+            return REPO_ZIP_NAMES.get(folder, f"Html-files-{idx:02d}")
+        return ZIP_NAMES.get(folder, UNMAPPED_ZIP if folder == UNMAPPED_DIR else "html-other")
 
     made = []
-    for folder, items in sorted(groups.items()):
-        name = ZIP_NAMES.get(folder, UNMAPPED_ZIP if folder == UNMAPPED_DIR else "html-other")
-        path = zips_dir / f"{name}.zip"
+    everything: list[tuple[str, bytes]] = []
+    for idx, (folder, items) in enumerate(sorted(groups.items()), 1):
+        path = zips_dir / f"{zip_name(folder, idx)}.zip"
         # محتوای رمزشده تصادفی است و فشرده نمی‌شود؛ STORED سریع‌تر و کم‌ریسک‌تر است.
         with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_STORED) as z:
             for arc, blob in sorted(items):
                 z.writestr(arc, blob)
         made.append((path.name, folder, len(items), path.stat().st_size))
+        everything.extend(items)
+
+    # یک زیپ کامل هم می‌سازیم که کل ساختار را یکجا دارد.
+    if len(made) > 1:
+        whole = zips_dir / ("Html-files-all.zip" if args.layout == "repo" else "html-all.zip")
+        with zipfile.ZipFile(whole, "w", compression=zipfile.ZIP_STORED) as z:
+            for arc, blob in sorted(everything):
+                z.writestr(arc, blob)
+        made.append((whole.name, "همهٔ پوشه‌ها یکجا", len(everything), whole.stat().st_size))
 
     rep = Path(args.report)
     rep.parent.mkdir(parents=True, exist_ok=True)
@@ -173,7 +209,11 @@ def main() -> int:
           + ("✅" if keys_match else ("—  (متغیر تنظیم نشده)" if env_key is None else "❌ **فرق دارند**")),
           f"- فایل پردازش‌شده: **{len(rows)}**",
           f"- راستی‌آزمایی رفت‌وبرگشت ناموفق: **{bad}**",
-          f"- بدون نگاشت در `server-map.json`: **{sum(1 for r in rows if not r[4])}**", "",
+          f"- چیدمان خروجی: **{'ساختار پوشهٔ مخزن' if args.layout == 'repo' else 'مسیرهای باکت'}**",
+          f"- حجم خام: **{plain_total/1048576:.1f} MB** · رمزشده: **{(plain_total + 32*len(rows))/1048576:.1f} MB** "
+          f"(سربار HMK1: {32*len(rows):,} بایت)",
+          f"- اگر فشرده‌سازی ممکن بود: gzip این محتوا {gz_total/1048576:.1f} MB می‌شد "
+          f"({100*(1-gz_total/plain_total):.1f}٪ کوچک‌تر) — ولی `HtmlCodec` هیچ لایهٔ gzip ندارد و اپ بازش نمی‌کند.", "",
           "## زیپ‌ها", "", "| فایل زیپ | پوشهٔ باکت | تعداد | حجم |", "|---|---|---:|---:|"]
     for n, folder, cnt, size in made:
         md.append(f"| `{n}` | `{folder}` | {cnt} | {size/1048576:.1f} MB |")
