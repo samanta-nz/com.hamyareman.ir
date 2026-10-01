@@ -3,7 +3,9 @@ package com.hamyareman.ir.ui.tools
 import android.content.Context
 import com.hamyareman.ir.ui.content.ContentCatalog
 import com.hamyareman.ir.ui.profile.AppEdition
-import com.hamyareman.ir.ui.study.RemoteHtmlCache
+import com.hamyareman.ir.ui.study.HtmlCodec
+import com.hamyareman.ir.ui.study.LessonCache
+import com.hamyareman.ir.ui.study.ServerResolver
 import java.io.File
 
 /** ابزارهای HMK1 با انتخاب دقیق سرور و cache دائمیِ فقط-ciphertext. */
@@ -50,10 +52,14 @@ object ToolRemote {
     /** plaintext فقط در cacheDir موقت WebView است؛ نسخهٔ ماندگار HMK1 می‌ماند. */
     fun ensure(ctx: Context, toolId: String): String? {
         val id = fileId(toolId)
-        val loaded = RemoteHtmlCache.load(ctx, id, ContentCatalog.keyFor(id)).getOrNull() ?: return null
+        // از همان لایهٔ مشترک درس‌ها می‌خوانیم؛ RemoteHtmlCache بازنشسته شد.
+        val key = ContentCatalog.keyFor(id) ?: return null
+        val cached = LessonCache.ensure(ctx, ServerResolver.internal(key)) ?: return null
+        val raw = runCatching { cached.readBytes() }.getOrNull() ?: return null
+        val plain = runCatching { HtmlCodec.unwrap(ctx, raw) }.getOrNull() ?: return null
         val dest = plainFile(ctx, toolId)
         val part = File(dest.absolutePath + ".part")
-        val offlineHtml = loaded.html.replace(
+        val offlineHtml = String(plain, Charsets.UTF_8).replace(
             Regex("""https://cdn\.jsdelivr\.net/[^"']*jalaali[^"']*\.js""", RegexOption.IGNORE_CASE),
             "file:///android_asset/tools/vendor/jalaali.min.js",
         )

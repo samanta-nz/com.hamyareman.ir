@@ -143,6 +143,12 @@ sealed class Screen(val route: String) {
     data object ContentHtml : Screen("content-html/{id}") {
         fun of(id: String) = "content-html/${Uri.encode(id)}"
     }
+
+    /** یک گرهٔ منوی کتاب: اگر فایلش آماده باشد PDF، وگرنه «در دست تولید». */
+    data object BookNode : Screen("book-node/{key}/{title}") {
+        fun of(key: String, title: String) =
+            "book-node/${Uri.encode(key)}/${Uri.encode(title.ifBlank { "درس" })}"
+    }
     /** پرامپت ۰۲: ماژول سلامتی (یوگا/ورزش/تنفس/یادگیری). `cat` اختیاری: yoga/exercise/breathing/learning. */
     data object Wellness : Screen("wellness?cat={cat}") {
         fun of(cat: String? = null) =

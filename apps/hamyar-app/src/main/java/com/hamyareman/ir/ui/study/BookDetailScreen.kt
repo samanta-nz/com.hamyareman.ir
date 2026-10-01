@@ -2,6 +2,7 @@ package com.hamyareman.ir.ui.study
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,6 +62,7 @@ fun BookDetailScreen(
     onStudy: (String) -> Unit,
     onVideoTeach: (String) -> Unit,
     onCharts: () -> Unit,
+    onOpenNode: (String, String) -> Unit = { _, _ -> },
 ) {
     val module = remember(bookCode) {
         runCatching { BookModuleRegistry.modules.firstOrNull { it.bookCode == bookCode } }.getOrNull()
@@ -114,9 +116,25 @@ fun BookDetailScreen(
             openSection = next
             tocStore.putString("acc_$bookCode", next)
         }
+        // منو دقیقاً از `books-menu.json` ساخته می‌شود — همان عنوان‌هایی که در
+        // menu.json هر کتاب روی باکت نوشته شده‌اند. گره‌ای که فایل آماده ندارد
+        // به تک‌فایل مشترک «در دست تولید» می‌رود.
+        val menu = remember(bookCode) { BooksMenu.forBook(ctx, bookCode) }
         Column(Modifier.fillMaxWidth()) {
-            runCatching { BookToc.forBook(bookCode) }.getOrDefault(emptyList()).forEach { node ->
-                TocRow(bookCode, node, 0, tocStore, onTeach, onStudy, onVideoTeach, openId = openSection, onToggle = toggle)
+            if (menu == null) {
+                runCatching { BookToc.forBook(bookCode) }.getOrDefault(emptyList()).forEach { node ->
+                    TocRow(bookCode, node, 0, tocStore, onTeach, onStudy, onVideoTeach, openId = openSection, onToggle = toggle)
+                }
+            } else {
+                menu.items.forEachIndexed { index, node ->
+                    BookMenuNode(
+                        node = node,
+                        nodeId = "n$index",
+                        openId = openSection,
+                        onToggle = toggle,
+                        onOpen = onOpenNode,
+                    )
+                }
             }
         }
     }
@@ -320,4 +338,81 @@ private fun StaticCard(node: TocNode, depth: Int) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
         )
     }
+}
+
+/**
+ * یک گره از منوی کتاب. گرهٔ `plain` یک ردیف ساده است؛ گرهٔ `lesson` آکاردئونی
+ * است که سربرگ‌هایش (تدریس، تمرینات کتابی، نکات گرامری، …) داخلش باز می‌شوند.
+ * هر ردیف که فایل آماده نداشته باشد با برچسب «به‌زودی» به اسپیس‌هولدر می‌رود.
+ */
+@Composable
+private fun BookMenuNode(
+    node: BooksMenu.Node,
+    nodeId: String,
+    openId: String,
+    onToggle: (String) -> Unit,
+    onOpen: (String, String) -> Unit,
+) {
+    val open = openId == nodeId
+    Card(
+        Modifier.fillMaxWidth().padding(vertical = 3.dp),
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (node.isLesson) onToggle(nodeId)
+                        else onOpen(BooksMenu.destination(node.key, node.ready), node.title)
+                    }
+                    .padding(horizontal = 12.dp, vertical = 11.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    if (node.isLesson) (if (open) "▾" else "▸") else "•",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(node.title, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                if (!node.isLesson && !node.hasContent) SoonBadge()
+            }
+            if (node.isLesson && open) {
+                Column(Modifier.fillMaxWidth().padding(start = 18.dp, end = 10.dp, bottom = 8.dp)) {
+                    node.tabs.forEach { tab ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpen(BooksMenu.destination(tab.key, tab.ready), tab.title) }
+                                .padding(horizontal = 8.dp, vertical = 9.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                tab.title,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            if (!tab.hasContent) SoonBadge()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SoonBadge() {
+    Text(
+        "به‌زودی",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+            )
+            .padding(horizontal = 7.dp, vertical = 2.dp),
+    )
 }

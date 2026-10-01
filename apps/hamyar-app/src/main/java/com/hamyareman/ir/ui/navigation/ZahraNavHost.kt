@@ -209,7 +209,8 @@ fun ZahraNavHost() {
                     onTeach = { packId -> nav.navigate(Screen.LessonTeach.of(packId)) },
                     onStudy = { packId -> nav.navigate(Screen.LessonStudy.of(packId)) },
                     onVideoTeach = { packId -> nav.navigate(Screen.VideoTeach.of(packId)) },
-                    onCharts = { nav.navigate(Screen.Charts.of(entry.arguments?.getString("bookCode"))) })
+                    onCharts = { nav.navigate(Screen.Charts.of(entry.arguments?.getString("bookCode"))) },
+                    onOpenNode = { key, title -> nav.navigate(Screen.BookNode.of(key, title)) })
             }
             composable(
                 Screen.LessonTeach.route,
@@ -497,6 +498,19 @@ fun ZahraNavHost() {
             ) { entry ->
                 ContentHtmlScreen(
                     itemId = entry.arguments?.getString("id").orEmpty(),
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable(
+                Screen.BookNode.route,
+                listOf(
+                    navArgument("key") { type = NavType.StringType },
+                    navArgument("title") { type = NavType.StringType },
+                ),
+            ) { entry ->
+                com.hamyareman.ir.ui.study.BookNodeScreen(
+                    title = entry.arguments?.getString("title").orEmpty(),
+                    bucketKey = entry.arguments?.getString("key").orEmpty(),
                     onBack = { nav.popBackStack() },
                 )
             }

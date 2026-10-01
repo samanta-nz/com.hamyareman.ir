@@ -32,7 +32,7 @@ class HamyarApplication : Application() {
         runCatching { com.hamyareman.ir.ui.tools.ToolRemote.clearPlainCache(this) }
         // کش قدیمی درس‌ها با کلید و مسیر دیگری ساخته شده بود؛ بعد از تغییر آدرس‌ها
         // به Bucket/... دیگر هیچ‌وقت hit نمی‌شود و فقط جا می‌گیرد.
-        runCatching { com.hamyareman.ir.ui.study.RemoteHtmlCache.clear(this) }
+        runCatching { java.io.File(filesDir, "html-cipher-cache").deleteRecursively() }
         com.hamyareman.ir.ui.study.ServerResolver.probeAsync()
         // پخشِ فایل‌های گاوصندوق: طرحِ vault:// به جریانِ رمزگشاییِ تنبل وصل می‌شود
         // (خوانشِ جسته‌گریخته؛ بدونِ بلوکه‌شدنِ لودرِ پلیر برای رمزگشاییِ کل فایل).
