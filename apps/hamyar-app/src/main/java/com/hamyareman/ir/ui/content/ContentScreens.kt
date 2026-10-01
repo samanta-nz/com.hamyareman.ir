@@ -133,7 +133,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
 
     LaunchedEffect(activeId, retry) {
         val current = item
-        html = null
+        pageUrl = null
         error = null
         progress = 0
         if (current == null) {
@@ -190,8 +190,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         ) {
                             override fun onPageFinished(view: WebView, url: String) {
                                 view.bindManagedMediaLifecycle()
-                                // درس بعدی که کاربر به آن رفته را در وضعیت اپ هم ثبت می‌کنیم
-                                // تا عنوان و «قبلی/بعدی» بومی هماهنگ بماند.
+                                // درس بعدی که کاربر با لینک نسبی به آن رفته را در وضعیت اپ
+                                // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()
+                                // صفحه‌ای را که همین الان بار شده دوباره لود نکند.
+                                view.tag = url.substringBefore('#')
                                 ContentCatalog.itemIdForRelativeFile(
                                     url.substringBefore('#').substringBefore('?').substringAfterLast('/'),
                                 )?.let { if (it != activeId) activeId = it }
