@@ -391,7 +391,7 @@ private fun BookDlCard(
                     Image(
                         bitmap = cover.asImageBitmap(),
                         contentDescription = null,
-                        modifier = Modifier.width(40.dp).height(54.dp),
+                        modifier = Modifier.width(52.dp).height(70.dp),
                         contentScale = ContentScale.Fit,
                     )
                     Spacer(Modifier.width(10.dp))

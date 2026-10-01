@@ -241,14 +241,20 @@ fun HomeScreen(nav: NavController) {
             // آزمایشگاه فقط وقتی برای edition همین پایه فایل دوآدرسی واقعی دارد
             // نمایش داده می‌شود؛ پایهٔ دیگر هرگز به آزمایشگاه نهم وصل نمی‌شود.
             val toolTiles = buildList {
-                add(Triple("🧰", "جعبه‌ابزار عمومی", Screen.GeneralToolkit.route))
+                // بعد از مهاجرت به پارس‌پک، هیچ‌کدام از این ابزارها فایل ندارند؛
+                // کارت فقط وقتی ساخته می‌شود که دستهٔ متناظرش در کاتالوگ آیتم داشته باشد.
+                if (com.hamyareman.ir.ui.tools.ToolRemote.hasCategory(ctx, "tool-gen")) {
+                    add(Triple("🧰", "جعبه‌ابزار عمومی", Screen.GeneralToolkit.route))
+                }
                 if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("chemistry")) {
                     add(Triple("⚗️", "آزمایشگاه شیمی", Screen.ChemistryLab.route))
                 }
                 if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("physics")) {
                     add(Triple("🔬", "آزمایشگاه فیزیک", Screen.PhysicsLab.route))
                 }
-                add(Triple("🧮", "جعبه‌ابزار ریاضی", Screen.MathToolkit.route))
+                if (com.hamyareman.ir.ui.tools.ToolRemote.hasCategory(ctx, "tool-math")) {
+                    add(Triple("🧮", "جعبه‌ابزار ریاضی", Screen.MathToolkit.route))
+                }
                 if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("biology")) {
                     add(Triple("🧬", "آزمایشگاه زیست‌شناسی", Screen.BiologyLab.route))
                 }

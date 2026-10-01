@@ -28,6 +28,16 @@ object ToolRemote {
         return if (id in labs) "lab-${gradeToken()}-$id.html" else "tool-$id.html"
     }
 
+    /**
+     * آیا این دستهٔ ابزار اصلاً آیتمی در کاتالوگ دارد؟ بعد از مهاجرت به پارس‌پک
+     * دسته‌های بدون فایل از `catalog.json` حذف شدند، پس این تابع خودبه‌خود کارت
+     * مربوط را پنهان می‌کند و با آپلود شدن فایل‌ها دوباره برمی‌گردد.
+     */
+    fun hasCategory(ctx: Context, cat: String): Boolean = runCatching {
+        ContentCatalog.load(ctx)
+        ContentCatalog.categories().any { it.id == cat }
+    }.getOrDefault(false)
+
     /** آیا HTML همین ابزار برای edition این پایه در manifest دو سرور وجود دارد؟ */
     fun isAvailable(toolId: String): Boolean {
         val id = fileId(toolId)
