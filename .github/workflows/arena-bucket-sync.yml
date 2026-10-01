@@ -46,7 +46,9 @@ jobs:
           set +e
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f bucket-sync ci-report/bucket-inventory.md ci-report/bucket-inventory.json ci-report/bucket-sync.log
+          for path in bucket-sync ci-report/bucket-inventory.md ci-report/bucket-inventory.json ci-report/bucket-sync.log; do
+            [ -e "$path" ] && git add -f "$path"
+          done
           if git diff --cached --quiet; then echo "بدون تغییر"; else
             git commit -m "همگام‌سازی منوها و فهرست باکت ${GITHUB_SHA::7} [skip-report]"
             git pull --rebase origin "${GITHUB_REF_NAME}"
