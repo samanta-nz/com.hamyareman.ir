@@ -145,9 +145,10 @@ sealed class Screen(val route: String) {
     }
 
     /** یک گرهٔ منوی کتاب: اگر فایلش آماده باشد PDF، وگرنه «در دست تولید». */
-    data object BookNode : Screen("book-node/{key}/{title}") {
-        fun of(key: String, title: String) =
-            "book-node/${Uri.encode(key)}/${Uri.encode(title.ifBlank { "درس" })}"
+    data object BookNode : Screen("book-node/{key}/{title}?audio={audio}") {
+        fun of(key: String, title: String, audio: String = "") =
+            "book-node/${Uri.encode(key)}/${Uri.encode(title.ifBlank { "درس" })}" +
+                "?audio=${Uri.encode(audio)}"
     }
     /** پرامپت ۰۲: ماژول سلامتی (یوگا/ورزش/تنفس/یادگیری). `cat` اختیاری: yoga/exercise/breathing/learning. */
     data object Wellness : Screen("wellness?cat={cat}") {

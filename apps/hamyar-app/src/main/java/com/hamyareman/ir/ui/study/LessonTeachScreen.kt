@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.media3.common.AudioAttributes
@@ -730,7 +731,8 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                     Text(
                         "${teachMmss(if (dragMs >= 0) dragMs else posMs)} از ${teachMmss(durMs)}",
                         style = MaterialTheme.typography.bodySmall,
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 1.5f,
+                        // نمایش زمان ۸ واحد کوچک‌تر از قبل؛ بقیهٔ پلیر دست‌نخورده.
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 1.5f - 8.sp,
                         maxLines = 1,
                     )
                     Spacer(Modifier.width(10.dp))

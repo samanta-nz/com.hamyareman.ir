@@ -62,7 +62,7 @@ fun BookDetailScreen(
     onStudy: (String) -> Unit,
     onVideoTeach: (String) -> Unit,
     onCharts: () -> Unit,
-    onOpenNode: (String, String) -> Unit = { _, _ -> },
+    onOpenNode: (String, String, String) -> Unit = { _, _, _ -> },
 ) {
     val module = remember(bookCode) {
         runCatching { BookModuleRegistry.modules.firstOrNull { it.bookCode == bookCode } }.getOrNull()
@@ -86,7 +86,7 @@ fun BookDetailScreen(
                     Image(
                         bitmap = cover.asImageBitmap(),
                         contentDescription = "کاور ${module.title}",
-                        modifier = Modifier.width(96.dp).height(128.dp),
+                        modifier = Modifier.width(125.dp).height(166.dp),
                         contentScale = ContentScale.Fit,
                     )
                     Spacer(Modifier.width(12.dp))
@@ -366,7 +366,7 @@ private fun BookMenuNode(
     depth: Int,
     openPaths: Set<String>,
     onToggle: (String) -> Unit,
-    onOpen: (String, String) -> Unit,
+    onOpen: (String, String, String) -> Unit,
 ) {
     val open = path in openPaths
     val indent = (depth * 14).dp
@@ -381,7 +381,7 @@ private fun BookMenuNode(
                     .fillMaxWidth()
                     .clickable {
                         if (node.expandable) onToggle(path)
-                        else onOpen(BooksMenu.destination(node.key, node.ready), node.title)
+                        else onOpen(BooksMenu.destination(node.key, node.ready), node.title, "")
                     }
                     .padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -406,16 +406,17 @@ private fun BookMenuNode(
                     // فصلی که PDF خودش را دارد، آن را به‌صورت یک ردیف جدا نشان
                     // می‌دهد تا با باز شدن زیرشاخه‌ها دسترسی به خودش از بین نرود.
                     if (node.hasContent) {
-                        LeafRow(
-                            title = "متن کامل: ${node.title}",
-                            key = node.key,
-                            ready = node.ready,
-                            depth = depth + 1,
-                            onOpen = onOpen,
-                        )
+                        LeafRow("متن کامل: ${node.title}", node.key, node.ready, depth + 1, "", onOpen)
                     }
                     node.tabs.forEach { tab ->
-                        LeafRow(tab.title, tab.key, tab.ready, depth + 1, onOpen)
+                        // سربرگ «تدریس» اگر صفحهٔ آمادهٔ exam داشته باشد، به همان
+                        // می‌رود و صوت همان درس هم بالای صفحه بار می‌شود.
+                        val isTeach = tab.title.trim().startsWith("تدریس")
+                        if (isTeach && node.teachKey != null) {
+                            LeafRow(tab.title, node.teachKey, true, depth + 1, node.audioKey.orEmpty(), onOpen)
+                        } else {
+                            LeafRow(tab.title, tab.key, tab.ready, depth + 1, "", onOpen)
+                        }
                     }
                     node.children.forEachIndexed { i, child ->
                         BookMenuNode(child, "$path.$i", depth + 1, openPaths, onToggle, onOpen)
@@ -432,12 +433,13 @@ private fun LeafRow(
     key: String?,
     ready: Boolean?,
     depth: Int,
-    onOpen: (String, String) -> Unit,
+    audio: String,
+    onOpen: (String, String, String) -> Unit,
 ) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable { onOpen(BooksMenu.destination(key, ready), title) }
+            .clickable { onOpen(BooksMenu.destination(key, ready), title, audio) }
             .padding(start = (depth * 14).dp + 14.dp, end = 12.dp, top = 9.dp, bottom = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

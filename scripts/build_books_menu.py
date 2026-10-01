@@ -24,6 +24,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 BASE = "Bucket/Pdf-files/G09"
 
+# گره‌های پیش‌درآمد که نباید وارد منو شوند (دستور کارفرما).
+SKIP_PREFIXES = ("سخنی با", "مقدمه", "مقدّمه")
+
+# slug پوشهٔ exam — فقط ریاضی تأیید شده؛ بقیه وقتی آپلود شدند اضافه می‌شوند.
+EXAM_SLUGS = {"g9-math": "ryazi"}
+
+
+def skipped(title: str) -> bool:
+    t = (title or "").strip().lstrip("\u200f\ufeff")
+    return any(t.startswith(p) for p in SKIP_PREFIXES)
+
 
 def collect_pdfs(items: list) -> set[str]:
     found: set[str] = set()
@@ -37,9 +48,16 @@ def collect_pdfs(items: list) -> set[str]:
     return found
 
 
-def convert(items: list, folder: str, exists: dict[str, bool], stats: collections.Counter) -> list:
+def convert(items: list, folder: str, exists: dict[str, bool], stats: collections.Counter,
+            chapter: list | None = None) -> list:
     out = []
+    chapter = chapter if chapter is not None else [0]
+    slug = EXAM_SLUGS.get(folder)
+    lesson_no = 0
     for it in items:
+        if skipped(it.get("title", "")):
+            stats["skipped"] += 1
+            continue
         def ref(pdf):
             if not pdf:
                 stats["none"] += 1
@@ -50,13 +68,32 @@ def convert(items: list, folder: str, exists: dict[str, bool], stats: collection
             return key, ok
 
         key, ready = ref(it.get("pdf"))
+        is_container = bool(it.get("children"))
+        if is_container:
+            chapter[0] += 1
+        else:
+            lesson_no += 1
+
+        # صفحهٔ تدریس و صوت از پوشهٔ exam: <slug>f<فصل>d<درس>.{html,mp3}
+        teach_key = audio_key = None
+        if slug and not is_container and it.get("tabs") and chapter[0] > 0:
+            stem = f"{BASE}/{folder}/exam/{slug}f{chapter[0]:02d}d{lesson_no:02d}"
+            if exists.get(stem + ".html"):
+                teach_key = stem + ".html"
+                stats["teach"] += 1
+            if exists.get(stem + ".mp3"):
+                audio_key = stem + ".mp3"
+                stats["audio"] += 1
+
         node = {
             "kind": it.get("kind", "plain"),
             "title": it.get("title", ""),
             "key": key,
             "ready": ready,
+            "teachKey": teach_key,
+            "audioKey": audio_key,
             "tabs": [],
-            "children": convert(it.get("children", []), folder, exists, stats),
+            "children": convert(it.get("children", []), folder, exists, stats, chapter),
         }
         for t in it.get("tabs", []):
             tk, tr = ref(t.get("pdf"))
@@ -86,6 +123,13 @@ def main() -> int:
         raw[folder] = data
         for pdf in collect_pdfs(data.get("items", [])):
             wanted.add(f"{BASE}/{folder}/{pdf}")
+        slug = EXAM_SLUGS.get(folder)
+        if slug:
+            for c in range(1, 13):
+                for d in range(1, 10):
+                    stem = f"{BASE}/{folder}/exam/{slug}f{c:02d}d{d:02d}"
+                    wanted.add(stem + ".html")
+                    wanted.add(stem + ".mp3")
 
     exists: dict[str, bool] = {}
     if args.no_probe:
@@ -134,7 +178,9 @@ def main() -> int:
     md = ["# منوی کتاب‌ها — از منوهای زندهٔ باکت", "",
           f"- کتاب: **{len(books)}** · گره: **{stats['nodes']}**",
           f"- ارجاع با فایل موجود: **{stats['ready']}** · اعلام‌شده ولی نبود: **{stats['missing']}**",
-          f"- بدون فایل (`pdf: null`) → اسپیس‌هولدر: **{stats['none']}**", "",
+          f"- بدون فایل (`pdf: null`) → اسپیس‌هولدر: **{stats['none']}**",
+          f"- گرهٔ حذف‌شده (مقدمه / سخنی با…): **{stats['skipped']}**",
+          f"- صفحهٔ تدریس از exam: **{stats['teach']}** · صوت: **{stats['audio']}**", "",
           "| کد | موضوع | پوشه | عمق ۰ | عمق ۱ | عمق ۲ | سربرگ |",
           "|---|---|---|---:|---:|---:|---:|"]
     for b in books:

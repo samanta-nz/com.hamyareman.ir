@@ -30,6 +30,10 @@ object BooksMenu {
         val title: String,
         val key: String?,
         val ready: Boolean?,
+        /** صفحهٔ تدریس آمادهٔ این درس در پوشهٔ exam (اگر آپلود شده باشد). */
+        val teachKey: String? = null,
+        /** صوت تدریس همان درس در پوشهٔ exam. */
+        val audioKey: String? = null,
         val tabs: List<Tab>,
         val children: List<Node>,
     ) {
@@ -84,6 +88,8 @@ object BooksMenu {
                 title = o.optString("title"),
                 key = o.optStringOrNull("key"),
                 ready = o.optBooleanOrNull("ready"),
+                teachKey = o.optStringOrNull("teachKey"),
+                audioKey = o.optStringOrNull("audioKey"),
                 tabs = tabs(o.optJSONArray("tabs")),
                 children = nodes(o.optJSONArray("children")),
             )

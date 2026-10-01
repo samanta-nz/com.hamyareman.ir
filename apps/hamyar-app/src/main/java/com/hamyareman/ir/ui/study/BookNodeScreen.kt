@@ -6,6 +6,7 @@ import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -46,21 +46,40 @@ import kotlinx.coroutines.withContext
  * PDFها روی باکت رمز نیستند، پس از مسیر [StudyPdfCache] می‌آیند؛ اسپیس‌هولدر
  * HTML رمزشده است و از میانجی [HmkWebViewClient] عبور می‌کند.
  */
+/**
+ * تمام‌صفحه: نوار عنوان و فلش برگشت عمداً نیست — طبق خواستهٔ طراحی فقط پلیر
+ * جمع‌شونده و منوی پایین دیده می‌شوند. برگشت با دکمهٔ back دستگاه.
+ */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun BookNodeScreen(title: String, bucketKey: String, onBack: () -> Unit) {
+fun BookNodeScreen(
+    title: String,
+    bucketKey: String,
+    audioKey: String = "",
+    onBack: () -> Unit,
+) {
+    BackHandler(onBack = onBack)
     Column(Modifier.fillMaxSize()) {
-        AppTopBar(title.ifBlank { "درس" }, onBack)
+        if (audioKey.isNotBlank()) {
+            val fileId = audioKey.substringAfterLast('/')
+            TeachAudioBar(
+                packId = fileId.substringBeforeLast('.'),
+                screenTitle = title,
+                bookTitle = "",
+                tracks = listOf(TeachTrack("صوت درس", fileId, fileId)),
+            )
+        }
         if (BooksMenu.isPdf(bucketKey)) {
             BookPdfPages(bucketKey)
         } else {
-            SpaceholderPage()
+            RemoteHtmlPage(bucketKey)
         }
     }
 }
 
+/** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
-private fun SpaceholderPage() {
+private fun RemoteHtmlPage(bucketKey: String) {
     SecureWebEffect()
     AndroidView(
         factory = { c ->
@@ -71,7 +90,7 @@ private fun SpaceholderPage() {
                 settings.useWideViewPort = true
                 settings.loadWithOverviewMode = true
                 webViewClient = HmkWebViewClient(c.applicationContext, HmkWebViewClient.bucketHost())
-                loadUrl(ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY))
+                loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
         },
         modifier = Modifier.fillMaxSize(),
