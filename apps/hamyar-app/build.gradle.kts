@@ -94,7 +94,6 @@ android {
     buildTypes {
         debug {
             // بدون applicationIdSuffix: هر اپ فقط یک «Platform» در کنسول Appwrite لازم دارد.
-            versionNameSuffix = "-debug"
         }
         release {
             // امضا با همان کلیدِ دیباگِ داخلِ ریپو (قراردادِ پروژه): بدونِ امضای

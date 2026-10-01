@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -157,8 +158,10 @@ private fun BookPdfPages(bucketKey: String) {
             TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
         }
 
+        // PDF همیشه روی زمینهٔ سفید رندر می‌شود؛ تم تاریک اپ نباید روی صفحهٔ
+        // کتاب درسی بیفتد (خواسته: هیچ PDF ای هرگز تم تاریک نگیرد).
         is BookPdfState.Ready -> LazyColumn(
-            Modifier.fillMaxSize(),
+            Modifier.fillMaxSize().background(Color.White),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items((0 until s.pages).toList()) { index ->
@@ -170,6 +173,7 @@ private fun BookPdfPages(bucketKey: String) {
                                 val width = 1080
                                 val height = (width.toLong() * page.height / page.width).toInt().coerceAtLeast(1)
                                 val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                                bmp.eraseColor(android.graphics.Color.WHITE)
                                 page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                                 bmp
                             }

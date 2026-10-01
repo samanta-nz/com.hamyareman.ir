@@ -86,7 +86,7 @@ fun BookDetailScreen(
                     Image(
                         bitmap = cover.asImageBitmap(),
                         contentDescription = "کاور ${module.title}",
-                        modifier = Modifier.width(125.dp).height(166.dp),
+                        modifier = Modifier.width(88.dp).height(116.dp),
                         contentScale = ContentScale.Fit,
                     )
                     Spacer(Modifier.width(12.dp))
@@ -116,6 +116,8 @@ fun BookDetailScreen(
             openSection = next
             tocStore.putString("acc_$bookCode", next)
         }
+        // در هر سطح فقط یک گره باز می‌ماند (باز کردن فصل دوم، فصل اول را می‌بندد)
+        // ولی فصلِ والد با باز کردن درسش بسته نمی‌شود. وضعیت ذخیره می‌شود.
         var openNodes by remember(bookCode) {
             mutableStateOf(
                 tocStore.getString("accset_$bookCode", "")
@@ -123,7 +125,13 @@ fun BookDetailScreen(
             )
         }
         val toggleNode: (String) -> Unit = { path ->
-            val next = if (path in openNodes) openNodes - path else openNodes + path
+            val depth = path.count { it == '.' }
+            val next = if (path in openNodes) {
+                // بستن یک گره، زیرشاخه‌های بازش را هم جمع می‌کند.
+                openNodes.filterNot { it == path || it.startsWith("$path.") }.toSet()
+            } else {
+                openNodes.filterNot { it.count { c -> c == '.' } >= depth } + path
+            }
             openNodes = next
             tocStore.putString("accset_$bookCode", next.joinToString("|"))
         }

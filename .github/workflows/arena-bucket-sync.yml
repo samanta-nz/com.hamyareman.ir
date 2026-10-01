@@ -41,6 +41,13 @@ jobs:
           python3 scripts/probe_exam_assets.py 2>&1 | tee -a ci-report/bucket-sync.log
           exit 0
 
+      - name: بازتولید books-menu.json از منوهای تازه
+        if: always()
+        run: |
+          set +e
+          python3 scripts/build_books_menu.py 2>&1 | tee -a ci-report/bucket-sync.log
+          exit 0
+
       - name: خلاصه
         if: always()
         run: |
@@ -53,7 +60,7 @@ jobs:
           set +e
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          for path in bucket-sync ci-report/bucket-inventory.md ci-report/bucket-inventory.json ci-report/bucket-sync.log ci-report/exam-assets.md ci-report/exam-assets.json; do
+          for path in apps/hamyar-app/src/main/assets/content/books-menu.json docs/books/menu-build-report.md bucket-sync ci-report/bucket-inventory.md ci-report/bucket-inventory.json ci-report/bucket-sync.log ci-report/exam-assets.md ci-report/exam-assets.json; do
             [ -e "$path" ] && git add -f "$path"
           done
           if git diff --cached --quiet; then echo "بدون تغییر"; else
