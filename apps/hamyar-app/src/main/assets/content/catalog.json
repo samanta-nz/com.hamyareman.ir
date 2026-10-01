@@ -25,6 +25,24 @@
    "title": "تمرینات تنفسی",
    "emoji": "🌬️",
    "order": 4
+  },
+  {
+   "id": "lab",
+   "title": "آزمایشگاه",
+   "emoji": "🔬",
+   "order": 5
+  },
+  {
+   "id": "tool-gen",
+   "title": "جعبه ابزار عمومی",
+   "emoji": "🧰",
+   "order": 6
+  },
+  {
+   "id": "tool-math",
+   "title": "جعبه ابزار ریاضی",
+   "emoji": "🧮",
+   "order": 7
   }
  ],
  "items": [
@@ -675,6 +693,78 @@
    "gender": "all",
    "aw": "bre-08",
    "key": "Bucket/Html-files/تمرینات تنفسی/یک دقیقه توجه به نفس.html"
+  },
+  {
+   "id": "lab-09-biology.html",
+   "cat": "lab",
+   "kind": "html",
+   "title": "Hamyar e Man - آزمایشگاه زیست پایه نهم",
+   "gender": "all",
+   "aw": "lab-09-biology.html",
+   "key": "Bucket/Html-files/آزمایشگاه 9/زیست/Hamyar e Man - آزمایشگاه زیست پایه نهم.html"
+  },
+  {
+   "id": "lab-09-chemistry.html",
+   "cat": "lab",
+   "kind": "html",
+   "title": "Hamyar e Man - آزمایشگاه شیمی پایه نهم",
+   "gender": "all",
+   "aw": "lab-09-chemistry.html",
+   "key": "Bucket/Html-files/آزمایشگاه 9/شیمی/Hamyar e Man - آزمایشگاه شیمی پایه نهم.html"
+  },
+  {
+   "id": "lab-09-physics.html",
+   "cat": "lab",
+   "kind": "html",
+   "title": "Hamyar e Man - آزمایشگاه فیزیک پایه نهم",
+   "gender": "all",
+   "aw": "lab-09-physics.html",
+   "key": "Bucket/Html-files/آزمایشگاه 9/فیزیک/Hamyar e Man - آزمایشگاه فیزیک پایه نهم.html"
+  },
+  {
+   "id": "tool-calendar.html",
+   "cat": "tool-gen",
+   "kind": "html",
+   "title": "تقویم",
+   "gender": "all",
+   "aw": "tool-calendar.html",
+   "key": "Bucket/Html-files/جعبه ابزار های عمومی/تقویم.html"
+  },
+  {
+   "id": "tool-converter.html",
+   "cat": "tool-gen",
+   "kind": "html",
+   "title": "مبدل همه‌کاره مهندسی",
+   "gender": "all",
+   "aw": "tool-converter.html",
+   "key": "Bucket/Html-files/جعبه ابزار های عمومی/مبدل همه‌کاره مهندسی.html"
+  },
+  {
+   "id": "tool-dj120d.html",
+   "cat": "tool-gen",
+   "kind": "html",
+   "title": "DJ-120D Plus",
+   "gender": "all",
+   "aw": "tool-dj120d.html",
+   "key": "Bucket/Html-files/جعبه ابزار های عمومی/DJ-120D Plus.html"
+  },
+  {
+   "id": "tool-casio991.html",
+   "cat": "tool-math",
+   "kind": "html",
+   "title": "CASIO fx-991CW ClassWiz",
+   "gender": "all",
+   "aw": "tool-casio991.html",
+   "key": "Bucket/Html-files/جعبه ابزار های ریاضی/CASIO fx-991CW ClassWiz.html"
+  },
+  {
+   "id": "tool-ti-nspire.html",
+   "cat": "tool-math",
+   "kind": "html",
+   "title": "TI-Nspire CX II-T CAS",
+   "gender": "all",
+   "aw": "tool-ti-nspire.html",
+   "key": "Bucket/Html-files/جعبه ابزار های ریاضی/TI-Nspire CX II-T CAS .html"
   }
  ]
 }
