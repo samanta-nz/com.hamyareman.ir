@@ -1,0 +1,178 @@
+[
+  {
+    "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "form": "A: host + key",
+    "url": "https://c539776.parspack.net/Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "255044462d312e37",
+    "hmk1": false
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "form": "B: host + bucket + key",
+    "url": "https://c539776.parspack.net/c539776/Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "255044462d312e37",
+    "hmk1": false
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "form": "C: endpoint + bucket+key",
+    "url": "https://parspack.net/c539776/Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "status": 404,
+    "len": null,
+    "type": "text/html; charset=utf-8"
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "form": "D: s3 host",
+    "url": "https://s3.parspack.com/c539776/Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
+    "status": 404,
+    "len": null,
+    "type": "text/html"
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-math/menu.json",
+    "form": "A: host + key",
+    "url": "https://c539776.parspack.net/Bucket/Pdf-files/G09/g9-math/menu.json",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "7b0d0a2020227375",
+    "hmk1": false
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-math/menu.json",
+    "form": "B: host + bucket + key",
+    "url": "https://c539776.parspack.net/c539776/Bucket/Pdf-files/G09/g9-math/menu.json",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "7b0d0a2020227375",
+    "hmk1": false
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-math/menu.json",
+    "form": "C: endpoint + bucket+key",
+    "url": "https://parspack.net/c539776/Bucket/Pdf-files/G09/g9-math/menu.json",
+    "status": 404,
+    "len": null,
+    "type": "text/html; charset=utf-8"
+  },
+  {
+    "key": "Bucket/Pdf-files/G09/g9-math/menu.json",
+    "form": "D: s3 host",
+    "url": "https://s3.parspack.com/c539776/Bucket/Pdf-files/G09/g9-math/menu.json",
+    "status": 404,
+    "len": null,
+    "type": "text/html"
+  },
+  {
+    "key": "Bucket/Html-files/آموزشگاه/26-fake-news.html",
+    "form": "A: host + key",
+    "url": "https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "484d4b315c2853ef",
+    "hmk1": true
+  },
+  {
+    "key": "Bucket/Html-files/آموزشگاه/26-fake-news.html",
+    "form": "B: host + bucket + key",
+    "url": "https://c539776.parspack.net/c539776/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "484d4b315c2853ef",
+    "hmk1": true
+  },
+  {
+    "key": "Bucket/Html-files/آموزشگاه/26-fake-news.html",
+    "form": "C: endpoint + bucket+key",
+    "url": "https://parspack.net/c539776/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html",
+    "error": "TooManyRedirects"
+  },
+  {
+    "key": "Bucket/Html-files/آموزشگاه/26-fake-news.html",
+    "form": "D: s3 host",
+    "url": "https://s3.parspack.com/c539776/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html",
+    "status": 404,
+    "len": null,
+    "type": "text/html"
+  },
+  {
+    "key": "Bucket/Html-files/01 - حالت کودک.html",
+    "form": "A: host + key",
+    "url": "https://c539776.parspack.net/Bucket/Html-files/01%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9.html",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "484d4b317e0b1df7",
+    "hmk1": true
+  },
+  {
+    "key": "Bucket/Html-files/01 - حالت کودک.html",
+    "form": "B: host + bucket + key",
+    "url": "https://c539776.parspack.net/c539776/Bucket/Html-files/01%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9.html",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "484d4b317e0b1df7",
+    "hmk1": true
+  },
+  {
+    "key": "Bucket/Html-files/01 - حالت کودک.html",
+    "form": "C: endpoint + bucket+key",
+    "url": "https://parspack.net/c539776/Bucket/Html-files/01%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9.html",
+    "error": "TooManyRedirects"
+  },
+  {
+    "key": "Bucket/Html-files/01 - حالت کودک.html",
+    "form": "D: s3 host",
+    "url": "https://s3.parspack.com/c539776/Bucket/Html-files/01%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9.html",
+    "status": 404,
+    "len": null,
+    "type": "text/html"
+  },
+  {
+    "key": "Bucket/Html-files/background-music.html",
+    "form": "A: host + key",
+    "url": "https://c539776.parspack.net/Bucket/Html-files/background-music.html",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "484d4b31778fb34c",
+    "hmk1": true
+  },
+  {
+    "key": "Bucket/Html-files/background-music.html",
+    "form": "B: host + bucket + key",
+    "url": "https://c539776.parspack.net/c539776/Bucket/Html-files/background-music.html",
+    "status": 206,
+    "len": "64",
+    "type": "binary/octet-stream",
+    "head": "484d4b31778fb34c",
+    "hmk1": true
+  },
+  {
+    "key": "Bucket/Html-files/background-music.html",
+    "form": "C: endpoint + bucket+key",
+    "url": "https://parspack.net/c539776/Bucket/Html-files/background-music.html",
+    "status": 404,
+    "len": null,
+    "type": "text/html; charset=utf-8"
+  },
+  {
+    "key": "Bucket/Html-files/background-music.html",
+    "form": "D: s3 host",
+    "url": "https://s3.parspack.com/c539776/Bucket/Html-files/background-music.html",
+    "status": 404,
+    "len": null,
+    "type": "text/html"
+  }
+]
