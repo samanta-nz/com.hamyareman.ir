@@ -1,8 +1,6 @@
 2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/FontFloater.kt:147:56 'fun Modifier.menuAnchor(): Modifier' is deprecated. Use overload that takes ExposedDropdownMenuAnchorType and enabled parameters.
 2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:487:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
 2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/auth/LoginScreen.kt:489:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
-2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt:200:41 Unnecessary safe call on a non-null receiver of type 'ContentItem'.
-2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt:200:64 Unnecessary safe call on a non-null receiver of type 'ContentItem'.
 2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/cycle/PeriodTrainingScreen.kt:74:9 'fun TabRow(selectedTabIndex: Int, modifier: Modifier = ..., containerColor: Color = ..., contentColor: Color = ..., indicator: ComposableFunction1<List<TabPosition>, Unit> = ..., divider: ComposableFunction0<Unit> = ..., tabs: ComposableFunction0<Unit>): Unit' is deprecated. Replaced with PrimaryTabRow and SecondaryTabRow.
 2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LearningScreens.kt:94:8 Annotation 'androidx.media3.common.util.UnstableApi' is not annotated with '@RequiresOptIn'. '@OptIn' has no effect.
 2	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/learning/LessonPlayerScreen.kt:302:30 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
@@ -38,6 +36,8 @@
 1	apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:343:13 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.
 1	apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:739:9 Expression is unused.
 1	apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminConsoleScreens.kt:57:12 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.
+1	shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
+1	shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
 1	shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:461:21 'suspend fun createVerification(url: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.createEmailVerification` instead.
 1	shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:474:21 'suspend fun updateVerification(userId: String, secret: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.updateEmailVerification` instead.
 1	shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.
@@ -47,8 +47,6 @@
 1	shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:113:9 Expression is unused.
 1	shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:129:9 Expression is unused.
 1	shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:138:9 Expression is unused.
-1	shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
-1	shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.
 1	shared/feature-calls/src/main/java/com/hamyareman/ir/platform/feature/calls/CallEngine.kt:389:58 The corresponding parameter in the supertype 'SdpAdapter' is named 'sdp'. This may cause problems when calling this function with named arguments.
 1	shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:123:58 'constructor(p0: MediaSession): MediaSession.ConnectionResult.AcceptedResultBuilder' is deprecated. Deprecated in Java.
 1	shared/feature-playback/src/main/java/com/hamyareman/ir/platform/feature/playback/PlaybackService.kt:145:30 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
