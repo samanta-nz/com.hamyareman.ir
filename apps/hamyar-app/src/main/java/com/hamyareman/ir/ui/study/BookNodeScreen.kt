@@ -79,17 +79,17 @@ private fun SpaceholderPage() {
     )
 }
 
-private sealed interface PdfState {
-    data object Loading : PdfState
-    data class Ready(val pages: Int) : PdfState
-    data class Failed(val message: String) : PdfState
+private sealed interface BookPdfState {
+    data object Loading : BookPdfState
+    data class Ready(val pages: Int) : BookPdfState
+    data class Failed(val message: String) : BookPdfState
 }
 
 @Composable
 private fun BookPdfPages(bucketKey: String) {
     val ctx = LocalContext.current
     val fileId = remember(bucketKey) { bucketKey.substringAfterLast('/') }
-    var state by remember(fileId) { mutableStateOf<PdfState>(PdfState.Loading) }
+    var state by remember(fileId) { mutableStateOf<BookPdfState>(BookPdfState.Loading) }
     var progress by remember(fileId) { mutableStateOf(0) }
     var renderer by remember(fileId) { mutableStateOf<PdfRenderer?>(null) }
     val lock = remember(fileId) { Any() }
@@ -105,7 +105,7 @@ private fun BookPdfPages(bucketKey: String) {
     }
 
     LaunchedEffect(fileId, retry) {
-        state = PdfState.Loading
+        state = BookPdfState.Loading
         progress = 0
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val result = withContext(Dispatchers.IO) {
@@ -117,19 +117,19 @@ private fun BookPdfPages(bucketKey: String) {
         }
         result.onSuccess { r ->
             synchronized(lock) { renderer = r }
-            state = PdfState.Ready(r.pageCount)
+            state = BookPdfState.Ready(r.pageCount)
         }.onFailure {
-            state = PdfState.Failed(it.message?.take(180) ?: "دریافت این فایل ممکن نشد.")
+            state = BookPdfState.Failed(it.message?.take(180) ?: "دریافت این فایل ممکن نشد.")
         }
     }
 
     when (val s = state) {
-        is PdfState.Loading -> Box(
+        is BookPdfState.Loading -> Box(
             Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center,
         ) { HtmlPercentLoader(progress) }
 
-        is PdfState.Failed -> Column(
+        is BookPdfState.Failed -> Column(
             Modifier.fillMaxSize().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -138,7 +138,7 @@ private fun BookPdfPages(bucketKey: String) {
             TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
         }
 
-        is PdfState.Ready -> LazyColumn(
+        is BookPdfState.Ready -> LazyColumn(
             Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
