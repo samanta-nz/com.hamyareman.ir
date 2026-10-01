@@ -1,0 +1,67 @@
+name: Verify content decode key
+
+# بررسی فقط-خواندنی: ردیف html_media_key روی Appwrite سنگاپور هست؟ و آیا
+# همان کلید واقعاً فایل‌های پارس‌پک و آروان را باز می‌کند؟
+# با کامیتی که پیامش «[key-check]» دارد یا دستی اجرا می‌شود.
+
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: html-key-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[key-check]')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install --quiet requests cryptography
+
+      - name: بررسی کلید و باز کردن نمونه‌ها
+        run: |
+          set +e
+          python3 scripts/verify_html_key.py --output ci-report --samples 3
+          echo "exit=$?"
+          exit 0
+
+      - name: خلاصه در صفحهٔ ران
+        if: always()
+        run: |
+          set +e
+          cat ci-report/html-key-status.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null \
+            || echo "گزارشی تولید نشد." >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: کامیت گزارش روی همین برنچ
+        if: always()
+        run: |
+          set +e
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/html-key-status.md ci-report/html-key-status.json
+          if git diff --cached --quiet; then
+            echo "گزارش تغییری نکرده است."
+          else
+            git commit -m "گزارش بررسی کلید محتوا برای ${GITHUB_SHA::7} [skip-report]"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          exit 0
