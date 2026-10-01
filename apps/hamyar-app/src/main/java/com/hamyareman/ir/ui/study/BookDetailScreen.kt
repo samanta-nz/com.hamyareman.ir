@@ -130,7 +130,7 @@ fun BookDetailScreen(
                 // بستن یک گره، زیرشاخه‌های بازش را هم جمع می‌کند.
                 openNodes.filterNot { it == path || it.startsWith("$path.") }.toSet()
             } else {
-                openNodes.filterNot { it.count { c -> c == '.' } >= depth } + path
+                (openNodes.filterNot { it.count { c -> c == '.' } >= depth } + path).toSet()
             }
             openNodes = next
             tocStore.putString("accset_$bookCode", next.joinToString("|"))
