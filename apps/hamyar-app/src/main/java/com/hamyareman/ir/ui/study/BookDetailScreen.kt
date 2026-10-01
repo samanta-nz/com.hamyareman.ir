@@ -116,6 +116,17 @@ fun BookDetailScreen(
             openSection = next
             tocStore.putString("acc_$bookCode", next)
         }
+        var openNodes by remember(bookCode) {
+            mutableStateOf(
+                tocStore.getString("accset_$bookCode", "")
+                    .split('|').filter { it.isNotBlank() }.toSet(),
+            )
+        }
+        val toggleNode: (String) -> Unit = { path ->
+            val next = if (path in openNodes) openNodes - path else openNodes + path
+            openNodes = next
+            tocStore.putString("accset_$bookCode", next.joinToString("|"))
+        }
         // منو دقیقاً از `books-menu.json` ساخته می‌شود — همان عنوان‌هایی که در
         // menu.json هر کتاب روی باکت نوشته شده‌اند. گره‌ای که فایل آماده ندارد
         // به تک‌فایل مشترک «در دست تولید» می‌رود.
@@ -126,12 +137,15 @@ fun BookDetailScreen(
                     TocRow(bookCode, node, 0, tocStore, onTeach, onStudy, onVideoTeach, openId = openSection, onToggle = toggle)
                 }
             } else {
+                // آکاردئون چندسطحی: چند گره هم‌زمان باز می‌مانند، وگرنه باز کردن
+                // یک درس، فصلِ بالای سرش را می‌بست.
                 menu.items.forEachIndexed { index, node ->
                     BookMenuNode(
                         node = node,
-                        nodeId = "n$index",
-                        openId = openSection,
-                        onToggle = toggle,
+                        path = "n$index",
+                        depth = 0,
+                        openPaths = openNodes,
+                        onToggle = toggleNode,
                         onOpen = onOpenNode,
                     )
                 }
@@ -348,57 +362,92 @@ private fun StaticCard(node: TocNode, depth: Int) {
 @Composable
 private fun BookMenuNode(
     node: BooksMenu.Node,
-    nodeId: String,
-    openId: String,
+    path: String,
+    depth: Int,
+    openPaths: Set<String>,
     onToggle: (String) -> Unit,
     onOpen: (String, String) -> Unit,
 ) {
-    val open = openId == nodeId
+    val open = path in openPaths
+    val indent = (depth * 14).dp
     Card(
-        Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(start = indent, top = 3.dp, bottom = 3.dp),
     ) {
         Column(Modifier.fillMaxWidth()) {
             Row(
                 Modifier
                     .fillMaxWidth()
                     .clickable {
-                        if (node.isLesson) onToggle(nodeId)
+                        if (node.expandable) onToggle(path)
                         else onOpen(BooksMenu.destination(node.key, node.ready), node.title)
                     }
                     .padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    if (node.isLesson) (if (open) "▾" else "▸") else "•",
+                    if (node.expandable) (if (open) "▾" else "▸") else "•",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(node.title, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                if (!node.isLesson && !node.hasContent) SoonBadge()
+                Text(
+                    node.title,
+                    style = if (depth == 0) MaterialTheme.typography.bodyMedium
+                    else MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                )
+                if (!node.expandable && !node.hasContent) SoonBadge()
             }
-            if (node.isLesson && open) {
-                Column(Modifier.fillMaxWidth().padding(start = 18.dp, end = 10.dp, bottom = 8.dp)) {
+
+            if (open) {
+                Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+                    // فصلی که PDF خودش را دارد، آن را به‌صورت یک ردیف جدا نشان
+                    // می‌دهد تا با باز شدن زیرشاخه‌ها دسترسی به خودش از بین نرود.
+                    if (node.hasContent) {
+                        LeafRow(
+                            title = "متن کامل: ${node.title}",
+                            key = node.key,
+                            ready = node.ready,
+                            depth = depth + 1,
+                            onOpen = onOpen,
+                        )
+                    }
                     node.tabs.forEach { tab ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable { onOpen(BooksMenu.destination(tab.key, tab.ready), tab.title) }
-                                .padding(horizontal = 8.dp, vertical = 9.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                tab.title,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            if (!tab.hasContent) SoonBadge()
-                        }
+                        LeafRow(tab.title, tab.key, tab.ready, depth + 1, onOpen)
+                    }
+                    node.children.forEachIndexed { i, child ->
+                        BookMenuNode(child, "$path.$i", depth + 1, openPaths, onToggle, onOpen)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LeafRow(
+    title: String,
+    key: String?,
+    ready: Boolean?,
+    depth: Int,
+    onOpen: (String, String) -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onOpen(BooksMenu.destination(key, ready), title) }
+            .padding(start = (depth * 14).dp + 14.dp, end = 12.dp, top = 9.dp, bottom = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            title,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        if (ready != true || key.isNullOrBlank()) SoonBadge()
     }
 }
 

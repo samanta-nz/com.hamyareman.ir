@@ -33,7 +33,12 @@ object BooksMenu {
         val tabs: List<Tab>,
         val children: List<Node>,
     ) {
-        val isLesson: Boolean get() = kind == "lesson" || tabs.isNotEmpty()
+        /**
+         * هر گره‌ای که سربرگ یا فرزند دارد باز می‌شود — چه `lesson` باشد چه
+         * `container`. فصل‌های ریاضی `container` با صفر سربرگ و پنج فرزندند؛
+         * شرط قبلی آن‌ها را برگ می‌دید و درس‌هایشان گم می‌شد.
+         */
+        val expandable: Boolean get() = tabs.isNotEmpty() || children.isNotEmpty()
         val hasContent: Boolean get() = ready == true && !key.isNullOrBlank()
     }
 
