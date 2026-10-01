@@ -31,10 +31,9 @@ jobs:
       - run: pip install --quiet boto3
       - name: فهرست‌برداری و دریافت منوها
         run: |
-          set +e
-          python3 scripts/sync_bucket_menus.py --prefix "Bucket/" --out bucket-sync
-          echo "exit=$?"
-          exit 0
+          mkdir -p ci-report
+          set -o pipefail
+          python3 scripts/sync_bucket_menus.py --prefix "Bucket/" --out bucket-sync 2>&1 | tee ci-report/bucket-sync.log
       - name: خلاصه
         if: always()
         run: |
@@ -47,7 +46,7 @@ jobs:
           set +e
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f bucket-sync ci-report/bucket-inventory.md ci-report/bucket-inventory.json
+          git add -f bucket-sync ci-report/bucket-inventory.md ci-report/bucket-inventory.json ci-report/bucket-sync.log
           if git diff --cached --quiet; then echo "بدون تغییر"; else
             git commit -m "همگام‌سازی منوها و فهرست باکت ${GITHUB_SHA::7} [skip-report]"
             git pull --rebase origin "${GITHUB_REF_NAME}"

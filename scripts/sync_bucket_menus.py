@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from s3_targets import list_all, target as load_target  # noqa: E402
+from s3_targets import target as load_target  # noqa: E402
 
 MENU_NAMES = ("menu.txt", "menu.json", "files.json")
 AUDIO_EXT = (".mp3", ".m4a", ".aac", ".ogg", ".opus", ".wav")
@@ -33,8 +33,54 @@ def main() -> int:
     args = ap.parse_args()
 
     tgt = load_target("parspack")
-    client = tgt.client()
-    objects = list_all(client, tgt.bucket, tgt, prefix=args.prefix)
+
+    # این نصب Ceph سر فهرست‌برداری حساس است؛ ترکیب‌ها را امتحان می‌کنیم و
+    # اولین چیزی که واقعاً جواب بدهد برنده است. خطاها چاپ می‌شوند، بلعیده نه.
+    objects = []
+    client = None
+    attempts = []
+    for addressing in ("virtual", "path"):
+        c = tgt.client(addressing=addressing)
+        for version in (1, 2):
+            try:
+                if version == 2:
+                    found = []
+                    for page in c.get_paginator("list_objects_v2").paginate(
+                        Bucket=tgt.bucket, Prefix=args.prefix
+                    ):
+                        found.extend(page.get("Contents") or [])
+                else:
+                    found = []
+                    marker = ""
+                    while True:
+                        kw = {"Bucket": tgt.bucket, "Prefix": args.prefix}
+                        if marker:
+                            kw["Marker"] = marker
+                        resp = c.list_objects(**kw)
+                        batch = resp.get("Contents") or []
+                        found.extend(batch)
+                        if not resp.get("IsTruncated"):
+                            break
+                        marker = batch[-1]["Key"]
+                attempts.append(f"{addressing}/v{version}: {len(found)} شیء")
+                if found:
+                    objects, client = found, c
+                    break
+            except Exception as exc:  # noqa: BLE001
+                detail = getattr(exc, "response", {}).get("Error", {}) if hasattr(exc, "response") else {}
+                attempts.append(
+                    f"{addressing}/v{version}: {detail.get('Code') or type(exc).__name__}"
+                    f" — {(detail.get('Message') or str(exc))[:90]}"
+                )
+        if objects:
+            break
+
+    print("تلاش‌های فهرست‌برداری:")
+    for a in attempts:
+        print("   ", a)
+    if not objects:
+        raise SystemExit("❌ هیچ ترکیبی از فهرست‌برداری جواب نداد.")
+
     keys = sorted((o["Key"], int(o.get("Size") or 0)) for o in objects)
     print(f"اشیاء زیر «{args.prefix}»: {len(keys)}")
 
