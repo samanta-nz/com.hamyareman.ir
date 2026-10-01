@@ -6,7 +6,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.hamyareman.ir.platform.core.designsystem.AppTopBar
-import com.hamyareman.ir.ui.study.SecureWebEffect
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.stopManagedMedia
@@ -99,11 +96,9 @@ fun BackgroundMusicHost(
     }
 }
 
+/**
+ * صفحهٔ «فضای آرام من» حالا همان نجواهای آرام‌بخش است: فایل کامل از باکت و
+ * تایمر خواب بومی. کادر جمع‌شوندهٔ قبلی از اینجا و از یوگا/حرکات ورزشی برداشته شد.
+ */
 @Composable
-fun BackgroundMusicScreen(onBack: () -> Unit) {
-    SecureWebEffect()
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar("فضای آرام من", onBack)
-        BackgroundMusicHost(Modifier.weight(1f), startExpanded = true)
-    }
-}
+fun BackgroundMusicScreen(onBack: () -> Unit) = CalmWhispersScreen(onBack)

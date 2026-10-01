@@ -23,7 +23,6 @@ import androidx.navigation.NavController
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.ui.AppTypography
-import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
 import com.hamyareman.ir.ui.hub.HubBody
 import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
@@ -212,7 +211,6 @@ fun BetweenLessonsHubScreen(nav: NavController, onBack: () -> Unit) {
         headerSlot = "hub.between.header",
         accKey = "acc_between",
         onBack = onBack,
-        extraTop = { BackgroundMusicHost() },
     )
 }
 
