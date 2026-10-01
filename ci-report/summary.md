@@ -129,9 +129,9 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/RemoteHtmlCache.kt:83:21 Unnecessary non-null assertion (!!) on a non-null receiver of type 'HttpURLConnection'.` (×2)
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:104:29 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/AdminApi.kt:122:30 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
+- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
-- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 
 ### Other — 9 مورد یکتا
 
