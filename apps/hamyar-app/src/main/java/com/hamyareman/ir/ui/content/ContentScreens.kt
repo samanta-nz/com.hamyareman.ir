@@ -28,13 +28,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.study.SecureWebEffect
 import com.hamyareman.ir.ui.study.ManagedWebMediaEffect
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -120,6 +123,7 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     SecureWebEffect()
     ManagedWebMediaEffect { webRef[0] }
@@ -171,6 +175,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
             AndroidView(
                 factory = { c ->
                     com.hamyareman.ir.ui.study.ZoomResetWebView(c).apply {
+                        installHamyarAppearanceBridge(appearance)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.setSupportZoom(true)
@@ -190,6 +195,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         ) {
                             override fun onPageFinished(view: WebView, url: String) {
                                 super.onPageFinished(view, url)
+                                view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                                 view.bindManagedMediaLifecycle()
                                 // درس بعدی که کاربر با لینک نسبی به آن رفته را در وضعیت اپ
                                 // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()
@@ -205,6 +211,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                     }
                 },
                 update = { view ->
+                    view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                     val target = pageUrl
                     if (target != null && view.tag != target) {
                         view.tag = target

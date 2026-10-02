@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.feature.study.BookModuleRegistry
@@ -392,6 +393,7 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
     val tracks = teachTracksOf(pack)
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val container = LocalAppContainer.current
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     ManagedWebMediaEffect { webRef[0] }
     var remoteHtml by remember(pack.packId) { mutableStateOf<String?>(null) }
@@ -439,8 +441,10 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
                 AndroidView(
                     factory = { c ->
                         ZoomResetWebView(c).apply {
+                            installHamyarAppearanceBridge(appearance)
                             webViewClient = object : WebViewClient() {
                                 override fun onPageFinished(view: WebView, url: String) {
+                                    view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                                     view.bindManagedMediaLifecycle()
                                 }
                             }
@@ -463,6 +467,7 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
                         }
                     },
                     update = { wv ->
+                        wv.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                         val tag = teachHtml.hashCode()
                         if (wv.tag != tag) {
                             wv.tag = tag
@@ -670,6 +675,7 @@ private fun MathFlashTab(pack: StudyPack) {
 
 @Composable
 private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoomChanged: (Boolean) -> Unit = {}) {
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     ManagedWebMediaEffect { webRef[0] }
     val summary = pack.summary.ifBlank {
@@ -691,8 +697,10 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
         AndroidView(
             factory = { ctx ->
                 ZoomResetWebView(ctx).apply {
+                    installHamyarAppearanceBridge(appearance)
                     webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
+                            view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                             view.bindManagedMediaLifecycle()
                         }
                     }
@@ -714,6 +722,7 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
                 }
             },
             update = { wv ->
+                wv.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                 val tag = html.hashCode()
                 if (wv.tag != tag) {
                     wv.tag = tag

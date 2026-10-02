@@ -19,8 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 
 private class MusicSheetBridge(private val onExpanded: (Boolean) -> Unit) {
@@ -41,6 +44,7 @@ fun BackgroundMusicHost(
     onExpandedChanged: (Boolean) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(startExpanded) }
+    val appearance = LocalUiPrefs.current
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val webRef = remember { arrayOfNulls<WebView>(1) }
     fun setExpanded(value: Boolean) {
@@ -63,6 +67,7 @@ fun BackgroundMusicHost(
         AndroidView(
             factory = { context ->
                 WebView(context).apply {
+                    installHamyarAppearanceBridge(appearance)
                     setBackgroundColor(Color.TRANSPARENT)
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
@@ -74,6 +79,7 @@ fun BackgroundMusicHost(
                     )
                     webViewClient = object : android.webkit.WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
+                            view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                             view.bindManagedMediaLifecycle()
                             view.evaluateJavascript(
                                 """
@@ -95,6 +101,7 @@ fun BackgroundMusicHost(
                     loadUrl("file:///android_asset/content/background-music.html#embedded")
                 }
             },
+            update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
             modifier = Modifier.fillMaxSize(),
             onRelease = {
                 it.stopManagedMedia()
