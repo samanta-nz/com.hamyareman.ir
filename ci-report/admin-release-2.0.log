@@ -1,0 +1,394 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :core-designsystem:preBuild UP-TO-DATE
+> Task :hamyar-admin:preBuild UP-TO-DATE
+> Task :core-common:preBuild UP-TO-DATE
+> Task :core-appwrite:preBuild UP-TO-DATE
+> Task :core-designsystem:preReleaseBuild UP-TO-DATE
+> Task :core-common:preReleaseBuild UP-TO-DATE
+> Task :core-appwrite:preReleaseBuild UP-TO-DATE
+> Task :hamyar-admin:preReleaseBuild UP-TO-DATE
+> Task :core-designsystem:generateReleaseResources FROM-CACHE
+> Task :core-common:generateReleaseResources FROM-CACHE
+> Task :core-appwrite:generateReleaseResources FROM-CACHE
+> Task :hamyar-admin:generateReleaseBuildConfig
+> Task :hamyar-admin:generateReleaseResources
+> Task :hamyar-admin:mergeReleaseJniLibFolders
+> Task :core-designsystem:packageReleaseResources
+> Task :core-appwrite:packageReleaseResources
+> Task :core-common:packageReleaseResources
+> Task :core-appwrite:processReleaseNavigationResources FROM-CACHE
+> Task :core-designsystem:processReleaseNavigationResources FROM-CACHE
+> Task :core-common:processReleaseNavigationResources FROM-CACHE
+> Task :hamyar-admin:checkReleaseDuplicateClasses
+> Task :hamyar-admin:packageReleaseResources
+> Task :hamyar-admin:processReleaseNavigationResources
+> Task :core-designsystem:parseReleaseLocalResources FROM-CACHE
+> Task :core-designsystem:generateReleaseRFile FROM-CACHE
+> Task :core-designsystem:javaPreCompileRelease FROM-CACHE
+> Task :core-designsystem:mergeReleaseJniLibFolders
+> Task :core-common:parseReleaseLocalResources FROM-CACHE
+> Task :core-common:generateReleaseRFile FROM-CACHE
+> Task :core-designsystem:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-designsystem:copyReleaseJniLibsProjectOnly
+> Task :core-designsystem:mapReleaseSourceSetPaths
+> Task :core-appwrite:parseReleaseLocalResources FROM-CACHE
+> Task :core-appwrite:generateReleaseRFile FROM-CACHE
+> Task :core-appwrite:javaPreCompileRelease FROM-CACHE
+> Task :core-appwrite:mergeReleaseJniLibFolders
+> Task :core-appwrite:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-designsystem:compileReleaseLibraryResources
+> Task :core-appwrite:copyReleaseJniLibsProjectOnly
+> Task :core-appwrite:mapReleaseSourceSetPaths
+> Task :core-appwrite:compileReleaseLibraryResources FROM-CACHE
+> Task :core-designsystem:writeReleaseAarMetadata
+> Task :core-appwrite:writeReleaseAarMetadata
+> Task :core-appwrite:extractDeepLinksRelease FROM-CACHE
+> Task :core-designsystem:extractDeepLinksRelease FROM-CACHE
+> Task :core-appwrite:processReleaseManifest FROM-CACHE
+> Task :core-designsystem:processReleaseManifest FROM-CACHE
+> Task :core-designsystem:prepareReleaseArtProfile
+> Task :core-appwrite:prepareReleaseArtProfile
+> Task :core-appwrite:generateReleaseAssets UP-TO-DATE
+> Task :core-designsystem:generateReleaseAssets UP-TO-DATE
+> Task :core-appwrite:mergeReleaseAssets
+> Task :core-designsystem:mergeReleaseAssets
+> Task :core-appwrite:extractProguardFiles
+> Task :core-designsystem:extractProguardFiles
+> Task :core-appwrite:prepareLintJarForPublish
+> Task :core-designsystem:prepareLintJarForPublish
+> Task :core-appwrite:extractDeepLinksForAarRelease
+> Task :core-designsystem:extractDeepLinksForAarRelease
+> Task :core-appwrite:writeReleaseLintModelMetadata
+> Task :core-designsystem:writeReleaseLintModelMetadata
+> Task :hamyar-admin:javaPreCompileRelease FROM-CACHE
+> Task :hamyar-admin:mapReleaseSourceSetPaths
+> Task :hamyar-admin:compileReleaseNavigationResources FROM-CACHE
+> Task :hamyar-admin:parseReleaseLocalResources
+> Task :core-common:javaPreCompileRelease FROM-CACHE
+> Task :core-common:mergeReleaseJniLibFolders
+> Task :core-common:mergeReleaseNativeLibs NO-SOURCE
+> Task :core-common:copyReleaseJniLibsProjectOnly
+> Task :core-common:mapReleaseSourceSetPaths
+> Task :core-common:compileReleaseLibraryResources FROM-CACHE
+> Task :core-common:writeReleaseAarMetadata
+> Task :core-common:extractDeepLinksRelease FROM-CACHE
+> Task :core-common:processReleaseManifest FROM-CACHE
+> Task :core-common:prepareReleaseArtProfile
+> Task :core-common:generateReleaseAssets UP-TO-DATE
+> Task :core-common:mergeReleaseAssets
+> Task :core-common:extractProguardFiles
+> Task :core-common:prepareLintJarForPublish
+> Task :core-common:checkReleaseAarMetadata
+> Task :core-common:extractDeepLinksForAarRelease FROM-CACHE
+> Task :core-designsystem:checkReleaseAarMetadata
+> Task :hamyar-admin:generateReleaseRFile
+> Task :hamyar-admin:mergeReleaseNativeLibs
+> Task :hamyar-admin:mergeReleaseResources
+> Task :hamyar-admin:checkReleaseAarMetadata
+> Task :hamyar-admin:createReleaseCompatibleScreenManifests
+> Task :hamyar-admin:stripReleaseDebugSymbols
+> Task :hamyar-admin:extractDeepLinksRelease
+> Task :hamyar-admin:extractReleaseNativeSymbolTables
+> Task :hamyar-admin:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :hamyar-admin:processReleaseMainManifest
+> Task :hamyar-admin:processReleaseManifest
+> Task :hamyar-admin:processReleaseManifestForPackage
+> Task :core-common:extractReleaseAnnotations
+> Task :hamyar-admin:desugarReleaseFileDependencies
+> Task :hamyar-admin:mergeReleaseStartupProfile
+> Task :hamyar-admin:processReleaseResources
+> Task :core-common:writeReleaseLintModelMetadata
+> Task :core-appwrite:checkReleaseAarMetadata
+> Task :core-common:compileReleaseKotlin
+> Task :core-common:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core-common:bundleLibRuntimeToDirRelease
+> Task :core-common:processReleaseJavaRes
+> Task :core-common:generateReleaseLintModel
+> Task :core-common:mergeReleaseGeneratedProguardFiles
+> Task :core-common:mergeReleaseConsumerProguardFiles
+> Task :core-common:mergeReleaseJavaResource
+> Task :core-common:bundleLibRuntimeToJarRelease
+> Task :core-common:syncReleaseLibJars
+> Task :core-common:createFullJarRelease
+> Task :core-common:bundleReleaseLocalLintAar
+> Task :core-common:generateReleaseLintVitalModel
+> Task :hamyar-admin:mergeExtDexRelease
+> Task :core-common:bundleLibCompileToJarRelease
+> Task :core-common:lintVitalAnalyzeRelease
+
+> Task :core-appwrite:compileReleaseKotlin
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:461:21 'suspend fun createVerification(url: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.createEmailVerification` instead.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:474:21 'suspend fun updateVerification(userId: String, secret: String): Token' is deprecated. This API has been deprecated since 1.8.0. Please use `Account.updateEmailVerification` instead.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/FunctionsService.kt:50:30 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/FunctionsService.kt:55:32 'when' expression over a subject of type 'Any?' is not exhaustive. Add a 'null' or 'else' branch.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:103:9 Expression is unused.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:113:9 Expression is unused.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:129:9 Expression is unused.
+w: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/TablesDbService.kt:138:9 Expression is unused.
+
+> Task :core-appwrite:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core-designsystem:compileReleaseKotlin
+> Task :core-designsystem:compileReleaseJavaWithJavac NO-SOURCE
+> Task :core-appwrite:bundleLibCompileToJarRelease
+> Task :core-designsystem:bundleLibCompileToJarRelease
+> Task :core-appwrite:bundleLibRuntimeToJarRelease
+> Task :core-appwrite:bundleLibRuntimeToDirRelease
+> Task :core-appwrite:generateReleaseLintVitalModel
+> Task :core-designsystem:bundleLibRuntimeToDirRelease
+> Task :core-designsystem:bundleLibRuntimeToJarRelease
+> Task :core-appwrite:processReleaseJavaRes
+> Task :core-appwrite:createFullJarRelease
+> Task :core-appwrite:generateReleaseLintModel
+> Task :core-appwrite:extractReleaseAnnotations
+> Task :core-appwrite:mergeReleaseGeneratedProguardFiles
+> Task :core-appwrite:mergeReleaseConsumerProguardFiles
+> Task :core-designsystem:generateReleaseLintVitalModel
+> Task :core-appwrite:mergeReleaseJavaResource
+> Task :core-designsystem:processReleaseJavaRes
+> Task :core-designsystem:createFullJarRelease
+> Task :core-designsystem:generateReleaseLintModel
+> Task :core-designsystem:extractReleaseAnnotations
+> Task :core-designsystem:mergeReleaseGeneratedProguardFiles
+> Task :core-designsystem:mergeReleaseConsumerProguardFiles
+> Task :core-designsystem:mergeReleaseJavaResource
+> Task :core-designsystem:syncReleaseLibJars
+> Task :core-designsystem:bundleReleaseLocalLintAar
+> Task :core-appwrite:syncReleaseLibJars
+> Task :core-appwrite:bundleReleaseLocalLintAar
+> Task :core-appwrite:lintVitalAnalyzeRelease
+> Task :core-designsystem:lintVitalAnalyzeRelease
+> Task :hamyar-admin:generateReleaseAssets UP-TO-DATE
+> Task :hamyar-admin:mergeReleaseArtProfile
+> Task :hamyar-admin:mergeReleaseAssets
+> Task :hamyar-admin:compressReleaseAssets
+> Task :hamyar-admin:extractReleaseVersionControlInfo
+> Task :hamyar-admin:extractProguardFiles
+> Task :hamyar-admin:collectReleaseDependencies
+> Task :hamyar-admin:sdkReleaseDependencyData
+> Task :hamyar-admin:validateSigningRelease
+> Task :hamyar-admin:writeReleaseAppMetadata
+> Task :hamyar-admin:writeReleaseSigningConfigVersions
+> Task :hamyar-admin:optimizeReleaseResources
+
+> Task :hamyar-admin:compileReleaseKotlin FAILED
+e: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminCommandCenter.kt:201:5 Unresolved reference 'NavigationBarItem'.
+e: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminCommandCenter.kt:204:18 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminCommandCenter.kt:205:19 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminCommandCenter.kt:356:36 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminCommandCenter.kt:558:36 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/apps/hamyar-admin/src/main/java/com/hamyareman/admin/ui/AdminCommandCenter.kt:594:130 Unresolved reference 'weight'.
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1790906734901.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/com.hamyareman.ir/com.hamyareman.ir/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':hamyar-admin:compileReleaseKotlin' (registered by plugin 'com.android.internal.application').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':hamyar-admin:compileReleaseKotlin' (registered by plugin 'com.android.internal.application').
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:121)
+	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:41)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.DefaultNodeExecutor.executeLocalTaskNode(DefaultNodeExecutor.java:55)
+	at org.gradle.execution.plan.DefaultNodeExecutor.execute(DefaultNodeExecutor.java:34)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:355)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:343)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:328)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionException: A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+	at org.gradle.workers.internal.DefaultWorkerExecutor$WorkItemExecution.waitForCompletion(DefaultWorkerExecutor.java:278)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$2(DefaultAsyncWorkTracker.java:132)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withoutLocksBlocking$3(DefaultWorkerLeaseService.java:410)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withoutLocksBlocking(DefaultWorkerLeaseService.java:405)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.blocking(DefaultWorkerLeaseService.java:255)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.blocking(DefaultWorkerLeaseService.java:237)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$3(DefaultAsyncWorkTracker.java:128)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.resources.AbstractResourceLockRegistry.whileDisallowingLockChanges(AbstractResourceLockRegistry.java:50)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.whileDisallowingProjectLockChanges(DefaultWorkerLeaseService.java:260)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:127)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:93)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForAll(DefaultAsyncWorkTracker.java:79)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForCompletion(DefaultAsyncWorkTracker.java:67)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:267)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:48)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:244)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:227)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:210)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:176)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:167)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:47)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:137)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:134)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:134)
+	at org.gradle.internal.execution.steps.ExecuteStep$Mutable.execute(ExecuteStep.java:80)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:75)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:51)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:29)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.executeMutable(RemovePreviousOutputsStep.java:67)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.executeMutable(RemovePreviousOutputsStep.java:39)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:42)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:24)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:69)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:46)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:28)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeAndStoreInCache(BuildCacheStep.java:145)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$4(BuildCacheStep.java:104)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$5(BuildCacheStep.java:104)
+	at org.gradle.internal.Try$Success.map(Try.java:170)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithCache(BuildCacheStep.java:88)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$0(BuildCacheStep.java:75)
+	at org.gradle.internal.Either$Left.fold(Either.java:116)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:74)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:49)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.executeMutable(StoreExecutionStateStep.java:46)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.executeMutable(StoreExecutionStateStep.java:35)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveMutableCachingStateStep.executeDelegate(ResolveMutableCachingStateStep.java:70)
+	at org.gradle.internal.execution.steps.ResolveMutableCachingStateStep.executeDelegate(ResolveMutableCachingStateStep.java:32)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:69)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:37)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:63)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:34)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.ValidateStep$Mutable.executeDelegate(ValidateStep.java:79)
+	at org.gradle.internal.execution.steps.ValidateStep$Mutable.executeDelegate(ValidateStep.java:65)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:105)
+	at org.gradle.internal.execution.steps.ValidateStep$Mutable.execute(ValidateStep.java:65)
+	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.executeMutable(CaptureMutableStateBeforeExecutionStep.java:86)
+	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:65)
+	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:45)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeWithNonEmptySources(SkipEmptyMutableWorkStep.java:210)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:90)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:53)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.executeMutable(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.executeMutable(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:77)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:43)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$executeMutable$0(AssignMutableWorkspaceStep.java:34)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:305)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.executeMutable(AssignMutableWorkspaceStep.java:30)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.executeMutable(AssignMutableWorkspaceStep.java:21)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:56)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:38)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:68)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:132)
+	... 30 more
+Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilation error. See log for more details
+	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.throwExceptionIfCompilationFailed(tasksUtils.kt:21)
+	at org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork.execute(BuildToolsApiCompilationWork.kt:320)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:174)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:191)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$500(DefaultConditionalExecutionQueue.java:112)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:168)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$runAndReleaseLocks$0(DefaultWorkerLeaseService.java:300)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAndReleaseLocks(DefaultWorkerLeaseService.java:298)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:294)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:286)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:130)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:135)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:163)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:125)
+	... 2 more
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2m 25s
+142 actionable tasks: 116 executed, 26 from cache
