@@ -45,7 +45,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -107,19 +106,19 @@ fun AdminCommandCenter(onLogout: () -> Unit, onSettings: () -> Unit) {
     }
     when (moreScreen) {
         "payments" -> {
-            AdminStatsScreen(onOpen = { selectedUser = it })
+            AdminAuxiliaryFrame("پرداخت‌ها و اشتراک", onBack = { moreScreen = null }) { AdminStatsScreen(onOpen = { selectedUser = it }) }
             return
         }
         "installments" -> {
-            AdminInstallmentsScreen(onOpenUser = { selectedUser = it })
+            AdminAuxiliaryFrame("اقساط", onBack = { moreScreen = null }) { AdminInstallmentsScreen(onOpenUser = { selectedUser = it }) }
             return
         }
         "functions" -> {
-            AdminFunctionsScreen()
+            AdminAuxiliaryFrame("توابع سرور", onBack = { moreScreen = null }) { AdminFunctionsScreen() }
             return
         }
         "auth" -> {
-            AdminAuthScreen(onOpen = { selectedUser = it })
+            AdminAuxiliaryFrame("حساب‌ها و نشست‌ها", onBack = { moreScreen = null }) { AdminAuthScreen(onOpen = { selectedUser = it }) }
             return
         }
     }
@@ -198,12 +197,28 @@ fun AdminCommandCenter(onLogout: () -> Unit, onSettings: () -> Unit) {
 
 @Composable
 private fun CommandNavItem(tab: CommandTab, item: CommandTab, icon: androidx.compose.ui.graphics.vector.ImageVector, click: () -> Unit) {
-    NavigationBarItem(
-        selected = tab == item,
-        onClick = click,
-        icon = { Icon(icon, contentDescription = item.title) },
-        label = { Text(item.title) },
-    )
+    TextButton(onClick = click, modifier = Modifier.padding(horizontal = 1.dp)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                icon,
+                contentDescription = item.title,
+                tint = if (tab == item) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(item.title, style = MaterialTheme.typography.labelSmall, fontWeight = if (tab == item) FontWeight.Bold else FontWeight.Normal)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AdminAuxiliaryFrame(title: String, onBack: () -> Unit, content: @Composable () -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text(title) },
+            navigationIcon = { TextButton(onClick = onBack) { Text("بازگشت") } },
+        )
+        Box(Modifier.fillMaxSize()) { content() }
+    }
 }
 
 @Composable
@@ -332,6 +347,7 @@ fun AdminSupportInboxScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdminSupportReplyScreen(
     tableId: String,
@@ -537,6 +553,7 @@ private fun ParsPackBrowser() {
 }
 
 /** HTML رمز‌شده را تنها در حافظه unwrap می‌کند؛ هیچ plaintext روی دیسک ذخیره نمی‌شود. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ParsPackObjectPreview(objectInfo: ParsPackObject, onBack: () -> Unit) {
     val container = LocalAdmin.current
@@ -591,7 +608,7 @@ private fun ParsPackPreviewContent(key: String, bytes: ByteArray, decodedHtml: B
     when (kind) {
         PreviewKind.IMAGE -> {
             val bitmap = remember(bytes) { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
-            if (bitmap == null) Text("تصویر قابل خواندن نیست.") else Image(bitmap.asImageBitmap(), null, Modifier.fillMaxWidth().weight(1f), contentScale = ContentScale.Fit)
+            if (bitmap == null) Text("تصویر قابل خواندن نیست.") else Image(bitmap.asImageBitmap(), null, Modifier.fillMaxWidth().height(360.dp), contentScale = ContentScale.Fit)
         }
         PreviewKind.HTML -> AndroidView(
             modifier = Modifier.fillMaxSize(),
