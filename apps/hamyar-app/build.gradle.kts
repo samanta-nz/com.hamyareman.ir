@@ -32,8 +32,8 @@ android {
         applicationId = "com.hamyareman.p09"
         minSdk = 26
         targetSdk = 36
-        // نسخهٔ عمومی پایهٔ نهم ۲٫۱؛ workflow انتشار می‌تواند این دو مقدار را override کند.
-        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 232
+        // نسخهٔ عمومی پایهٔ نهم ۲٫۳؛ workflow انتشار می‌تواند این دو مقدار را override کند.
+        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 233
         versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.3"
         ndk {
             // فقط معماری‌های واقعیِ گوشی. x86/x86_64 (شبیه‌ساز) عمداً حذف‌اند:

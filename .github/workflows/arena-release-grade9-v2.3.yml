@@ -23,8 +23,8 @@ concurrency:
 
 env:
   VERSION_NAME: '2.3'
-  VERSION_CODE: '232'
-  MIN_CODE: '232'          # هر نصبِ زیر ۲۳۲ → آپدیت اجباری
+  VERSION_CODE: '233'
+  MIN_CODE: '233'          # هر نصبِ زیر ۲۳۳ → آپدیت اجباری
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
@@ -204,7 +204,7 @@ jobs:
             --row-id "$ROW_ID" \
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
-            --notes "آپدیت اجباری نسخهٔ ۲٫۲|میزبانی هم‌زمان روی سرور داخلی و خارجی" \
+            --notes "آپدیت اجباری ۲٫۳ — اصلاح زوم، دانلود، تدریس ریاضی و موسیقی|میزبانی هم‌زمان روی سرور داخلی و خارجی" \
             --out ci-report/release-2.3.json 2>&1 | tee -a ci-report/release-2.3.log
 
       - name: ۷) ثبت نتیجه روی برنچ
