@@ -6,6 +6,6 @@
 
 | کلید روی باکت | خام | رمزشده | سالم | وضعیت |
 |---|---:|---:|---|---|
-| `Bucket/Html-files/background-music-full.html` | 8,626,057 | 8,626,089 | ✅ | ok |
-| `Bucket/Html-files/background-music-tile.html` | 8,626,953 | 8,626,985 | ✅ | ok |
-| `Bucket/Html-files/background-music.html` | 8,625,487 | 8,625,519 | ✅ | ok |
+| `Bucket/Html-files/background-music-full.html` | 8,631,708 | 8,631,740 | ✅ | ok |
+| `Bucket/Html-files/background-music-tile.html` | 8,629,381 | 8,629,413 | ✅ | ok |
+| `Bucket/Html-files/background-music.html` | 8,628,565 | 8,628,597 | ✅ | ok |
