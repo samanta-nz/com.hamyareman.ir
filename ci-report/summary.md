@@ -61,8 +61,8 @@
 
 - `Warning:UseKtx` × 24
 - `Warning:GradleDependency` × 11
-- `Hint:AutoboxingStateCreation` × 9
 - `Warning:UnusedResources` × 9
+- `Hint:AutoboxingStateCreation` × 8
 - `Warning:IconLauncherShape` × 7
 - `Warning:SetJavaScriptEnabled` × 5
 - `Warning:ClickableViewAccessibility` × 4
@@ -130,9 +130,9 @@
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/ParsPackStorage.kt:89:36 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/ParsPackStorage.kt:106:35 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
 - `apps/hamyar-admin/src/main/java/com/hamyareman/admin/ParsPackStorage.kt:124:35 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.`
+- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:153:28 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
 - `shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt:161:34 Unnecessary safe call on a non-null receiver of type 'NotificationManager'.`
-- `shared/core-appwrite/src/main/java/com/hamyareman/ir/platform/core/appwrite/AuthService.kt:643:34 Unnecessary safe call on a non-null receiver of type 'JSONObject'.`
 
 ### Other — 10 مورد یکتا
 
