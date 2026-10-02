@@ -56,15 +56,22 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: ۳) ثبت گزارش روی برنچ
+      - name: ۳) زیپِ خروجیِ رمزشده روی برنچ
+        run: |
+          set -euo pipefail
+          cd encoded && zip -q ../background-music-auto-theme-hmk1.zip *.html && cd ..
+          ls -l background-music-auto-theme-hmk1.zip
+          sha256sum background-music-auto-theme-hmk1.zip
+
+      - name: ۴) ثبت گزارش روی برنچ
         if: always()
         run: |
           set +e
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/music-auto-theme-encode.md
+          git add -f background-music-auto-theme-hmk1.zip ci-report/music-auto-theme-encode.md
           if ! git diff --cached --quiet; then
-            git commit -m "گزارش رمزگذاری دو قاب تمِ خودکار [skip-report]"
+            git commit -m "زیپ رمزشدهٔ دو قاب تمِ خودکار [skip-report]"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
