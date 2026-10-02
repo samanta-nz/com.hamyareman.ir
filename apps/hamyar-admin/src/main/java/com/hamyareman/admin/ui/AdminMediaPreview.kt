@@ -134,7 +134,7 @@ fun AdminFilePreview(
 }
 
 @Composable
-private fun PdfPager(bytes: ByteArray, fileId: String, cacheDir: File) {
+internal fun PdfPager(bytes: ByteArray, fileId: String, cacheDir: File) {
     var page by remember { mutableIntStateOf(0) }
     var count by remember { mutableIntStateOf(0) }
     var bmp by remember { mutableStateOf<Bitmap?>(null) }
@@ -190,7 +190,7 @@ private fun PdfPager(bytes: ByteArray, fileId: String, cacheDir: File) {
 }
 
 @Composable
-private fun AudioPlayer(bytes: ByteArray, fileId: String, cacheDir: File) {
+internal fun AudioPlayer(bytes: ByteArray, fileId: String, cacheDir: File) {
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
     var ready by remember { mutableStateOf(false) }
     var playing by remember { mutableStateOf(false) }

@@ -3,12 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// این مقادیر شناسهٔ عمومی اتصال‌اند، نه credential. کلیدهای عملیاتی هرگز در APK
+// کامپایل نمی‌شوند و فقط در vault رمز‌شدهٔ دستگاه مدیر وارد می‌شوند.
 val appwriteEndpoint = findProperty("resolvedAppwriteEndpoint") as? String
-    ?: "https://fra.cloud.appwrite.io/v1"
-val appwriteProjectId = findProperty("resolvedAppwriteProjectId") as? String ?: "6a9d59e3002751cc3ea8"
-val appwriteDatabaseId = findProperty("resolvedAppwriteDatabaseId") as? String ?: "ZahraDB"
-// کلید API داخل APK کامپایل نمی‌شود؛ از تنظیمات اتصال سرور خوانده می‌شود.
-val appwriteApiKey = ""
+    ?: "https://sgp.cloud.appwrite.io/v1"
+val appwriteProjectId = findProperty("resolvedAppwriteProjectId") as? String ?: "6abb134a002025222005"
+val appwriteDatabaseId = findProperty("resolvedAppwriteDatabaseId") as? String ?: "6abb238d000d05730d10"
 
 android {
     namespace = "com.hamyareman.admin"
@@ -29,13 +29,12 @@ android {
         applicationId = "com.hamyareman.admin"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.10"
+        versionCode = (findProperty("adminVersionCode") as? String)?.toIntOrNull() ?: 20
+        versionName = (findProperty("adminVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.0"
         buildConfigField("String", "APPWRITE_ENDPOINT", "\"$appwriteEndpoint\"")
         buildConfigField("String", "APPWRITE_PROJECT_ID", "\"$appwriteProjectId\"")
         manifestPlaceholders["appwriteProjectId"] = appwriteProjectId
         buildConfigField("String", "APPWRITE_DATABASE_ID", "\"$appwriteDatabaseId\"")
-        buildConfigField("String", "APPWRITE_API_KEY", "\"$appwriteApiKey\"")
     }
 
     buildTypes {

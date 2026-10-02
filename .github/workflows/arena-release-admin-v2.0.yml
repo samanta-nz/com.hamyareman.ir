@@ -1,0 +1,148 @@
+name: Release admin v2.0 to ParsPack
+
+# انتشار فقط با commitی آغاز می‌شود که صریحاً با Release admin v2.0 شروع شود.
+# API/S3 credentialها هرگز در APK قرار نمی‌گیرند؛ فقط در runner و GitHub Secrets هستند.
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arena-release-admin-v2
+  cancel-in-progress: false
+
+env:
+  PACKAGE: com.hamyareman.admin
+  VERSION_NAME: '2.0'
+  VERSION_CODE: '20'
+  ASSET: hamyar-admin-2.0.apk
+  PARSPACK_KEY: apk/admin/hamyar-admin-2.0.apk
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release admin v2.0')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: ۰) بررسی محرمانه‌ماندن کلیدها و پیش‌نیاز انتشار
+        env:
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${PARSPACK_ACCESS_KEY:-}" || { echo '::error::PARSPACK_ACCESS_KEY تنظیم نشده است'; exit 1; }
+          test -n "${PARSPACK_SECRET_KEY:-}" || { echo '::error::PARSPACK_SECRET_KEY تنظیم نشده است'; exit 1; }
+          ! grep -RInE 'PARSPACK_(ACCESS|SECRET)_KEY\s*=\s*[^$]' apps/hamyar-admin --include='*.kt' --include='*.kts' || {
+            echo '::error::کلید ParsPack نباید در سورس/بیلد APK باشد'; exit 1;
+          }
+          ! grep -RInE 'APPWRITE_API_KEY\s*=\s*[^$]' apps/hamyar-admin --include='*.kt' --include='*.kts' || {
+            echo '::error::کلید Appwrite نباید در سورس/بیلد APK باشد'; exit 1;
+          }
+
+      - name: ۱) ساخت نسخهٔ release ادمین
+        run: |
+          set -euo pipefail
+          ./gradlew --console=plain --stacktrace \
+            :hamyar-admin:compileReleaseKotlin \
+            :hamyar-admin:assembleRelease \
+            -PadminVersionCode="$VERSION_CODE" -PadminVersionName="$VERSION_NAME"
+          mkdir -p dist
+          mapfile -t files < <(find apps/hamyar-admin/build/outputs/apk/release -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          cp -f "${files[0]}" "dist/$ASSET"
+
+      - name: ۲) اعتبارسنجی package، نسخه و امضا
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          BADGING="$($AAPT dump badging "dist/$ASSET" | head -1)"
+          echo "$BADGING"
+          grep -F "name='$PACKAGE'" <<<"$BADGING"
+          grep -F "versionCode='$VERSION_CODE'" <<<"$BADGING"
+          grep -F "versionName='$VERSION_NAME'" <<<"$BADGING"
+          SIGNER="$($APKSIGNER verify --print-certs "dist/$ASSET" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          test "$SIGNER" = "$EXPECTED" || { echo '::error::کلید امضا با انتشارهای قبلی یکی نیست'; exit 1; }
+          {
+            echo "APK_SIZE=$(stat -c%s "dist/$ASSET")"
+            echo "APK_SHA256=$(sha256sum "dist/$ASSET" | cut -d' ' -f1)"
+            echo "SIGNER_SHA256=$SIGNER"
+          } >> "$GITHUB_ENV"
+
+      - name: ۳) انتشار در ParsPack و آزمون دانلود عمومی
+        env:
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-report
+          pip install --quiet boto3 requests
+          python3 scripts/put_public_object.py \
+            --file "dist/$ASSET" \
+            --key "$PARSPACK_KEY" \
+            --provider parspack \
+            --content-type application/vnd.android.package-archive \
+            --env-name INTERNAL_URL 2>&1 | tee ci-report/admin-release-2.0.log
+
+      - name: ۴) ثبت گزارش انتشار
+        if: always()
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set +e
+          mkdir -p ci-report
+          python3 - <<'PY'
+          import json, os
+          out = {
+              "package": os.environ.get("PACKAGE"),
+              "versionName": os.environ.get("VERSION_NAME"),
+              "versionCode": int(os.environ.get("VERSION_CODE", "0")),
+              "asset": os.environ.get("ASSET"),
+              "parspackKey": os.environ.get("PARSPACK_KEY"),
+              "internalUrl": os.environ.get("INTERNAL_URL", ""),
+              "size": int(os.environ.get("APK_SIZE", "0") or 0),
+              "sha256": os.environ.get("APK_SHA256", ""),
+              "signingSha256": os.environ.get("SIGNER_SHA256", ""),
+              "run": os.environ.get("RUN_URL"),
+              "published": bool(os.environ.get("INTERNAL_URL")),
+          }
+          with open("ci-report/admin-release-2.0.json", "w", encoding="utf-8") as f:
+              json.dump(out, f, ensure_ascii=False, indent=2)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add ci-report/admin-release-2.0.json ci-report/admin-release-2.0.log
+          git diff --cached --quiet || git commit -m 'گزارش انتشار ادمین ۲٫۰ [skip-report]'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hamyar-admin-v2.0
+          path: |
+            dist/*.apk
+            ci-report/admin-release-2.0.*
+          if-no-files-found: warn

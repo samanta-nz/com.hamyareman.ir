@@ -58,7 +58,7 @@ private fun fileView(id: String): String =
 private enum class AdminTab { PAY, REFUND, USERS, INSTALL, SEARCH, STATS, DB, STORE, FUN, AUTH }
 
 @Composable
-fun AdminHomeScreen(onLogout: () -> Unit, onSettings: () -> Unit = {}) {
+private fun LegacyAdminHomeScreen(onLogout: () -> Unit, onSettings: () -> Unit = {}) {
     val container = LocalAdmin.current
     val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(AdminTab.PAY) }

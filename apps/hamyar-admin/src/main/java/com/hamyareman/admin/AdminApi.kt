@@ -140,15 +140,13 @@ class AdminApi(
             AppResult.Err(AppError.Local(t.message?.ifBlank { null } ?: t.javaClass.simpleName))
         }
 
+    /** نقش فقط از label کنترل‌شدهٔ سمت Appwrite می‌آید؛ allow-list ایمیل در APK امن نیست. */
     fun isAdminUser(user: JSONObject): Boolean {
-        val labels = user.optJSONArray("labels")
-        if (labels != null) {
-            for (i in 0 until labels.length()) {
-                if (labels.optString(i).equals("admin", true)) return true
-            }
+        val labels = user.optJSONArray("labels") ?: return false
+        for (i in 0 until labels.length()) {
+            if (labels.optString(i).equals("admin", true)) return true
         }
-        val email = user.optString("email").lowercase()
-        return email == "behzadinfo@gmail.com" || email == "aydinnz.designer@gmail.com"
+        return false
     }
 
     suspend fun requireAdmin(userId: String): AppResult<Unit> = run {
