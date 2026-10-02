@@ -3,29 +3,114 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4faf7">
   <title>نجواهای آرام طبیعت</title>
+<script>
+/* لایهٔ مشترک تم همیار — اولویت: ۱) تم اپ  ۲) انتخاب ذخیره‌شدهٔ کاربر  ۳) تم سیستم.
+   در هر سه فایل (tile / full / player) عیناً یکسان است و پیش از اولین پینت اجرا می‌شود. */
+(function(){
+  var root=document.documentElement,KEY='hamyareman-background-v1',EVT='hamyarthemechange',current=null;
+  function ok(t){return t==='dark'||t==='light'?t:null}
+  function fromApp(){
+    try{if(window.HamyarAppearanceBridge&&window.HamyarAppearanceBridge.resolvedTheme){
+      var t=ok(window.HamyarAppearanceBridge.resolvedTheme());if(t)return t}}catch(_){}
+    if(root.getAttribute('data-hamyar-theme-preference'))return ok(root.getAttribute('data-hamyar-theme'));
+    return null;
+  }
+  function fromStore(){try{var p=JSON.parse(localStorage.getItem(KEY)||'null');return p?ok(p.theme):null}catch(_){return null}}
+  function fromSystem(){try{return window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}catch(_){return 'light'}}
+  function appOwns(){return fromApp()!==null}
+  function resolve(){return fromApp()||fromStore()||fromSystem()}
+  function apply(value,silent){
+    var t=ok(value)||'light';
+    if(t===current&&root.getAttribute('data-theme')===t&&!silent)return;
+    current=t;
+    root.setAttribute('data-theme',t);
+    root.setAttribute('data-hamyar-theme',t);
+    try{root.style.colorScheme=t}catch(_){}
+    if(appOwns())root.setAttribute('data-hamyar-app-theme','');else root.removeAttribute('data-hamyar-app-theme');
+    var meta=document.querySelector('meta[name=theme-color]');
+    if(meta)meta.setAttribute('content',t==='dark'?'#101713':'#f4faf7');
+    if(!silent){try{window.dispatchEvent(new CustomEvent(EVT,{detail:t}))}catch(_){}}
+  }
+  window.HamyarThemeLayer={event:EVT,current:function(){return current||resolve()},resolve:resolve,apply:apply,appOwns:appOwns};
+  apply(resolve(),true);
+  window.addEventListener('hamyarappearancechange',function(){apply(resolve())});
+  try{new MutationObserver(function(){var t=fromApp();if(t&&t!==current)apply(t)})
+    .observe(root,{attributes:true,attributeFilter:['data-hamyar-theme','data-hamyar-theme-preference']})}catch(_){}
+  try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(e){
+    if(!appOwns()&&!fromStore())apply(e.matches?'dark':'light')})}catch(_){}
+  window.addEventListener('message',function(e){
+    var d=e.data;if(d&&d.channel===KEY&&d.type==='theme'&&ok(d.theme))apply(d.theme)});
+})();
+</script>
   <style>
-    html,body{width:100%;height:100%;margin:0;background:#101713;overflow:hidden}
-    #backgroundMusicFrame{display:block;width:100%;height:100%;border:0;background:transparent}
-    #loader{position:fixed;inset:0;z-index:3;display:grid;place-content:center;gap:14px;text-align:center;color:#dcece4;background:#101713;font:15px sans-serif;transition:opacity .18s}
+    :root{--page-bg:#f4faf7;--loader-fg:#2f4a3e;--loader-track:#bad4c7;--loader-spin:#29976d}
+    html[data-theme=dark]{color-scheme:dark;--page-bg:#101713;--loader-fg:#dcece4;--loader-track:#365246;--loader-spin:#62d4a9}
+    /* گونهٔ full: همیشه تمام‌قد، بدون هیچ سقف ارتفاع و بدون هیچ منطق بسته‌شدن. */
+    html,body{width:100%;height:100%;min-height:100dvh;margin:0;background:var(--page-bg);overflow:hidden}
+    #backgroundMusicFrame{display:block;width:100%;height:100%;min-height:100dvh;max-height:none;border:0;background:transparent}
+    #loader{position:fixed;inset:0;z-index:3;display:grid;place-content:center;gap:14px;text-align:center;color:var(--loader-fg);background:var(--page-bg);font:15px sans-serif;transition:opacity .18s}
     #loader.done{opacity:0;pointer-events:none}
-    .spinner{width:42px;height:42px;margin:auto;border:4px solid #365246;border-top-color:#62d4a9;border-radius:50%;animation:spin .75s linear infinite}
+    .spinner{width:42px;height:42px;margin:auto;border:4px solid var(--loader-track);border-top-color:var(--loader-spin);border-radius:50%;animation:spin .75s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.spinner{animation:none}}
   </style>
 </head>
 <body data-hamyar-music-variant="full">
   <div id="loader" role="status" aria-live="polite"><span class="spinner"></span><span>در حال دریافت صداها…</span></div>
-  <iframe id="backgroundMusicFrame" data-hamyar-ignore-inflow-bridge src="background-music.html" title="نجواهای آرام طبیعت" allow="autoplay"></iframe>
+  <!-- embedded تا state/prefs واقعاً به میزبان برسد؛ full تا پخش‌کننده بدون سقف ارتفاع باز شود. -->
+  <iframe id="backgroundMusicFrame" data-hamyar-ignore-inflow-bridge src="background-music.html#embedded-full" title="نجواهای آرام طبیعت" allow="autoplay"></iframe>
   <script>
     (function(){
-      const channel='hamyareman-background-v1',frame=document.getElementById('backgroundMusicFrame'),loader=document.getElementById('loader');
+      const channel='hamyareman-background-v1',
+            frame=document.getElementById('backgroundMusicFrame'),
+            loader=document.getElementById('loader');
       function player(){try{return frame.contentWindow&&frame.contentWindow.BackgroundMusic}catch(_){return null}}
-      function applyTheme(){const theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';const api=player();if(api&&api.setTheme)api.setTheme(theme)}
-      frame.addEventListener('load',()=>{applyTheme();loader.classList.add('done');setTimeout(()=>loader.remove(),220)});
+      function post(type,extra){try{frame.contentWindow.postMessage(Object.assign({channel,type},extra||{}),'*')}catch(_){}}
+      function setVariant(full){post('variant',{full,locked:full});try{player()?.setFull?.(full,full)}catch(_){}}
+      function shareOwnership(doc){
+        try{
+          if(!doc||!doc.documentElement||!window.HamyarThemeLayer)return;
+          const root=document.documentElement,child=doc.documentElement;
+          if(window.HamyarThemeLayer.appOwns()){
+            child.setAttribute('data-hamyar-theme-preference',root.getAttribute('data-hamyar-theme-preference')||'system');
+            child.setAttribute('data-hamyar-app-theme','');
+          }else{
+            child.removeAttribute('data-hamyar-theme-preference');
+            child.removeAttribute('data-hamyar-app-theme');
+          }
+        }catch(_){}
+      }
+      function applyTheme(){
+        const theme=(window.HamyarThemeLayer&&window.HamyarThemeLayer.current())||'light';
+        post('theme',{theme});
+        const api=player();if(api&&api.setTheme)api.setTheme(theme);
+        try{const doc=frame.contentDocument;if(doc&&doc.documentElement){
+          shareOwnership(doc);
+          doc.documentElement.setAttribute('data-hamyar-theme',theme);
+          doc.documentElement.setAttribute('data-theme',theme);
+        }}catch(_){}
+      }
+      frame.addEventListener('load',()=>{
+        applyTheme();
+        setVariant(true);   // هیچ‌وقت برنمی‌گردد به حالت کادر کوچک
+        loader.classList.add('done');setTimeout(()=>loader.remove(),220);
+      });
+      window.addEventListener('hamyarthemechange',applyTheme);
       window.addEventListener('hamyarappearancechange',applyTheme);
-      window.BackgroundMusic={open:()=>player()?.open?.(),close:()=>player()?.close?.(),pause:()=>player()?.pause?.(),setTheme:applyTheme,
-        setVolume:v=>player()?.setVolume?.(v),setLayerVolume:(i,v)=>player()?.setLayerVolume?.(i,v)};
-      window.addEventListener('message',event=>{if(event.data&&event.data.channel===channel&&event.data.type==='state')window.parent!==window&&window.parent.postMessage(event.data,'*')});
+      window.BackgroundMusic={
+        open:()=>player()?.open?.(),
+        close:()=>player()?.close?.(),
+        pause:()=>player()?.pause?.(),
+        setTheme:theme=>{if(theme&&window.HamyarThemeLayer)window.HamyarThemeLayer.apply(theme);applyTheme()},
+        setVolume:v=>player()?.setVolume?.(v),
+        setLayerVolume:(i,v)=>player()?.setLayerVolume?.(i,v)
+      };
+      window.addEventListener('message',event=>{
+        const data=event.data;
+        if(data&&data.channel===channel&&data.type==='state'&&window.parent!==window)window.parent.postMessage(data,'*');
+      });
     })();
   </script>
 </body>

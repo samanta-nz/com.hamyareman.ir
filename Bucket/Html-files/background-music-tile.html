@@ -2,30 +2,149 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4faf7">
   <title>انتخاب صدای پس‌زمینه</title>
+<script>
+/* لایهٔ مشترک تم همیار — اولویت: ۱) تم اپ  ۲) انتخاب ذخیره‌شدهٔ کاربر  ۳) تم سیستم.
+   در هر سه فایل (tile / full / player) عیناً یکسان است و پیش از اولین پینت اجرا می‌شود. */
+(function(){
+  var root=document.documentElement,KEY='hamyareman-background-v1',EVT='hamyarthemechange',current=null;
+  function ok(t){return t==='dark'||t==='light'?t:null}
+  function fromApp(){
+    try{if(window.HamyarAppearanceBridge&&window.HamyarAppearanceBridge.resolvedTheme){
+      var t=ok(window.HamyarAppearanceBridge.resolvedTheme());if(t)return t}}catch(_){}
+    if(root.getAttribute('data-hamyar-theme-preference'))return ok(root.getAttribute('data-hamyar-theme'));
+    return null;
+  }
+  function fromStore(){try{var p=JSON.parse(localStorage.getItem(KEY)||'null');return p?ok(p.theme):null}catch(_){return null}}
+  function fromSystem(){try{return window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}catch(_){return 'light'}}
+  function appOwns(){return fromApp()!==null}
+  function resolve(){return fromApp()||fromStore()||fromSystem()}
+  function apply(value,silent){
+    var t=ok(value)||'light';
+    if(t===current&&root.getAttribute('data-theme')===t&&!silent)return;
+    current=t;
+    root.setAttribute('data-theme',t);
+    root.setAttribute('data-hamyar-theme',t);
+    try{root.style.colorScheme=t}catch(_){}
+    if(appOwns())root.setAttribute('data-hamyar-app-theme','');else root.removeAttribute('data-hamyar-app-theme');
+    var meta=document.querySelector('meta[name=theme-color]');
+    if(meta)meta.setAttribute('content',t==='dark'?'#101713':'#f4faf7');
+    if(!silent){try{window.dispatchEvent(new CustomEvent(EVT,{detail:t}))}catch(_){}}
+  }
+  window.HamyarThemeLayer={event:EVT,current:function(){return current||resolve()},resolve:resolve,apply:apply,appOwns:appOwns};
+  apply(resolve(),true);
+  window.addEventListener('hamyarappearancechange',function(){apply(resolve())});
+  try{new MutationObserver(function(){var t=fromApp();if(t&&t!==current)apply(t)})
+    .observe(root,{attributes:true,attributeFilter:['data-hamyar-theme','data-hamyar-theme-preference']})}catch(_){}
+  try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(e){
+    if(!appOwns()&&!fromStore())apply(e.matches?'dark':'light')})}catch(_){}
+  window.addEventListener('message',function(e){
+    var d=e.data;if(d&&d.channel===KEY&&d.type==='theme'&&ok(d.theme))apply(d.theme)});
+})();
+</script>
   <style>
+    :root{--tile-h:92px;--loader-bg:#edf7f1;--loader-fg:#527064;--loader-track:#bad4c7;--loader-spin:#29976d;--scrim:#0f2a2199}
+    html[data-theme=dark]{color-scheme:dark;--loader-bg:#17271f;--loader-fg:#a0bcae;--loader-track:#365246;--loader-spin:#62d4a9;--scrim:#06130ef2}
     html,body{margin:0;width:100%;min-height:0;background:transparent}
-    #backgroundMusicFrame{display:block;width:100%;height:92px;border:0;background:transparent;transition:height .16s ease}
-    body.is-open #backgroundMusicFrame{height:min(620px,72vh)}
-    #loader{position:absolute;inset:0 0 auto;height:92px;display:flex;align-items:center;justify-content:center;gap:12px;color:#527064;background:#edf7f1;font:14px sans-serif;z-index:2;transition:opacity .18s}
-    #loader.done{opacity:0;pointer-events:none}.spinner{width:28px;height:28px;border:3px solid #bad4c7;border-top-color:#29976d;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    /* حالت عادی: کادر ۹۲ پیکسلی، دقیقاً در جریان صفحهٔ میزبان */
+    #backgroundMusicFrame{display:block;width:100%;height:var(--tile-h);border:0;background:transparent}
+    #scrim{display:none}
+    /* حالت باز: پاپ‌آپ تمام‌صفحه با اورلی؛ کادر هیچ جابه‌جایی دائمی ندارد و با
+       بسته‌شدن (حذف کلاس) دقیقاً به جای قبلی برمی‌گردد. */
+    body.is-open #scrim{display:block;position:fixed;inset:0;z-index:2147483646;background:var(--scrim);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+    body.is-open #backgroundMusicFrame{position:fixed;inset:0;width:100vw;height:100dvh;max-height:none;z-index:2147483647}
+    #loader{position:absolute;inset:0 0 auto;height:var(--tile-h);display:flex;align-items:center;justify-content:center;gap:12px;color:var(--loader-fg);background:var(--loader-bg);font:14px sans-serif;z-index:2;transition:opacity .18s}
+    #loader.done{opacity:0;pointer-events:none}
+    .spinner{width:28px;height:28px;border:3px solid var(--loader-track);border-top-color:var(--loader-spin);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.spinner{animation:none}}
   </style>
 </head>
 <body>
   <div id="loader" role="status"><span class="spinner"></span><span>در حال دریافت پخش‌کننده…</span></div>
+  <div id="scrim" aria-hidden="true"></div>
   <iframe id="backgroundMusicFrame" src="background-music.html#embedded" title="انتخاب صدای پس‌زمینه" allow="autoplay"></iframe>
   <script>
     (function(){
-      const channel='hamyareman-background-v1',frame=document.getElementById('backgroundMusicFrame'),loader=document.getElementById('loader');let idleTimer=0;
+      const channel='hamyareman-background-v1',IDLE=2000,
+            frame=document.getElementById('backgroundMusicFrame'),
+            scrim=document.getElementById('scrim'),
+            loader=document.getElementById('loader');
+      let idleTimer=0,isOpen=false;
       function player(){try{return frame.contentWindow&&frame.contentWindow.BackgroundMusic}catch(_){return null}}
-      function close(){const api=player();if(api&&api.close)api.close();setOpen(false)}
-      function setOpen(open){document.body.classList.toggle('is-open',!!open);clearTimeout(idleTimer);if(open)idleTimer=setTimeout(close,2000)}
-      function touch(){try{window.HamyarMusicTileHost?.touch?.()}catch(_){}if(document.body.classList.contains('is-open')){clearTimeout(idleTimer);idleTimer=setTimeout(close,2000)}}
-      function applyTheme(){const api=player(),theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';if(api&&api.setTheme)api.setTheme(theme)}
-      function wire(){applyTheme();loader.classList.add('done');setTimeout(()=>loader.remove(),220);try{const doc=frame.contentDocument;['pointerdown','touchstart','click','input','change','keydown'].forEach(type=>doc.addEventListener(type,touch,{capture:true,passive:true}))}catch(_){}}
-      frame.addEventListener('load',wire);window.addEventListener('hamyarappearancechange',applyTheme);
-      window.addEventListener('message',event=>{const data=event.data;if(!data||data.channel!==channel)return;if(data.type==='state'){setOpen(!!data.opened);window.parent!==window&&window.parent.postMessage(data,'*')}else if(data.type==='prefs-set'||data.type==='prefs-get'){window.parent!==window&&window.parent.postMessage(data,'*')}});
-      window.BackgroundMusic={open:()=>player()?.open?.(),close,pause:()=>player()?.pause?.(),setTheme:applyTheme,setVolume:v=>player()?.setVolume?.(v),setLayerVolume:(i,v)=>player()?.setLayerVolume?.(i,v)};
+      function post(type,extra){try{frame.contentWindow.postMessage(Object.assign({channel,type},extra||{}),'*')}catch(_){}}
+      // هم‌origin است، پس علاوه بر postMessage مستقیم هم صدا می‌زنیم تا هیچ میزبانی این قرارداد را نشکند.
+      function setVariant(full){post('variant',{full,locked:false});try{player()?.setFull?.(full,false)}catch(_){}}
+      function shareOwnership(doc){
+        try{
+          if(!doc||!doc.documentElement||!window.HamyarThemeLayer)return;
+          const root=document.documentElement,child=doc.documentElement;
+          if(window.HamyarThemeLayer.appOwns()){
+            child.setAttribute('data-hamyar-theme-preference',root.getAttribute('data-hamyar-theme-preference')||'system');
+            child.setAttribute('data-hamyar-app-theme','');
+          }else{
+            child.removeAttribute('data-hamyar-theme-preference');
+            child.removeAttribute('data-hamyar-app-theme');
+          }
+        }catch(_){}
+      }
+      // اول گونه به حالت کادر برمی‌گردد، بعد پخش‌کننده بسته می‌شود (ترتیب مهم است).
+      function close(){setOpen(false);const api=player();if(api&&api.close)api.close()}
+      // قانون تایل: پس از ۲ ثانیه بی‌لمسی بسته می‌شود. تنها منبع این تایمر همین‌جاست.
+      function arm(){clearTimeout(idleTimer);if(isOpen)idleTimer=setTimeout(close,IDLE)}
+      function setOpen(open){
+        open=!!open;
+        if(open===isOpen){arm();return}
+        isOpen=open;
+        document.body.classList.toggle('is-open',isOpen);
+        // داخل پاپ‌آپ، پخش‌کننده تمام‌صفحه می‌شود (بدون سقف ارتفاع)
+        setVariant(isOpen);
+        try{window.HamyarMusicTileHost?.setExpanded?.(isOpen)}catch(_){}
+        if(window.parent!==window)window.parent.postMessage({channel,type:'state',opened:isOpen},'*');
+        arm();
+      }
+      function touch(){try{window.HamyarMusicTileHost?.touch?.()}catch(_){}arm()}
+      function applyTheme(){
+        const theme=(window.HamyarThemeLayer&&window.HamyarThemeLayer.current())||'light';
+        post('theme',{theme});
+        const api=player();if(api&&api.setTheme)api.setTheme(theme);
+        try{const doc=frame.contentDocument;if(doc&&doc.documentElement){
+          shareOwnership(doc);
+          doc.documentElement.setAttribute('data-hamyar-theme',theme);
+          doc.documentElement.setAttribute('data-theme',theme);
+        }}catch(_){}
+      }
+      function wire(){
+        applyTheme();setVariant(isOpen);
+        loader.classList.add('done');setTimeout(()=>loader.remove(),220);
+        try{const doc=frame.contentDocument;
+          ['pointerdown','touchstart','click','input','change','keydown']
+            .forEach(type=>doc.addEventListener(type,touch,{capture:true,passive:true}));
+        }catch(_){}
+      }
+      frame.addEventListener('load',wire);
+      scrim.addEventListener('click',close);
+      ['pointerdown','touchstart','click','keydown'].forEach(type=>document.addEventListener(type,touch,{capture:true,passive:true}));
+      window.addEventListener('hamyarthemechange',applyTheme);
+      window.addEventListener('hamyarappearancechange',applyTheme);
+      window.addEventListener('message',event=>{
+        const data=event.data;if(!data||data.channel!==channel)return;
+        if(data.type==='state'){
+          setOpen(!!data.opened);
+          if(window.parent!==window)window.parent.postMessage(data,'*');
+        }else if(data.type==='prefs-set'||data.type==='prefs-get'){
+          if(window.parent!==window)window.parent.postMessage(data,'*');
+        }
+      });
+      window.BackgroundMusic={
+        open:()=>player()?.open?.(),close,
+        pause:()=>player()?.pause?.(),
+        setTheme:theme=>{if(theme&&window.HamyarThemeLayer)window.HamyarThemeLayer.apply(theme);applyTheme()},
+        setVolume:v=>player()?.setVolume?.(v),
+        setLayerVolume:(i,v)=>player()?.setLayerVolume?.(i,v),
+        get opened(){return isOpen}
+      };
     })();
   </script>
 </body></html>
