@@ -123,7 +123,9 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
         }
     }
     val shownNotes = repoNotes.ifEmpty { info.notes }
-    val versionFa = toPersianDigits(UpdatePlan.versionLabel(info))
+    // کارتِ آپدیت باید هر سه شمارهٔ نسخه را کامل نشان بدهد (۲.۴.۲)، نه بریده.
+    val versionFa = toPersianDigits(UpdatePlan.fullVersionLabel(info))
+    val currentFa = toPersianDigits(UpdatePlan.threePart(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
 
     fun installNow() {
         note = null
@@ -227,9 +229,14 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
             Text("آپدیت برنامه", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(8.dp))
             Text(
-                "نسخه‌ی تو: ${BuildConfig.VERSION_NAME}" +
-                    "  •  نسخه‌ی تازه: $versionFa" +
-                    if (info.size > 0) "  •  حجم: ${UpdatePlan.sizeLabel(info.size)}" else "",
+                "نسخه‌ی تو: $currentFa" +
+                    "  (شمارهٔ ساخت " + toPersianDigits("${BuildConfig.VERSION_CODE}") + ")",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                "نسخه‌ی تازه: $versionFa" +
+                    (if (info.latest > 0) "  (شمارهٔ ساخت " + toPersianDigits("${info.latest}") + ")" else "") +
+                    if (info.size > 0) "  •  حجم: " + toPersianDigits(UpdatePlan.sizeLabel(info.size)) else "",
                 style = MaterialTheme.typography.bodyMedium,
             )
             if (forced) {
@@ -323,9 +330,14 @@ fun UpdateCheckCard() {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("🔄 آپدیت برنامه", style = MaterialTheme.typography.titleMedium)
             Text(
-                "نسخه‌ی نصب‌شده: ${BuildConfig.VERSION_NAME}" +
+                "نسخه‌ی نصب‌شده: " +
+                    toPersianDigits(
+                        UpdatePlan.threePart(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
+                    ) +
+                    "  (شمارهٔ ساخت " + toPersianDigits("${BuildConfig.VERSION_CODE}") + ")" +
                     if (UpdateChecker.cached(ctx) != null) {
-                        "  •  آخرین اعلام‌شده: " + UpdatePlan.versionLabel(UpdateChecker.cached(ctx)!!)
+                        "  •  آخرین اعلام‌شده: " +
+                            toPersianDigits(UpdatePlan.fullVersionLabel(UpdateChecker.cached(ctx)!!))
                     } else {
                         ""
                     },
@@ -343,7 +355,7 @@ fun UpdateCheckCard() {
                         if (info == null || UpdateSource.candidates(info).isEmpty() || info.latest <= 0) {
                             status = "الان نتوانستم از سرور بپرسم؛ بعداً دوباره امتحان کن."
                         } else if (info.latest <= BuildConfig.VERSION_CODE) {
-                            status = "همین نسخه را داری؛ «" + UpdatePlan.versionLabel(info) +
+                            status = "همین نسخه را داری؛ «" + toPersianDigits(UpdatePlan.fullVersionLabel(info)) +
                                 "» آخرین نسخه است ✅"
                         } else {
                             val d = UpdatePlan.decisionFor(BuildConfig.VERSION_CODE, info, bucket = 0)
