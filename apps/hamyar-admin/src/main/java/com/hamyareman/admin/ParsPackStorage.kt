@@ -84,13 +84,13 @@ class ParsPackStorage(private val prefs: AdminPrefs) {
 
     suspend fun read(key: String): ByteArray = withContext(Dispatchers.IO) {
         requireConfigured()
-        executeWithStyleFallback("GET", key) { request ->
+        executeWithStyleFallback(method = "GET", key = key, block = { request ->
             request.use {
                 val bytes = it.body?.bytes() ?: ByteArray(0)
                 ensureSuccessful(it.code, bytes)
                 bytes
             }
-        }
+        })
     }
 
     suspend fun upload(key: String, bytes: ByteArray, mime: String): Unit = withContext(Dispatchers.IO) {
@@ -98,26 +98,34 @@ class ParsPackStorage(private val prefs: AdminPrefs) {
         require(key.isNotBlank()) { "نام/مسیر فایل خالی است." }
         require(bytes.isNotEmpty()) { "فایل خالی است." }
         val contentType = mime.ifBlank { "application/octet-stream" }
-        executeWithStyleFallback("PUT", key) { response ->
-            response.use {
+        executeWithStyleFallback(
+            method = "PUT",
+            key = key,
+            block = { response ->
+                response.use {
                 val body = it.body?.bytes() ?: ByteArray(0)
                 // نخست ACL عمومی می‌خواهیم؛ اگر policy آن را رد کند همان PUT بدون ACL
                 // روی همان endpoint تکرار می‌شود.
-                if (it.code in 200..299) Unit else throw IllegalStateException(body.errorText(it.code))
-            }
-        }, bytes, contentType, publicAcl = true, retryWithoutAcl = true)
+                    if (it.code in 200..299) Unit else throw IllegalStateException(body.errorText(it.code))
+                }
+            },
+            bytes = bytes,
+            contentType = contentType,
+            publicAcl = true,
+            retryWithoutAcl = true,
+        )
     }
 
     suspend fun delete(key: String): Unit = withContext(Dispatchers.IO) {
         requireConfigured()
         require(key.isNotBlank()) { "نام/مسیر فایل خالی است." }
-        executeWithStyleFallback("DELETE", key) { response ->
+        executeWithStyleFallback(method = "DELETE", key = key, block = { response ->
             response.use {
                 val body = it.body?.bytes() ?: ByteArray(0)
                 ensureSuccessful(it.code, body)
                 Unit
             }
-        }
+        })
     }
 
     fun publicUrl(key: String): String = prefs.parsPackPublicBase.trimEnd('/') + "/" + encodedKey(key)
