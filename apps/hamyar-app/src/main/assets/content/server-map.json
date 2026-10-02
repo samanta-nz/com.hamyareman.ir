@@ -372,6 +372,11 @@
    "mime": "text/html"
   },
   {
+   "id": "background-music-tile.html",
+   "key": "Bucket/Html-files/background-music-tile.html",
+   "mime": "text/html"
+  },
+  {
    "id": "g9-arabic-index.pdf",
    "key": "Bucket/Pdf-files/G09/g9-arabic/g9-arabic-index.pdf",
    "mime": "application/pdf"

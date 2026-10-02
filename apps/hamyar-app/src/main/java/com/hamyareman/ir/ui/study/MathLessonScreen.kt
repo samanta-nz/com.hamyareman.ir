@@ -136,7 +136,9 @@ fun MathLessonScreen(
     }
     if (tab > tabs.lastIndex) tab = 0
     val chromeStore = remember { com.hamyareman.ir.platform.core.common.LocalStore(ctx, "hamyar_math_ui") }
-    var autoHide by rememberSaveable(packId) { mutableStateOf(chromeStore.getBool("autohide_$packId", true)) }
+    // محتوای درس و رسانه تمام‌صفحه‌اند؛ player نباید با یک تنظیم مانده از نسخهٔ
+    // قبلی ناپدید شود. کاربر هنوز در همان نشست می‌تواند جمع‌شدن را انتخاب کند.
+    var autoHide by rememberSaveable(packId) { mutableStateOf(false) }
     var chromeHidden by remember { mutableStateOf(false) }
     var hideGen by remember { mutableIntStateOf(0) }
 
@@ -154,7 +156,6 @@ fun MathLessonScreen(
     // پلیرِ صوت + سربرگ‌ها را دارند (حتی اگر صوتشان هنوز روی سرور نباشد).
     if (pack.pdfOnly || pack.lessonId == "TOC" || pack.packId == "C905_TOC") {
         Column(Modifier.fillMaxSize()) {
-            AppTopBar(title = pack.title, onBack = onBack)
             TeachPdfPages(modifier = Modifier.weight(1f), fileId = pack.pdfFileName, pack = pack)
         }
         return
@@ -163,7 +164,7 @@ fun MathLessonScreen(
     Column(Modifier.fillMaxSize()) {
         val tracksForBar = teachTracksOf(pack)
         if (!chromeHidden) {
-            AppTopBar(title = pack.title, onBack = onBack)
+            // در حالت تمام‌صفحه عنوان/فلش برگشت نداریم؛ فقط کنترل خود محتواست.
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = autoHide,

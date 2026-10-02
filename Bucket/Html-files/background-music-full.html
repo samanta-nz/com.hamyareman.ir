@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>نجواهای آرام طبیعت</title>
+  <style>
+    html,body{width:100%;height:100%;margin:0;background:transparent;overflow:hidden}
+    #backgroundMusicFrame{display:block;width:100%;height:100%;border:0;background:transparent}
+  </style>
+</head>
+<body data-hamyar-music-variant="full">
+  <!-- منبع پخش و mixer مشترک است تا انتخاب دو صدا و volumeهای مستقل دقیقاً با پلیر درون‌درس یکسان بماند. -->
+  <iframe id="backgroundMusicFrame" data-hamyar-ignore-inflow-bridge src="background-music.html" title="نجواهای آرام طبیعت" allow="autoplay"></iframe>
+  <script>
+    (function(){
+      const channel='hamyareman-background-v1';
+      const frame=document.getElementById('backgroundMusicFrame');
+      function player(){try{return frame.contentWindow&&frame.contentWindow.BackgroundMusic}catch(_){return null}}
+      function applyTheme(){
+        const theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';
+        const api=player(); if(api&&api.setTheme)api.setTheme(theme);
+      }
+      frame.addEventListener('load',applyTheme);
+      window.addEventListener('hamyarappearancechange',applyTheme);
+      window.BackgroundMusic={
+        open:()=>player()&&player().open&&player().open(),
+        close:()=>player()&&player().close&&player().close(),
+        pause:()=>player()&&player().pause&&player().pause(),
+        setTheme:()=>applyTheme(),
+        setVolume:v=>player()&&player().setVolume&&player().setVolume(v),
+        setLayerVolume:(i,v)=>player()&&player().setLayerVolume&&player().setLayerVolume(i,v),
+      };
+      window.addEventListener('message',event=>{
+        if(event.data&&event.data.channel===channel&&event.data.type==='state'){
+          window.parent!==window&&window.parent.postMessage(event.data,'*');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

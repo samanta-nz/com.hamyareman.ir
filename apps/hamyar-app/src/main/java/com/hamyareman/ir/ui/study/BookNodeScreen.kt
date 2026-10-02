@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -80,9 +81,11 @@ fun BookNodeScreen(
 @Composable
 private fun RemoteHtmlPage(bucketKey: String) {
     SecureWebEffect()
+    val appearance = LocalUiPrefs.current
     AndroidView(
         factory = { context ->
             ZoomResetWebView(context).apply {
+                installHamyarAppearanceBridge(appearance)
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
@@ -91,10 +94,19 @@ private fun RemoteHtmlPage(bucketKey: String) {
                 settings.setSupportZoom(true)
                 settings.builtInZoomControls = true
                 settings.displayZoomControls = false
-                webViewClient = HmkWebViewClient(context.applicationContext, HmkWebViewClient.bucketHost())
+                webViewClient = object : HmkWebViewClient(
+                    context.applicationContext,
+                    HmkWebViewClient.bucketHost(),
+                ) {
+                    override fun onPageFinished(view: android.webkit.WebView, url: String) {
+                        super.onPageFinished(view, url)
+                        view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
+                    }
+                }
                 loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
         },
+        update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
         modifier = Modifier.fillMaxSize(),
         onRelease = { it.destroy() },
     )

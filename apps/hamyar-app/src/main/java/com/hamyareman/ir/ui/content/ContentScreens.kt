@@ -34,6 +34,7 @@ import com.hamyareman.ir.ui.hub.HubCoverTile
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.study.SecureWebEffect
 import com.hamyareman.ir.ui.study.ManagedWebMediaEffect
+import com.hamyareman.ir.ui.study.MusicEmbedPalette
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
@@ -132,14 +133,24 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     var error by remember(activeId) { mutableStateOf<String?>(null) }
     var progress by remember(activeId) { mutableStateOf(0) }
     var retry by remember(activeId) { mutableStateOf(0) }
+    // برای موسیقی، cache قدیمی و دریافت شبکه دو مسیر دیداری متفاوت دارند.
+    // این state قبل از ensure ثبت می‌شود تا cache شدن همان navigationِ تازه،
+    // به اشتباه «بارگذاری از cache» تلقی نشود.
+    var pageWasCached by remember(activeId) { mutableStateOf(false) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
+    val musicPalette = if (item?.cat == "yoga" || item?.cat == "sport") {
+        MusicEmbedPalette.MOVEMENT
+    } else {
+        MusicEmbedPalette.DEFAULT
+    }
 
     LaunchedEffect(activeId, retry) {
         val current = item
         pageUrl = null
         error = null
         progress = 0
+        pageWasCached = false
         if (current == null) {
             error = "این فایل در کاتالوگ نیست."
             return@LaunchedEffect
@@ -150,18 +161,20 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         // رمزگشایی بعداً و فقط لحظهٔ تحویل به WebView انجام می‌شود.
         val ready = withContext(Dispatchers.IO) {
             val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-            if (!keyReady) return@withContext "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو."
-            if (com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)) return@withContext null
+            if (!keyReady) return@withContext "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو." to false
+            val alreadyCached = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
+            if (alreadyCached) return@withContext null to true
             val file = com.hamyareman.ir.ui.study.LessonCache.ensure(ctx, url) { done, total ->
                 if (total > 0) {
                     val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
                     handler.post { progress = p }
                 }
             }
-            if (file == null) "برای بار اول باز کردن این درس به اینترنت نیاز است." else null
+            (if (file == null) "برای بار اول باز کردن این درس به اینترنت نیاز است." else null) to false
         }
-        if (ready != null) {
-            error = ready
+        pageWasCached = ready.second
+        if (ready.first != null) {
+            error = ready.first
         } else {
             progress = 100
             pageUrl = url
@@ -195,7 +208,12 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         ) {
                             override fun onPageFinished(view: WebView, url: String) {
                                 super.onPageFinished(view, url)
-                                view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
+                                view.publishHamyarAppearance(
+                                    appearance.darkMode,
+                                    appearance.darkTheme,
+                                    musicPalette = musicPalette,
+                                    cacheHit = pageWasCached,
+                                )
                                 view.bindManagedMediaLifecycle()
                                 // درس بعدی که کاربر با لینک نسبی به آن رفته را در وضعیت اپ
                                 // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()
@@ -211,7 +229,12 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                     }
                 },
                 update = { view ->
-                    view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
+                    view.publishHamyarAppearance(
+                        appearance.darkMode,
+                        appearance.darkTheme,
+                        musicPalette = musicPalette,
+                        cacheHit = pageWasCached,
+                    )
                     val target = pageUrl
                     if (target != null && view.tag != target) {
                         view.tag = target

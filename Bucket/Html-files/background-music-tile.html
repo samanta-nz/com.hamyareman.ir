@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>انتخاب صدای پس‌زمینه</title>
+  <style>
+    html,body{margin:0;width:100%;min-height:0;background:transparent}
+    #backgroundMusicFrame{display:block;width:100%;height:92px;border:0;background:transparent;transition:height .16s ease}
+    body.is-open #backgroundMusicFrame{height:min(620px,72vh)}
+  </style>
+</head>
+<body>
+  <!-- tile فقط میزبان فشرده است؛ پخش/ترکیب دو لایه از player مشترک می‌آید. -->
+  <iframe id="backgroundMusicFrame" src="background-music.html#embedded" title="انتخاب صدای پس‌زمینه" allow="autoplay"></iframe>
+  <script>
+    (function(){
+      const channel='hamyareman-background-v1';
+      const frame=document.getElementById('backgroundMusicFrame');
+      let idleTimer=0;
+      function player(){try{return frame.contentWindow&&frame.contentWindow.BackgroundMusic}catch(_){return null}}
+      function close(){const api=player();if(api&&api.close)api.close();setOpen(false)}
+      function setOpen(open){
+        document.body.classList.toggle('is-open',!!open);
+        clearTimeout(idleTimer);
+        if(open) idleTimer=setTimeout(close,2000);
+      }
+      function touch(){
+        try{window.HamyarMusicTileHost&&window.HamyarMusicTileHost.touch&&window.HamyarMusicTileHost.touch()}catch(_){}
+        if(document.body.classList.contains('is-open')){clearTimeout(idleTimer);idleTimer=setTimeout(close,2000)}
+      }
+      function applyTheme(){
+        const api=player(); const theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';
+        if(api&&api.setTheme)api.setTheme(theme);
+      }
+      function wirePlayerInteractions(){
+        applyTheme();
+        try{
+          const doc=frame.contentDocument;
+          ['pointerdown','touchstart','click','input','change','keydown'].forEach(type=>doc.addEventListener(type,touch,{capture:true,passive:true}));
+        }catch(_){}
+      }
+      frame.addEventListener('load',wirePlayerInteractions);
+      window.addEventListener('hamyarappearancechange',applyTheme);
+      window.addEventListener('message',event=>{
+        const data=event.data;
+        if(!data||data.channel!==channel)return;
+        if(data.type==='state'){setOpen(!!data.opened);window.parent!==window&&window.parent.postMessage(data,'*')}
+        else if(data.type==='prefs-set'||data.type==='prefs-get'){window.parent!==window&&window.parent.postMessage(data,'*')}
+      });
+      window.BackgroundMusic={
+        open:()=>{const api=player();if(api&&api.open)api.open()},
+        close,
+        pause:()=>{const api=player();if(api&&api.pause)api.pause()},
+        setTheme:applyTheme,
+        setVolume:v=>{const api=player();if(api&&api.setVolume)api.setVolume(v)},
+        setLayerVolume:(i,v)=>{const api=player();if(api&&api.setLayerVolume)api.setLayerVolume(i,v)},
+      };
+    })();
+  </script>
+</body>
+</html>

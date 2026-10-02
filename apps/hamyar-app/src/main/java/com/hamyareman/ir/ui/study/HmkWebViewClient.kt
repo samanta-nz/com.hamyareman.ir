@@ -45,8 +45,8 @@ open class HmkWebViewClient(
         val isMusic = path.contains("background-music", ignoreCase = true)
 
         // iframe یک HTML واقعی است، نه «درس بعدی»: پاسخِ خالی در نسخهٔ قبل
-        // مخصوصاً iframeهای background-music/music-background داخل یوگا و ورزش
-        // را نامرئی می‌کرد. پیش‌دانلود فقط با هدر صریح ممکن است؛ HTMLهای فعلی
+        // مخصوصاً iframeهای background-music داخل یوگا و ورزش را نامرئی می‌کرد.
+        // پیش‌دانلود فقط با هدر صریح ممکن است؛ HTMLهای فعلی
         // چنین هدرِ داخلی ندارند، پس همهٔ frameها سند واقعی‌شان را می‌گیرند.
         val explicitPrefetch = request.requestHeaders["X-Hy-Prefetch"] == "1"
         if (isHtml && !request.isForMainFrame && explicitPrefetch && !isMusic) {
@@ -54,6 +54,10 @@ open class HmkWebViewClient(
             return empty200()
         }
 
+        // فقط برای document اصلی ثبت می‌شود؛ این مقدار به میزبان موسیقی می‌گوید
+        // نشانگر کوتاه cache را نشان دهد یا پیشرفت واقعی شبکه را به خود HTML بسپارد.
+        val wasCached = LessonCache.isCached(appContext, url)
+        if (request.isForMainFrame && isHtml) mainDocumentFromCache = wasCached
         val file = LessonCache.ensure(appContext, url)
         if (file == null) {
             onProblem(Problem.OFFLINE)
@@ -77,8 +81,12 @@ open class HmkWebViewClient(
         if (plain == null) {
             return if (request.isForMainFrame) errorPage(lastMessage) else null
         }
+        // برای iframe موسیقی، وضعیت hit کش را در همان سند (فقط RAM) می‌گذاریم.
+        // صفحهٔ مادر ممکن است تازه از شبکه آمده باشد ولی iframe موسیقی از کش باشد؛
+        // پس این علامت، badge یک‌ثانیه‌ای را دقیقاً به همان درخواست وصل می‌کند.
+        val delivered = if (isMusic && wasCached) musicCacheHint(plain) else plain
         return WebResourceResponse(
-            "text/html", "utf-8", 200, "OK", htmlHeaders(), ByteArrayInputStream(plain),
+            "text/html", "utf-8", 200, "OK", htmlHeaders(), ByteArrayInputStream(delivered),
         )
     }
 
@@ -108,12 +116,25 @@ open class HmkWebViewClient(
     }
 
     @Volatile private var lastMessage: String = MSG_CORRUPT
+    @Volatile private var mainDocumentFromCache: Boolean = false
+
+    /** وضعیت همان navigation اصلی، نه iframe/فایل جانبی. */
+    fun mainDocumentWasLoadedFromCache(): Boolean = mainDocumentFromCache
 
     private fun empty200(): WebResourceResponse =
         WebResourceResponse(
             "text/plain", "utf-8", 200, "OK",
             mapOf("Cache-Control" to "no-store"), ByteArrayInputStream(ByteArray(0)),
         )
+
+    /** HTML رمزگشایی‌شده فقط همان لحظه در RAM با یک نشانهٔ بسیار کوچک تکمیل می‌شود. */
+    private fun musicCacheHint(plain: ByteArray): ByteArray {
+        val hint = "<script>window.__hamyarHmkCacheHit=true;</script>".toByteArray(Charsets.UTF_8)
+        return ByteArray(hint.size + plain.size).also { output ->
+            hint.copyInto(output)
+            plain.copyInto(output, hint.size)
+        }
+    }
 
     private fun htmlHeaders(): Map<String, String> = mapOf(
         "Content-Type" to "text/html; charset=utf-8",

@@ -60,12 +60,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.study.HmkWebViewClient
 import com.hamyareman.ir.ui.study.HtmlAudioKeepAliveService
 import com.hamyareman.ir.ui.study.SecureWebEffect
 import com.hamyareman.ir.ui.study.ServerResolver
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.delay
 
@@ -83,6 +86,7 @@ private fun TextStyle.sleepTimerSmall(): TextStyle = copy(
 @Composable
 fun CalmWhispersScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     SecureWebEffect()
 
@@ -158,6 +162,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
         AndroidView(
             factory = { viewContext ->
                 WebView(viewContext).apply {
+                    installHamyarAppearanceBridge(appearance)
                     setBackgroundColor(AndroidColor.TRANSPARENT)
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
@@ -170,6 +175,11 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                     ) {
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
+                            view.publishHamyarAppearance(
+                                appearance.darkMode,
+                                appearance.darkTheme,
+                                cacheHit = mainDocumentWasLoadedFromCache(),
+                            )
                             view.bindManagedMediaLifecycle()
                         }
                     }
@@ -178,6 +188,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                     loadUrl(ServerResolver.internal(MUSIC_FULL_KEY))
                 }
             },
+            update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
             modifier = Modifier.fillMaxSize(),
             onRelease = {
                 it.stopManagedMedia()

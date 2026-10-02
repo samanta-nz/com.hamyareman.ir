@@ -34,7 +34,7 @@ import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.feature.playback.PlaybackController
 import com.hamyareman.ir.platform.feature.playback.SleepPlaybackService
 import com.hamyareman.ir.ui.AppTypography
-import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicTileHost
 import kotlinx.coroutines.launch
 
 object SleepLaunch {
@@ -70,34 +70,36 @@ fun SleepNightScreen(onBack: () -> Unit) {
         }
     }
 
-    // بازشدن انتخابگر صدا باید واقعاً تمام فضای محتوای این صفحه را بگیرد؛ در
-    // حالت قدیمی، sheet فقط در قاب ۹۲dp می‌ماند و پشت میزبان پنهان می‌شد.
-    var musicSheetOpen by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize()) {
         AppTopBar("بشنو و بخواب", onBack)
-        BackgroundMusicHost(onExpandedChanged = { musicSheetOpen = it })
-        if (!musicSheetOpen) Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
+        // tile در جریان طبیعی صفحه است: با بازشدن به پایین بزرگ می‌شود و محتوای
+        // زیر آن را می‌راند؛ نه اینکه روی صفحهٔ خواب یک overlay غیرقابل لمس بسازد.
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("صوت یکنواخت برای خواب. قصه و تنفس در کاشی‌های جدا هستند.", style = AppTypography.pageBody.style)
-            audioTracks.forEach { TrackRow(it, state.playing) { play(it) } }
-            PrimaryButton("شروع جلسهٔ شنیدن") {
-                audioTracks.firstOrNull { it.uri.isNotBlank() }?.let { play(it) }
+            BackgroundMusicTileHost()
+            Column(
+                Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("صدای دلخواهت را انتخاب کن، اگر خواستی دو صدا را با هم ترکیب کن و بعد صفحه را برای خواب آرام بگذار.", style = AppTypography.pageBody.style)
+                audioTracks.forEach { TrackRow(it, state.playing) { play(it) } }
+                PrimaryButton("شروع جلسهٔ شنیدن") {
+                    audioTracks.firstOrNull { it.uri.isNotBlank() }?.let { play(it) }
+                }
             }
         }
-        if (!musicSheetOpen) {
-            Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { if (state.playing) playback.pause() else playback.play() }, modifier = Modifier.weight(1f)) {
-                    Text(if (state.playing) "استوپ" else "پلی")
-                }
-                OutlinedButton(onClick = { playback.stop() }, modifier = Modifier.weight(1f)) {
-                    Text("بستن")
-                }
+        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { if (state.playing) playback.pause() else playback.play() }, modifier = Modifier.weight(1f)) {
+                Text(if (state.playing) "استوپ" else "پلی")
             }
-            state.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, style = AppTypography.pageBody.style, modifier = Modifier.padding(horizontal = 16.dp))
+            OutlinedButton(onClick = { playback.stop() }, modifier = Modifier.weight(1f)) {
+                Text("بستن")
             }
+        }
+        state.error?.let {
+            Text(it, color = MaterialTheme.colorScheme.error, style = AppTypography.pageBody.style, modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
 }
