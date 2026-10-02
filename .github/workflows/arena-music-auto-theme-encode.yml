@@ -4,6 +4,9 @@ name: Encode music auto-theme pair (HMK1)
 # زندهٔ محتوا رمز (HMK1) می‌کند و خروجی را به‌صورت artifact بالا می‌گذارد.
 # هیچ چیزی روی باکت نوشته نمی‌شود و هیچ بایتی از خودِ فایل‌ها عوض نمی‌شود.
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   push:
