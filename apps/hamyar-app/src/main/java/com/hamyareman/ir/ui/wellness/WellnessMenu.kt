@@ -692,6 +692,30 @@ object WellnessMenu {
     private val items: Map<String, PracticeItem> =
         allGroups.flatMap { it.items }.associateBy { it.id }
 
+    private val mindfulnessInternalGroups: Set<String> = buildSet {
+        addAll(mindfulnessIds)
+        mindfulnessIds.mapNotNull { groups[it] }.flatMapTo(this) { it.childGroupIds }
+    }
+    private val placeholderGroups = mindfulnessInternalGroups + setOf(
+        "cl-pmr", "cl-journey", "cl-visual", "cl-bedtime", "cl-story",
+    )
+    private val explicitPlaceholderItems = setOf(
+        "pd-hips", "pd-heat", "pd-food-period", "pd-food-after", "pd-food-mid", "pd-food-pms",
+        "hl-focus-food", "mf-body-scan", "mf-grounding", "mf-one-minute",
+    )
+
+    /** صفحات داخلیِ این شاخه‌ها عمداً بدون قاب عنوان/فلش خود صفحه نمایش داده می‌شوند. */
+    fun hideInternalChromeForGroup(groupId: String): Boolean =
+        groupId in mindfulnessInternalGroups || groupId in setOf("cl-pmr", "cl-journey", "cl-visual", "cl-bedtime", "cl-story")
+
+    /** محتوای قبلی این مقصدها بنا بر تصمیم محصول برداشته و با جای‌نگهدار عوض شده است. */
+    fun isPlaceholderItem(itemId: String): Boolean {
+        if (itemId in explicitPlaceholderItems) return true
+        return allGroups.any { itemId in it.items.map(PracticeItem::id) && it.id in placeholderGroups }
+    }
+
+    fun hideInternalChromeForItem(itemId: String): Boolean = isPlaceholderItem(itemId)
+
     fun resolveInstructions(item: PracticeItem): Pair<String, List<String>> {
         if (item.wellnessSlug.isNotBlank()) {
             val move = WellnessCatalog.bySlug(item.wellnessSlug)

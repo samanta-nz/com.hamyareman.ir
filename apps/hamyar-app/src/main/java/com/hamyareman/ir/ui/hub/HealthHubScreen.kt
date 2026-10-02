@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -100,8 +102,6 @@ fun SleepLogScreen(onBack: () -> Unit) {
     }
 
     HubBody {
-        HubHeader("خواب من", "یک ثبت آرام؛ برای دیدن ریتم واقعی استراحتت", onBack)
-
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -150,6 +150,33 @@ fun SleepLogScreen(onBack: () -> Unit) {
         }
 
         SleepStatusCard(openEntry = openEntry, completed = completed)
+
+        if (entries.isNotEmpty()) {
+            Text("ثبت‌های پیشین", style = MaterialTheme.typography.titleLarge.sleepHeading())
+            entries.forEach { entry ->
+                Card(Modifier.fillMaxWidth()) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(JalaliDate.toPersianDigits(entry.dayIso), style = MaterialTheme.typography.bodyMedium.sleepBody())
+                            Text(
+                                listOfNotNull(
+                                    entry.bedtimeAt?.let { "خواب: ${JalaliDate.stampFa(it)}" },
+                                    entry.wokeAt?.let { "بیداری: ${JalaliDate.stampFa(it)}" },
+                                ).joinToString("  •  "),
+                                style = MaterialTheme.typography.bodySmall.sleepBody(),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        TextButton(onClick = {
+                            if (SleepLogStore.delete(store, entry.id)) revision++
+                        }) { Text("حذف", color = MaterialTheme.colorScheme.error) }
+                    }
+                }
+            }
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),

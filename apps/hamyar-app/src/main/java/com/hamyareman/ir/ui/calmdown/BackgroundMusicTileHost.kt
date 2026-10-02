@@ -6,9 +6,11 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +62,7 @@ fun BackgroundMusicTileHost(
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val webRef = remember { arrayOfNulls<WebView>(1) }
     var keyReady by remember { mutableStateOf<Boolean?>(null) }
+    var pageReady by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     var interactionTick by remember { mutableIntStateOf(0) }
 
@@ -85,8 +88,11 @@ fun BackgroundMusicTileHost(
     val height = if (expanded) openHeight else 92.dp
     when (keyReady) {
         null -> Box(modifier.fillMaxWidth().height(92.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-        false -> Box(modifier.fillMaxWidth().height(92.dp), contentAlignment = Alignment.Center) { }
-        true -> AndroidView(
+        false -> Box(modifier.fillMaxWidth().height(92.dp), contentAlignment = Alignment.Center) {
+            Text("دریافت پخش‌کننده ممکن نشد؛ اتصال اینترنت را بررسی کن.")
+        }
+        true -> Box(modifier.fillMaxWidth().height(height)) {
+            AndroidView(
             factory = { viewContext ->
                 WebView(viewContext).apply {
                     installHamyarAppearanceBridge(appearance)
@@ -109,6 +115,7 @@ fun BackgroundMusicTileHost(
                     ) {
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
+                            view.post { pageReady = true }
                             view.publishHamyarAppearance(
                                 appearance.darkMode,
                                 appearance.darkTheme,
@@ -140,12 +147,16 @@ fun BackgroundMusicTileHost(
                 }
             },
             update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
-            modifier = modifier.fillMaxWidth().height(height),
+            modifier = Modifier.fillMaxSize(),
             onRelease = {
                 it.stopManagedMedia()
                 if (webRef[0] === it) webRef[0] = null
                 it.destroy()
             },
-        )
+            )
+            if (!pageReady) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            }
+        }
     }
 }

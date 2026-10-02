@@ -71,12 +71,14 @@ fun PracticeHubScreen(
 fun PracticeGroupScreen(nav: NavController, groupId: String, onBack: () -> Unit) {
     val group = WellnessMenu.group(groupId)
     HubBody {
-        HubHeader(
-            title = group?.title ?: "تمرین",
-            subtitle = group?.subtitle ?: "",
-            onBack = onBack,
-            slotId = "hub.practice.header",
-        )
+        if (!WellnessMenu.hideInternalChromeForGroup(groupId)) {
+            HubHeader(
+                title = group?.title ?: "تمرین",
+                subtitle = group?.subtitle ?: "",
+                onBack = onBack,
+                slotId = "hub.practice.header",
+            )
+        }
         if (group == null) {
             Text("این بخش پیدا نشد.", style = AppTypography.pageBody.style)
             return@HubBody
@@ -122,10 +124,12 @@ fun PracticeItemScreen(
     var stepIx by remember { mutableStateOf(0) }
 
     Column(Modifier.fillMaxSize()) {
-        com.hamyareman.ir.platform.core.designsystem.AppTopBar(
-            item?.title ?: "تمرین",
-            onBack,
-        )
+        if (!WellnessMenu.hideInternalChromeForItem(itemId)) {
+            com.hamyareman.ir.platform.core.designsystem.AppTopBar(
+                item?.title ?: "تمرین",
+                onBack,
+            )
+        }
         Column(
             Modifier
                 .fillMaxSize()
@@ -137,15 +141,17 @@ fun PracticeItemScreen(
                 Text("این تمرین پیدا نشد.", style = AppTypography.pageBody.style)
                 return@Column
             }
-            Text(item.subtitle, style = AppTypography.pageHeading.style)
-            if (item.minutes.isNotBlank()) {
-                Text(
-                    item.minutes,
-                    style = AppTypography.pageBody.style,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            val staticPlaceholder = WellnessMenu.isPlaceholderItem(item.id)
+            if (!staticPlaceholder) {
+                Text(item.subtitle, style = AppTypography.pageHeading.style)
+                if (item.minutes.isNotBlank()) {
+                    Text(
+                        item.minutes,
+                        style = AppTypography.pageBody.style,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-            val staticPlaceholder = move == null && item.route.isBlank() && (body.isNotBlank() || steps.isNotEmpty())
             if (staticPlaceholder) {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

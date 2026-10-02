@@ -53,6 +53,15 @@ internal object SleepLogStore {
     fun latestOpen(store: LocalStore): SleepLogEntry? =
         entries(store).firstOrNull { it.bedtimeAt != null && it.wokeAt == null }
 
+    /** حذف قطعیِ ثبت انتخاب‌شده از دفتر محلی؛ سایر شب‌ها دست‌نخورده می‌مانند. */
+    fun delete(store: LocalStore, entryId: String): Boolean {
+        val before = entries(store)
+        val after = before.filterNot { it.id == entryId }
+        if (after.size == before.size) return false
+        persist(store, after)
+        return true
+    }
+
     fun recordBedtime(store: LocalStore, at: Long = System.currentTimeMillis()): SleepLogEntry {
         val entry = SleepLogEntry(
             id = "sleep_${JalaliDate.todayIso()}_$at",

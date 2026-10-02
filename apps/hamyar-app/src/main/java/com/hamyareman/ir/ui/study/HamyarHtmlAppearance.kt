@@ -61,8 +61,9 @@ fun WebView.publishHamyarAppearance(
           var fromCache = $cachedJs;
           var musicCss =
             "#theme,#miniTheme,[data-hamyar-local-theme]{display:none!important}" +
-            "html[data-hamyar-breathing='true'] input[type='range']{direction:ltr!important;writing-mode:horizontal-tb!important}" +
-            "html[data-hamyar-breathing='true'] input[type='range']::-webkit-slider-runnable-track{direction:ltr!important}" +
+            "html[data-hamyar-breathing='true'] input[type='range']{direction:ltr!important;writing-mode:horizontal-tb!important;text-align:left!important;unicode-bidi:isolate!important;transform:none!important}" +
+            "html[data-hamyar-breathing='true'] input[type='range']::-webkit-slider-runnable-track{direction:ltr!important;transform:none!important}" +
+            "html[data-hamyar-breathing='true'] input[type='range']::-webkit-slider-thumb{direction:ltr!important}" +
             "html[data-hamyar-theme='dark']{color-scheme:dark;--green:#53d4a7;--dark:#e3eee8;--soft:#213f34;--border:#344c40}" +
             "html[data-hamyar-theme='dark'] body{background:#17271f!important;color:#e3eee8!important}" +
             "html[data-hamyar-music-palette='sport'][data-hamyar-theme='light']{--green:#a86f53;--dark:#604438;--soft:#f4e3d9;--border:#dfc0af}" +

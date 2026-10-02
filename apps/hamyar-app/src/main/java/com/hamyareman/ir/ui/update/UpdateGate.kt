@@ -320,7 +320,7 @@ fun UpdateCheckCard() {
     var status by remember { mutableStateOf<String?>(null) }
 
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("🔄 آپدیت برنامه", style = MaterialTheme.typography.titleMedium)
             Text(
                 "نسخه‌ی نصب‌شده: ${BuildConfig.VERSION_NAME}" +
@@ -329,10 +329,10 @@ fun UpdateCheckCard() {
                     } else {
                         ""
                     },
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            status?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            status?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             TextButton(
                 enabled = !busy,
                 onClick = {

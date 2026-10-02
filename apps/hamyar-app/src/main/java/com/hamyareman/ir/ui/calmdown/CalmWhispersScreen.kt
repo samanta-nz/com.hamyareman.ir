@@ -34,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -90,6 +91,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
     val webRef = remember { arrayOfNulls<WebView>(1) }
     SecureWebEffect()
 
+    var pageReady by remember { mutableStateOf(false) }
     var selectedMinutes by remember { mutableIntStateOf(0) }
     var secondsLeft by remember { mutableIntStateOf(0) }
     var timerOpen by remember { mutableStateOf(false) }
@@ -175,6 +177,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                     ) {
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
+                            view.post { pageReady = true }
                             view.publishHamyarAppearance(
                                 appearance.darkMode,
                                 appearance.darkTheme,
@@ -196,6 +199,13 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                 it.destroy()
             },
         )
+
+        if (!pageReady) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center).size(46.dp),
+                color = Color(0xFF62D4A9),
+            )
+        }
 
         Column(
             Modifier

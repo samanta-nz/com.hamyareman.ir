@@ -1,12 +1,12 @@
-name: Release grade 9 v2.4 (optional)
+name: Release grade 9 v2.4.1 (optional)
 
-# ساخت و انتشار نسخهٔ ۲٫۴ پایهٔ نهم با آپدیت اختیاری روی هر دو سرور.
+# ساخت و انتشار نسخهٔ ۲٫۴٫۱ پایهٔ نهم با آپدیت اختیاری روی هر دو سرور.
 #
 # ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
 # ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. بنابراین حتی
 # در انتشار اختیاری نیز هیچ اعلانِ دارای لینک خراب منتشر نمی‌شود.
 #
-# راه‌اندازی: کامیتی روی همین برنچ که پیامش با «Release grade 9 v2.4» شروع شود.
+# راه‌اندازی: کامیتی روی همین برنچ که پیامش با «Release grade 9 v2.4.1» شروع شود.
 
 on:
   push:
@@ -21,18 +21,18 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  VERSION_NAME: '2.4'
-  VERSION_CODE: '240'
+  VERSION_NAME: '2.4.1'
+  VERSION_CODE: '241'
   MIN_CODE: '0'            # صفر یعنی آپدیت برای همه اختیاری است
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
   ROW_ID: app_release_grade9
-  ASSET: hamyar-grade9-2.4-debug.apk
+  ASSET: hamyar-grade9-2.4.1-debug.apk
 
 jobs:
   release:
-    if: github.event_name == 'workflow_dispatch' || (startsWith(github.event.head_commit.message, 'Release grade 9 v2.4') && !startsWith(github.event.head_commit.message, 'Release grade 9 v2.4.1'))
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade 9 v2.4.1')
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
@@ -78,7 +78,7 @@ jobs:
             echo "::warning::RELEASES_TOKEN/RELEASES_REPO نیست — externalUrl از همین مخزنِ عمومی برداشته می‌شود."
           fi
 
-      - name: ۱) تست و ساخت APK نهم ۲٫۴
+      - name: ۱) تست و ساخت APK نهم ۲٫۴٫۱
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
@@ -112,6 +112,25 @@ jobs:
             echo "APK_SHA256=$(sha256sum "dist/$ASSET" | cut -d' ' -f1)"
           } >> "$GITHUB_ENV"
 
+      - name: ۲٫۵) انتشار امن سه قاب HTML موسیقی روی سرور داخلی
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID || '6abb238d000d05730d10' }}
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          pip install --quiet boto3 requests cryptography
+          mkdir -p /tmp/music-html ci-report
+          cp Bucket/Html-files/background-music.html /tmp/music-html/
+          cp Bucket/Html-files/background-music-full.html /tmp/music-html/
+          cp Bucket/Html-files/background-music-tile.html /tmp/music-html/
+          python3 scripts/upload_encoded_to_parspack.py \
+            --source /tmp/music-html \
+            --prefix Html-files \
+            --report ci-report/release-2.4.1-html.md
+
       - name: ۳) بایگانی در Release «ci-apk» همین مخزن
         shell: bash
         env:
@@ -121,7 +140,7 @@ jobs:
           # خروجیِ فرمان، «اندازهٔ واقعی فایلِ نشسته روی ریلیز» را ملاک موفقیت می‌گیریم.
           set +e
           mkdir -p ci-report
-          LOG=ci-report/release-2.4.log
+          LOG=ci-report/release-2.4.1.log
           WANT=$(stat -c%s "dist/$ASSET")
           echo "== مرحلهٔ ۳: بایگانی $ASSET ($WANT بایت)" >> "$LOG"
 
@@ -182,7 +201,7 @@ jobs:
             --key "apk/$GRADE_ID/$ASSET" \
             --provider parspack \
             --content-type application/vnd.android.package-archive \
-            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.4.log
+            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.4.1.log
 
       - name: ۶) اعلام نسخه و اعلام آپدیت اختیاری
         env:
@@ -203,8 +222,8 @@ jobs:
             --row-id "$ROW_ID" \
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
-            --notes "پالت اختصاصی iframeهای ورزش و حفظ تم سبز یوگا|تنظیمات سرور و به‌روزرسانی با تایپوگرافی یکدست|جایگزینی همراه من با صفحهٔ به‌زودی" \
-            --out ci-report/release-2.4.json 2>&1 | tee -a ci-report/release-2.4.log
+            --notes "پنجرهٔ تمام‌صفحه و میکسر دولایهٔ موسیقی در یوگا و ورزش|نشانگر دریافت واقعی و رفع بازشدن خالی کاشی موسیقی|جای‌نگهدار صفحات داخلی، حذف ثبت خواب و اصلاح نوار تنفس" \
+            --out ci-report/release-2.4.1.json 2>&1 | tee -a ci-report/release-2.4.1.log
 
       - name: ۷) ثبت نتیجه روی برنچ
         if: always()
@@ -214,13 +233,13 @@ jobs:
           mkdir -p ci-report
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/release-2.4.json ci-report/release-2.4.log
+          git add -f ci-report/release-2.4.1.json ci-report/release-2.4.1.log
           if ! git diff --cached --quiet; then
-            git commit -m "نتیجهٔ انتشار نهم ۲٫۴"
+            git commit -m "نتیجهٔ انتشار نهم ۲٫۴٫۱"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
-          for f in ci-report/release-2.4.json ci-report/release-2.4.log; do
+          for f in ci-report/release-2.4.1.json ci-report/release-2.4.1.log; do
             if [ -f "$f" ]; then
               { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
             fi
@@ -230,7 +249,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hamyar-grade9-2.4-debug
+          name: hamyar-grade9-2.4.1-debug
           path: dist/*.apk
           if-no-files-found: warn
           retention-days: 14

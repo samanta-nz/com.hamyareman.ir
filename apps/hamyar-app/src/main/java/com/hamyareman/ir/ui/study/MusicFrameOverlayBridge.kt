@@ -3,69 +3,70 @@ package com.hamyareman.ir.ui.study
 import android.webkit.WebView
 
 /**
- * پلِ iframe موسیقیِ پس‌زمینه در HTMLهای یوگا و ورزش.
+ * پلِ popup پلیر موسیقی برای iframeهای درس‌های یوگا و ورزش.
  *
- * نسخهٔ قدیمی iframe را با `position:fixed` و `100dvh` از صفحهٔ مادر جدا می‌کرد.
- * این روش در Android WebView لمس را روی صفحهٔ میزبان می‌گرفت و بعد از بسته‌شدن هم
- * گاهی قاب را در بالای صفحه نگه می‌داشت. این پل فقط همان iframe را **در جای خودش**
- * بلند و کوتاه می‌کند؛ صفحهٔ مادر همیشه اسکرول‌پذیر و قابل لمس باقی می‌ماند.
+ * iframe فقط پس از پیام صریحِ open تمام viewport را می‌گیرد و با پیام close دقیقاً
+ * به style قبلی برمی‌گردد. هیچ navigation یا دست‌کاری history برای بستن انجام
+ * نمی‌شود؛ بنابراین خروج از iframe/درسِ مادر دوباره رخ نمی‌دهد.
  */
 internal fun WebView.installMusicFrameOverlayBridge() {
     evaluateJavascript(
         """
         (function(){
-          if(window.__hamyarMusicFrameResizeBridge)return;
-          window.__hamyarMusicFrameResizeBridge=true;
-          var state=new WeakMap();
-          var OPEN_HEIGHT='min(620px, 78vh)';
+          if(window.__hamyarMusicFrameOverlayBridge)return;
+          window.__hamyarMusicFrameOverlayBridge=true;
+          var saved=new WeakMap();
           var COLLAPSED_HEIGHT='92px';
 
           function musicFrame(source){
             var frames=document.querySelectorAll('iframe');
             for(var i=0;i<frames.length;i++){
-              var frame=frames[i];
-              var src=(frame.getAttribute('src')||'').toLowerCase();
-              if(frame.contentWindow===source || src.indexOf('background-music')>=0){
-                // صفحهٔ full خودش viewport کامل دارد؛ فقط iframeهای درونِ درس
-                // باید با پیام باز/بسته resize شوند.
-                if(frame.hasAttribute('data-hamyar-ignore-inflow-bridge'))return null;
-                return frame;
-              }
+              var f=frames[i], src=(f.getAttribute('src')||'').toLowerCase();
+              if((f.contentWindow===source || src.indexOf('background-music')>=0) &&
+                 !f.hasAttribute('data-hamyar-ignore-inflow-bridge')) return f;
             }
             return null;
           }
-
-          function setOpen(frame, open){
-            if(!frame)return;
-            if(!state.has(frame)){
-              state.set(frame,{
-                style:frame.getAttribute('style'),
-                height:frame.style.height,
-                minHeight:frame.style.minHeight,
-                maxHeight:frame.style.maxHeight
-              });
-            }
-            // مهم: هیچ position fixed / inset / z-index به iframe نمی‌دهیم.
-            // iframe باید در flow طبیعی HTML مادر بماند تا touch و scroll والد خراب نشود.
-            frame.style.setProperty('display','block','important');
-            frame.style.setProperty('position','relative','important');
-            frame.style.setProperty('inset','auto','important');
-            frame.style.setProperty('width','100%','important');
-            frame.style.setProperty('max-width','100%','important');
-            frame.style.setProperty('border','0','important');
-            frame.style.setProperty('margin','0','important');
-            frame.style.setProperty('padding','0','important');
-            frame.style.setProperty('z-index','auto','important');
-            frame.style.setProperty('height',open?OPEN_HEIGHT:COLLAPSED_HEIGHT,'important');
-            frame.style.setProperty('min-height',open?OPEN_HEIGHT:COLLAPSED_HEIGHT,'important');
-            frame.style.setProperty('max-height',open?OPEN_HEIGHT:COLLAPSED_HEIGHT,'important');
-            frame.setAttribute('data-hamyar-music-open',open?'true':'false');
+          function snapshot(frame){
+            if(saved.has(frame))return saved.get(frame);
+            var value={style:frame.getAttribute('style'),bodyOverflow:document.body.style.overflow,
+              rootOverflow:document.documentElement.style.overflow,scrollX:window.scrollX,scrollY:window.scrollY};
+            saved.set(frame,value); return value;
           }
-
+          function close(frame){
+            if(!frame)return;
+            var old=saved.get(frame);
+            if(old){
+              old.style===null?frame.removeAttribute('style'):frame.setAttribute('style',old.style);
+              document.body.style.overflow=old.bodyOverflow;
+              document.documentElement.style.overflow=old.rootOverflow;
+              window.scrollTo(old.scrollX,old.scrollY);
+              saved.delete(frame);
+            }else{
+              frame.style.setProperty('height',COLLAPSED_HEIGHT,'important');
+              frame.style.setProperty('min-height',COLLAPSED_HEIGHT,'important');
+              frame.style.setProperty('max-height',COLLAPSED_HEIGHT,'important');
+            }
+            frame.setAttribute('data-hamyar-music-open','false');
+          }
+          function open(frame){
+            if(!frame)return;
+            snapshot(frame);
+            document.body.style.overflow='hidden';
+            document.documentElement.style.overflow='hidden';
+            frame.style.cssText += ';display:block!important;position:fixed!important;inset:0!important;'+
+              'width:100vw!important;height:100dvh!important;min-width:100vw!important;min-height:100dvh!important;'+
+              'max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;'+
+              'border:0!important;border-radius:0!important;z-index:2147483647!important;'+
+              'background:#101713!important;touch-action:auto!important;pointer-events:auto!important;';
+            frame.setAttribute('data-hamyar-music-open','true');
+            try{frame.focus()}catch(_){}
+          }
           window.addEventListener('message',function(event){
             var data=event.data;
             if(!data || data.channel!=='hamyareman-background-v1' || typeof data.opened!=='boolean')return;
-            setOpen(musicFrame(event.source),data.opened);
+            var frame=musicFrame(event.source);
+            data.opened?open(frame):close(frame);
           },false);
         })();
         """.trimIndent(),

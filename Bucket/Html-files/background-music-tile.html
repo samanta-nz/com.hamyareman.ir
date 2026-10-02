@@ -1,62 +1,31 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>انتخاب صدای پس‌زمینه</title>
   <style>
     html,body{margin:0;width:100%;min-height:0;background:transparent}
     #backgroundMusicFrame{display:block;width:100%;height:92px;border:0;background:transparent;transition:height .16s ease}
     body.is-open #backgroundMusicFrame{height:min(620px,72vh)}
+    #loader{position:absolute;inset:0 0 auto;height:92px;display:flex;align-items:center;justify-content:center;gap:12px;color:#527064;background:#edf7f1;font:14px sans-serif;z-index:2;transition:opacity .18s}
+    #loader.done{opacity:0;pointer-events:none}.spinner{width:28px;height:28px;border:3px solid #bad4c7;border-top-color:#29976d;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <!-- tile فقط میزبان فشرده است؛ پخش/ترکیب دو لایه از player مشترک می‌آید. -->
+  <div id="loader" role="status"><span class="spinner"></span><span>در حال دریافت پخش‌کننده…</span></div>
   <iframe id="backgroundMusicFrame" src="background-music.html#embedded" title="انتخاب صدای پس‌زمینه" allow="autoplay"></iframe>
   <script>
     (function(){
-      const channel='hamyareman-background-v1';
-      const frame=document.getElementById('backgroundMusicFrame');
-      let idleTimer=0;
+      const channel='hamyareman-background-v1',frame=document.getElementById('backgroundMusicFrame'),loader=document.getElementById('loader');let idleTimer=0;
       function player(){try{return frame.contentWindow&&frame.contentWindow.BackgroundMusic}catch(_){return null}}
       function close(){const api=player();if(api&&api.close)api.close();setOpen(false)}
-      function setOpen(open){
-        document.body.classList.toggle('is-open',!!open);
-        clearTimeout(idleTimer);
-        if(open) idleTimer=setTimeout(close,2000);
-      }
-      function touch(){
-        try{window.HamyarMusicTileHost&&window.HamyarMusicTileHost.touch&&window.HamyarMusicTileHost.touch()}catch(_){}
-        if(document.body.classList.contains('is-open')){clearTimeout(idleTimer);idleTimer=setTimeout(close,2000)}
-      }
-      function applyTheme(){
-        const api=player(); const theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';
-        if(api&&api.setTheme)api.setTheme(theme);
-      }
-      function wirePlayerInteractions(){
-        applyTheme();
-        try{
-          const doc=frame.contentDocument;
-          ['pointerdown','touchstart','click','input','change','keydown'].forEach(type=>doc.addEventListener(type,touch,{capture:true,passive:true}));
-        }catch(_){}
-      }
-      frame.addEventListener('load',wirePlayerInteractions);
-      window.addEventListener('hamyarappearancechange',applyTheme);
-      window.addEventListener('message',event=>{
-        const data=event.data;
-        if(!data||data.channel!==channel)return;
-        if(data.type==='state'){setOpen(!!data.opened);window.parent!==window&&window.parent.postMessage(data,'*')}
-        else if(data.type==='prefs-set'||data.type==='prefs-get'){window.parent!==window&&window.parent.postMessage(data,'*')}
-      });
-      window.BackgroundMusic={
-        open:()=>{const api=player();if(api&&api.open)api.open()},
-        close,
-        pause:()=>{const api=player();if(api&&api.pause)api.pause()},
-        setTheme:applyTheme,
-        setVolume:v=>{const api=player();if(api&&api.setVolume)api.setVolume(v)},
-        setLayerVolume:(i,v)=>{const api=player();if(api&&api.setLayerVolume)api.setLayerVolume(i,v)},
-      };
+      function setOpen(open){document.body.classList.toggle('is-open',!!open);clearTimeout(idleTimer);if(open)idleTimer=setTimeout(close,2000)}
+      function touch(){try{window.HamyarMusicTileHost?.touch?.()}catch(_){}if(document.body.classList.contains('is-open')){clearTimeout(idleTimer);idleTimer=setTimeout(close,2000)}}
+      function applyTheme(){const api=player(),theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';if(api&&api.setTheme)api.setTheme(theme)}
+      function wire(){applyTheme();loader.classList.add('done');setTimeout(()=>loader.remove(),220);try{const doc=frame.contentDocument;['pointerdown','touchstart','click','input','change','keydown'].forEach(type=>doc.addEventListener(type,touch,{capture:true,passive:true}))}catch(_){}}
+      frame.addEventListener('load',wire);window.addEventListener('hamyarappearancechange',applyTheme);
+      window.addEventListener('message',event=>{const data=event.data;if(!data||data.channel!==channel)return;if(data.type==='state'){setOpen(!!data.opened);window.parent!==window&&window.parent.postMessage(data,'*')}else if(data.type==='prefs-set'||data.type==='prefs-get'){window.parent!==window&&window.parent.postMessage(data,'*')}});
+      window.BackgroundMusic={open:()=>player()?.open?.(),close,pause:()=>player()?.pause?.(),setTheme:applyTheme,setVolume:v=>player()?.setVolume?.(v),setLayerVolume:(i,v)=>player()?.setLayerVolume?.(i,v)};
     })();
   </script>
-</body>
-</html>
+</body></html>

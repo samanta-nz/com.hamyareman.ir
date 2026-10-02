@@ -5,37 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>نجواهای آرام طبیعت</title>
   <style>
-    html,body{width:100%;height:100%;margin:0;background:transparent;overflow:hidden}
+    html,body{width:100%;height:100%;margin:0;background:#101713;overflow:hidden}
     #backgroundMusicFrame{display:block;width:100%;height:100%;border:0;background:transparent}
+    #loader{position:fixed;inset:0;z-index:3;display:grid;place-content:center;gap:14px;text-align:center;color:#dcece4;background:#101713;font:15px sans-serif;transition:opacity .18s}
+    #loader.done{opacity:0;pointer-events:none}
+    .spinner{width:42px;height:42px;margin:auto;border:4px solid #365246;border-top-color:#62d4a9;border-radius:50%;animation:spin .75s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body data-hamyar-music-variant="full">
-  <!-- منبع پخش و mixer مشترک است تا انتخاب دو صدا و volumeهای مستقل دقیقاً با پلیر درون‌درس یکسان بماند. -->
+  <div id="loader" role="status" aria-live="polite"><span class="spinner"></span><span>در حال دریافت صداها…</span></div>
   <iframe id="backgroundMusicFrame" data-hamyar-ignore-inflow-bridge src="background-music.html" title="نجواهای آرام طبیعت" allow="autoplay"></iframe>
   <script>
     (function(){
-      const channel='hamyareman-background-v1';
-      const frame=document.getElementById('backgroundMusicFrame');
+      const channel='hamyareman-background-v1',frame=document.getElementById('backgroundMusicFrame'),loader=document.getElementById('loader');
       function player(){try{return frame.contentWindow&&frame.contentWindow.BackgroundMusic}catch(_){return null}}
-      function applyTheme(){
-        const theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';
-        const api=player(); if(api&&api.setTheme)api.setTheme(theme);
-      }
-      frame.addEventListener('load',applyTheme);
+      function applyTheme(){const theme=document.documentElement.getAttribute('data-hamyar-theme')||'light';const api=player();if(api&&api.setTheme)api.setTheme(theme)}
+      frame.addEventListener('load',()=>{applyTheme();loader.classList.add('done');setTimeout(()=>loader.remove(),220)});
       window.addEventListener('hamyarappearancechange',applyTheme);
-      window.BackgroundMusic={
-        open:()=>player()&&player().open&&player().open(),
-        close:()=>player()&&player().close&&player().close(),
-        pause:()=>player()&&player().pause&&player().pause(),
-        setTheme:()=>applyTheme(),
-        setVolume:v=>player()&&player().setVolume&&player().setVolume(v),
-        setLayerVolume:(i,v)=>player()&&player().setLayerVolume&&player().setLayerVolume(i,v),
-      };
-      window.addEventListener('message',event=>{
-        if(event.data&&event.data.channel===channel&&event.data.type==='state'){
-          window.parent!==window&&window.parent.postMessage(event.data,'*');
-        }
-      });
+      window.BackgroundMusic={open:()=>player()?.open?.(),close:()=>player()?.close?.(),pause:()=>player()?.pause?.(),setTheme:applyTheme,
+        setVolume:v=>player()?.setVolume?.(v),setLayerVolume:(i,v)=>player()?.setLayerVolume?.(i,v)};
+      window.addEventListener('message',event=>{if(event.data&&event.data.channel===channel&&event.data.type==='state')window.parent!==window&&window.parent.postMessage(event.data,'*')});
     })();
   </script>
 </body>

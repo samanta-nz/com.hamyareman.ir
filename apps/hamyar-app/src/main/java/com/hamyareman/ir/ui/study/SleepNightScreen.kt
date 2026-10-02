@@ -71,7 +71,6 @@ fun SleepNightScreen(onBack: () -> Unit) {
     }
 
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("بشنو و بخواب", onBack)
         // tile در جریان طبیعی صفحه است: با بازشدن به پایین بزرگ می‌شود و محتوای
         // زیر آن را می‌راند؛ نه اینکه روی صفحهٔ خواب یک overlay غیرقابل لمس بسازد.
         Column(
