@@ -150,18 +150,17 @@ fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                     scope.launch {
                         val appwrite = AdminApi(prefs.endpoint, prefs.projectId, prefs.apiKey, prefs.databaseId, prefs.bucketId)
                         val aw = adminIo { appwrite.ping() }
-                        val pp = if (prefs.hasParsPackCredential) {
-                            adminIo { ParsPackStorage(prefs).list(prefs.parsPackPrefix).size }
-                        } else null
-                        when (aw) {
-                            is AppResult.Ok -> info = buildString {
-                                append("Appwrite: ${aw.value}")
-                                when (pp) {
-                                    is AppResult.Ok -> append(" · ParsPack: ${pp.value} فایل در این صفحه")
-                                    is AppResult.Err -> append(" · ParsPack: ${pp.error.userMessage}")
-                                    null -> append(" · کلید ParsPack هنوز وارد نشده است")
-                                }
+                        val ppMessage = if (prefs.hasParsPackCredential) {
+                            try {
+                                "ParsPack: ${ParsPackStorage(prefs).list(prefs.parsPackPrefix).size} فایل در این صفحه"
+                            } catch (t: Throwable) {
+                                "ParsPack: ${t.message ?: "آزمون اتصال ناموفق بود."}"
                             }
+                        } else {
+                            "کلید ParsPack هنوز وارد نشده است"
+                        }
+                        when (aw) {
+                            is AppResult.Ok -> info = "Appwrite: ${aw.value} · $ppMessage"
                             is AppResult.Err -> error = aw.error.userMessage
                         }
                         busy = false

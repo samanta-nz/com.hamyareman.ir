@@ -64,10 +64,13 @@ jobs:
       - name: ۱) ساخت نسخهٔ release ادمین
         run: |
           set -euo pipefail
+          mkdir -p dist ci-report
+          set -o pipefail
           ./gradlew --console=plain --stacktrace \
             :hamyar-admin:compileReleaseKotlin \
             :hamyar-admin:assembleRelease \
-            -PadminVersionCode="$VERSION_CODE" -PadminVersionName="$VERSION_NAME"
+            -PadminVersionCode="$VERSION_CODE" -PadminVersionName="$VERSION_NAME" \
+            2>&1 | tee ci-report/admin-release-2.0.log
           mkdir -p dist
           mapfile -t files < <(find apps/hamyar-admin/build/outputs/apk/release -type f -name '*.apk' -print)
           test "${#files[@]}" -eq 1
