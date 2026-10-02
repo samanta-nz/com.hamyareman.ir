@@ -1,0 +1,95 @@
+name: Probe music HTML on buckets
+
+# فقط-خواندنی: اندازه و محتوای سه فایل موسیقی را روی آروان (آینهٔ قدیمی و
+# فقط‌خواندنی) و پارس‌پک (باکت فعلی) می‌سنجد تا معلوم شود نسخهٔ قبلی هر فایل
+# صوت‌های embed شده داشته یا پوستهٔ iframe بوده است. چیزی را تغییر نمی‌دهد.
+# با «[probe]» در پیام کامیت یا دستی اجرا می‌شود.
+
+on:
+  push:
+    branches: [arena/01a0fe97-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[probe]')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      HTML_MEDIA_KEY_B64: ${{ secrets.HTML_MEDIA_KEY_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet requests cryptography
+
+      - name: سنجش
+        run: |
+          python3 - <<'PY' | tee ci-report/music-bucket-probe.md
+          import base64, hashlib, json, os, re, requests
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+          def key():
+              b = os.environ.get("HTML_MEDIA_KEY_B64","").strip()
+              if b:
+                  raw = base64.b64decode(b)
+                  if len(raw)==32: return raw
+              ep=os.environ["APPWRITE_ENDPOINT"].rstrip("/")
+              h={"X-Appwrite-Project":os.environ["APPWRITE_PROJECT_ID"],"X-Appwrite-Key":os.environ["APPWRITE_API_KEY"]}
+              db=os.environ["APPWRITE_DATABASE_ID"]
+              for p in (f"/tablesdb/{db}/tables/app_state/rows/html_media_key",
+                        f"/databases/{db}/collections/app_state/documents/html_media_key"):
+                  r=requests.get(ep+p,headers=h,timeout=(20,60))
+                  if r.status_code==200:
+                      raw=base64.b64decode(json.loads(r.json().get("payload") or "{}").get("b",""))
+                      if len(raw)==32: return raw
+              raise SystemExit("no key")
+
+          aes=AESGCM(key())
+          bases={
+            "آروان (آینهٔ قدیمی)":"https://hamyar-e-man.s3.ir-thr-at1.arvanstorage.ir",
+            "پارس‌پک (فعلی)":"https://c539776.parspack.net",
+          }
+          names=["background-music.html","background-music-tile.html","background-music-full.html"]
+          print("# سنجش فایل‌های موسیقی روی باکت\n")
+          print("| سرور | فایل | بایت | HMK1 | طول متن خام | تعداد data:audio | iframe به پلیر |")
+          print("| --- | --- | ---: | --- | ---: | ---: | --- |")
+          for label,base in bases.items():
+              for n in names:
+                  url=f"{base}/Bucket/Html-files/{n}"
+                  try:
+                      r=requests.get(url,timeout=(20,240)); blob=r.content if r.status_code==200 else b""
+                      st=str(r.status_code)
+                  except Exception as e:
+                      blob=b""; st=type(e).__name__
+                  if blob[:4]==b"HMK1":
+                      try:
+                          plain=aes.decrypt(blob[4:16],blob[16:],None)
+                          audio=len(re.findall(rb"data:audio/",plain))+len(re.findall(rb"data:image/webp;base64,UklGR",plain))*0
+                          raw_audio=len(re.findall(rb'"audio"\s*:\s*"data:|data:audio/',plain))
+                          iframe=b"src=\"background-music.html" in plain
+                          print(f"| {label} | `{n}` | {len(blob):,} | ✅ | {len(plain):,} | {raw_audio} | {'بله' if iframe else 'خیر'} |")
+                      except Exception:
+                          print(f"| {label} | `{n}` | {len(blob):,} | ❌ باز نشد | — | — | — |")
+                  else:
+                      print(f"| {label} | `{n}` | {len(blob):,} | ❌ (HTTP {st}) | — | — | — |")
+          PY
+
+      - name: خلاصه و کامیت
+        if: always()
+        run: |
+          set +e
+          cat ci-report/music-bucket-probe.md >> "$GITHUB_STEP_SUMMARY"
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/music-bucket-probe.md
+          git diff --cached --quiet || { git commit -m "سنجش فایل‌های موسیقی روی باکت [skip-report]"; git pull --rebase origin "${GITHUB_REF_NAME}"; git push origin "HEAD:${GITHUB_REF_NAME}"; }
+          exit 0
