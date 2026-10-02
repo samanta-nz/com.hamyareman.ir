@@ -109,6 +109,9 @@ jobs:
             --provider parspack \
             --content-type application/vnd.android.package-archive \
             --env-name INTERNAL_URL 2>&1 | tee ci-report/admin-release-2.1.log
+          # GITHUB_ENV فقط در step بعدی اعمال می‌شود؛ برای manifest همین shell
+          # نشانی عمومی قطعی ParsPack را هم export می‌کنیم.
+          export INTERNAL_URL="https://c539776.parspack.net/$PARSPACK_KEY"
           python3 - <<'PY'
           import json, os
           with open("dist/hamyar-admin-latest.json", "w", encoding="utf-8") as f:
