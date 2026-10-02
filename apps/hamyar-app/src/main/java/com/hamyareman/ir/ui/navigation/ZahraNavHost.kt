@@ -37,8 +37,6 @@ import com.hamyareman.ir.ui.calmdown.BreathingScreen
 import com.hamyareman.ir.ui.calmdown.CalmMenuScreen
 import com.hamyareman.ir.ui.calmdown.JournalScreen
 import com.hamyareman.ir.ui.calmdown.GratitudeJournalScreen
-import com.hamyareman.ir.ui.chatbot.ChatScreen
-import com.hamyareman.ir.ui.chatbot.ChatSettingsScreen
 import com.hamyareman.ir.ui.content.ContentCategoryScreen
 import com.hamyareman.ir.ui.content.ContentHubScreen
 import com.hamyareman.ir.ui.content.ContentHtmlScreen
@@ -189,10 +187,13 @@ fun ZahraNavHost() {
             composable(Screen.Home.route) { HomeScreen(nav) }
             composable(Screen.Study.route) { SchoolHubScreen(nav) }
             composable(Screen.StudyHome.route) { StudyHomeScreen(nav) }
-            composable(Screen.Chat.route) {
-                ChatScreen(
-                    onSettings = { nav.navigate(Screen.ChatSettings.route) },
-                    onHelplines = { nav.navigate(Screen.Helplines.route) })
+            // placeholder مشترک جای صفحه و تب بازنشسته‌شدهٔ «همراه من» را گرفته است.
+            composable(Screen.Placeholder.route) {
+                com.hamyareman.ir.ui.study.BookNodeScreen(
+                    title = "به‌زودی",
+                    bucketKey = com.hamyareman.ir.ui.study.BooksMenu.SPACEHOLDER_KEY,
+                    onBack = { nav.popBackStack() },
+                )
             }
             composable(Screen.More.route) { MoreScreen(nav) }
             composable(Screen.About.route) { AboutScreen { nav.popBackStack() } }
@@ -473,7 +474,6 @@ fun ZahraNavHost() {
                 }
             }
             composable(Screen.Privacy.route) { PrivacySettingsScreen { nav.popBackStack() } }
-            composable(Screen.ChatSettings.route) { ChatSettingsScreen { nav.popBackStack() } }
             composable(Screen.Badges.route) { BadgesScreen { nav.popBackStack() } }
             composable(Screen.Lock.route) { AppLockScreen { nav.popBackStack() } }
             composable(Screen.Reminders.route) { RemindersScreen { nav.popBackStack() } }

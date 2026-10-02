@@ -223,7 +223,8 @@ fun UpdateDownloadScreen(info: UpdateInfo, forced: Boolean, onClose: () -> Unit)
                 .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 20.dp, vertical = 24.dp),
         ) {
-            Text("آپدیت برنامه", style = MaterialTheme.typography.headlineMedium)
+            // هم‌نقش عنوان‌های تنظیمات/پروفایل: یک خانواده و یک اندازهٔ واحد.
+            Text("آپدیت برنامه", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(8.dp))
             Text(
                 "نسخه‌ی تو: ${BuildConfig.VERSION_NAME}" +

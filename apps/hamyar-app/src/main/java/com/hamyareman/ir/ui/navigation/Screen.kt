@@ -17,7 +17,8 @@ sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object Study : Screen("study")
     data object StudyHome : Screen("study-home")
-    data object Chat : Screen("chat")
+    /** جایگزین تب بازنشسته‌شدهٔ «همراه من»: فایل placeholder مشترک. */
+    data object Placeholder : Screen("placeholder")
     data object More : Screen("more")
     data object About : Screen("about")
     data object Contact : Screen("contact")
@@ -129,7 +130,6 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object UserProfile : Screen("user-profile")
     data object Privacy : Screen("privacy")
-    data object ChatSettings : Screen("chatsettings")
     data object Badges : Screen("badges")
     data object Lock : Screen("lock")
     data object Reminders : Screen("reminders")
@@ -186,6 +186,6 @@ val Tabs = listOf(
     Tab(Screen.Study.route, Icons.Filled.School, "مدرسه"),
     Tab(Screen.Academy.route, Icons.Filled.LocalLibrary, "آموزشگاه"),
     Tab(Screen.HealthHub.route, Icons.Filled.FitnessCenter, "سلامتی"),
-    Tab(Screen.Chat.route, Icons.Filled.SmartToy, "همراه من"),
+    Tab(Screen.Placeholder.route, Icons.Filled.SmartToy, "به‌زودی"),
     Tab(Screen.More.route, Icons.Filled.MoreHoriz, "بیشتر"))
 val TopRoutes = Tabs.map { it.route }.toSet()

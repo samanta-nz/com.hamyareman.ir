@@ -8,7 +8,8 @@ import org.json.JSONObject
 /** نوع رنگ ویژهٔ iframe موسیقی؛ خود صفحهٔ درس رنگ اصلی خودش را نگه می‌دارد. */
 enum class MusicEmbedPalette(val wire: String) {
     DEFAULT("default"),
-    MOVEMENT("movement"),
+    /** پالت روشن خاکی/نارنجی هماهنگ با فایل‌های حرکات ورزشی. */
+    SPORT("sport"),
 }
 
 /**
@@ -36,8 +37,8 @@ fun WebView.installHamyarAppearanceBridge(prefs: UiPrefs) {
 
 /**
  * تم نهایی را به سند اصلی و iframeهای موسیقی هم‌origin می‌رساند.
- * `MusicEmbedPalette.MOVEMENT` فقط iframeهای موسیقیِ داخل یوگا/ورزش را با پالت
- * بژ/قهوه‌ای روشن نمایش می‌دهد؛ خود HTML درس دست‌نخورده می‌ماند.
+ * `MusicEmbedPalette.SPORT` فقط iframeهای موسیقیِ داخل فایل‌های حرکات ورزشی را
+ * با پالت بژ/قهوه‌ای روشن نمایش می‌دهد؛ خود HTML درس دست‌نخورده می‌ماند.
  */
 fun WebView.publishHamyarAppearance(
     preference: String,
@@ -64,17 +65,17 @@ fun WebView.publishHamyarAppearance(
             "html[data-hamyar-breathing='true'] input[type='range']::-webkit-slider-runnable-track{direction:ltr!important}" +
             "html[data-hamyar-theme='dark']{color-scheme:dark;--green:#53d4a7;--dark:#e3eee8;--soft:#213f34;--border:#344c40}" +
             "html[data-hamyar-theme='dark'] body{background:#17271f!important;color:#e3eee8!important}" +
-            "html[data-hamyar-music-palette='movement'][data-hamyar-theme='light']{--green:#a86f53;--dark:#604438;--soft:#f4e3d9;--border:#dfc0af}" +
-            "html[data-hamyar-music-palette='movement'][data-hamyar-theme='light'] body{background:#f8ede5!important;color:#604438!important}" +
-            "html[data-hamyar-music-palette='movement'][data-hamyar-theme='dark']{--green:#e1aa8a;--dark:#f2dfd5;--soft:#4a3027;--border:#765044}" +
-            "html[data-hamyar-music-palette='movement'][data-hamyar-theme='dark'] body{background:#241b18!important;color:#f2dfd5!important}";
+            "html[data-hamyar-music-palette='sport'][data-hamyar-theme='light']{--green:#a86f53;--dark:#604438;--soft:#f4e3d9;--border:#dfc0af}" +
+            "html[data-hamyar-music-palette='sport'][data-hamyar-theme='light'] body{background:#f8ede5!important;color:#604438!important}";
 
-          function styleFor(doc) {
+          // پالت ورزش هرگز به سند درس تزریق نمی‌شود؛ فقط سندهای داخل iframe
+          // پلیر آن را می‌گیرند. این جداسازی یوگا و سایر HTMLها را روی سبز قبلی نگه می‌دارد.
+          function styleFor(doc, isMusicFrame) {
             if (!doc || !doc.documentElement) return;
             var root = doc.documentElement;
             root.setAttribute('data-hamyar-theme-preference', preference);
             root.setAttribute('data-hamyar-theme', resolvedTheme);
-            root.setAttribute('data-hamyar-music-palette', musicPalette);
+            root.setAttribute('data-hamyar-music-palette', isMusicFrame ? musicPalette : 'default');
             var documentUrl = doc.URL || '';
             try { documentUrl = decodeURIComponent(documentUrl); } catch (_) {}
             root.setAttribute('data-hamyar-breathing', /تمرینات تنفسی|breath/i.test(documentUrl) ? 'true' : 'false');
@@ -110,7 +111,9 @@ fun WebView.publishHamyarAppearance(
             try { doc.defaultView.drawLoading = function() {}; } catch (_) {}
             var started = performance.now();
             function frame(now) {
-              var pct = Math.min(100, Math.round((now - started) / 10));
+              // floor مانع رسیدن زودتر از یک ثانیه به ۱۰۰ می‌شود؛ در نخستین فریم
+              // پس از ۱۰۰۰ms دقیقاً ۱۰۰ ثبت و نشانگر پنهان می‌شود.
+              var pct = Math.min(100, Math.floor((now - started) / 10));
               badge.hidden = false;
               badge.classList.remove('failed', 'complete', 'indeterminate');
               number.textContent = String(pct).replace(/\d/g, function(d){ return '۰۱۲۳۴۵۶۷۸۹'[d]; });
@@ -130,8 +133,15 @@ fun WebView.publishHamyarAppearance(
               function applyFrame(target) {
                 try {
                   var doc = target.contentDocument;
-                  styleFor(doc);
+                  styleFor(doc, true);
                   cachedMusicBadge(doc);
+                  // گونهٔ full یک iframe پلیر درون خودش دارد؛ پالت را تا همان
+                  // سند هم‌origin ادامه می‌دهیم، نه تا HTML درس میزبان.
+                  var nested = doc.querySelectorAll('iframe');
+                  for (var j = 0; j < nested.length; j++) {
+                    var nestedSrc = (nested[j].getAttribute('src') || '').toLowerCase();
+                    if (nestedSrc.indexOf('background-music') >= 0) applyFrame(nested[j]);
+                  }
                   target.contentWindow.postMessage({
                     channel: 'hamyareman-background-v1',
                     type: 'theme',
@@ -139,16 +149,16 @@ fun WebView.publishHamyarAppearance(
                     palette: musicPalette
                   }, '*');
                 } catch (_) {}
+                if (!target.__hamyarAppearanceLoad) {
+                  target.__hamyarAppearanceLoad = true;
+                  target.addEventListener('load', function(event){ applyFrame(event.currentTarget); });
+                }
               }
               applyFrame(frame);
-              if (!frame.__hamyarAppearanceLoad) {
-                frame.__hamyarAppearanceLoad = true;
-                frame.addEventListener('load', function(event){ applyFrame(event.currentTarget); });
-              }
             }
           }
 
-          styleFor(document);
+          styleFor(document, false);
           cachedMusicBadge(document);
           window.HamyarAppearance = {
             version: 1,

@@ -139,8 +139,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     var pageWasCached by remember(activeId) { mutableStateOf(false) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
-    val musicPalette = if (item?.cat == "yoga" || item?.cat == "sport") {
-        MusicEmbedPalette.MOVEMENT
+    // پالت دوم فقط برای iframeهای موسیقیِ فایل‌های «حرکات ورزشی» است.
+    // یوگا و همهٔ دسته‌های دیگر همان سبز استاندارد پلیر را نگه می‌دارند.
+    val musicPalette = if (item?.cat == "sport") {
+        MusicEmbedPalette.SPORT
     } else {
         MusicEmbedPalette.DEFAULT
     }

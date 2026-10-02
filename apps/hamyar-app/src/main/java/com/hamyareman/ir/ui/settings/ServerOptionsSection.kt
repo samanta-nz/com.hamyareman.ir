@@ -50,35 +50,35 @@ fun ServerOptionsSection() {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("منبع دانلود محتوا", style = MaterialTheme.typography.titleSmall)
             Text(
-                "صفحه‌های تعاملی دارای نسخهٔ دوم از کدام سرور دریافت شوند؟ کتاب‌ها و صداها از سرور داخلی می‌آیند.",
+                "محتوای تعاملی از منبع انتخاب‌شده دریافت می‌شود؛ کتاب و صوت از سرور ایران هستند.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             ServerOption(
-                "۱. سریع‌ترین واقعی",
-                "هر دو سرور با دانلود آزمایشی ۲۵۶ کیلوبایتی سنجیده می‌شوند؛ سریع‌تر انتخاب و نتیجه نمایش داده می‌شود.",
+                "۱. انتخاب خودکار",
+                "هر دو منبع سنجیده و مسیر سریع‌تر انتخاب می‌شود.",
                 ServerPrefs.Mode.FASTEST, mode, ::setMode,
             )
             ServerOption(
-                "۲. سرور خارجی",
-                "فقط سرور خارجی؛ خطا بی‌صدا به سرور داخلی منتقل نمی‌شود.",
-                ServerPrefs.Mode.EXTERNAL, mode, ::setMode,
+                "۲. سرور ایران",
+                "فقط سرور ایران استفاده می‌شود.",
+                ServerPrefs.Mode.INTERNAL, mode, ::setMode,
             )
             ServerOption(
-                "۳. سرور داخلی",
-                "فقط سرور داخلی؛ خطا بی‌صدا به سرور خارجی منتقل نمی‌شود.",
-                ServerPrefs.Mode.INTERNAL, mode, ::setMode,
+                "۳. سرور خارجی",
+                "فقط سرور خارجی استفاده می‌شود.",
+                ServerPrefs.Mode.EXTERNAL, mode, ::setMode,
             )
 
             if (testing) {
                 Text("در حال سنجش واقعی اتصال و سرعت…", style = MaterialTheme.typography.labelSmall)
             } else {
                 result?.external?.let { ProbeLine("سرور خارجی", it) }
-                result?.internal?.let { ProbeLine("سرور داخلی", it) }
+                result?.internal?.let { ProbeLine("سرور ایران", it) }
                 if (mode == ServerPrefs.Mode.FASTEST) {
                     val selected = when (result?.selected) {
                         ServerPrefs.Origin.EXTERNAL -> "سرور خارجی"
-                        ServerPrefs.Origin.INTERNAL -> "سرور داخلی"
+                        ServerPrefs.Origin.INTERNAL -> "سرور ایران"
                         null -> "هیچ‌کدام"
                     }
                     Text("انتخاب فعلی: $selected", style = MaterialTheme.typography.labelMedium)
