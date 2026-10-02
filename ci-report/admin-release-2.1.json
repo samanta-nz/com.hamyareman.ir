@@ -4,11 +4,11 @@
   "versionCode": 21,
   "asset": "hamyar-admin-2.1.apk",
   "parspackKey": "apk/admin/hamyar-admin-2.1.apk",
-  "internalUrl": "",
+  "internalUrl": "https://c539776.parspack.net/apk/admin/hamyar-admin-2.1.apk",
   "updateManifestUrl": "",
-  "size": 0,
-  "sha256": "",
-  "signingSha256": "",
-  "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/36957239189",
-  "published": false
+  "size": 16573259,
+  "sha256": "7fe369bf7c442e1890578142bf9edd7724093ead06dae23099f97a09d0a7c04c",
+  "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959",
+  "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/36957557421",
+  "published": true
 }
