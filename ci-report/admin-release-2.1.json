@@ -1,0 +1,14 @@
+{
+  "package": "com.hamyareman.admin",
+  "versionName": "2.1",
+  "versionCode": 21,
+  "asset": "hamyar-admin-2.1.apk",
+  "parspackKey": "apk/admin/hamyar-admin-2.1.apk",
+  "internalUrl": "",
+  "updateManifestUrl": "",
+  "size": 0,
+  "sha256": "",
+  "signingSha256": "",
+  "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/36957239189",
+  "published": false
+}
