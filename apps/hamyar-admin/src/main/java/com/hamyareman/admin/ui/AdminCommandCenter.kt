@@ -43,6 +43,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.OutlinedButton
@@ -67,6 +68,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.admin.LocalAdmin
+import com.hamyareman.admin.ParsPackListing
 import com.hamyareman.admin.ParsPackObject
 import com.hamyareman.admin.adminIo
 import com.hamyareman.ir.platform.core.appwrite.AdminStats
@@ -453,19 +455,21 @@ private fun ParsPackBrowser() {
     val storage = container.parsPack
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var prefix by remember { mutableStateOf(container.prefs.parsPackPrefix) }
-    var objects by remember { mutableStateOf<List<ParsPackObject>>(emptyList()) }
+    var prefix by remember { mutableStateOf(container.prefs.parsPackPrefix.trim().trim('/').let { if (it.isBlank()) "" else "$it/" }) }
+    var listing by remember { mutableStateOf(ParsPackListing(prefix = prefix)) }
+    var filter by remember { mutableStateOf("") }
     var key by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var preview by remember { mutableStateOf<ParsPackObject?>(null) }
     var deleteTarget by remember { mutableStateOf<ParsPackObject?>(null) }
 
-    fun refresh() {
+    fun refresh(targetPrefix: String = prefix) {
+        prefix = targetPrefix.trim().trimStart('/').let { if (it.isBlank()) "" else "$it".trimEnd('/') + "/" }
         loading = true; error = null
         scope.launch {
             try {
-                objects = storage.list(prefix.trim().trim('/'))
+                listing = storage.listDirectory(prefix)
             } catch (t: Throwable) {
                 error = t.message ?: "دریافت فهرست ناموفق بود."
             }
@@ -480,13 +484,15 @@ private fun ParsPackBrowser() {
             if (bytes == null) {
                 error = "فایل انتخاب‌شده خوانده نشد."
             } else {
-                val target = key.trim().trimStart('/')
+                val typed = key.trim().trimStart('/')
+                val target = if ('/' in typed || prefix.isBlank()) typed else prefix + typed
                 if (target.isBlank()) {
-                    error = "مسیر شیء را بنویسید؛ آپلود با همین مسیر overwrite می‌شود."
+                    error = "نام فایل یا مسیر مقصد را بنویسید؛ همان مسیر فایل قبلی را جایگزین می‌کند."
                 } else {
                     try {
                         storage.upload(target, bytes, context.contentResolver.getType(uri).orEmpty())
-                        refresh()
+                        key = ""
+                        listing = storage.listDirectory(prefix)
                     } catch (t: Throwable) {
                         error = t.message ?: "آپلود ناموفق بود."
                     }
@@ -496,37 +502,65 @@ private fun ParsPackBrowser() {
         }
     }
 
+    LaunchedEffect(Unit) { refresh(prefix) }
+
     val open = preview
     if (open != null) {
         ParsPackObjectPreview(objectInfo = open, onBack = { preview = null })
         return
     }
+    val visibleFiles = listing.objects.filter { filter.isBlank() || it.key.contains(filter.trim(), ignoreCase = true) }
+    val parent = prefix.trimEnd('/').substringBeforeLast('/', "").let { if (it.isBlank()) "" else "$it/" }
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("باکت ${container.prefs.parsPackBucket}", style = MaterialTheme.typography.titleMedium)
+        Text("فایل‌اکسپلورر ParsPack", style = MaterialTheme.typography.titleMedium)
+        Text("باکت ${container.prefs.parsPackBucket} · ${if (prefix.isBlank()) "ریشه" else prefix}", style = MaterialTheme.typography.labelMedium)
         if (!storage.configured) {
             Text("کلیدهای ParsPack هنوز در vault ذخیره نشده‌اند. از تنظیمات اتصال، access/secret key را وارد و آزمون کنید.", color = MaterialTheme.colorScheme.error)
             return@Column
         }
-        OutlinedTextField(prefix, { prefix = it }, label = { Text("پیشوند / پوشه") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        Button(onClick = { refresh() }, modifier = Modifier.fillMaxWidth(), enabled = !loading) { Text(if (loading) "در حال دریافت…" else "نمایش فایل‌ها") }
-        OutlinedTextField(key, { key = it }, label = { Text("مسیر فایل برای آپلود یا جایگزینی") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { refresh(parent) }, enabled = !loading && prefix.isNotBlank(), modifier = Modifier.weight(1f)) { Text("پوشهٔ بالاتر") }
+            Button(onClick = { refresh() }, enabled = !loading, modifier = Modifier.weight(1f)) { Text(if (loading) "…" else "تازه‌سازی") }
+        }
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                val quota = 20L * 1024 * 1024 * 1024
+                Text("حجم پوشهٔ باز: ${humanBytes(listing.bytes)} · ${toPersianDigits(listing.objects.size.toString())} فایل · ${toPersianDigits(listing.folders.size.toString())} پوشه")
+                LinearProgressIndicator(progress = { (listing.bytes.toFloat() / quota).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                Text("نمودار حجم این پوشه است؛ ترافیک کل سرویس فقط از پنل آمار ParsPack قابل دریافت است و این اپ مقدار ساختگی نشان نمی‌دهد.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        OutlinedTextField(filter, { filter = it }, label = { Text("جست‌وجو در پوشهٔ باز") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        OutlinedTextField(key, { key = it }, label = { Text("نام فایل یا مسیر مقصد برای آپلود / جایگزینی") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         OutlinedButton(onClick = { picker.launch("*/*") }, modifier = Modifier.fillMaxWidth(), enabled = !loading && key.isNotBlank()) { Text("انتخاب و آپلود / جایگزینی") }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         if (loading) CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(objects, key = { it.key }) { item ->
+            if (listing.folders.isNotEmpty()) item { Text("پوشه‌ها", fontWeight = FontWeight.Bold) }
+            items(listing.folders, key = { "folder:$it" }) { folder ->
+                Card(onClick = { refresh(folder) }, modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Icon(Icons.Outlined.FolderOpen, contentDescription = null)
+                        Column { Text(folder.trimEnd('/').substringAfterLast('/'), fontWeight = FontWeight.Medium); Text(folder, style = MaterialTheme.typography.labelSmall) }
+                    }
+                }
+            }
+            if (visibleFiles.isNotEmpty()) item { Text("فایل‌ها", fontWeight = FontWeight.Bold) }
+            items(visibleFiles, key = { it.key }) { item ->
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(item.key, fontWeight = FontWeight.Medium)
-                        Text("${toPersianDigits(item.size.toString())} بایت · ${item.modified}", style = MaterialTheme.typography.labelSmall)
+                        Text(item.key.substringAfterLast('/'), fontWeight = FontWeight.Medium)
+                        Text("${humanBytes(item.size)} · ${item.modified.ifBlank { "زمان نامشخص" }}", style = MaterialTheme.typography.labelSmall)
+                        Text(item.key, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = { preview = item }) { Text("نمایش") }
+                            TextButton(onClick = { preview = item }) { Text("پیش‌نمایش") }
                             TextButton(onClick = { key = item.key }) { Text("جایگزینی") }
                             TextButton(onClick = { deleteTarget = item }) { Text("حذف") }
                         }
                     }
                 }
             }
+            if (!loading && listing.folders.isEmpty() && visibleFiles.isEmpty()) item { Text("این پوشه خالی است یا کلید شما اجازهٔ فهرست‌کردن ندارد.") }
         }
     }
     val target = deleteTarget
@@ -540,7 +574,7 @@ private fun ParsPackBrowser() {
                 scope.launch {
                     try {
                         storage.delete(target.key)
-                        objects = objects.filterNot { it.key == target.key }
+                        listing = storage.listDirectory(prefix)
                     } catch (t: Throwable) {
                         error = t.message ?: "حذف ناموفق بود."
                     }
@@ -552,16 +586,24 @@ private fun ParsPackBrowser() {
     }
 }
 
+private fun humanBytes(value: Long): String = when {
+    value >= 1024L * 1024 * 1024 -> "%.2f GB".format(Locale.US, value.toDouble() / (1024 * 1024 * 1024))
+    value >= 1024L * 1024 -> "%.1f MB".format(Locale.US, value.toDouble() / (1024 * 1024))
+    value >= 1024L -> "%.1f KB".format(Locale.US, value.toDouble() / 1024)
+    else -> "${toPersianDigits(value.toString())} بایت"
+}
+
 /** HTML رمز‌شده را تنها در حافظه unwrap می‌کند؛ هیچ plaintext روی دیسک ذخیره نمی‌شود. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ParsPackObjectPreview(objectInfo: ParsPackObject, onBack: () -> Unit) {
     val container = LocalAdmin.current
-    val scope = rememberCoroutineScope()
     var bytes by remember { mutableStateOf<ByteArray?>(null) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var decoded by remember { mutableStateOf(false) }
+    var keyLoading by remember { mutableStateOf(false) }
+    var keyError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(objectInfo.key) {
         try {
@@ -571,6 +613,23 @@ private fun ParsPackObjectPreview(objectInfo: ParsPackObject, onBack: () -> Unit
         }
         loading = false
     }
+    val raw = bytes ?: ByteArray(0)
+    val isHmk = raw.size >= 4 && raw[0] == 'H'.code.toByte() && raw[1] == 'M'.code.toByte() && raw[2] == 'K'.code.toByte() && raw[3] == '1'.code.toByte()
+
+    // تنها هنگام درخواست نمایش بازشده، ردیف کلیدِ همان دیتابیس خوانده می‌شود.
+    // کش آن با Android Keystore پوشانده می‌شود و خود plaintext HTML هرگز نوشته نمی‌شود.
+    LaunchedEffect(decoded, isHmk, container.prefs.htmlMediaKeyB64) {
+        if (decoded && isHmk && container.prefs.htmlMediaKeyB64.isBlank() && !keyLoading) {
+            keyLoading = true
+            keyError = null
+            when (val result = adminIo { container.api.fetchHtmlMediaKeyB64() }) {
+                is AppResult.Ok -> container.prefs.cacheHtmlMediaKeyB64(result.value)
+                is AppResult.Err -> keyError = result.error.userMessage
+            }
+            keyLoading = false
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
         androidx.compose.material3.TopAppBar(
             title = { Text(objectInfo.key.substringAfterLast('/').ifBlank { "پیش‌نمایش" }) },
@@ -580,22 +639,25 @@ private fun ParsPackObjectPreview(objectInfo: ParsPackObject, onBack: () -> Unit
             loading -> CircularProgressIndicator(Modifier.padding(24.dp).align(Alignment.CenterHorizontally))
             error != null -> Text(error ?: "", color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
             else -> {
-                val raw = bytes ?: ByteArray(0)
-                val isHmk = raw.size >= 4 && raw[0] == 'H'.code.toByte() && raw[1] == 'M'.code.toByte() && raw[2] == 'K'.code.toByte() && raw[3] == '1'.code.toByte()
-                val rendered = if (decoded && isHmk) runCatching { unwrapHmk1(raw, container.prefs.htmlMediaKeyB64) }.getOrElse { err ->
-                    error = err.message ?: "رمزگشایی نشد."; raw
-                } else raw
+                val key = container.prefs.htmlMediaKeyB64
+                val decodedResult = if (decoded && isHmk && key.isNotBlank()) {
+                    runCatching { unwrapHmk1(raw, key) }
+                } else null
+                val rendered = decodedResult?.getOrElse { raw } ?: raw
+                val decodeError = decodedResult?.exceptionOrNull()?.message
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("${toPersianDigits(raw.size.toString())} بایت · ${if (isHmk) "HMK1 encrypted" else "raw"}", style = MaterialTheme.typography.labelMedium)
                     if (isHmk) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            FilterChip(selected = !decoded, onClick = { decoded = false }, label = { Text("بدون رمزگشایی") })
-                            FilterChip(selected = decoded, onClick = { decoded = true }, enabled = container.prefs.htmlMediaKeyB64.isNotBlank(), label = { Text("نمایش decode‌شده") })
+                            FilterChip(selected = !decoded, onClick = { decoded = false; keyError = null }, label = { Text("بدون رمزگشایی") })
+                            FilterChip(selected = decoded, onClick = { decoded = true }, enabled = !keyLoading, label = { Text(if (keyLoading) "دریافت کلید…" else "نمایش decode‌شده") })
                         }
-                        if (container.prefs.htmlMediaKeyB64.isBlank()) Text("برای نمایش decode‌شده، کلید HTML B64 را در vault تنظیمات وارد کنید.", color = MaterialTheme.colorScheme.error)
+                        if (decoded && key.isBlank() && !keyLoading) {
+                            Text(keyError ?: "کلید HTML از app_state/html_media_key دریافت نشد.", color = MaterialTheme.colorScheme.error)
+                        }
                     }
-                    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                    ParsPackPreviewContent(objectInfo.key, rendered, decoded && isHmk)
+                    decodeError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    ParsPackPreviewContent(objectInfo.key, rendered, decoded && isHmk && decodedResult?.isSuccess == true)
                 }
             }
         }

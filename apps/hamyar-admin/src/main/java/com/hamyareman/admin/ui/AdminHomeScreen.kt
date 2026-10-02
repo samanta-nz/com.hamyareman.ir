@@ -48,13 +48,6 @@ import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import kotlinx.coroutines.launch
 
-private const val MEDIA =
-    "https://fra.cloud.appwrite.io/v1/storage/buckets/6aa1eaae00303400117b/files"
-private const val PROJECT = "6a9d59e3002751cc3ea8"
-
-private fun fileView(id: String): String =
-    if (id.isBlank()) "" else "$MEDIA/$id/view?project=$PROJECT"
-
 private enum class AdminTab { PAY, REFUND, USERS, INSTALL, SEARCH, STATS, DB, STORE, FUN, AUTH }
 
 @Composable

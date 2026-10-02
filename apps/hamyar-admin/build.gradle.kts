@@ -29,8 +29,8 @@ android {
         applicationId = "com.hamyareman.admin"
         minSdk = 26
         targetSdk = 36
-        versionCode = (findProperty("adminVersionCode") as? String)?.toIntOrNull() ?: 20
-        versionName = (findProperty("adminVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.0"
+        versionCode = (findProperty("adminVersionCode") as? String)?.toIntOrNull() ?: 21
+        versionName = (findProperty("adminVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.1"
         buildConfigField("String", "APPWRITE_ENDPOINT", "\"$appwriteEndpoint\"")
         buildConfigField("String", "APPWRITE_PROJECT_ID", "\"$appwriteProjectId\"")
         manifestPlaceholders["appwriteProjectId"] = appwriteProjectId

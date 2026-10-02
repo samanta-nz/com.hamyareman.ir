@@ -91,29 +91,6 @@ class AdminMainActivity : AppCompatActivity() {
                                 loading = signingIn,
                                 error = error,
                                 onSettings = { showSettings = true },
-                                onGoogle = {
-                                    signingIn = true
-                                    error = null
-                                    scope.launch {
-                                        val outcome = runCatching {
-                                            when (val r = adminIo { container.auth.signInWithGoogle(this@AdminMainActivity) }) {
-                                                is AppResult.Err -> false to r.error.userMessage
-                                                is AppResult.Ok -> verifyAdmin(container, r.value)
-                                            }
-                                        }
-                                        outcome.fold(
-                                            onSuccess = { (ok, msg) ->
-                                                loggedIn.value = ok
-                                                error = msg
-                                            },
-                                            onFailure = { err ->
-                                                loggedIn.value = false
-                                                error = "ورود گوگل ناموفق: " + (err.message?.ifBlank { null } ?: err.javaClass.simpleName)
-                                            },
-                                        )
-                                        signingIn = false
-                                    }
-                                },
                                 onSignIn = { email, password ->
                                     signingIn = true
                                     error = null

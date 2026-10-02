@@ -11,6 +11,36 @@ import com.hamyareman.ir.platform.core.common.LocalStore
 class AdminPrefs(context: Context, private val store: LocalStore) {
     private val vault = SecureAdminVault(context)
 
+    init {
+        migrateObsoleteConnectionProfile()
+    }
+
+    /**
+     * نسخه‌های قبلی ادمین روی دیتابیس‌های تاریخی ZahraDB/HM_BCKT و پروژهٔ FRA
+     * می‌ماندند؛ حتی بعد از نصب APK جدید. فقط همان مقادیر شناخته‌شدهٔ قدیمی را
+     * به محیط فعلی منتقل می‌کنیم و تنظیم سفارشی مدیر را دست نمی‌زنیم.
+     */
+    private fun migrateObsoleteConnectionProfile() {
+        val legacyDatabases = setOf("ZahraDB", "HM_BCKT")
+        val legacyProjects = setOf("6a9d59e3002751cc3ea8")
+        val legacyEndpoints = setOf("https://fra.cloud.appwrite.io/v1")
+        var migrated = false
+        if (store.getString(KEY_DATABASE) in legacyDatabases) {
+            store.putString(KEY_DATABASE, DEFAULT_APPWRITE_DATABASE)
+            migrated = true
+        }
+        if (store.getString(KEY_PROJECT) in legacyProjects) {
+            store.putString(KEY_PROJECT, DEFAULT_APPWRITE_PROJECT)
+            migrated = true
+        }
+        if (store.getString(KEY_ENDPOINT).trimEnd('/') in legacyEndpoints) {
+            store.putString(KEY_ENDPOINT, DEFAULT_APPWRITE_ENDPOINT)
+            migrated = true
+        }
+        // با تغییر خودکار مقصد، کش کلید HTML مربوط به محیط تاریخی معتبر نیست.
+        if (migrated) vault.put(SECRET_HTML_MEDIA, "")
+    }
+
     val name: String get() = store.getString(KEY_NAME).ifBlank { "همیار من" }
     val endpoint: String get() = store.getString(KEY_ENDPOINT).ifBlank { DEFAULT_APPWRITE_ENDPOINT }
     val projectId: String get() = store.getString(KEY_PROJECT).ifBlank { DEFAULT_APPWRITE_PROJECT }
@@ -41,16 +71,29 @@ class AdminPrefs(context: Context, private val store: LocalStore) {
         bucketId: String,
         supportTableId: String,
         apiKey: String,
-        htmlMediaKeyB64: String,
     ) {
+        val nextEndpoint = endpoint.trim().trimEnd('/')
+        val nextProject = projectId.trim()
+        val nextDatabase = databaseId.trim()
+        // با تغییر مقصد، cache کلیدِ پروژهٔ قبلی نباید به کار رود.
+        if (nextEndpoint != this.endpoint || nextProject != this.projectId || nextDatabase != this.databaseId) {
+            vault.put(SECRET_HTML_MEDIA, "")
+        }
         store.putString(KEY_NAME, name.trim())
-        store.putString(KEY_ENDPOINT, endpoint.trim().trimEnd('/'))
-        store.putString(KEY_PROJECT, projectId.trim())
-        store.putString(KEY_DATABASE, databaseId.trim())
+        store.putString(KEY_ENDPOINT, nextEndpoint)
+        store.putString(KEY_PROJECT, nextProject)
+        store.putString(KEY_DATABASE, nextDatabase)
         store.putString(KEY_BUCKET, bucketId.trim())
         store.putString(KEY_SUPPORT_TABLE, supportTableId.trim())
         vault.put(SECRET_APPWRITE_API, apiKey)
-        vault.put(SECRET_HTML_MEDIA, htmlMediaKeyB64)
+    }
+
+    /**
+     * کلید HTML از همان ردیف خصوصی `app_state/html_media_key` دانلود می‌شود.
+     * این فقط کش رمز‌شدهٔ Keystore است؛ هیچ فیلد دستی برای ورود کلید نداریم.
+     */
+    fun cacheHtmlMediaKeyB64(value: String) {
+        vault.put(SECRET_HTML_MEDIA, value)
     }
 
     fun saveParsPack(

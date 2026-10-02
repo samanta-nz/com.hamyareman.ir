@@ -24,10 +24,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.hamyareman.admin.AdminApi
+import com.hamyareman.admin.AdminUpdateChecker
+import com.hamyareman.admin.AdminUpdateInfo
+import com.hamyareman.admin.BuildConfig
 import com.hamyareman.admin.LocalAdmin
 import com.hamyareman.admin.ParsPackStorage
 import com.hamyareman.admin.adminIo
@@ -40,6 +44,7 @@ import kotlinx.coroutines.launch
 fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
     val container = LocalAdmin.current
     val prefs = container.prefs
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     var name by remember { mutableStateOf(prefs.name) }
@@ -49,7 +54,6 @@ fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
     var bucket by remember { mutableStateOf(prefs.bucketId) }
     var supportTable by remember { mutableStateOf(prefs.supportTableId) }
     var apiKey by remember { mutableStateOf("") }
-    var htmlKey by remember { mutableStateOf("") }
 
     var ppEndpoint by remember { mutableStateOf(prefs.parsPackEndpoint) }
     var ppBucket by remember { mutableStateOf(prefs.parsPackBucket) }
@@ -62,6 +66,7 @@ fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
     var info by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var updateInfo by remember { mutableStateOf<AdminUpdateInfo?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
 
     fun save() {
@@ -74,7 +79,6 @@ fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
             bucketId = bucket,
             supportTableId = supportTable,
             apiKey = apiKey.ifBlank { prefs.apiKey },
-            htmlMediaKeyB64 = htmlKey.ifBlank { prefs.htmlMediaKeyB64 },
         )
         prefs.saveParsPack(
             endpoint = ppEndpoint,
@@ -116,10 +120,10 @@ fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                 onValueChange = { apiKey = it },
                 label = if (prefs.hasAppwriteCredential) "API key جدید (کلید فعلی محفوظ است)" else "Appwrite API key",
             )
-            SecretField(
-                value = htmlKey,
-                onValueChange = { htmlKey = it },
-                label = if (prefs.htmlMediaKeyB64.isNotBlank()) "کلید HTML جدید (B64؛ فعلی محفوظ است)" else "کلید رمز HTML HMK1 (B64، اختیاری)",
+            Text(
+                "کلید رمز HTML به‌صورت خودکار از ردیف app_state/html_media_key در همین دیتابیس دریافت و فقط در vault رمز‌شدهٔ این دستگاه cache می‌شود؛ نیازی به وارد کردن دستی آن نیست.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             SettingsHeading("ParsPack · باکت داخلی")
@@ -176,10 +180,46 @@ fun AdminSettingsScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("ذخیرهٔ تنظیمات") }
 
+            OutlinedButton(
+                onClick = {
+                    busy = true; error = null; info = null
+                    scope.launch {
+                        runCatching { AdminUpdateChecker.check() }
+                            .onSuccess { remote ->
+                                if (remote == null || !AdminUpdateChecker.hasUpdate(remote)) {
+                                    info = "نسخهٔ ${BuildConfig.VERSION_NAME} همین حالا جدیدترین نسخه است."
+                                } else {
+                                    updateInfo = remote
+                                }
+                            }
+                            .onFailure { error = it.message ?: "بررسی به‌روزرسانی ناموفق بود." }
+                        busy = false
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy,
+            ) { Text("بررسی به‌روزرسانی ادمین") }
+
             OutlinedButton(onClick = { confirmClear = true }, modifier = Modifier.fillMaxWidth()) {
                 Text("پاک‌کردن کلیدهای این دستگاه")
             }
         }
+    }
+
+    updateInfo?.let { update ->
+        AlertDialog(
+            onDismissRequest = { updateInfo = null },
+            title = { Text("به‌روزرسانی ${update.versionName} آماده است") },
+            text = {
+                Text(
+                    "نسخهٔ نصب‌شده: ${BuildConfig.VERSION_NAME}\n" +
+                        "نسخهٔ جدید: ${update.versionName}\n" +
+                        "دانلود از ParsPack با نصب‌کنندهٔ رسمی Android باز می‌شود. امضای نسخهٔ جدید باید همان امضای ادمین فعلی باشد.",
+                )
+            },
+            confirmButton = { TextButton(onClick = { AdminUpdateChecker.openDownload(context, update); updateInfo = null }) { Text("دانلود و نصب") } },
+            dismissButton = { TextButton(onClick = { updateInfo = null }) { Text("بعداً") } },
+        )
     }
 
     if (confirmClear) {
