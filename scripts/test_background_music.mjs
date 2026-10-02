@@ -1,6 +1,9 @@
+// تست رفتاری سه فایل موسیقی با jsdom.
+//   node scripts/test_background_music.mjs            (پیش‌فرض: http://127.0.0.1:8000/)
+// سرور ساده: python3 -m http.server 8000 --directory Bucket/Html-files
 import { JSDOM, VirtualConsole } from "jsdom";
 
-const BASE = "http://127.0.0.1:8000/";
+const BASE = process.env.MUSIC_BASE || "http://127.0.0.1:8000/";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const results = [];
 function check(name, cond, extra = "") {
@@ -20,129 +23,124 @@ async function load(page, { appTheme = null, systemDark = false } = {}) {
     resources: "usable",
     pretendToBeVisual: true,
     virtualConsole: vc,
-  });
-  const { window } = dom;
-  window.matchMedia = (q) => ({
-    matches: systemDark && /dark/.test(q),
-    media: q,
-    addEventListener() {},
-    removeEventListener() {},
-    addListener() {},
-    removeListener() {},
+    beforeParse(window) {
+      window.matchMedia = (q) => ({
+        matches: systemDark && /dark/.test(q),
+        media: q,
+        addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {},
+      });
+      if (appTheme) {
+        // شبیه‌سازی اپ: پلِ ظاهر پیش از اجرای HTML نصب می‌شود (مثل addJavascriptInterface)
+        window.HamyarAppearanceBridge = { resolvedTheme: () => appTheme, themePreference: () => appTheme };
+      }
+    },
   });
   if (appTheme) {
-    // شبیه‌سازی اپ: همان کاری که publishHamyarAppearance می‌کند
-    window.HamyarAppearanceBridge = { resolvedTheme: () => appTheme, themePreference: () => appTheme };
-    window.document.documentElement.setAttribute("data-hamyar-theme-preference", appTheme);
-    window.document.documentElement.setAttribute("data-hamyar-theme", appTheme);
+    const root = dom.window.document.documentElement;
+    root.setAttribute("data-hamyar-theme-preference", appTheme);
+    root.setAttribute("data-hamyar-theme", appTheme);
   }
-  await new Promise((r) => window.addEventListener("load", r, { once: true }));
+  await new Promise((r) => dom.window.addEventListener("load", r, { once: true }));
   return dom;
 }
 
-const innerDoc = (w) => w.document.getElementById("backgroundMusicFrame").contentDocument;
-const innerWin = (w) => w.document.getElementById("backgroundMusicFrame").contentWindow;
+const click = (doc, id) =>
+  doc.getElementById(id).dispatchEvent(new doc.defaultView.MouseEvent("click", { bubbles: true }));
+
+// ---------- ۰) خودبسنده بودن ----------
+{
+  console.log("— خودبسندگی: هر سه فایل باید همهٔ صداها را embed داشته باشند —");
+  for (const name of ["background-music.html", "background-music-tile.html", "background-music-full.html"]) {
+    const text = await (await fetch(BASE + name)).text();
+    const tracks = (text.match(/"audio":"/g) || []).length;
+    const iframe = /<iframe[^>]+background-music/.test(text);
+    check(`${name}: ${tracks} صدای embed شده، بدون وابستگی به فایل دیگر`, tracks === 29 && !iframe,
+      `${(text.length / 1048576).toFixed(2)}MB`);
+  }
+}
 
 // ---------- ۱) tile ----------
 {
   console.log("\n— tile (کادر ۹۲px + پاپ‌آپ تمام‌صفحه + بسته‌شدن پس از ۲ ثانیه) —");
   const dom = await load("background-music-tile.html", { appTheme: "dark" });
-  const w = dom.window;
-  await sleep(2500);
-  const idoc = innerDoc(w);
-  check("tile: iframe پخش‌کننده لود شد", !!idoc && !!idoc.getElementById("mini"));
-  check("tile: embedded فعال است", idoc.body.classList.contains("embedded"));
-  check("tile: تم اپ (dark) روی tile نشست", w.document.documentElement.getAttribute("data-theme") === "dark",
-    "data-theme=" + w.document.documentElement.getAttribute("data-theme"));
-  check("tile: تم اپ به پخش‌کنندهٔ داخل iframe هم رسید", idoc.documentElement.getAttribute("data-theme") === "dark",
-    "data-theme=" + idoc.documentElement.getAttribute("data-theme"));
-  check("tile: کلید ماه/خورشید محلی قفل شد", idoc.documentElement.hasAttribute("data-hamyar-app-theme"));
-  check("tile: در شروع بسته است", !w.document.body.classList.contains("is-open"));
+  const w = dom.window, doc = w.document;
+  await sleep(1500);
+  check("tile: حالت کادر (embedded) فعال است", doc.body.classList.contains("embedded"));
+  check("tile: گونهٔ tile است، نه full", doc.body.getAttribute("data-hamyar-music-variant") === "tile");
+  check("tile: در شروع بسته است", !doc.body.classList.contains("is-open") && doc.getElementById("backdrop").hidden);
+  check("tile: تم اپ (dark) نشست", doc.documentElement.getAttribute("data-theme") === "dark");
+  check("tile: کلید ماه/خورشید محلی قفل شد", doc.documentElement.hasAttribute("data-hamyar-app-theme"));
 
-  // لمس کادر → باز شدن پاپ‌آپ
-  idoc.getElementById("mini").dispatchEvent(new idoc.defaultView.MouseEvent("click", { bubbles: true }));
+  click(doc, "mini");
   await sleep(150);
-  check("tile: با لمس، پاپ‌آپ تمام‌صفحه باز شد", w.document.body.classList.contains("is-open"));
-  check("tile: پخش‌کننده در پاپ‌آپ بدون سقف ارتفاع است (variant-full)", idoc.body.classList.contains("variant-full"));
-  check("tile: اورلی روی صفحهٔ میزبان هست", !!w.document.getElementById("scrim"));
+  check("tile: با لمس، پاپ‌آپ باز شد", doc.body.classList.contains("is-open") && !doc.getElementById("backdrop").hidden);
+  check("tile: پاپ‌آپ بدون سقف ارتفاع است (variant-full)", doc.body.classList.contains("variant-full"));
 
-  // ۲ ثانیه بی‌لمسی → بسته شدن و بازگشت سر جای قبلی
   await sleep(2400);
-  check("tile: پس از ۲ ثانیه بی‌لمسی بسته شد", !w.document.body.classList.contains("is-open"));
-  check("tile: پخش‌کننده به حالت کادر برگشت", !idoc.body.classList.contains("variant-full"));
-  check("tile: شیت داخلی هم بسته شد", idoc.getElementById("backdrop").hidden === true);
+  check("tile: پس از ۲ ثانیه بی‌لمسی بسته شد", !doc.body.classList.contains("is-open"));
+  check("tile: به حالت کادر برگشت", !doc.body.classList.contains("variant-full") && doc.getElementById("backdrop").hidden);
 
-  // باز کردن دوباره + لمس پیاپی باید تایمر را ری‌ست کند
-  idoc.getElementById("mini").dispatchEvent(new idoc.defaultView.MouseEvent("click", { bubbles: true }));
+  click(doc, "mini");
   await sleep(100);
   for (let i = 0; i < 6; i++) {
     await sleep(400);
-    idoc.getElementById("grid").dispatchEvent(new idoc.defaultView.MouseEvent("pointerdown", { bubbles: true }));
+    doc.getElementById("grid").dispatchEvent(new w.MouseEvent("pointerdown", { bubbles: true }));
   }
-  check("tile: لمس پیاپی تایمر را ری‌ست کرد (هنوز باز است)", w.document.body.classList.contains("is-open"));
+  check("tile: لمس پیاپی تایمر را ری‌ست کرد (هنوز باز است)", doc.body.classList.contains("is-open"));
   await sleep(2400);
-  check("tile: پس از توقف لمس‌ها بسته شد", !w.document.body.classList.contains("is-open"));
+  check("tile: پس از توقف لمس‌ها بسته شد", !doc.body.classList.contains("is-open"));
 
-  // دکمهٔ ضربدر داخل پاپ‌آپ باید کار کند (برخلاف صفحهٔ full)
-  idoc.getElementById("mini").dispatchEvent(new idoc.defaultView.MouseEvent("click", { bubbles: true }));
+  click(doc, "mini");
   await sleep(150);
-  idoc.getElementById("close").dispatchEvent(new idoc.defaultView.MouseEvent("click", { bubbles: true }));
-  await sleep(200);
-  check("tile: دکمهٔ بستن داخل پاپ‌آپ، کادر را به جای قبلی برمی‌گرداند",
-    !w.document.body.classList.contains("is-open") && idoc.getElementById("backdrop").hidden === true);
-  dom.window.close();
+  click(doc, "close");
+  await sleep(150);
+  check("tile: دکمهٔ ✕ هم می‌بندد و کادر برمی‌گردد",
+    !doc.body.classList.contains("is-open") && doc.getElementById("backdrop").hidden);
+  w.close();
 }
 
 // ---------- ۲) full ----------
 {
   console.log("\n— full (همیشه باز، همهٔ منوها، بدون سقف ارتفاع) —");
   const dom = await load("background-music-full.html", { appTheme: "light" });
-  const w = dom.window;
-  await sleep(2500);
-  const idoc = innerDoc(w);
-  const iwin = innerWin(w);
-  check("full: پخش‌کننده لود شد", !!idoc && !!idoc.getElementById("sheet"));
-  check("full: گونهٔ full فعال است", idoc.body.classList.contains("variant-full"));
-  check("full: پنجره از ابتدا باز است", idoc.getElementById("backdrop").hidden === false);
-  iwin.BackgroundMusic.close();
-  await sleep(100);
-  check("full: close() هم آن را نمی‌بندد (هرگز بسته نمی‌شود)", idoc.getElementById("backdrop").hidden === false);
+  const w = dom.window, doc = w.document;
+  await sleep(1500);
+  check("full: گونهٔ full فعال است", doc.body.classList.contains("variant-full") && doc.body.classList.contains("locked-open"));
+  check("full: از ابتدا باز است", doc.getElementById("backdrop").hidden === false);
+  w.BackgroundMusic.close();
+  await sleep(200);
+  check("full: close() هم آن را نمی‌بندد", doc.getElementById("backdrop").hidden === false);
+  doc.getElementById("backdrop").dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  await sleep(200);
+  check("full: لمس بیرونی هم آن را نمی‌بندد", doc.getElementById("backdrop").hidden === false);
   check("full: همهٔ منوها هست (دسته‌بندی + کاتالوگ + دو لایه + ولوم)",
-    !!idoc.getElementById("filters").children.length &&
-      !!idoc.getElementById("grid").children.length &&
-      !!idoc.getElementById("slot0") && !!idoc.getElementById("slot1") &&
-      !!idoc.getElementById("volume"));
-  check("full: دکمهٔ بستن مخفی است", (idoc.defaultView.getComputedStyle(idoc.getElementById("close")).display || "") === "none");
-  check("full: embedded فعال است (state به میزبان می‌رسد)", idoc.body.classList.contains("embedded"));
-  check("full: تم روشنِ اپ روی صفحه و پخش‌کننده", w.document.documentElement.getAttribute("data-theme") === "light" &&
-    idoc.documentElement.getAttribute("data-theme") === "light");
-
-  // تغییر تم زنده از سمت اپ
+    doc.getElementById("filters").children.length > 0 &&
+    doc.getElementById("grid").children.length > 0 &&
+    !!doc.getElementById("slot0") && !!doc.getElementById("slot1") && !!doc.getElementById("volume"));
+  check("full: دکمهٔ بستن مخفی است", w.getComputedStyle(doc.getElementById("close")).display === "none");
+  check("full: تم روشن اپ نشست", doc.documentElement.getAttribute("data-theme") === "light");
   w.HamyarAppearanceBridge = { resolvedTheme: () => "dark", themePreference: () => "dark" };
-  w.document.documentElement.setAttribute("data-hamyar-theme", "dark");
+  doc.documentElement.setAttribute("data-hamyar-theme", "dark");
   await sleep(300);
-  check("full: تغییر زندهٔ تم اپ تا داخل پخش‌کننده رفت",
-    w.document.documentElement.getAttribute("data-theme") === "dark" &&
-    idoc.documentElement.getAttribute("data-theme") === "dark",
-    "tile=" + w.document.documentElement.getAttribute("data-theme") + " player=" + idoc.documentElement.getAttribute("data-theme"));
-  dom.window.close();
+  check("full: تغییر زندهٔ تم اپ اعمال شد", doc.documentElement.getAttribute("data-theme") === "dark");
+  w.close();
 }
 
-// ---------- ۳) پخش‌کنندهٔ تنها، بدون اپ ----------
+// ---------- ۳) پلیر مستقل، بدون اپ ----------
 {
-  console.log("\n— player مستقل (بدون اپ): تم سیستم —");
+  console.log("\n— player مستقل (بدون اپ) —");
   const dom = await load("background-music.html", { systemDark: true });
-  const w = dom.window;
-  await sleep(2000);
-  check("player: بدون اپ هم تم دارد", ["dark", "light"].includes(w.document.documentElement.getAttribute("data-theme")),
-    "data-theme=" + w.document.documentElement.getAttribute("data-theme"));
-  check("player: بدون اپ، کلید ماه/خورشید آزاد است", !w.document.documentElement.hasAttribute("data-hamyar-app-theme"));
-  check("player: پیش‌فرض گونهٔ کادر (نه full)", !w.document.body.classList.contains("variant-full"));
+  const w = dom.window, doc = w.document;
+  await sleep(1200);
+  check("player: بدون اپ هم تم دارد", ["dark", "light"].includes(doc.documentElement.getAttribute("data-theme")),
+    "data-theme=" + doc.documentElement.getAttribute("data-theme"));
+  check("player: بدون اپ، کلید ماه/خورشید آزاد است", !doc.documentElement.hasAttribute("data-hamyar-app-theme"));
+  check("player: پیش‌فرض گونهٔ کادر (نه full)", !doc.body.classList.contains("variant-full"));
   w.BackgroundMusic.setFull(true, true);
-  await sleep(100);
-  check("player: setFull(true,true) سقف ارتفاع را برمی‌دارد و باز می‌کند",
-    w.document.body.classList.contains("variant-full") && w.document.getElementById("backdrop").hidden === false);
-  dom.window.close();
+  await sleep(150);
+  check("player: setFull(true,true) باز و بدون سقف ارتفاع می‌کند",
+    doc.body.classList.contains("variant-full") && doc.getElementById("backdrop").hidden === false);
+  w.close();
 }
 
 const failed = results.filter((r) => r[0] === "FAIL");
