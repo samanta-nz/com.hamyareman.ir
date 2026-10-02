@@ -30,9 +30,26 @@ class HamyarAppearanceBridge(private val prefs: UiPrefs) {
         .toString()
 }
 
+/**
+ * قرارداد خودِ فایل‌های موسیقی: `HamyarHost.getTheme()` برای تم و
+ * `HamyarHost.onMusicTile(opened)` برای باز/بسته‌شدن کادر tile.
+ */
+class HamyarHostBridge(
+    private val prefs: UiPrefs,
+    private val tileListener: (Boolean) -> Unit,
+) {
+    @JavascriptInterface fun getTheme(): String = if (prefs.darkTheme) "dark" else "light"
+    @JavascriptInterface fun themePreference(): String = prefs.darkMode
+    @JavascriptInterface fun onMusicTile(opened: Boolean) = tileListener(opened)
+}
+
 /** فقط API فقط‌خواندنی ظاهر را پیش از اجرای HTML در اختیار WebView می‌گذارد. */
-fun WebView.installHamyarAppearanceBridge(prefs: UiPrefs) {
+fun WebView.installHamyarAppearanceBridge(
+    prefs: UiPrefs,
+    onMusicTile: (Boolean) -> Unit = {},
+) {
     addJavascriptInterface(HamyarAppearanceBridge(prefs), "HamyarAppearanceBridge")
+    addJavascriptInterface(HamyarHostBridge(prefs, onMusicTile), "HamyarHost")
 }
 
 /**
@@ -83,6 +100,11 @@ fun WebView.publishHamyarAppearance(
             // music player قدیمی با data-theme رنگ می‌گیرد؛ این مقدار نیز متعلق به
             // اپ است و کلید ماه/خورشید دیگر اجازهٔ override ندارد.
             root.setAttribute('data-theme', resolvedTheme);
+            // بوت‌استرپ #hy-theme داخل فایل‌های موسیقی این متغیر را هم می‌خواند.
+            try {
+              doc.defaultView.HAMYAR_THEME = resolvedTheme;
+              if (typeof doc.defaultView.HamyarSetTheme === 'function') doc.defaultView.HamyarSetTheme(resolvedTheme);
+            } catch (_) {}
             var style = doc.getElementById('__hamyar-appearance-style');
             if (!style) {
               style = doc.createElement('style');

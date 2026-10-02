@@ -32,13 +32,7 @@ internal fun WebView.installMusicFrameOverlayBridge() {
             var t=document.documentElement.getAttribute('data-hamyar-theme');
             return t==='dark'?'dark':'light';
           }
-          function tellVariant(frame,full){
-            // پاپ‌آپ تمام‌صفحه = پخش‌کننده بدون سقف ارتفاع، ولی قابل بستن (locked=false).
-            try{ frame.contentWindow.postMessage(
-              {channel:'hamyareman-background-v1',type:'variant',full:full,locked:false},'*'); }catch(_){}
-            try{ var api=frame.contentWindow.BackgroundMusic;
-              if(api&&api.setFull)api.setFull(full,false); }catch(_){}
-          }
+
           function snapshot(frame){
             if(saved.has(frame))return saved.get(frame);
             var value={style:frame.getAttribute('style'),bodyOverflow:document.body.style.overflow,
@@ -59,7 +53,6 @@ internal fun WebView.installMusicFrameOverlayBridge() {
               frame.style.setProperty('min-height',COLLAPSED_HEIGHT,'important');
               frame.style.setProperty('max-height',COLLAPSED_HEIGHT,'important');
             }
-            tellVariant(frame,false);
             frame.setAttribute('data-hamyar-music-open','false');
           }
           function open(frame){
@@ -73,7 +66,6 @@ internal fun WebView.installMusicFrameOverlayBridge() {
               'border:0!important;border-radius:0!important;z-index:2147483647!important;'+
               'background:'+(theme()==='dark'?'#101713':'#f4faf7')+'!important;'+
               'touch-action:auto!important;pointer-events:auto!important;';
-            tellVariant(frame,true);
             frame.setAttribute('data-hamyar-music-open','true');
             try{frame.focus()}catch(_){}
           }
