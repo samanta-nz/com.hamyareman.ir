@@ -79,30 +79,19 @@ fun BookDetailScreen(
         }
 
         val ctx = LocalContext.current
-        val cover = remember(bookCode) { PdfSafe.decodeCover(ctx, bookCode) }
-        Card(Modifier.fillMaxWidth()) {
-            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (cover != null) {
-                    Image(
-                        bitmap = cover.asImageBitmap(),
-                        contentDescription = "کاور ${module.title}",
-                        modifier = Modifier.width(88.dp).height(116.dp),
-                        contentScale = ContentScale.Fit,
-                    )
-                    Spacer(Modifier.width(12.dp))
-                }
-                Column(Modifier.weight(1f)) {
-                    Text(module.title, style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "فصل‌ها را باز کن و هر درس را لمس کن — اول تدریس، بعد تمرین.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    OutlinedButton(onClick = onCharts) { Text("📈 نمودار پیشرفت دروس") }
-                }
-            }
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "فهرست و پیشرفت",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedButton(onClick = onCharts) { Text("📈 پیشرفت") }
         }
+
 
         Spacer(Modifier.height(10.dp))
         val tocStore = remember(bookCode) { LocalStore(ctx, "hamyar_toc") }
@@ -409,12 +398,43 @@ private fun BookMenuNode(
                 if (!node.expandable && !node.hasContent) SoonBadge()
             }
 
-            if (open) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = open,
+                enter = androidx.compose.animation.expandVertically(
+                    expandFrom = Alignment.Top,
+                    animationSpec = androidx.compose.animation.core.tween(220),
+                ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(160)),
+                exit = androidx.compose.animation.shrinkVertically(
+                    shrinkTowards = Alignment.Top,
+                    animationSpec = androidx.compose.animation.core.tween(180),
+                ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(120)),
+            ) {
                 Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
                     // فصلی که PDF خودش را دارد، آن را به‌صورت یک ردیف جدا نشان
                     // می‌دهد تا با باز شدن زیرشاخه‌ها دسترسی به خودش از بین نرود.
                     if (node.hasContent) {
                         LeafRow(node.title, node.key, node.ready, depth + 1, "", onOpen)
+                    }
+                    val specialTitle = node.title.lowercase()
+                    val specialLabels = when {
+                        "ستایش" in specialTitle -> listOf("روخوانی", "نکات ادبی", "نکات تکمیلی", "کتاب درسی")
+                        "حکایت" in specialTitle -> listOf("تدریس", "واژه و املا", "آرایه و نکات ادبی", "کتاب درسی")
+                        "شعرخوانی" in specialTitle -> listOf("تدریس", "روخوانی شعر", "آرایه و نکات ادبی", "کتاب درسی")
+                        "روان‌خوانی" in specialTitle || "روان خوانی" in specialTitle ->
+                            listOf("تدریس", "روخوانی", "درک و دریافت", "کتاب درسی")
+                        else -> emptyList()
+                    }
+                    if (specialLabels.isNotEmpty() && node.tabs.isEmpty()) {
+                        specialLabels.forEachIndexed { idx, label ->
+                            LeafRow(
+                                title = label,
+                                key = if (label == "تدریس") node.teachKey else node.key,
+                                ready = if (label == "تدریس") node.teachKey != null else node.ready,
+                                depth = depth + 1,
+                                audio = node.audioKey.orEmpty(),
+                                onOpen = onOpen,
+                            )
+                        }
                     }
                     node.tabs.forEach { tab ->
                         // سربرگ «تدریس» اگر صفحهٔ آمادهٔ exam داشته باشد، به همان
@@ -430,6 +450,7 @@ private fun BookMenuNode(
                         BookMenuNode(child, "$path.$i", depth + 1, openPaths, onToggle, onOpen)
                     }
                 }
+            }
             }
         }
     }
