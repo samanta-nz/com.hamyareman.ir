@@ -2682,22 +2682,33 @@
     },
     {
      "kind": "plain",
-     "title": "پیشگفتار",
-     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-preface.pdf",
-     "ready": false,
-     "teachKey": null,
-     "audioKey": null,
-     "tabs": [],
-     "children": []
-    },
-    {
-     "kind": "plain",
      "title": "ستایش",
-     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-praise.pdf",
-     "ready": true,
+     "key": null,
+     "ready": null,
      "teachKey": null,
      "audioKey": null,
-     "tabs": [],
+     "tabs": [
+      {
+       "title": "روخوانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات ادبی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-praise.pdf",
+       "ready": true
+      }
+     ],
      "children": []
     },
     {
@@ -2753,11 +2764,27 @@
       {
        "kind": "plain",
        "title": "حکایت: سفر",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st01.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st01.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       },
       {
@@ -2804,11 +2831,27 @@
       {
        "kind": "plain",
        "title": "شعرخوانی: پرواز",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh01.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh01.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -2866,11 +2909,27 @@
       {
        "kind": "plain",
        "title": "حکایت: باغبانِ نیک‌اندیش",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st02.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st02.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       },
       {
@@ -2917,11 +2976,27 @@
       {
        "kind": "plain",
        "title": "روان‌خوانی: دریچه‌های شکوفایی",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv01.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv01.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -2929,11 +3004,22 @@
     {
      "kind": "container",
      "title": "فصل آزاد: ادبیات بومی ۱",
-     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad1.pdf",
-     "ready": true,
+     "key": null,
+     "ready": null,
      "teachKey": null,
      "audioKey": null,
-     "tabs": [],
+     "tabs": [
+      {
+       "title": "راهنما",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad1.pdf",
+       "ready": true
+      }
+     ],
      "children": [
       {
        "kind": "lesson",
@@ -2944,34 +3030,14 @@
        "audioKey": null,
        "tabs": [
         {
-         "title": "تدریس",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "تمرینات کتابی",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "نکات ادبی و گرامری",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "خلاصه درس و نکات امتحانی",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "نمونه سوالات جامع درس",
+         "title": "راهنما",
          "key": null,
          "ready": null
         },
         {
          "title": "کتاب درسی",
-         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p05.pdf",
-         "ready": true
+         "key": null,
+         "ready": null
         }
        ],
        "children": []
@@ -2979,21 +3045,53 @@
       {
        "kind": "plain",
        "title": "حکایت: ادبیات بومی ۱",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st03.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st03.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       },
       {
        "kind": "plain",
        "title": "شعرخوانی: ادبیات بومی ۱",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh02.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh02.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -3051,11 +3149,27 @@
       {
        "kind": "plain",
        "title": "حکایت: شو، خطرکن!",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st04.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st04.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       },
       {
@@ -3143,11 +3257,27 @@
       {
        "kind": "plain",
        "title": "شعرخوانی: دوراندیشی",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh03.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh03.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -3246,11 +3376,27 @@
       {
        "kind": "plain",
        "title": "حکایت: نیک رایان",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st05.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st05.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       },
       {
@@ -3297,11 +3443,27 @@
       {
        "kind": "plain",
        "title": "روان‌خوانی: دروازه‌ای به آسمان",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv02.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv02.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -3359,11 +3521,27 @@
       {
        "kind": "plain",
        "title": "حکایت: سیرت سلمان",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st06.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-st06.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       },
       {
@@ -3451,11 +3629,27 @@
       {
        "kind": "plain",
        "title": "شعرخوانی: بُوَد قدر تو افزون از مالِک",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh04.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-sh04.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -3463,11 +3657,22 @@
     {
      "kind": "container",
      "title": "فصل آزاد: ادبیات بومی ۲",
-     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad2.pdf",
-     "ready": true,
+     "key": null,
+     "ready": null,
      "teachKey": null,
      "audioKey": null,
-     "tabs": [],
+     "tabs": [
+      {
+       "title": "راهنما",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-azad2.pdf",
+       "ready": true
+      }
+     ],
      "children": [
       {
        "kind": "lesson",
@@ -3478,34 +3683,14 @@
        "audioKey": null,
        "tabs": [
         {
-         "title": "تدریس",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "تمرینات کتابی",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "نکات ادبی و گرامری",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "خلاصه درس و نکات امتحانی",
-         "key": null,
-         "ready": null
-        },
-        {
-         "title": "نمونه سوالات جامع درس",
+         "title": "راهنما",
          "key": null,
          "ready": null
         },
         {
          "title": "کتاب درسی",
-         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-p15.pdf",
-         "ready": true
+         "key": null,
+         "ready": null
         }
        ],
        "children": []
@@ -3513,11 +3698,27 @@
       {
        "kind": "plain",
        "title": "روان‌خوانی: ادبیات بومی ۲",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv03.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv03.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -3616,11 +3817,27 @@
       {
        "kind": "plain",
        "title": "روان‌خوانی: دو نقّاش",
-       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv04.pdf",
-       "ready": true,
+       "key": null,
+       "ready": null,
        "teachKey": null,
        "audioKey": null,
-       "tabs": [],
+       "tabs": [
+        {
+         "title": "خوانش",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "نکات ادبی",
+         "key": null,
+         "ready": null
+        },
+        {
+         "title": "کتاب درسی",
+         "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-rv04.pdf",
+         "ready": true
+        }
+       ],
        "children": []
       }
      ]
@@ -3628,11 +3845,32 @@
     {
      "kind": "plain",
      "title": "نیایش: بیا تا برآریم دستی ز دل",
-     "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-pray.pdf",
-     "ready": true,
+     "key": null,
+     "ready": null,
      "teachKey": null,
      "audioKey": null,
-     "tabs": [],
+     "tabs": [
+      {
+       "title": "روخوانی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات ادبی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "کتاب درسی",
+       "key": "Bucket/Pdf-files/G09/g9-farsi/g9-farsi-pray.pdf",
+       "ready": true
+      }
+     ],
      "children": []
     },
     {
@@ -6991,6 +7229,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7018,6 +7261,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
@@ -7053,6 +7301,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7080,6 +7333,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
@@ -7115,6 +7373,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7142,6 +7405,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
@@ -7177,6 +7445,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7204,6 +7477,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
@@ -7239,6 +7517,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7266,6 +7549,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
@@ -7301,6 +7589,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7328,6 +7621,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
@@ -7363,6 +7661,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7394,6 +7697,11 @@
        "ready": null
       },
       {
+       "title": "نکات تکمیلی و امتحانی",
+       "key": null,
+       "ready": null
+      },
+      {
        "title": "نمونه سوالات کتابی",
        "key": null,
        "ready": null
@@ -7421,6 +7729,11 @@
      "tabs": [
       {
        "title": "تدریس",
+       "key": null,
+       "ready": null
+      },
+      {
+       "title": "نکات تکمیلی و امتحانی",
        "key": null,
        "ready": null
       },
