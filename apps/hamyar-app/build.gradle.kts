@@ -101,13 +101,11 @@ android {
             // یکسان، نصبِ نسخه‌ی تازه روی نصبِ قبلی رد می‌شود
             // (INSTALL_FAILED_UPDATE_INCOMPATIBLE) و کلِ کانالِ آپدیت می‌خوابد.
             signingConfig = signingConfigs.getByName("debug")
-            // R8 روشن شد تا dexِ ~۲۵ مگابایتی جمع شود. نگهبان‌های لازم (Gson/Appwrite،
-            // WebRTC، OkHttp) در proguard-rules.pro هستند. منبع‌ها دست‌نخورده
-            // می‌مانند (shrinkResources خاموش) تا چیزی که با نام خوانده می‌شود از
-            // دست نرود. این بیلد تا وقتی روی گوشی تست نشده، مسیرِ **انتشارِ** پیش‌فرض
-            // نیست؛ پیش‌فرضِ کانالِ آپدیت همان بیلدِ دیباگ است.
+            // انتشار فقط از مسیر release انجام می‌شود تا R8 و resource shrinking واقعاً
+            // روی APK عمومی اعمال شوند. منابعی که با نام در runtime لازم‌اند، در
+            // resource-shrinker با keep.xml/مرجع مستقیم حفظ می‌شوند.
             isMinifyEnabled = true
-            isShrinkResources = false
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
