@@ -100,12 +100,12 @@ object AppTypography {
     ) = Role(Spec(id, title, group, font, base, weight, sample))
 
     /** A — کارت آکاردئونی */
-    val accordionTitle = role("a.title", "عنوان آکاردئون", "A آکاردئون", "vazirmatn", 19, "کتاب‌ها", EmbeddedFonts.W_LIGHT)
-    val accordionSub = role("a.sub", "توضیح آکاردئون", "A آکاردئون", "vazirmatn", 14, "هر کتاب با درس‌ها", EmbeddedFonts.W_LIGHT)
+    val accordionTitle = role("a.title", "عنوان آکاردئون", "A آکاردئون", "vazirmatn", 18, "کتاب‌ها", EmbeddedFonts.W_BOLD)
+    val accordionSub = role("a.sub", "توضیح آکاردئون", "A آکاردئون", "vazirmatn", 14, "هر کتاب با درس‌ها", EmbeddedFonts.W_REGULAR)
 
     /** B — کارت و زیرکارت */
-    val cardTitle = role("b.title", "عنوان کارت", "B کارت", "vazirmatn", 20, "برنامه‌ی هفتگی من", EmbeddedFonts.W_LIGHT)
-    val cardSub = role("b.sub", "توضیح کارت", "B کارت", "vazirmatn", 14, "جدول زمانی شخصی", EmbeddedFonts.W_LIGHT)
+    val cardTitle = role("b.title", "عنوان کارت", "B کارت", "vazirmatn", 18, "برنامه‌ی هفتگی من", EmbeddedFonts.W_BOLD)
+    val cardSub = role("b.sub", "توضیح کارت", "B کارت", "vazirmatn", 14, "جدول زمانی شخصی", EmbeddedFonts.W_REGULAR)
 
     /** C — صفحات بازشده از زیرکارت */
     val pageTitle = role("c.title", "عنوان اصلی بالای صفحه", "C صفحه", "vazirmatn", 22, "برنامه هفتگی", "bold")
@@ -186,6 +186,8 @@ object AppTypography {
         }
         syncAliases()
     }
+
+    init { syncAliases() }
 
     fun snapshot(): Map<String, SlotChoice> = buildMap {
         slots.forEach {
