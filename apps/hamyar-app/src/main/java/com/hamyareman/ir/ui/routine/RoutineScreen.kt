@@ -83,7 +83,7 @@ fun RoutineScreen(onBack: () -> Unit) {
     }
 
     fun saveRoutine(items: List<RoutineActivity>, action: String) {
-        snapshot = repo.saveRoutine(items.sortedBy { it.startMinute }, actionTitle = action)
+        snapshot = repo.saveRoutine(items, actionTitle = action)
         scope.launch(Dispatchers.IO) { runCatching { repo.syncNow() } }
     }
 
