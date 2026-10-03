@@ -1,0 +1,43 @@
+name: Optimize embedded image assets
+
+on:
+  push:
+    branches: [fix/android10]
+    paths:
+      - 'apps/hamyar-app/src/main/assets/**'
+      - 'apps/hamyar-app/src/main/res/**'
+      - 'scripts/optimize_image_assets.py'
+      - '.github/workflows/optimize-image-assets.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: optimize-image-assets
+  cancel-in-progress: true
+
+jobs:
+  optimize:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow
+        run: python -m pip install --quiet Pillow
+      - name: Optimize embedded images
+        run: python scripts/optimize_image_assets.py
+      - name: Commit optimized assets
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/hamyar-app/src/main/assets apps/hamyar-app/src/main/res ci-report/image-optimization.json
+          if git diff --cached --quiet; then
+            echo "No image changes required."
+            exit 0
+          fi
+          git commit -m "assets: optimize embedded images"
+          git push origin HEAD:fix/android10
