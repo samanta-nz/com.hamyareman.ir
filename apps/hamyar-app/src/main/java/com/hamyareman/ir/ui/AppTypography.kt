@@ -31,11 +31,17 @@ import com.hamyareman.ir.ui.appearance.SlotChoice
 object AppTypography {
     const val BUMP = 2
 
-    // منوهای خارج از داشبورد باید همیشه با وزن واقعی Light وزیرمتن نمایش داده شوند.
-    // اعمال اجباری در Role.apply، انتخاب‌های دست‌نویس ذخیره‌شدهٔ نسخه‌های قبلی را هم مهاجرت می‌دهد.
-    private val forcedMenuRoles = setOf(
-        "a.title", "a.sub", "b.title", "b.sub", "e.title", "e.sub", "nav.bar",
+    private val dashboardRoleIds = setOf(
+        "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9", "d10", "d11", "d12",
     )
+
+    private fun standardWeight(id: String): String = when {
+        id.endsWith(".sub") -> EmbeddedFonts.W_REGULAR
+        id == "nav.bar" -> EmbeddedFonts.W_REGULAR
+        id.endsWith(".button") -> EmbeddedFonts.W_BOLD
+        id == "c.body" || id == "c.table" -> EmbeddedFonts.W_REGULAR
+        else -> EmbeddedFonts.W_BOLD
+    }
 
     data class Spec(
         val id: String,
@@ -65,15 +71,16 @@ object AppTypography {
         fun apply(font: String, sizeDelta: Int) = apply(font, sizeDelta, weight = null, absolute = false)
 
         fun apply(font: String?, size: Int?, weight: String? = null, absolute: Boolean = true) {
-            if (spec.id in forcedMenuRoles) {
-                fontKey = "vazirmatn"
-                weightKey = EmbeddedFonts.W_LIGHT
-            } else {
+            if (spec.id in dashboardRoleIds) {
+                // فونت‌های داشبورد حفظ می‌شوند؛ فقط وزن همهٔ نقش‌ها یکدست می‌شود.
                 if (font != null) {
                     fontKey = if (EmbeddedFonts.isKnown(font)) EmbeddedFonts.canonicalKey(font) else spec.defaultFont
-                    if (weight == null) weightKey = EmbeddedFonts.weightFromKey(font, weightKey)
                 }
-                if (weight != null) weightKey = EmbeddedFonts.normalizeWeight(weight)
+                weightKey = EmbeddedFonts.W_BOLD
+            } else {
+                // تمام متن‌های غیر داشبورد با یک خانواده و دو وزن استاندارد اجرا می‌شوند.
+                fontKey = "vazirmatn"
+                weightKey = standardWeight(spec.id)
             }
             if (size != null) {
                 sizeSp = if (absolute) size.coerceIn(8, 40) else (spec.baseSp + size).coerceIn(8, 40)
@@ -101,32 +108,32 @@ object AppTypography {
     val cardSub = role("b.sub", "توضیح کارت", "B کارت", "vazirmatn", 14, "جدول زمانی شخصی", EmbeddedFonts.W_LIGHT)
 
     /** C — صفحات بازشده از زیرکارت */
-    val pageTitle = role("c.title", "عنوان اصلی بالای صفحه", "C صفحه", "vazirmatn", 19, "برنامه هفتگی", "bold")
-    val pageHeading = role("c.heading", "عناوین دیگر صفحه", "C صفحه", "vazirmatn", 21, "شنبه", "bold")
-    val pageBody = role("c.body", "متن صفحه", "C صفحه", "gandom", 18, "متن بدنه", "bold")
-    val pageTable = role("c.table", "جدول", "C صفحه", "badkhat_bold", 17, "درس / زنگ", "bold")
-    val pageButton = role("c.button", "دکمه", "C صفحه", "estedad_bold", 16, "ذخیره", "bold")
+    val pageTitle = role("c.title", "عنوان اصلی بالای صفحه", "C صفحه", "vazirmatn", 22, "برنامه هفتگی", "bold")
+    val pageHeading = role("c.heading", "عناوین دیگر صفحه", "C صفحه", "vazirmatn", 18, "شنبه", "bold")
+    val pageBody = role("c.body", "متن صفحه", "C صفحه", "vazirmatn", 16, "متن بدنه", EmbeddedFonts.W_REGULAR)
+    val pageTable = role("c.table", "جدول", "C صفحه", "vazirmatn", 14, "درس / زنگ", EmbeddedFonts.W_REGULAR)
+    val pageButton = role("c.button", "دکمه", "C صفحه", "vazirmatn", 14, "ذخیره", EmbeddedFonts.W_BOLD)
 
     /** E — همهٔ عناوین خارج از داشبورد */
-    val title = role("e.title", "متن عنوان", "E عنوان", "vazirmatn", 25, "مدرسه", EmbeddedFonts.W_LIGHT)
-    val titleSub = role("e.sub", "توضیح زیر عنوان", "E عنوان", "vazirmatn", 14, "کلاسِ درس همیشه باز است", EmbeddedFonts.W_LIGHT)
+    val title = role("e.title", "متن عنوان", "E عنوان", "vazirmatn", 22, "مدرسه", EmbeddedFonts.W_BOLD)
+    val titleSub = role("e.sub", "توضیح زیر عنوان", "E عنوان", "vazirmatn", 14, "کلاسِ درس همیشه باز است", EmbeddedFonts.W_REGULAR)
 
     /** داشبورد */
     val d1Greeting = role("d1", "D1 خوش‌آمدگویی", "D داشبورد", "aviny", 29, "صبح‌ت بخیر", "bold")
     val d2GreetingSub = role("d2", "D2 متن زیر خوش‌آمد", "D داشبورد", "shekari", 22, "همیار من کنارت است", "bold")
     val d3Date = role("d3", "D3 تاریخ", "D داشبورد", "estedad_bold", 18, "چهارشنبه ۲ مهر", "bold")
     val d4Clock = role("d4", "D4 ساعت", "D داشبورد", "estedad_bold", 18, "۲:۳۰ بعد از ظهر", "bold")
-    val d5Gregorian = role("d5", "D5 تاریخ میلادی", "D داشبورد", "estedad_bold", 18, "2026/Sep/24", "thin")
+    val d5Gregorian = role("d5", "D5 تاریخ میلادی", "D داشبورد", "estedad_bold", 18, "2026/Sep/24", "bold")
     val d6Subscription = role("d6", "D6 کادر اشتراک", "D داشبورد", "sahel", 17, "اشتراک تا تاریخ", "bold")
     val d7Quote = role("d7", "D7 کادر سخنان", "D داشبورد", "tanha", 17, "سخن بزرگان", "bold")
     val d8Tile = role("d8", "D8 نه کاشی داشبورد", "D داشبورد", "parastoo_bold", 18, "مدرسه", "bold")
-    val d9Section = role("d9", "D9 عناوین بخش (برنامه کلاسی / امروز / امتحان داری؟)", "D داشبورد", "lalezar", 19, "برنامه کلاسی مدرسه", "thin")
+    val d9Section = role("d9", "D9 عناوین بخش (برنامه کلاسی / امروز / امتحان داری؟)", "D داشبورد", "lalezar", 19, "برنامه کلاسی مدرسه", "bold")
     val d10ClassBox = role("d10", "D10 سه کادر برنامه کلاسی", "D داشبورد", "badkhat_bold", 21, "ریاضی", "bold")
     val d11Check = role("d11", "D11 متن تیک‌ها", "D داشبورد", "sahel", 12, "کیف مدرسه آماده است", "bold")
     val d12ClassDate = role("d12", "D12 تاریخ و روز کنار کادرها", "D داشبورد", "sahel", 15, "چهارشنبه", "bold")
 
     /** نوار پایین جدا از بقیهٔ نقش‌ها. */
-    val navBar = role("nav.bar", "نوار پایین", "نوار پایین", "vazirmatn", 13, "خانه", EmbeddedFonts.W_LIGHT)
+    val navBar = role("nav.bar", "نوار پایین", "نوار پایین", "vazirmatn", 13, "خانه", EmbeddedFonts.W_REGULAR)
 
     /** فاصلهٔ افقی کارت سخنان از دو طرف (۰ تا ۳۲ dp). */
     var quoteSideDp by mutableIntStateOf(17)
