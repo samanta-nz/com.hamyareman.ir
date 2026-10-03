@@ -3,6 +3,8 @@ package com.hamyareman.ir.platform.feature.playback
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -85,6 +87,11 @@ object TeachGate {
 class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
+    private val sleepHandler = Handler(Looper.getMainLooper())
+    private val sleepRunnable = Runnable {
+        mediaSession?.player?.pause()
+        clearSleepTimer()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -122,7 +129,11 @@ class PlaybackService : MediaSessionService() {
                     if (!base.isAccepted) return base
                     return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                         .setAvailableSessionCommands(
-                            base.availableSessionCommands.buildUpon().add(STOP_COMMAND).build(),
+                            base.availableSessionCommands.buildUpon()
+                                .add(STOP_COMMAND)
+                                .add(SET_SLEEP_TIMER_COMMAND)
+                                .add(CLEAR_SLEEP_TIMER_COMMAND)
+                                .build(),
                         )
                         .setAvailablePlayerCommands(base.availablePlayerCommands)
                         .setCustomLayout(listOf(stopButton()))
@@ -135,9 +146,20 @@ class PlaybackService : MediaSessionService() {
                     customCommand: SessionCommand,
                     args: Bundle,
                 ): ListenableFuture<SessionResult> {
-                    if (customCommand.customAction == ACTION_STOP_TEACH) {
-                        halt(session.player)
-                        return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                    when (customCommand.customAction) {
+                        ACTION_STOP_TEACH -> {
+                            halt(session.player)
+                            clearSleepTimer()
+                            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                        }
+                        ACTION_SET_SLEEP_TIMER -> {
+                            setSleepTimer(args.getLong(EXTRA_SLEEP_UNTIL, 0L))
+                            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                        }
+                        ACTION_CLEAR_SLEEP_TIMER -> {
+                            clearSleepTimer()
+                            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                        }
                     }
                     return super.onCustomCommand(session, controller, customCommand, args)
                 }
@@ -202,6 +224,8 @@ class PlaybackService : MediaSessionService() {
                 setSmallIcon(R.drawable.ic_stat_audiobook)
             },
         )
+
+        restoreSleepTimer()
     }
 
     private fun currentPackOf(player: Player?): String? {
@@ -246,6 +270,33 @@ class PlaybackService : MediaSessionService() {
         TeachGate.currentPack = null
     }
 
+    private fun timerStore() = getSharedPreferences(SLEEP_PREFS, MODE_PRIVATE)
+
+    private fun setSleepTimer(untilEpochMs: Long) {
+        if (untilEpochMs <= System.currentTimeMillis()) {
+            clearSleepTimer()
+            mediaSession?.player?.pause()
+            return
+        }
+        timerStore().edit().putLong(SLEEP_UNTIL_KEY, untilEpochMs).apply()
+        sleepHandler.removeCallbacks(sleepRunnable)
+        sleepHandler.postDelayed(sleepRunnable, (untilEpochMs - System.currentTimeMillis()).coerceAtLeast(1L))
+    }
+
+    private fun clearSleepTimer() {
+        sleepHandler.removeCallbacks(sleepRunnable)
+        timerStore().edit().putLong(SLEEP_UNTIL_KEY, 0L).apply()
+    }
+
+    private fun restoreSleepTimer() {
+        val until = timerStore().getLong(SLEEP_UNTIL_KEY, 0L)
+        if (until > System.currentTimeMillis()) {
+            sleepHandler.postDelayed(sleepRunnable, until - System.currentTimeMillis())
+        } else if (until != 0L) {
+            clearSleepTimer()
+        }
+    }
+
     override fun onTaskRemoved(rootIntent: Intent?) {
         if (!BackgroundPlaybackGate.enabled) {
             mediaSession?.player?.let { halt(it) }
@@ -255,6 +306,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        sleepHandler.removeCallbacks(sleepRunnable)
         mediaSession?.let { session ->
             session.player.release()
             session.release()
@@ -270,7 +322,14 @@ class PlaybackService : MediaSessionService() {
         const val TEACH_OPEN_AUTOPLAY = "open_pack_autoplay"
         const val TEACH_ACTIVITY = "com.hamyareman.ir.MainActivity"
         const val ACTION_STOP_TEACH = "com.hamyareman.ir.STOP_TEACH"
+        const val ACTION_SET_SLEEP_TIMER = "com.hamyareman.ir.SET_SLEEP_TIMER"
+        const val ACTION_CLEAR_SLEEP_TIMER = "com.hamyareman.ir.CLEAR_SLEEP_TIMER"
+        const val EXTRA_SLEEP_UNTIL = "sleep_until_epoch_ms"
+        private const val SLEEP_PREFS = "hamyar_playback_prefs"
+        private const val SLEEP_UNTIL_KEY = "sleep_timer_until"
         val STOP_COMMAND = SessionCommand(ACTION_STOP_TEACH, Bundle.EMPTY)
+        val SET_SLEEP_TIMER_COMMAND = SessionCommand(ACTION_SET_SLEEP_TIMER, Bundle.EMPTY)
+        val CLEAR_SLEEP_TIMER_COMMAND = SessionCommand(ACTION_CLEAR_SLEEP_TIMER, Bundle.EMPTY)
 
         fun stopButton(): CommandButton =
             CommandButton.Builder(CommandButton.ICON_STOP)
