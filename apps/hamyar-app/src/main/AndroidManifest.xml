@@ -184,6 +184,17 @@
             android:stopWithTask="true" />
 
         <receiver android:name=".notifications.MedsReceiver" android:exported="false" />
+        <receiver
+            android:name=".notifications.MedsBootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
     <uses-permission android:name="android.permission.DETECT_SCREEN_CAPTURE" />
 </manifest>
