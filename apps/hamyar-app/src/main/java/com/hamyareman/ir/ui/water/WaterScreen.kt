@@ -28,8 +28,6 @@ import com.hamyareman.ir.platform.core.common.toPersianDigits
 @Composable
 fun WaterScreen(modifier: Modifier = Modifier, viewModel: WaterViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
-    val pending by viewModel.pendingSync.collectAsState()
-    val note by viewModel.note.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.syncNow() }
 
@@ -41,7 +39,7 @@ fun WaterScreen(modifier: Modifier = Modifier, viewModel: WaterViewModel = viewM
     ) {
         Text("آب بنوش 💧", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "ثبت آب، هدف روزانه و آخرین رویدادها از همین کارت به سلامت امروز وصل‌اند.",
+            "هیدراتاسیون مناسب به تنظیم دمای بدن، انتقال مواد مغذی و عملکرد طبیعی بدن کمک می‌کند. بهتر است مصرف مایعات را در طول روز پخش کنی و به نشانه‌های تشنگی توجه داشته باشی.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -91,31 +89,28 @@ fun WaterScreen(modifier: Modifier = Modifier, viewModel: WaterViewModel = viewM
                 }
 
                 Text(
-                    "هر تغییر هم در مصرف آب و هم در سلامت روزانه ثبت می‌شود؛ سینک یعنی دریافت و ارسال با دیتابیس.",
+                    "ثبت آب روی دستگاه انجام می‌شود و دریافت/ارسال آن به دیتابیس در پس‌زمینه و به‌صورت خودکار انجام می‌شود.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
 
-        if (pending > 0) {
-            Text(
-                toPersianDigits(pending.toString()) + " قلم در صف ارسال است.",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        note?.let {
-            Text(it, style = MaterialTheme.typography.labelSmall)
-        }
-
         Spacer(Modifier.weight(1f))
-
-        OutlinedButton(
-            onClick = viewModel::syncNow,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+        Card(
+            Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f),
+            ),
         ) {
-            Text("دریافت و ارسال با دیتابیس")
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("یادآوری هیدراتاسیون", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "نیاز به مایعات با سن، فعالیت، آب‌وهوا و شرایط بدن تغییر می‌کند. این هدف‌ها برای یادآوری و ثبت عادت روزانه‌اند و جای توصیهٔ پزشکی را نمی‌گیرند.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
