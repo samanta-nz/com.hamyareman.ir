@@ -411,8 +411,8 @@ fun NotebooksScreen(onBack: () -> Unit) {
     val selected = notebooks.firstOrNull { it.id == selectedId }
     fun rowId(id: String) = "notebook_" + container.auth.cachedUserId().orEmpty().take(32) + "_" + id.take(32)
     fun queue(n: Notebook) {
-        val uid = container.auth.cachedUserId().orEmpty(); if (uid.isBlank()) return
-        container.sync.enqueue(TableIds.APP_STATE, rowId(n.id), mapOf("userId" to uid, "key" to "private_notebook", "notebookId" to n.id, "title" to n.title, "createdAt" to n.createdAt, "cipher" to n.cipher, "updatedAt" to System.currentTimeMillis()))
+        val uid = container.auth.cachedUserId().orEmpty()
+        if (uid.isNotBlank()) container.sync.enqueue(TableIds.APP_STATE, rowId(n.id), mapOf("userId" to uid, "key" to "private_notebook", "notebookId" to n.id, "title" to n.title, "createdAt" to n.createdAt, "cipher" to n.cipher, "updatedAt" to System.currentTimeMillis()))
     }
     Column(Modifier.fillMaxSize()) {
         AppTopBar(if (selected == null) "دفترچه‌های من" else selected.title, if (selected == null) onBack else ({ selectedId = null; text = "" }))
@@ -424,7 +424,11 @@ fun NotebooksScreen(onBack: () -> Unit) {
                     PrimaryButton("ساخت دفترچه") {
                         if (title.isNotBlank()) {
                             val item = Notebook(UUID.randomUUID().toString(), title.trim(), System.currentTimeMillis(), container.encryptor.encrypt(""))
-                            notebooks = listOf(item) + notebooks; writeNotebooks(store, notebooks); queue(item); selectedId = item.id; title = ""
+                            notebooks = listOf(item) + notebooks
+                            writeNotebooks(store, notebooks)
+                            queue(item)
+                            selectedId = item.id
+                            title = ""
                         }
                     }
                 }
@@ -438,8 +442,8 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                 Text(toPersianDigits("${paginate(body).size} صفحه"), style = MaterialTheme.typography.bodySmall)
                             }
                             TextButton(onClick = {
-                                notebooks = notebooks.filterNot { it.id == notebook.id }; writeNotebooks(store, notebooks)
-                                if (selectedId == notebook.id) selectedId = null
+                                notebooks = notebooks.filterNot { it.id == notebook.id }
+                                writeNotebooks(store, notebooks)
                                 scope.launch { runCatching { container.tables.delete(TableIds.APP_STATE, rowId(notebook.id)) } }
                             }) { Text("حذف") }
                         }
@@ -455,7 +459,11 @@ fun NotebooksScreen(onBack: () -> Unit) {
                             val joined = listOf(old, text.trim()).filter { it.isNotBlank() }.joinToString("\n\n")
                             val changed = selected.copy(cipher = container.encryptor.encrypt(joined))
                             notebooks = notebooks.map { if (it.id == changed.id) changed else it }
-                            writeNotebooks(store, notebooks); queue(changed); text = ""; notice = "ذخیره شد."; selectedId = null
+                            writeNotebooks(store, notebooks)
+                            queue(changed)
+                            text = ""
+                            notice = "ذخیره شد."
+                            selectedId = null
                         }
                     }
                     notice?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
@@ -475,7 +483,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
             }
         }
     }
-}.getOrDefault(emptyList())
+}
 
 private fun writeDiary(store: LocalStore, entries: List<DiaryEntry>) {
     val array = JSONArray()
