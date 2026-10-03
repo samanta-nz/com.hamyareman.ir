@@ -26,7 +26,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: never
-      - run: ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace
+      - run: ./gradlew :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug :hamyar-admin:assembleDebug --stacktrace
       - name: نام‌گذاری و اعتبارسنجی APK نهم
         run: |
           set -euo pipefail
