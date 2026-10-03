@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: arena-release-grade9-v2.4.7
+  group: arena-release-grade9-v2.4.7-final
   cancel-in-progress: false
 
 env:
