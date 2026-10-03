@@ -2,6 +2,7 @@ package com.hamyareman.ir.ui.study
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.webkit.JavascriptInterface
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.MoreTime
@@ -241,20 +243,26 @@ private fun FreeBookMeta(book: FreeStudyBook) {
     }
 }
 
+private class AudioSeekBridge(private val onSeek: (Long) -> Unit) {
+    @JavascriptInterface
+    fun seek(ms: Long) {
+        onSeek(ms.coerceAtLeast(0L))
+    }
+}
+
 @Composable
 private fun FreeAudioReader(book: FreeStudyBook) {
     val ctx = LocalContext.current
     val container = LocalAppContainer.current
     val playback = remember { PlaybackController(ctx) }
     val state by playback.state.collectAsState()
-    var phase by remember { mutableFloatStateOf(0f) }
     val prefs = remember { LocalStore(ctx, FREE_STATE_STORE) }
+    var phase by remember { mutableFloatStateOf(0f) }
     var customTimer by remember { mutableStateOf("") }
-    var timerUntil by remember {
-        mutableLongStateOf(prefs.getString("sleep_timer_until", "0").toLongOrNull()?.coerceAtLeast(0L) ?: 0L)
-    }
+    var timerUntil by remember { mutableLongStateOf(prefs.getString("sleep_timer_until", "0").toLongOrNull()?.coerceAtLeast(0L) ?: 0L) }
     var backgroundPlayback by remember { mutableStateOf(prefs.getBool("background_playback", true)) }
     var note by remember { mutableStateOf<String?>(null) }
+    val downloaded = remember(book.id, book.mediaKey) { mutableStateOf(MediaVault.isVerified(ctx, freeDownloadKey(book, book.mediaKey))) }
 
     LaunchedEffect(backgroundPlayback) {
         BackgroundPlaybackGate.enabled = backgroundPlayback
@@ -267,12 +275,12 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         if (key.isNotBlank() && !state.hasMedia) {
             val cache = freeDownloadKey(book, key)
             val uri = if (MediaVault.isVerified(ctx, cache)) MediaVault.localUrl(ctx, cache) else StudyMedia.viewUrl(key)
+            downloaded.value = MediaVault.isVerified(ctx, cache)
             playback.setMedia(uri, book.title, FreeReadingState.pos(ctx, book.id))
         }
-        if (timerUntil > System.currentTimeMillis()) {
-            playback.setSleepTimer(timerUntil)
-        }
+        if (timerUntil > System.currentTimeMillis()) playback.setSleepTimer(timerUntil)
     }
+
     LaunchedEffect(state.playing) {
         while (state.playing) {
             phase += 0.45f
@@ -282,6 +290,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
             delay(15_000L)
         }
     }
+
     LaunchedEffect(timerUntil) {
         if (timerUntil <= 0L) return@LaunchedEffect
         while (System.currentTimeMillis() < timerUntil) delay(500L)
@@ -290,6 +299,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         timerUntil = 0L
         prefs.putString("sleep_timer_until", "0")
     }
+
     DisposableEffect(Unit) {
         onDispose {
             FreeReadingState.save(ctx, book.id, playback.positionMs, playback.durationMs, "reading")
@@ -321,11 +331,17 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                     }
                 }
                 Text(book.title, style = MaterialTheme.typography.titleLarge)
-                Text(if (MediaVault.isVerified(ctx, freeDownloadKey(book, book.mediaKey))) "پخش آفلاین" else "پخش آنلاین", style = MaterialTheme.typography.labelMedium, color = accent)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(if (downloaded.value) Icons.Outlined.Smartphone else Icons.Outlined.CloudOff, null, tint = accent, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(5.dp))
+                    Text(if (downloaded.value) "پخش آفلاین" else "پخش آنلاین", style = MaterialTheme.typography.labelMedium, color = accent)
+                }
                 Slider(value = position.toFloat(), onValueChange = { playback.seekTo(it.toLong()) }, valueRange = 0f..max(duration, 1L).toFloat(), modifier = Modifier.fillMaxWidth())
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(clock(position), fontWeight = FontWeight.Bold)
-                    Text(clock(duration))
+                    Box(Modifier.width(72.dp), contentAlignment = Alignment.CenterStart) {
+                        Text(clock(position), fontWeight = FontWeight.Bold, maxLines = 1)
+                    }
+                    Text(clock(duration), Modifier.width(72.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { playback.seekBy(-30_000L) }) { Icon(Icons.Filled.SkipPrevious, null) }
@@ -339,43 +355,69 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                         TextButton(onClick = { playback.setSpeed(speed) }) { Text(speed.toString() + "×", fontSize = 12.sp) }
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (book.mediaKey.isNotBlank()) {
-                        OutlinedButton(onClick = {
-                            note = "در حال دانلود…"
-                            kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(book.mediaKey), freeDownloadKey(book, book.mediaKey)) { _, _ -> }
-                                    withContext(Dispatchers.Main) {
-                                        note = "دانلود کامل شد؛ پخش آفلاین فعال شد."
-                                        playback.setMedia(MediaVault.localUrl(ctx, freeDownloadKey(book, book.mediaKey)), book.title, position)
-                                    }
-                                } catch (_: Throwable) {
-                                    withContext(Dispatchers.Main) { note = "دانلود کامل نشد." }
+                if (book.mediaKey.isNotBlank() && !downloaded.value) {
+                    OutlinedButton(onClick = {
+                        note = "در حال دانلود…"
+                        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(book.mediaKey), freeDownloadKey(book, book.mediaKey)) { _, _ -> }
+                                withContext(Dispatchers.Main) {
+                                    downloaded.value = true
+                                    note = "دانلود کامل شد."
+                                    playback.setMedia(MediaVault.localUrl(ctx, freeDownloadKey(book, book.mediaKey)), book.title, position)
                                 }
+                            } catch (_: Throwable) {
+                                withContext(Dispatchers.Main) { note = "دانلود کامل نشد." }
                             }
-                        }) {
-                            Icon(Icons.Outlined.CloudDownload, null)
-                            Spacer(Modifier.width(4.dp))
-                            Text("دانلود کامل")
                         }
-                    }
-                    OutlinedButton(onClick = { FreeReadingState.save(ctx, book.id, position, duration, "archive") }) {
-                        Icon(Icons.Outlined.Archive, null)
+                    }) {
+                        Icon(Icons.Outlined.CloudDownload, null)
                         Spacer(Modifier.width(4.dp))
-                        Text("آرشیو")
+                        Text("دانلود کامل")
                     }
                 }
             }
         }
+
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+
+        if (book.htmlKey.isNotBlank()) {
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth().padding(10.dp)) {
+                    Text("فهرست مطالب صوتی", style = MaterialTheme.typography.titleMedium)
+                    AndroidView(
+                        factory = { context ->
+                            android.webkit.WebView(context).apply {
+                                settings.javaScriptEnabled = true
+                                settings.domStorageEnabled = true
+                                addJavascriptInterface(AudioSeekBridge { ms ->
+                                    playback.seekTo(ms)
+                                    playback.play()
+                                }, "HamyarAudio")
+                                webViewClient = HmkWebViewClient(context.applicationContext, HmkWebViewClient.bucketHost())
+                                loadUrl(StudyMedia.viewUrl(book.htmlKey))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(260.dp),
+                    )
+                }
+            }
+        }
+
         if (book.chapters.isNotEmpty()) {
             Text("فصل‌ها و بخش‌ها", style = MaterialTheme.typography.titleMedium)
             book.chapters.forEach { chapter ->
                 val key = chapter.mediaKey.ifBlank { book.mediaKey }
                 Card(Modifier.fillMaxWidth().clickable {
-                    if (chapter.mediaKey.isNotBlank()) playback.setMedia(StudyMedia.viewUrl(chapter.mediaKey), book.title + " — " + chapter.title, chapter.startMs)
-                    else playback.seekTo(chapter.startMs)
+                    if (chapter.mediaKey.isNotBlank()) {
+                        val local = freeDownloadKey(book, chapter.mediaKey)
+                        playback.setMedia(
+                            if (MediaVault.isVerified(ctx, local)) MediaVault.localUrl(ctx, local) else StudyMedia.viewUrl(chapter.mediaKey),
+                            book.title + " — " + chapter.title,
+                            chapter.startMs,
+                        )
+                        downloaded.value = MediaVault.isVerified(ctx, local)
+                    } else playback.seekTo(chapter.startMs)
                     playback.play()
                 }) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -386,6 +428,9 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                         if (key.isNotBlank()) IconButton(onClick = {
                             kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
                                 runCatching { MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(key), freeDownloadKey(book, key)) { _, _ -> } }
+                                withContext(Dispatchers.Main) {
+                                    downloaded.value = MediaVault.isVerified(ctx, freeDownloadKey(book, key))
+                                }
                             }
                         }) {
                             Icon(if (MediaVault.isVerified(ctx, freeDownloadKey(book, key))) Icons.Outlined.Smartphone else Icons.Outlined.CloudDownload, contentDescription = "دانلود فصل")
@@ -394,20 +439,14 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                 }
             }
         }
+
         Card(Modifier.fillMaxWidth()) {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Headphones, null)
                 Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text("پخش در پس‌زمینه", style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        "با بسته‌شدن صفحه، صدا ادامه پیدا کند.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Text("با بسته‌شدن صفحه، صدا ادامه پیدا کند.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(
                     checked = backgroundPlayback,
@@ -420,6 +459,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                 )
             }
         }
+
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -440,13 +480,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                         )
                     }
                 }
-                OutlinedTextField(
-                    value = customTimer,
-                    onValueChange = { customTimer = it.filter(Char::isDigit).take(18) },
-                    label = { Text("زمان دلخواه (دقیقه)") },
-                    singleLine = true,
-                    supportingText = { Text("هر عدد مثبت؛ فقط زمان پایان ذخیره می‌شود.") },
-                )
+                OutlinedTextField(value = customTimer, onValueChange = { customTimer = it.filter(Char::isDigit).take(18) }, label = { Text("زمان دلخواه (دقیقه)") }, singleLine = true)
                 OutlinedButton(onClick = {
                     val m = customTimer.toLongOrNull()?.takeIf { it > 0L } ?: return@OutlinedButton
                     val maxMinutes = Long.MAX_VALUE / 60_000L
@@ -463,6 +497,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         Spacer(Modifier.height(8.dp))
     }
 }
+
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
