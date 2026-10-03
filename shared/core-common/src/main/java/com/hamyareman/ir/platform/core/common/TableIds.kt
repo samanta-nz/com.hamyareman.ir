@@ -71,6 +71,14 @@ object TableIds {
 
     const val INSTALLMENTS = "installments"
 
+    // --- مطالعه آزاد: کاتالوگ، حافظه و نظرات ---
+    const val FREE_BOOKS = "free_books"
+    const val FREE_BOOK_USER_STATE = "free_book_user_state"
+    const val FREE_BOOK_REQUESTS = "free_book_requests"
+    const val BOOK_COMMENTS = "book_comments"
+    const val BOOK_COMMENT_REACTIONS = "book_comment_reactions"
+    const val MODERATION_TERMS = "moderation_terms"
+
     // --- پرامپت ۰۲: ماژول ورزش/یوگا/تنفس/یادگیری ---
     const val WELLNESS_MOVES = "wellness_moves"
     const val SKETCH_REFERENCES = "sketch_references"
@@ -88,6 +96,8 @@ object TableIds {
         LESSONS, QUIZZES, RECIPES, EXERCISES, LEARNING_NODES, ART_PROMPTS,
         LESSON_MEDIA_PROGRESS, WELLNESS_MOVES, SKETCH_REFERENCES, WELLNESS_LOGS,
         STUDY_PROGRESS, LESSON_NOTES, APP_STATE, USERS, SUBSCRIPTION_ORDERS, INSTALLMENTS,
+        FREE_BOOKS, FREE_BOOK_USER_STATE, FREE_BOOK_REQUESTS, BOOK_COMMENTS, BOOK_COMMENT_REACTIONS,
+        MODERATION_TERMS,
     )
 
     /** جدول‌های «فقط روی دستگاه» — در سرور هیچ سطری ندارند و ساخته هم نمی‌شوند. */
