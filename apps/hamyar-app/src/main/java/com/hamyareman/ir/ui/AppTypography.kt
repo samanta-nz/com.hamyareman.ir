@@ -188,8 +188,6 @@ object AppTypography {
         syncAliases()
     }
 
-    init { syncAliases() }
-
     fun snapshot(): Map<String, SlotChoice> = buildMap {
         slots.forEach {
             put(it.spec.id, SlotChoice(it.fontKey, it.sizeSp, it.weightKey, absolute = true))
