@@ -137,12 +137,12 @@ object FreeStudyCatalog {
         return FreeStudyBook(
             id = row.id,
             title = row.string("title").ifBlank { return null },
-            summary = row.string("summary"),
+            summary = row.string("description").ifBlank { row.string("summary") },
             kind = kind,
-            coverUrl = row.string("coverUrl"),
-            mediaKey = row.string("mediaKey"),
+            coverUrl = row.string("coverKey").ifBlank { row.string("coverUrl") },
+            mediaKey = row.string("audioKey").ifBlank { row.string("mediaKey") },
             htmlKey = row.string("htmlKey"),
-            chapters = parseChapters(row.string("chapters")),
+            chapters = parseChapters(row.string("chaptersJson").ifBlank { row.string("chapters") }),
         )
     }
 
