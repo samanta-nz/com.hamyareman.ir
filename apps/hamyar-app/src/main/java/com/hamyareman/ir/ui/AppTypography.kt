@@ -77,13 +77,14 @@ object AppTypography {
                     fontKey = if (EmbeddedFonts.isKnown(font)) EmbeddedFonts.canonicalKey(font) else spec.defaultFont
                 }
                 weightKey = EmbeddedFonts.W_BOLD
+                if (size != null) {
+                    sizeSp = if (absolute) size.coerceIn(8, 40) else (spec.baseSp + size).coerceIn(8, 40)
+                }
             } else {
-                // تمام متن‌های غیر داشبورد با یک خانواده و دو وزن استاندارد اجرا می‌شوند.
+                // نقش‌های عادی فقط توکن‌های استاندارد را می‌پذیرند؛ تنظیمات قدیمی نیز مهاجرت می‌شوند.
                 fontKey = "vazirmatn"
                 weightKey = standardWeight(spec.id)
-            }
-            if (size != null) {
-                sizeSp = if (absolute) size.coerceIn(8, 40) else (spec.baseSp + size).coerceIn(8, 40)
+                sizeSp = spec.baseSp
             }
             family = EmbeddedFonts.familyFresh(fontKey, weightKey)
         }
