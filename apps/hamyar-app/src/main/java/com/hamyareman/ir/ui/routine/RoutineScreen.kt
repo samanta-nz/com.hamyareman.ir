@@ -270,7 +270,7 @@ private fun RoutineEditorDialog(
 ) {
     var title by remember(existing) { mutableStateOf(existing?.title ?: "") }
     var category by remember(existing) { mutableStateOf(existing?.category ?: "شخصی") }
-    var time by remember(existing) { mutableStateOf(existing?.let(::formatMinute) ?: "18:00") }
+    var time by remember(existing) { mutableStateOf(existing?.let { formatMinute(it.startMinute) } ?: "18:00") }
     var duration by remember(existing) { mutableStateOf(existing?.durationMinutes?.toString() ?: "20") }
     val categoryOptions = listOf("شخصی", "تحصیل", "سلامت", "تفریح", "خواب")
     val durationOptions = listOf(5, 10, 15, 20, 30, 45, 60, 90)
