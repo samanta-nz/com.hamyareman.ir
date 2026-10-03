@@ -80,11 +80,9 @@ fun BookNodeScreen(
 @Composable
 private fun RemoteHtmlPage(bucketKey: String) {
     SecureWebEffect()
-    val appearance = LocalUiPrefs.current
     AndroidView(
         factory = { context ->
             ZoomResetWebView(context).apply {
-                installHamyarAppearanceBridge(appearance)
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
