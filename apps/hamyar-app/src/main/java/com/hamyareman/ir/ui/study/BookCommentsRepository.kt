@@ -5,6 +5,8 @@ import com.hamyareman.ir.platform.core.appwrite.TableRow
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
 import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.common.TableIds
+import com.hamyareman.ir.platform.core.common.LocalStore
+import org.json.JSONArray
 import io.appwrite.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -55,12 +57,12 @@ object CommentModerationFilter {
         }.joinToString("")
     }
 
-    fun check(input: String): CommentModeration {
+    fun check(input: String, extraBlocked: Set<String> = emptySet()): CommentModeration {
         val trimmed = input.trim()
         if (trimmed.length !in 2..1000) return CommentModeration(false, "متن نظر باید بین ۲ تا ۱۰۰۰ نویسه باشد.")
         val n = normalize(trimmed)
         if (n.isBlank()) return CommentModeration(false, "متن نظر خالی است.")
-        return if (BLOCKED.any { n.contains(it) })
+        return if ((BLOCKED + extraBlocked).any { it.isNotBlank() && n.contains(it) })
             CommentModeration(false, "این متن به دلیل واژه یا عبارت نامناسب قابل ارسال نیست.")
         else CommentModeration(true)
     }
@@ -74,7 +76,7 @@ object CommentModerationFilter {
 
 class BookCommentsRepository(
     private val tables: TablesDbService,
-    @Suppress("UNUSED_PARAMETER") private val context: Context,
+    private val context: Context,
 ) {
     companion object {
         private const val PUBLIC_READ = "read(\"any\")"
@@ -93,7 +95,8 @@ class BookCommentsRepository(
 
     suspend fun create(bookId: String, userId: String, displayName: String, text: String, parentId: String = ""): Result<Unit> =
         withContext(Dispatchers.IO) {
-            val moderation = CommentModerationFilter.check(text)
+            val dynamicTerms = loadModerationTerms()
+            val moderation = CommentModerationFilter.check(text, dynamicTerms)
             if (!moderation.allowed) return@withContext Result.failure(IllegalArgumentException(moderation.reason))
             val id = "bc_" + userId.take(16) + "_" + System.currentTimeMillis().toString(36)
             when (val r = tables.create(
@@ -118,6 +121,29 @@ class BookCommentsRepository(
                 else result(tables.update(TableIds.BOOK_COMMENT_REACTIONS, rowId, data))
             is AppResult.Err -> Result.failure(RuntimeException("واکنش ثبت نشد."))
         }
+    }
+
+    private suspend fun loadModerationTerms(): Set<String> {
+        val store = LocalStore(context, "hamyar_comment_moderation")
+        val cachedAt = store.getLong("terms_at", 0L)
+        val cached = runCatching {
+            val a = JSONArray(store.getString("terms", "[]"))
+            buildSet { for (i in 0 until a.length()) add(a.optString(i)) }
+        }.getOrDefault(emptySet())
+        if (cached.isNotEmpty() && System.currentTimeMillis() - cachedAt < 6 * 60 * 60 * 1000L) return cached
+        return runCatching {
+            when (val r = tables.list(TableIds.MODERATION_TERMS, listOf("equal(\"active\",[1])", "limit(500)"))) {
+                is AppResult.Ok -> r.value.mapNotNull { it.string("term").takeIf(String::isNotBlank)?.let(CommentModerationFilter::normalize) }
+                    .toSet()
+                is AppResult.Err -> emptySet()
+            }.also { terms ->
+                if (terms.isNotEmpty()) {
+                    val a = JSONArray(); terms.forEach(a::put)
+                    store.putString("terms", a.toString())
+                    store.putLong("terms_at", System.currentTimeMillis())
+                }
+            }
+        }.getOrElse { cached }
     }
 
     private fun result(r: AppResult<Unit>): Result<Unit> = when (r) {
