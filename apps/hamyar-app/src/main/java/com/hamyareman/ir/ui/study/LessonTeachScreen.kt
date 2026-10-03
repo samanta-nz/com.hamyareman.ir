@@ -68,7 +68,6 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -252,6 +251,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     var quiet by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf<String?>(null) }
     var playerExpanded by remember { mutableStateOf(true) }
+    var playerTouchTick by remember { mutableIntStateOf(0) }
 
     val track = tracks[activeIdx]
     LaunchedEffect(packId, tracks.size) {
@@ -477,7 +477,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         }
     }
 
-    LaunchedEffect(playing, downloading, volOpen, activeIdx) {
+    LaunchedEffect(playerTouchTick, playing, downloading, volOpen, activeIdx) {
         delay(5000)
         playerExpanded = false
     }
@@ -513,7 +513,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent()
-                        if (event.changes.any { it.pressed }) playerExpanded = true
+                        if (event.changes.any { it.pressed }) { playerExpanded = true; playerTouchTick++ }
                     }
                 }
             },
@@ -804,7 +804,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = TeachVazirmatnBold,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = (MaterialTheme.typography.bodySmall.fontSize.value - 7f).coerceAtLeast(7f).sp,
+                                fontSize = (MaterialTheme.typography.bodySmall.fontSize.value + 2f).coerceAtLeast(12f).sp,
                                 fontFeatureSettings = "tnum",
                                 textDirection = TextDirection.Ltr,
                             ),
