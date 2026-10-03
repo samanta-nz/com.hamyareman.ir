@@ -64,11 +64,11 @@ class AppContainer(context: Context) {
         // سینک ابری آمار تدریس: هر رویداد → صف outbox؛ ارسال در لحظه‌های مناسب.
         com.hamyareman.ir.ui.study.TeachStats.cloudSink = { packId ->
             com.hamyareman.ir.ui.study.TeachCloud.enqueue(context, sync, auth.cachedUserId(), packId)
-            CoroutineScope(Dispatchers.IO).launch { runCatching { sync.pushAll() } }
+            // ارسال در AutoSync پس‌زمینه انجام می‌شود؛ هر event نباید یک HTTP request جدا بسازد.
         }
-        StudyProgressRepository.afterWrite = { _ ->
-            CoroutineScope(Dispatchers.IO).launch { runCatching { sync.pushAll() } }
-        }
+        // بعد از هر تغییر فقط snapshot به outbox می‌رود؛ ارسال شبکه توسط AutoSync
+        // انجام می‌شود تا ده‌ها mutation پشت‌سرهم باعث ده‌ها request نشوند.
+        StudyProgressRepository.afterWrite = { _ -> Unit }
         // همگام‌سازیِ خودکارِ پس‌زمینه: به‌محضِ برگشتنِ اینترنت + تلاشِ دوره‌ای.
         // (قبلاً دکمهٔ دستی در تنظیمات بود؛ حالا هیچ کاری از کاربر لازم نیست.)
         com.hamyareman.ir.ui.sync.SyncCenter.installAutoSync(context, this)
