@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import com.hamyareman.ir.LocalAppContainer
@@ -259,7 +258,7 @@ fun SleepLogScreen(onBack: () -> Unit) {
             ) {
                 Text(
                     sleepClock(now),
-                    style = MaterialTheme.typography.displayMedium.copy(fontSize = 42.sp),
+                    style = MaterialTheme.typography.displayLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
