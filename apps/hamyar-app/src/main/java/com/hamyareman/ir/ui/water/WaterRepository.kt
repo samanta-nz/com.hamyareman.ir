@@ -14,9 +14,8 @@ data class WaterUiState(val goal: Int = 8, val consumed: Int = 0) {
 /**
  * مصرف آب — محلی‌اول.
  *
- * اگر زهرا «اشتراک خلاصه‌ی هفتگی» را روشن کرده باشد، تعداد لیوان‌های روز در صف
- * همگام‌سازی می‌رود (جدول `water_logs`). اگر خاموش باشد، هیچ‌چیز از دستگاه بیرون
- * نمی‌رود. این دقیقاً همان opt-in است که در تنظیمات حریم خصوصی توضیح داده شده.
+ * مصرف آب حساب کاربر در جدول `water_logs` ذخیره می‌شود تا دادهٔ شخصیِ خودش
+ * بین دستگاه‌ها دریافت/ارسال شود. `weekly_optin` فقط کنترل اشتراک هفتگی است.
  */
 class WaterRepository(
     private val store: LocalStore,
@@ -32,7 +31,7 @@ class WaterRepository(
     fun addGlass() {
         val current = state()
         store.putInt(key(), (current.consumed + 1).coerceAtMost(current.goal + 10))
-        enqueueIfOptedIn()
+enqueueIfConfigured()
     }
 
     fun undoGlass() {
@@ -43,11 +42,11 @@ class WaterRepository(
 
     fun setGoal(goal: Int) {
         store.putInt("water_goal", goal.coerceIn(1, 30))
+        enqueueIfConfigured()
     }
 
-    private fun enqueueIfOptedIn() {
+    private fun enqueueIfConfigured() {
         val engine = sync ?: return
-        if (!store.getBool("weekly_optin", false)) return
         val dayIso = JalaliDate.todayIso()
         engine.enqueue(
             table = TableIds.WATER_LOGS,
