@@ -171,7 +171,7 @@ fun DownloadsScreen(onBack: () -> Unit) = DownloadsTypography {
     val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember { LocalStore(context, "hamyar_downloads") }
     val books = remember(context) {
-        val order = listOf("C905", "C901", "C902", "C903", "C904", "C906", "C907", "C908", "C909", "C910", "C911", "C917", "C941", "C915")
+        val order = listOf("C905", "C901", "C902", "C903", "C904", "C906", "C907", "C909", "C910", "C913", "C917", "C941", "C915")
         BooksMenu.all(context).sortedWith(compareBy { b ->
             order.indexOfFirst { code -> b.code == code }.let { if (it < 0) Int.MAX_VALUE else it }
         })
