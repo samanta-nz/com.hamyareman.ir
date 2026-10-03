@@ -132,8 +132,12 @@ object FreeStudyCatalog {
     }
 
     private fun fromRow(row: TableRow): FreeStudyBook? {
-        val kind = row.string("type").ifBlank { row.string("kind") }
-        if (kind != "free_audio_book" && kind != "free_text_book") return null
+        val rawKind = row.string("type").ifBlank { row.string("kind") }.trim().uppercase()
+        val kind = when (rawKind) {
+            "AUDIO", "FREE_AUDIO_BOOK" -> "free_audio_book"
+            "TEXT", "FREE_TEXT_BOOK" -> "free_text_book"
+            else -> return null
+        }
         return FreeStudyBook(
             id = row.id,
             title = row.string("title").ifBlank { return null },
