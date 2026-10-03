@@ -13,6 +13,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 
 /** آنچه در صفحهٔ «کش و همگام‌سازی» نشان داده می‌شود. */
@@ -43,6 +49,7 @@ object SyncCenter {
 
     private const val PREF = "hamyar_cache"
     private const val KEY_LIMIT_MB = "limit_mb"
+    private const val WORK_NAME = "hamyar-background-sync"
 
     /** سقفِ پیش‌فرضِ کش (مگابایت) — کاربر می‌تواند عوضش کند. */
     const val DEFAULT_LIMIT_MB = 512
@@ -139,8 +146,9 @@ object SyncCenter {
         val app = ctx.applicationContext
 
         scope.launch {
-            // کمی صبر تا گرافِ وابستگی (AppContainer) کامل ساخته شود؛ وگرنه ممکن است
-            // همین لحظه که شبکه هست، کالبک بیاید و به وابستگیِ نیمه‌ساخته برسد.
+            // اجرای سریع هنگام برگشتنٔ شبکه، برای اینکه دادهٔ تازه منتظر نوبت
+            // دوره‌ای نماند. خودِ WorkManager پایداری پس از خروج process و reboot را
+            // تأمین می‌کند.
             delay(1500)
             runCatching {
                 val cm = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -150,12 +158,24 @@ object SyncCenter {
                     }
                 })
             }
-            // تلاشِ دوره‌ای: هر ۵ دقیقه (سبک؛ فقط اگر چیزی در صف باشد معنی دارد).
-            while (true) {
-                delay(5 * 60 * 1000L)
-                if (NetState.isOnline(app)) pushNow(app, container)
-            }
+            schedulePersistentWorker(app)
         }
+    }
+
+    /** زمان‌بندی پایدارِ حداقل هر ۱۵ دقیقه، فقط با شبکهٔ متصل. */
+    private fun schedulePersistentWorker(ctx: Context) {
+        val request = PeriodicWorkRequestBuilder<BackgroundSyncWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build(),
+            )
+            .build()
+        WorkManager.getInstance(ctx).enqueueUniquePeriodicWork(
+            WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request,
+        )
     }
 
     /** یک تلاشِ ارسال (هیچ‌وقت throw نمی‌کند). */
