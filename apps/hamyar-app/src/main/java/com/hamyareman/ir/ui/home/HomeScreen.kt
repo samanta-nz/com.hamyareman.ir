@@ -144,7 +144,7 @@ fun HomeScreen(nav: NavController) {
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(5200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
+            repeatMode = RepeatMode.Reverse,
         ),
         label = "dashboard-phase",
     )
@@ -167,66 +167,76 @@ fun HomeScreen(nav: NavController) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = HomeSide),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(24.dp),
             ) {
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                Row(
+                    Modifier.fillMaxWidth().padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        Modifier.weight(1f),
+                        contentAlignment = Alignment.Center,
                     ) {
                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                            Column(Modifier.weight(1f).padding(end = 36.dp)) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
+                            ) {
                                 Text(
                                     row1,
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontFamily = AppTypography.d3Date.family, fontWeight = AppTypography.d3Date.weight,
+                                    fontFamily = AppTypography.d3Date.family,
+                                    fontWeight = AppTypography.d3Date.weight,
                                     fontSize = AppTypography.d3Date.size,
                                     modifier = Modifier.clickable { nav.navigate(Screen.ClassPlanCalendar.route) },
                                 )
                                 Text(
                                     row2Time,
                                     style = MaterialTheme.typography.headlineSmall,
-                                    fontFamily = AppTypography.d4Clock.family, fontWeight = AppTypography.d4Clock.weight,
+                                    fontFamily = AppTypography.d4Clock.family,
+                                    fontWeight = AppTypography.d4Clock.weight,
                                     fontSize = AppTypography.d4Clock.size,
                                 )
                                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                                     Text(
                                         row2Greg,
                                         style = MaterialTheme.typography.bodyLarge,
-                                        fontFamily = AppTypography.d5Gregorian.family, fontWeight = AppTypography.d5Gregorian.weight,
+                                        fontFamily = AppTypography.d5Gregorian.family,
+                                        fontWeight = AppTypography.d5Gregorian.weight,
                                         fontSize = AppTypography.d5Gregorian.size,
-                                    )
-                                }
-                                weekendNotice?.let { (label, color) ->
-                                    Text(
-                                        label,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontFamily = occasionFont,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = occasionSize,
-                                        color = color,
-                                    )
-                                }
-                                if (!holiday.isNullOrBlank()) {
-                                    Text(
-                                        holiday,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontFamily = occasionFont,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = occasionSize,
-                                        color = MaterialTheme.colorScheme.primary,
                                     )
                                 }
                             }
                         }
-                        Spacer(Modifier.width(28.dp))
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            ProfileClockAvatar(onClick = { nav.navigate(Screen.UserProfile.route) })
-                            Spacer(Modifier.height(6.dp))
-                            SubscriptionChip(StudentProfileState.subscription) { nav.navigate(Screen.Subscription.route) }
-                        }
                     }
+                    Spacer(Modifier.width(14.dp))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        ProfileClockAvatar(onClick = { nav.navigate(Screen.UserProfile.route) })
+                        Spacer(Modifier.height(6.dp))
+                        SubscriptionChip(StudentProfileState.subscription) { nav.navigate(Screen.Subscription.route) }
+                    }
+                }
+            }
+
+            Card(
+                Modifier.fillMaxWidth().padding(horizontal = HomeSide),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+                ),
+            ) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Text("مناسبت‌های امروز", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    val occasionText = listOfNotNull(
+                        weekendNotice?.first,
+                        holiday?.takeIf { it.isNotBlank() },
+                    ).joinToString(" · ").ifBlank { "بدون مناسبت" }
+                    Text(
+                        occasionText,
+                        style = occasionFont.let { MaterialTheme.typography.bodySmall.copy(fontFamily = it) },
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
 
@@ -252,22 +262,21 @@ fun HomeScreen(nav: NavController) {
             // آزمایشگاه فقط وقتی برای edition همین پایه فایل دوآدرسی واقعی دارد
             // نمایش داده می‌شود؛ پایهٔ دیگر هرگز به آزمایشگاه نهم وصل نمی‌شود.
             val toolTiles = buildList {
-                // بعد از مهاجرت به پارس‌پک، هیچ‌کدام از این ابزارها فایل ندارند؛
-                // کارت فقط وقتی ساخته می‌شود که دستهٔ متناظرش در کاتالوگ آیتم داشته باشد.
-                if (com.hamyareman.ir.ui.tools.ToolRemote.hasCategory(ctx, "tool-gen")) {
-                    add(Triple("🧰", "جعبه‌ابزار عمومی", Screen.GeneralToolkit.route))
-                }
+                // ترتیب رسمی داشبورد: شیمی، فیزیک، زیست / عمومی، ریاضی.
                 if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("chemistry")) {
                     add(Triple("⚗️", "آزمایشگاه شیمی", Screen.ChemistryLab.route))
                 }
                 if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("physics")) {
                     add(Triple("🔬", "آزمایشگاه فیزیک", Screen.PhysicsLab.route))
                 }
+                if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("biology")) {
+                    add(Triple("🧬", "آزمایشگاه زیست", Screen.BiologyLab.route))
+                }
+                if (com.hamyareman.ir.ui.tools.ToolRemote.hasCategory(ctx, "tool-gen")) {
+                    add(Triple("🧰", "جعبه‌ابزار عمومی", Screen.GeneralToolkit.route))
+                }
                 if (com.hamyareman.ir.ui.tools.ToolRemote.hasCategory(ctx, "tool-math")) {
                     add(Triple("🧮", "جعبه‌ابزار ریاضی", Screen.MathToolkit.route))
-                }
-                if (com.hamyareman.ir.ui.tools.ToolRemote.isAvailable("biology")) {
-                    add(Triple("🧬", "آزمایشگاه زیست‌شناسی", Screen.BiologyLab.route))
                 }
             }
             toolTiles.chunked(3).forEach { row ->
@@ -317,8 +326,8 @@ private fun GreetingBanner(
                 .background(
                     Brush.linearGradient(
                         listOf(Color(0xFF0F766E), Color(0xFF115E59), Color(0xFF1E3A8A)),
-                        start = Offset(-120f + motionPhase * 180f, 0f),
-                        end = Offset(520f + motionPhase * 180f, 220f),
+                        start = Offset(-30f + motionPhase * 120f, 0f),
+                        end = Offset(470f + motionPhase * 120f, 220f),
                     ),
                 )
                 .drawBehind {
@@ -524,7 +533,7 @@ private fun ToolTile(emoji: String, label: String, modifier: Modifier = Modifier
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontFamily = AppTypography.d8Tile.family,
                     fontWeight = AppTypography.d8Tile.weight,
-                    fontSize = AppTypography.d8Tile.size,
+                    fontSize = (AppTypography.d8Tile.size.value + 3f).sp,
                     lineHeight = 15.sp,
                     textAlign = TextAlign.Center,
                 ),
@@ -546,7 +555,7 @@ private fun QuickTile(emoji: String, label: String, modifier: Modifier = Modifie
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(emoji, style = MaterialTheme.typography.headlineSmall)
+            Text(emoji, fontSize = (MaterialTheme.typography.headlineSmall.fontSize.value + 3f).sp)
             AutoShrinkTileText(
                 text = label,
                 style = MaterialTheme.typography.titleSmall.copy(
