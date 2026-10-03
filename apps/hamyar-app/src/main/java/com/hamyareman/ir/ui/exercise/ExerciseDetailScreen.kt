@@ -77,7 +77,7 @@ fun ExerciseDetailScreen(exerciseId: String, onBack: () -> Unit, modifier: Modif
     val isFinished = !running && stepIndex == current.steps.lastIndex && secondsLeft == 0
     // ثبت جلسه‌ی تمام‌شده (یک بار به ازای هر پایان؛ «دوباره» یعنی جلسه‌ی تازه).
     LaunchedEffect(isFinished) {
-        if (isFinished) recordExerciseSession(container.store, container.sync, current)
+        if (isFinished) recordExerciseSession(container.store, container.sync, current, container.dailyHealth)
     }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

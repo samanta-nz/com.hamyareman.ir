@@ -165,6 +165,15 @@ class AppContainer(context: Context) {
         sync = sync,
     )
 
+    /** تجمیع سلامت روزانه: یک snapshot قابل دریافت/ارسال در Appwrite. */
+    val dailyHealth = com.hamyareman.ir.ui.hub.DailyHealthRepository(
+        store = store,
+        tables = tables,
+        provider = appwrite,
+        sync = sync,
+        userIdProvider = { auth.cachedUserId().orEmpty() },
+    )
+
     /**
      * پرامپت ۰۲: کاتالوگ حرکات سلامتی + گزارش جلسه‌ها.
      * الگوی سه‌لایه‌ای: سرور → کش محلی → کاتالوگ داخلی.

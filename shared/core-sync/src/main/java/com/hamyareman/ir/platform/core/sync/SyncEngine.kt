@@ -1,5 +1,7 @@
 package com.hamyareman.ir.platform.core.sync
 
+import com.hamyareman.ir.platform.core.appwrite.AppwriteClientProvider
+import com.hamyareman.ir.platform.core.appwrite.AppwriteAuthService
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
 import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.common.LocalStore
@@ -118,7 +120,9 @@ class SyncEngine(
                 skipped++
                 return@forEach // از صف هم حذف می‌شود؛ هرگز نباید بیرون برود
             }
-            when (val result = tables.upsert(item.table, item.rowId, item.dataMap())) {
+            val uid = store.getString(AppwriteAuthService.KEY_USER_ID).orEmpty()
+            val permissions = if (uid.isBlank()) emptyList() else AppwriteClientProvider.ownerOnly(uid)
+            when (val result = tables.upsert(item.table, item.rowId, item.dataMap(), permissions)) {
                 is AppResult.Ok -> pushed++
                 is AppResult.Err -> {
                     failed++

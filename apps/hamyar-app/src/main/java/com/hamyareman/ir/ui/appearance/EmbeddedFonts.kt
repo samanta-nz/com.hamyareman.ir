@@ -136,7 +136,8 @@ object EmbeddedFonts {
                     Font(face.boldRes, FontWeight.Bold),
                 )
             } else {
-                FontFamily(Font(face.resId, FontWeight.Normal))
+                // خانواده‌های تک‌فایلی وزن مصنوعی تولید نمی‌کنند؛ وزن واقعی فایل همان وزن پیش‌فرض خانواده است.
+                FontFamily(Font(face.resId, fontWeight(face.defaultWeight)))
             }
         }.getOrDefault(FontFamily.Default)
     }

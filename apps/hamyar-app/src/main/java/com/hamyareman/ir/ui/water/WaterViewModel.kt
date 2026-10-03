@@ -24,35 +24,51 @@ class WaterViewModel(app: Application) : AndroidViewModel(app) {
 
     fun addGlass() {
         repo.addGlass()
-        refresh()
+        val state = repo.state()
+        container.dailyHealth.recordWater(state.goal, state.consumed, +1)
+        syncImmediately()
     }
 
     fun undoGlass() {
+        val before = repo.state().consumed
         repo.undoGlass()
-        refresh()
+        val state = repo.state()
+        if (state.consumed != before) {
+            container.dailyHealth.recordWater(state.goal, state.consumed, -1)
+        }
+        syncImmediately()
     }
 
     fun setGoal(goal: Int) {
         repo.setGoal(goal)
-        refresh()
+        val state = repo.state()
+        container.dailyHealth.recordWaterGoal(state.goal)
+        syncImmediately()
     }
 
-    /** تلاش بی‌صدا برای فرستادن صف؛ اگر آفلاین باشیم چیزی خراب نمی‌شود. */
     fun syncNow() {
-        if (!container.isBackendConfigured) return
         viewModelScope.launch {
-            val report = container.sync.pushAll()
+            if (container.isBackendConfigured) {
+                val remote = runCatching { container.dailyHealth.pullToday() }.getOrNull()
+                remote?.let { repo.applyRemoteState(it.waterGoal, it.waterConsumed) }
+            }
+            val report = container.dailyHealth.syncNow()
+            _ui.value = repo.state()
             _pending.value = report.remaining
             _note.value = when {
-                report.pushed > 0 -> "به‌روزرسانی‌ها به سرور رسید."
-                report.remaining > 0 -> "چند قلم هنوز در صف است (آفلاین)."
+                report.pushed > 0 -> "دریافت و ارسال با دیتابیس انجام شد."
+                report.remaining > 0 -> "چند قلم هنوز در صف است."
                 else -> null
             }
         }
     }
 
-    private fun refresh() {
+    private fun syncImmediately() {
         _ui.value = repo.state()
         _pending.value = container.sync.pendingCount()
+        viewModelScope.launch {
+            if (container.isBackendConfigured) runCatching { container.dailyHealth.syncNow() }
+            _pending.value = container.sync.pendingCount()
+        }
     }
 }

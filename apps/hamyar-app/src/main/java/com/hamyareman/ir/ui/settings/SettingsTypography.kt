@@ -8,7 +8,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.hamyareman.ir.R
 
-private val SettingsVazirmatnLight = FontFamily(Font(R.font.vazirmatn_light, FontWeight.Light))
+private val SettingsVazirmatn = FontFamily(
+    Font(R.font.vazirmatn_regular, FontWeight.Normal),
+    Font(R.font.vazirmatn_bold, FontWeight.Bold),
+)
 
 /**
  * تایپوگرافی محلی صفحات تنظیمات؛ نقش‌های Material همان نقش‌ها می‌مانند تا با
@@ -21,8 +24,11 @@ internal fun settingsTypography(
 ): Typography {
     fun scaled(style: TextStyle): TextStyle = style.copy(
         fontSize = (style.fontSize.value + sizeDelta).coerceAtLeast(7f).sp,
-        fontFamily = if (forceVazirmatnLight) SettingsVazirmatnLight else style.fontFamily,
-        fontWeight = if (forceVazirmatnLight) FontWeight.Light else style.fontWeight,
+        fontFamily = SettingsVazirmatn,
+        fontWeight = when (style.fontWeight) {
+            FontWeight.Bold, FontWeight.SemiBold, FontWeight.ExtraBold, FontWeight.Black -> FontWeight.Bold
+            else -> FontWeight.Normal
+        },
     )
     return Typography(
         displayLarge = scaled(base.displayLarge),

@@ -43,8 +43,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
@@ -144,33 +142,10 @@ private fun fixedNumber(value: Int): String = toPersianDigits(value.toString()).
 private fun megabytes(bytes: Long): String =
     toPersianDigits((bytes / (1024.0 * 1024.0)).roundToInt().toString()) + " مگابایت"
 
-/**
- * تمام نوشته‌های این صفحه Vazirmatn Light و پنج واحد کوچک‌تر از اندازهٔ قبلی
- * هستند. تغییر فقط در همین زیرشاخهٔ MaterialTheme است و فونت کل اپ را عوض نمی‌کند.
- */
+/** صفحهٔ دانلود از تایپوگرافی استاندارد سراسری استفاده می‌کند. */
 @Composable
 private fun DownloadsTypography(content: @Composable () -> Unit) {
-    val vazir = remember { FontFamily(Font(R.font.vazirmatn_light, FontWeight.Light)) }
-    val base = MaterialTheme.typography
-    fun TextStyle.tune() = copy(
-        fontFamily = vazir,
-        fontWeight = FontWeight.Light,
-        // مقدار قبلی: ۱٫۵× پایه منهای ۴؛ درخواست جدید پنج واحد دیگر کوچک‌تر است.
-        fontSize = (fontSize.value * 1.5f - 9f).coerceAtLeast(7f).sp,
-        lineHeight = if (lineHeight.isSpecified) (lineHeight.value * 1.5f - 9f).coerceAtLeast(9f).sp else lineHeight,
-    )
-    MaterialTheme(
-        typography = base.copy(
-            displayLarge = base.displayLarge.tune(), displayMedium = base.displayMedium.tune(),
-            displaySmall = base.displaySmall.tune(), headlineLarge = base.headlineLarge.tune(),
-            headlineMedium = base.headlineMedium.tune(), headlineSmall = base.headlineSmall.tune(),
-            titleLarge = base.titleLarge.tune(), titleMedium = base.titleMedium.tune(),
-            titleSmall = base.titleSmall.tune(), bodyLarge = base.bodyLarge.tune(),
-            bodyMedium = base.bodyMedium.tune(), bodySmall = base.bodySmall.tune(),
-            labelLarge = base.labelLarge.tune(), labelMedium = base.labelMedium.tune(), labelSmall = base.labelSmall.tune(),
-        ),
-        content = content,
-    )
+    content()
 }
 
 @Composable

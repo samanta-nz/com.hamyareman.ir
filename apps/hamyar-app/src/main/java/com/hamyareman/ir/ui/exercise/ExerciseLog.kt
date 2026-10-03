@@ -5,6 +5,7 @@ import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.TableIds
 import com.hamyareman.ir.platform.core.sync.SyncEngine
+import com.hamyareman.ir.ui.hub.DailyHealthRepository
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -56,7 +57,12 @@ private fun writeExerciseSessions(store: LocalStore, sessions: List<ExerciseSess
  * مثل ماژول آب: **فقط** اگر زهرا «خلاصه‌ی هفتگی» را روشن کرده باشد (`weekly_optin`)
  * در صف Sync می‌رود؛ وگرنه فقط روی دستگاه می‌ماند و در نمودار پیشرفت خودش دیده می‌شود.
  */
-internal fun recordExerciseSession(store: LocalStore, sync: SyncEngine?, exercise: Exercise) {
+internal fun recordExerciseSession(
+    store: LocalStore,
+    sync: SyncEngine?,
+    exercise: Exercise,
+    dailyHealth: DailyHealthRepository? = null,
+) {
     val dayIso = JalaliDate.todayIso()
     val now = System.currentTimeMillis()
     val minutes = exercise.totalDurationMinutes
@@ -64,7 +70,7 @@ internal fun recordExerciseSession(store: LocalStore, sync: SyncEngine?, exercis
     sessions.add(0, ExerciseSession(dayIso, exercise.id, exercise.title, minutes, now))
     writeExerciseSessions(store, sessions)
 
-    if (sync != null && store.getBool("weekly_optin", false)) {
+    if (sync != null) {
         sync.enqueue(
             table = TableIds.EXERCISE_LOGS,
             rowId = "ex_${dayIso}_${exercise.id}_$now",
@@ -76,6 +82,13 @@ internal fun recordExerciseSession(store: LocalStore, sync: SyncEngine?, exercis
             ),
         )
     }
+
+    dailyHealth?.recordExercise(
+        exerciseId = exercise.id,
+        title = exercise.title,
+        minutes = minutes,
+        dayIso = dayIso,
+    )
 }
 
 internal fun exerciseSessionsOn(store: LocalStore, dayIso: String): Int =

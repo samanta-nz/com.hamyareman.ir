@@ -92,7 +92,7 @@ import kotlin.math.abs
 internal val TEACH_SPEEDS = listOf(2f, 1.5f, 1f, 0.75f, 0.5f)
 
 // فونت‌های قراردادی خود پلیر؛ به انتخاب فونت عمومی صفحه وابسته نیستند.
-private val TeachVazirmatnLight = FontFamily(Font(R.font.vazirmatn_light, FontWeight.Light))
+private val TeachVazirmatnRegular = FontFamily(Font(R.font.vazirmatn_regular, FontWeight.Normal))
 private val TeachVazirmatnBold = FontFamily(Font(R.font.vazirmatn_bold, FontWeight.Bold))
 
 /** یک فایل صوتی قابل‌پخش در صفحه‌ی تدریس/خلاصه‌ها. */
@@ -550,8 +550,8 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                 Text(
                     if (online) "پخش آنلاین" else "پخش آفلاین",
                     style = MaterialTheme.typography.labelMedium.copy(
-                        fontFamily = TeachVazirmatnLight,
-                        fontWeight = FontWeight.Light,
+                        fontFamily = TeachVazirmatnRegular,
+                        fontWeight = FontWeight.Normal,
                         fontSize = (MaterialTheme.typography.labelMedium.fontSize.value - 2f).coerceAtLeast(8f).sp,
                     ),
                     color = srcColor,
@@ -591,8 +591,8 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                             Text(
                                 "حذف آنلاین",
                                 style = MaterialTheme.typography.labelMedium.copy(
-                                    fontFamily = TeachVazirmatnLight,
-                                    fontWeight = FontWeight.Light,
+                                    fontFamily = TeachVazirmatnRegular,
+                                    fontWeight = FontWeight.Normal,
                                     fontSize = (MaterialTheme.typography.labelMedium.fontSize.value - 6f).coerceAtLeast(7f).sp,
                                 ),
                                 maxLines = 1,

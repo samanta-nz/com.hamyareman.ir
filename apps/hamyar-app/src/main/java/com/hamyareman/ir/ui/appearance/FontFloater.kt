@@ -116,10 +116,17 @@ private fun FloaterSlotRow(
 ) {
     val pad = slot.id == "d7.pad"
     var menu by remember { mutableStateOf(false) }
-    val face = remember(choice.font) { EmbeddedFonts.face(choice.font) }
-    val family = remember(choice.font, choice.weight) { EmbeddedFonts.family(choice.font, choice.weight) }
-    val fw = EmbeddedFonts.fontWeight(choice.weight)
-    val sampleSp = choice.size.coerceIn(8, 40)
+    val dashboard = slot.group == "D داشبورد"
+    val standardFace = EmbeddedFonts.face("vazirmatn")
+    val face = remember(choice.font, dashboard) {
+        if (dashboard) EmbeddedFonts.face(choice.font) else standardFace
+    }
+    val family = remember(choice.font, choice.weight, dashboard) {
+        if (dashboard) EmbeddedFonts.family(choice.font, EmbeddedFonts.W_BOLD)
+        else EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_BOLD)
+    }
+    val fw = if (dashboard) EmbeddedFonts.fontWeight(EmbeddedFonts.W_BOLD) else EmbeddedFonts.fontWeight(choice.weight)
+    val sampleSp = if (dashboard) choice.size.coerceIn(8, 40) else 16
     Column(
         Modifier
             .fillMaxWidth()
@@ -147,7 +154,7 @@ private fun FloaterSlotRow(
                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                 )
                 ExposedDropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    EmbeddedFonts.catalog.forEach { item ->
+                    (if (dashboard) EmbeddedFonts.catalog else listOf(standardFace)).forEach { item ->
                         DropdownMenuItem(
                             text = { Text(item.label, fontFamily = EmbeddedFonts.family(item.key, item.defaultWeight)) },
                             onClick = { onFont(item.key); menu = false },
@@ -156,12 +163,10 @@ private fun FloaterSlotRow(
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf(
-                    EmbeddedFonts.W_THIN,
-                    EmbeddedFonts.W_LIGHT,
+                (if (dashboard) listOf(EmbeddedFonts.W_BOLD) else listOf(
                     EmbeddedFonts.W_REGULAR,
                     EmbeddedFonts.W_BOLD,
-                ).forEach { w ->
+                )).forEach { w ->
                     FilterChip(
                         selected = EmbeddedFonts.normalizeWeight(choice.weight) == w,
                         onClick = { onWeight(w) },
@@ -170,17 +175,20 @@ private fun FloaterSlotRow(
                 }
             }
             Text(
-                "سایز ${toPersianDigits(sampleSp.toString())}",
+                if (dashboard) "سایز " + toPersianDigits(sampleSp.toString())
+                else "اندازهٔ استاندارد نقش: 16sp",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Slider(
-                value = sampleSp.toFloat(),
-                onValueChange = { onSize(it.toInt()) },
-                valueRange = 8f..40f,
-                steps = 31,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (dashboard) {
+                Slider(
+                    value = sampleSp.toFloat(),
+                    onValueChange = { onSize(it.toInt()) },
+                    valueRange = 8f..40f,
+                    steps = 31,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         } else {
             Text(
                 "فاصله از دو طرف: ${toPersianDigits(choice.size.toString())} dp",

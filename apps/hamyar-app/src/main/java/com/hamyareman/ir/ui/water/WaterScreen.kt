@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -35,51 +37,85 @@ fun WaterScreen(modifier: Modifier = Modifier, viewModel: WaterViewModel = viewM
         modifier
             .fillMaxSize()
             .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("یادآور نوشیدن آب", style = MaterialTheme.typography.titleLarge)
-        Text("هر روز کمی آب بنوش تا بدنت شاداب بمونه.", style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(16.dp))
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(20.dp)) {
-                Text(
-                    toPersianDigits("${state.consumed} از ${state.goal} لیوان"),
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text(toPersianDigits("${state.remaining} لیوان باقی است"))
-                Spacer(Modifier.height(12.dp))
+        Text("آب بنوش 💧", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            "ثبت آب، هدف روزانه و آخرین رویدادها از همین کارت به سلامت امروز وصل‌اند.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Card(
+            Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        ) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column {
+                        Text(
+                            toPersianDigits(state.consumed.toString()) + " از " + toPersianDigits(state.goal.toString()),
+                            style = MaterialTheme.typography.displaySmall,
+                        )
+                        Text("لیوان امروز", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Text(
+                        if (state.isGoalReached) "هدف کامل شد 🎉" else toPersianDigits(state.remaining.toString()) + " لیوان مانده",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
                 LinearProgressIndicator(
                     progress = { (state.consumed.toFloat() / state.goal).coerceIn(0f, 1f) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(10.dp),
                 )
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Button(onClick = { viewModel.addGlass() }, modifier = Modifier.weight(1f)) {
-                        Text("یک لیوان بنوشم ✨")
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = viewModel::addGlass, modifier = Modifier.weight(1f)) {
+                        Text("یک لیوان +۱")
                     }
-                    OutlinedButton(onClick = { viewModel.undoGlass() }, modifier = Modifier.weight(0.6f)) {
-                        Text("کم کن")
+                    OutlinedButton(onClick = viewModel::undoGlass, modifier = Modifier.weight(1f)) {
+                        Text("اصلاح −۱")
                     }
                 }
+
+                Text("هدف روزانه", style = MaterialTheme.typography.titleMedium)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(6, 8, 10, 12, 14).forEach { goal ->
+                        FilterChip(
+                            selected = state.goal == goal,
+                            onClick = { viewModel.setGoal(goal) },
+                            label = { Text(toPersianDigits(goal.toString())) },
+                        )
+                    }
+                }
+
+                Text(
+                    "هر تغییر هم در مصرف آب و هم در سلامت روزانه ثبت می‌شود؛ سینک یعنی دریافت و ارسال با دیتابیس.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
-        if (state.isGoalReached) {
-            Spacer(Modifier.height(16.dp))
-            Text("🎉 آفرین! به هدف امروز رسیدی.", style = MaterialTheme.typography.titleMedium)
-        }
+
         if (pending > 0) {
-            Spacer(Modifier.height(12.dp))
             Text(
-                toPersianDigits("$pending قلم در صف همگام‌سازی است."),
-                style = MaterialTheme.typography.labelSmall,
+                toPersianDigits(pending.toString()) + " قلم در صف ارسال است.",
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         note?.let {
-            Spacer(Modifier.height(4.dp))
             Text(it, style = MaterialTheme.typography.labelSmall)
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        OutlinedButton(
+            onClick = viewModel::syncNow,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+        ) {
+            Text("دریافت و ارسال با دیتابیس")
         }
     }
 }

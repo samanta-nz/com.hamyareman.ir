@@ -51,6 +51,7 @@ import coil.compose.AsyncImage
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.LocalAppContainer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private fun wellnessImageAspectRatio(move: WellnessMove): Float = when (move.category) {
@@ -185,13 +186,25 @@ private fun ActiveMoveView(move: WellnessMove, onClose: () -> Unit) {
             timingProvider = container.wellnessTiming,
             wellnessLogSink = object : WellnessTimer.WellnessLogSink {
                 override suspend fun logSession(m: WellnessMove, secondsSpent: Int, completed: Boolean) {
-                    val dayIso = java.time.LocalDate.now().toString()
+                    val dayIso = com.hamyareman.ir.platform.core.common.JalaliDate.todayIso()
                     container.wellnessLogs.log(
                         userId = container.auth.cachedUserId() ?: "",
                         move = m,
                         secondsSpent = secondsSpent,
                         completed = completed,
                         dayIso = dayIso)
+                    if (m.category == WellnessMove.Category.YOGA || m.category == WellnessMove.Category.EXERCISE) {
+                        container.dailyHealth.recordWellness(
+                            moveSlug = m.slug,
+                            title = m.titleFa,
+                            minutes = (secondsSpent / 60).coerceAtLeast(1),
+                            category = m.category.wire,
+                            dayIso = dayIso,
+                        )
+                    }
+                    kotlinx.coroutines.withContext(Dispatchers.IO) {
+                        runCatching { container.dailyHealth.syncNow() }
+                    }
                 }
             })
     }
