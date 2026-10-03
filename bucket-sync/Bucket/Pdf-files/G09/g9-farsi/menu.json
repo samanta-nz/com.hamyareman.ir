@@ -17,10 +17,27 @@
       "children": []
     },
     {
-      "kind": "plain",
+      "kind": "lesson",
       "title": "ستایش",
       "pdf": "g9-farsi-praise.pdf",
-      "tabs": [],
+      "tabs": [
+        {
+          "title": "روخوانی",
+          "pdf": null
+        },
+        {
+          "title": "نکات ادبی",
+          "pdf": null
+        },
+        {
+          "title": "نکات تکمیلی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-farsi-praise.pdf"
+        }
+      ],
       "children": []
     },
     {
@@ -62,10 +79,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "حکایت: سفر",
           "pdf": "g9-farsi-st01.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و مفهوم",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-st01.pdf"
+            }
+          ],
           "children": []
         },
         {
@@ -101,10 +139,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "شعرخوانی: پرواز",
           "pdf": "g9-farsi-sh01.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی شعر",
+              "pdf": null
+            },
+            {
+              "title": "آرایه‌ها و نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-sh01.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -148,10 +207,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "حکایت: باغبانِ نیک‌اندیش",
           "pdf": "g9-farsi-st02.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و مفهوم",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-st02.pdf"
+            }
+          ],
           "children": []
         },
         {
@@ -187,10 +267,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "روان‌خوانی: دریچه‌های شکوفایی",
           "pdf": "g9-farsi-rv01.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و واژگان",
+              "pdf": null
+            },
+            {
+              "title": "فرصتی برای اندیشیدن",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-rv01.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -234,17 +335,59 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "حکایت: ادبیات بومی ۱",
           "pdf": "g9-farsi-st03.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و مفهوم",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-st03.pdf"
+            }
+          ],
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "شعرخوانی: ادبیات بومی ۱",
           "pdf": "g9-farsi-sh02.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی شعر",
+              "pdf": null
+            },
+            {
+              "title": "آرایه‌ها و نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-sh02.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -288,10 +431,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "حکایت: شو، خطرکن!",
           "pdf": "g9-farsi-st04.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و مفهوم",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-st04.pdf"
+            }
+          ],
           "children": []
         },
         {
@@ -359,10 +523,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "شعرخوانی: دوراندیشی",
           "pdf": "g9-farsi-sh03.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی شعر",
+              "pdf": null
+            },
+            {
+              "title": "آرایه‌ها و نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-sh03.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -438,10 +623,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "حکایت: نیک رایان",
           "pdf": "g9-farsi-st05.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و مفهوم",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-st05.pdf"
+            }
+          ],
           "children": []
         },
         {
@@ -477,10 +683,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "روان‌خوانی: دروازه‌ای به آسمان",
           "pdf": "g9-farsi-rv02.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و واژگان",
+              "pdf": null
+            },
+            {
+              "title": "فرصتی برای اندیشیدن",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-rv02.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -524,10 +751,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "حکایت: سیرت سلمان",
           "pdf": "g9-farsi-st06.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و مفهوم",
+              "pdf": null
+            },
+            {
+              "title": "نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-st06.pdf"
+            }
+          ],
           "children": []
         },
         {
@@ -595,10 +843,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "شعرخوانی: بُوَد قدر تو افزون از مالِک",
           "pdf": "g9-farsi-sh04.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی شعر",
+              "pdf": null
+            },
+            {
+              "title": "آرایه‌ها و نکات ادبی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-sh04.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -642,10 +911,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "روان‌خوانی: ادبیات بومی ۲",
           "pdf": "g9-farsi-rv03.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و واژگان",
+              "pdf": null
+            },
+            {
+              "title": "فرصتی برای اندیشیدن",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-rv03.pdf"
+            }
+          ],
           "children": []
         }
       ]
@@ -721,10 +1011,31 @@
           "children": []
         },
         {
-          "kind": "plain",
+          "kind": "lesson",
           "title": "روان‌خوانی: دو نقّاش",
           "pdf": "g9-farsi-rv04.pdf",
-          "tabs": [],
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "روخوانی",
+              "pdf": null
+            },
+            {
+              "title": "معنی و واژگان",
+              "pdf": null
+            },
+            {
+              "title": "فرصتی برای اندیشیدن",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-farsi-rv04.pdf"
+            }
+          ],
           "children": []
         }
       ]
