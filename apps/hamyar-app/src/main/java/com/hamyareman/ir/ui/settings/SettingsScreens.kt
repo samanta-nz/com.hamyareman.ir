@@ -162,6 +162,7 @@ fun AppLockScreen(onBack: () -> Unit) {
     var message by remember { mutableStateOf<String?>(null) }
     var timeoutMs by remember { mutableStateOf(lock.autoLockTimeoutMs()) }
     var hasPin by remember { mutableStateOf(lock.hasPin()) }
+    var pattern by remember { mutableStateOf("") }
 
     Column(
         Modifier
@@ -244,6 +245,7 @@ fun AppLockScreen(onBack: () -> Unit) {
                         message = "برای غیرفعال‌کردن، PIN فعلی را وارد کن."
                     } else {
                         lock.clearPin()
+                        lock.clearPattern()
                         bio.clear()
                         hasPin = false
                         currentPin = ""
@@ -253,6 +255,31 @@ fun AppLockScreen(onBack: () -> Unit) {
                 }
             }
 
+            Spacer(Modifier.height(8.dp))
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("الگوی اختصاصی قفل برنامه", style = MaterialTheme.typography.titleSmall)
+                    Text("این الگو متعلق به خود اپ است و هیچ ارتباطی با Pattern/PIN قفل صفحهٔ اندروید ندارد.", style = MaterialTheme.typography.bodySmall)
+                    Text(if (lock.hasPattern()) "الگو ثبت شده است." else "هنوز الگویی ثبت نشده.", color = MaterialTheme.colorScheme.primary)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        (1..3).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        (4..6).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        (7..9).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
+                    }
+                    Text(if (pattern.isBlank()) "الگو را با حداقل ۴ نقطه انتخاب کن." else "الگوی انتخاب‌شده: " + pattern.replace(Regex("."), "•")))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { pattern = "" }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
+                        PrimaryButton("ثبت الگو", Modifier.weight(2f)) {
+                            if (lock.validatePattern(pattern)) { lock.setPattern(pattern); pattern = ""; message = "الگوی اختصاصی ثبت شد." }
+                            else message = "حداقل ۴ نقطهٔ متفاوت انتخاب کن."
+                        }
+                    }
+                }
+            }
             Spacer(Modifier.height(8.dp))
             Text("قفل خودکار بعد از", style = MaterialTheme.typography.titleSmall)
             Text(
