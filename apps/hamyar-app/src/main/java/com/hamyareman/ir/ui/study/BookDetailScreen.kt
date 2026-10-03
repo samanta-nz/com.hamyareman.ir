@@ -363,21 +363,24 @@ private fun BookMenuNode(
     onToggle: (String) -> Unit,
     onOpen: (String, String, String) -> Unit,
 ) {
-    val special = node.title.trim().let { t ->
-        t.startsWith("حکایت") || t.startsWith("شعرخوانی") || t.startsWith("روان‌خوانی") ||
-            t.startsWith("روان خوانی") || t.startsWith("ستایش")
-    }
-    val expandable = node.expandable || special
+    val normalized = normalizedMenuTitle(node.title)
+    if (bookCode == "C903" && normalized.startsWith("پیشگفتار")) return
+
+    val farsiPraise = bookCode == "C903" && (normalized.startsWith("ستایش") || normalized.startsWith("نیایش"))
+    val farsiReading = bookCode == "C903" &&
+        listOf("حکایت", "شعرخوانی", "روانخوانی").any(normalized::startsWith)
+    val farsiFree = bookCode == "C903" && normalized.startsWith("فصلآزاد")
+    val curated = farsiPraise || farsiReading || farsiFree
+    val expandable = node.expandable || curated
     val open = path in openPaths
     val indent = (depth * 14).dp
-    val specialPackId = if (special) {
+    val specialPackId = if (curated) {
         fun flat(nodes: List<BookToc.TocNode>): List<BookToc.TocNode> =
             nodes.flatMap { listOf(it) + flat(it.children) }
         flat(BookToc.forBook(bookCode)).firstOrNull {
-            normalizedMenuTitle(it.title) == normalizedMenuTitle(node.title)
+            normalizedMenuTitle(it.title) == normalized
         }?.packId
     } else null
-    val specialPack = specialPackId?.let { BookModuleRegistry.pack(it) }
 
     Card(
         Modifier
@@ -416,36 +419,57 @@ private fun BookMenuNode(
                 exit = fadeOut() + shrinkVertically(),
             ) {
                 Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
-                    if (node.hasContent) {
+                    if (node.hasContent && !curated) {
                         LeafRow(node.title, node.key, node.ready, depth + 1, "", onOpen)
                     }
-                    val tabs = node.tabs.ifEmpty {
-                        if (special) listOf(
-                            BooksMenu.Tab("تدریس", specialPack?.pdfFileName, specialPack?.pdfFileName != null),
-                            BooksMenu.Tab("تمرینات کتابی", null, null),
-                            BooksMenu.Tab("نکات ادبی و گرامری", null, null),
-                            BooksMenu.Tab("خلاصه درس و نکات تکمیلی", null, null),
-                            BooksMenu.Tab("نمونه سوالات جامع", null, null),
+
+                    val rawTabs = when {
+                        farsiPraise -> listOf(
+                            BooksMenu.Tab("روخوانی", null, null),
+                            BooksMenu.Tab("نکات ادبی", null, null),
+                            BooksMenu.Tab("نکات تکمیلی", null, null),
                             BooksMenu.Tab("کتاب درسی", node.key, node.ready),
-                        ) else emptyList()
+                        )
+                        farsiReading -> listOf(
+                            BooksMenu.Tab("خوانش", null, null),
+                            BooksMenu.Tab("نکات ادبی", null, null),
+                            BooksMenu.Tab("کتاب درسی", node.key, node.ready),
+                        )
+                        farsiFree -> listOf(
+                            BooksMenu.Tab("راهنما", null, null),
+                            BooksMenu.Tab("کتاب درسی", node.key, node.ready),
+                        )
+                        else -> node.tabs
                     }
+
+                    val tabs = if (bookCode == "C906") scienceExamTabs(rawTabs) else rawTabs
                     tabs.forEach { tab ->
-                        val isTeach = tab.title.trim().startsWith("تدریس")
-                        val audio = node.audioKey.orEmpty()
-                        if (special && isTeach && specialPackId != null) {
-                            onSpecialTab(tab, specialPackId, specialPack, depth, onOpen)
-                        } else if (isTeach && node.teachKey != null) {
-                            LeafRow(tab.title, node.teachKey, true, depth + 1, audio, onOpen)
-                        } else {
-                            LeafRow(tab.title, tab.key, tab.ready, depth + 1, "", onOpen)
+                        val label = tab.title.trim()
+                        when {
+                            specialPackId != null && (label == "روخوانی" || label == "خوانش") ->
+                                onOpen(Screen.LessonTeach.of(specialPackId), label, "")
+                            label == "تدریس" && node.teachKey != null ->
+                                LeafRow(label, node.teachKey, true, depth + 1, node.audioKey.orEmpty(), onOpen)
+                            else ->
+                                LeafRow(label, tab.key, tab.ready, depth + 1, "", onOpen)
                         }
                     }
+
                     node.children.forEachIndexed { i, child ->
                         BookMenuNode(bookCode, child, "$path.$i", depth + 1, openPaths, onToggle, onOpen)
                     }
                 }
             }
         }
+    }
+}
+
+private fun scienceExamTabs(tabs: List<BooksMenu.Tab>): List<BooksMenu.Tab> {
+    if (tabs.any { it.title.trim() == "نکات تکمیلی و امتحانی" }) return tabs
+    val index = tabs.indexOfFirst { it.title.trim().startsWith("نمونه سوالات کتابی") }
+    if (index < 0) return tabs
+    return tabs.toMutableList().apply {
+        add(index, BooksMenu.Tab("نکات تکمیلی و امتحانی", null, null))
     }
 }
 
