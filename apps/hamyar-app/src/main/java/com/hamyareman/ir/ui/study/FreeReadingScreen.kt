@@ -216,6 +216,9 @@ private fun FreeAudioReader(book: FreeStudyBook) {
             val uri = if (MediaVault.isVerified(ctx, cache)) MediaVault.localUrl(ctx, cache) else StudyMedia.viewUrl(key)
             playback.setMedia(uri, book.title, FreeReadingState.pos(ctx, book.id))
         }
+        if (timerUntil > System.currentTimeMillis()) {
+            playback.setSleepTimer(timerUntil)
+        }
     }
     LaunchedEffect(state.playing) {
         while (state.playing) {
@@ -230,6 +233,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         if (timerUntil <= 0L) return@LaunchedEffect
         while (System.currentTimeMillis() < timerUntil) delay(500L)
         playback.pause()
+        playback.clearSleepTimer()
         timerUntil = 0L
         prefs.putString("sleep_timer_until", "0")
     }
@@ -377,6 +381,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                             onClick = {
                                 timerUntil = System.currentTimeMillis() + m.toLong() * 60_000L
                                 prefs.putString("sleep_timer_until", timerUntil.toString())
+                                playback.setSleepTimer(timerUntil)
                             },
                             label = { Text(toPersianDigits(m.toString())) },
                         )
@@ -394,6 +399,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                     val maxMinutes = Long.MAX_VALUE / 60_000L
                     timerUntil = System.currentTimeMillis() + m.coerceAtMost(maxMinutes) * 60_000L
                     prefs.putString("sleep_timer_until", timerUntil.toString())
+                    playback.setSleepTimer(timerUntil)
                 }) {
                     Icon(Icons.Outlined.MoreTime, null)
                     Spacer(Modifier.width(4.dp))
