@@ -229,7 +229,12 @@ class PlaybackService : MediaSessionService() {
 
     /** اگر صفحه‌ی پخش باز نیست، هرگز صدا ادامه پیدا نکند. */
     private fun enforceForegroundOnly(player: Player) {
-        if ((player.playWhenReady || player.isPlaying) && !TeachGate.teachPageOpen) {
+        // صوت تدریس فقط با صفحهٔ تدریس باز مجاز است؛ کتاب آزاد می‌تواند با
+        // مجوز صریح کاربر در پس‌زمینه ادامه پیدا کند.
+        if ((player.playWhenReady || player.isPlaying) &&
+            !TeachGate.teachPageOpen &&
+            !BackgroundPlaybackGate.enabled
+        ) {
             player.pause()
         }
     }
@@ -242,8 +247,11 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        mediaSession?.player?.let { halt(it) }
-        stopSelf()
+        if (!BackgroundPlaybackGate.enabled) {
+            mediaSession?.player?.let { halt(it) }
+            stopSelf()
+        }
+        // در حالت پخش پس‌زمینهٔ کتاب آزاد، سرویس و اعلان زنده می‌مانند.
     }
 
     override fun onDestroy() {
