@@ -171,6 +171,7 @@ dependencies {
     // تم اکتیویتی باید از Theme.AppCompat باشد و appcompat هم روی classpath باشد.
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(project(":core-common"))
     implementation(project(":core-designsystem"))
