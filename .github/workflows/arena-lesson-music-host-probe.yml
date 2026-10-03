@@ -79,11 +79,20 @@ jobs:
                   print("```html\n"+t.strip()+"\n```\n")
 
               print("### کل کد HamyaremanBackground (پل موسیقی در خود فایل درس)\n")
-              i=plain.find("window.HamyaremanBackground")
-              if i<0:
+              k=plain.find("window.HamyaremanBackground")
+              if k<0:
                   print("(پیدا نشد)")
               else:
-                  print("```js\n"+plain[max(0,i-14000):i+600]+"\n```\n")
+                  print("```js\n"+plain[max(0,k-14000):k+600]+"\n```\n")
+
+              # نسخهٔ سبکِ همان صفحه برای بازسازی محلی: فقط دادهٔ base64 حذف می‌شود،
+              # ساختار، CSS و JS دست‌نخورده می‌ماند.
+              tiny="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+              light=re.sub(r'data:[a-z]+/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]{200,}', tiny, plain)
+              light=re.sub(r'"[A-Za-z0-9+/=]{400,}"', '""', light)
+              name="ci-report/lesson-%s-stripped.html" % ("yoga" if "حالت کودک" in key_path else "sport")
+              open(name,"w",encoding="utf-8").write(light)
+              print(f"- نسخهٔ سبک برای بازسازی: `{name}` ({len(light):,} نویسه)\n")
           PY
 
       - name: کامیت گزارش
@@ -93,6 +102,6 @@ jobs:
           head -c 60000 ci-report/lesson-music-host.md >> "$GITHUB_STEP_SUMMARY"
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/lesson-music-host.md
+          git add -f ci-report/lesson-music-host.md ci-report/lesson-*-stripped.html
           git diff --cached --quiet || { git commit -m "گزارش میزبان موسیقی در فایل درس [skip-report]"; git pull --rebase origin "${GITHUB_REF_NAME}"; git push origin "HEAD:${GITHUB_REF_NAME}"; }
           exit 0
