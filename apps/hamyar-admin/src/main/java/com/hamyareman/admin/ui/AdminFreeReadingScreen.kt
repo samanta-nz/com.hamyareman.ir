@@ -28,8 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.hamyaradmin.admin.LocalAdmin
-import com.hamyaradmin.admin.adminIo
+import com.hamyareman.admin.LocalAdmin
+import com.hamyareman.admin.adminIo
 import com.hamyareman.ir.platform.core.common.AppResult
 import kotlinx.coroutines.launch
 import org.json.JSONArray
@@ -143,7 +143,7 @@ private fun BookRow(row: JSONObject) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(row.optString("title").ifBlank { "بدون عنوان" }, fontWeight = FontWeight.Bold)
-            Text("شناسه: " + row.optString("bookId").ifBlank { row.optString("$id") }, style = MaterialTheme.typography.labelSmall)
+            Text("شناسه: " + row.optString("bookId").ifBlank { row.optString("\$id") }, style = MaterialTheme.typography.labelSmall)
             Text("نوع: " + row.optString("type") + " · منتشر: " + row.optInt("published", 0))
             Text(row.optString("description").take(240), style = MaterialTheme.typography.bodySmall)
             if (row.optString("coverKey").isNotBlank()) Text("کاور: " + row.optString("coverKey"), style = MaterialTheme.typography.labelSmall)
@@ -160,7 +160,7 @@ private fun CommentRow(
     scope: kotlinx.coroutines.CoroutineScope,
     reload: () -> Unit,
 ) {
-    val id = row.optString("$id").ifBlank { row.optString("id") }
+    val id = row.optString("\$id").ifBlank { row.optString("id") }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text(row.optString("displayName").ifBlank { "کاربر" }, fontWeight = FontWeight.Bold)
