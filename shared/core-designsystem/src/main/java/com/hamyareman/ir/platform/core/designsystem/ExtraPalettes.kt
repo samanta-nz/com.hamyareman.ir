@@ -18,6 +18,12 @@ val BrandTheme.themeGender: ThemeGender
     }
 
 fun BrandTheme.swatches(): List<Color> = when (this) {
+    BrandTheme.PetalBloom -> listOf(Color(0xFFD34D7B), Color(0xFF8B63C7), Color(0xFFE0A15D))
+    BrandTheme.LilacAir -> listOf(Color(0xFF7E57C2), Color(0xFF46A79D), Color(0xFFB47AE0))
+    BrandTheme.BerryGlow -> listOf(Color(0xFFB83272), Color(0xFFE47B9E), Color(0xFFE9B949))
+    BrandTheme.OceanPulse -> listOf(Color(0xFF1677B8), Color(0xFF16A6A0), Color(0xFF5F88D3))
+    BrandTheme.ForestForge -> listOf(Color(0xFF2F7A5A), Color(0xFF7AAE43), Color(0xFFC38B3A))
+    BrandTheme.NightOrbit -> listOf(Color(0xFF4A67C9), Color(0xFF7A8AE6), Color(0xFF4AB8C4))
     BrandTheme.DollStage -> listOf(Color(0xFFE96A8D), Color(0xFFF4916B), Color(0xFFA77BD4))
     BrandTheme.Stitch -> listOf(Color(0xFF2F7FD6), Color(0xFFF26FA7), Color(0xFF27B5A8))
     BrandTheme.MoonNight -> listOf(Color(0xFF7C6BD9), Color(0xFFE8B84B), Color(0xFFC97BA8))
