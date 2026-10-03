@@ -17,10 +17,12 @@ fun PauseOnStopEffect(pause: () -> Unit, stop: (() -> Unit)? = null) {
     val owner = LocalLifecycleOwner.current
     val halt = stop ?: pause
     DisposableEffect(owner) {
+        com.hamyareman.ir.platform.feature.playback.BackgroundPlaybackGate.enabled = false
         com.hamyareman.ir.platform.feature.playback.TeachGate.enter()
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_START -> {
+                    com.hamyareman.ir.platform.feature.playback.BackgroundPlaybackGate.enabled = false
                     com.hamyareman.ir.platform.feature.playback.TeachGate.enter()
                 }
                 Lifecycle.Event.ON_PAUSE -> {
@@ -38,6 +40,7 @@ fun PauseOnStopEffect(pause: () -> Unit, stop: (() -> Unit)? = null) {
         onDispose {
             owner.lifecycle.removeObserver(observer)
             com.hamyareman.ir.platform.feature.playback.TeachGate.exit()
+            com.hamyareman.ir.platform.feature.playback.BackgroundPlaybackGate.enabled = false
             halt()
         }
     }
