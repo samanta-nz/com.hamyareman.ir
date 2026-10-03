@@ -130,6 +130,32 @@ object UpdatePlan {
     fun versionLabel(info: UpdateInfo): String =
         info.name.ifBlank { if (info.latest > 0) info.latest.toString() else "" }
 
+    /**
+     * نسخه با «هر سه شماره»ی کامل: `۲.۴.۲`.
+     *
+     * سرور گاهی نام را ناقص می‌فرستد (`2.4`) یا اصلاً نمی‌فرستد (آن‌وقت فقط
+     * versionCode می‌ماند). کارتِ آپدیت نباید شمارهٔ بریده نشان بدهد، پس این‌جا
+     * جای خالی با صفر پر می‌شود و اگر نامی نبود، سه شماره از خودِ versionCode
+     * بیرون کشیده می‌شود (۲۴۲ ← ۲.۴.۲).
+     */
+    fun threePart(name: String, code: Int = 0): String {
+        val parts = name.trim().removePrefix("v")
+            .filter { it.isDigit() || it == '.' }
+            .split('.')
+            .filter { it.isNotEmpty() }
+        val fromCode = if (code >= 100) "${code / 100}.${(code / 10) % 10}.${code % 10}" else ""
+        return when {
+            parts.size >= 3 -> parts.take(3).joinToString(".")
+            parts.size == 2 -> parts.joinToString(".") + ".0"
+            parts.size == 1 && parts[0] == code.toString() -> fromCode.ifBlank { parts[0] }
+            parts.size == 1 -> parts[0] + ".0.0"
+            else -> fromCode.ifBlank { if (code > 0) code.toString() else "" }
+        }
+    }
+
+    /** همان `versionLabel` اما همیشه با هر سه شماره — ویژهٔ نمایش در کارتِ آپدیت. */
+    fun fullVersionLabel(info: UpdateInfo): String = threePart(versionLabel(info), info.latest)
+
     /** حجمِ خوانا برای نمایش (فقط نمایش؛ تصمیم‌گیری به آن وابسته نیست). */
     fun sizeLabel(bytes: Long): String = when {
         bytes <= 0L -> ""

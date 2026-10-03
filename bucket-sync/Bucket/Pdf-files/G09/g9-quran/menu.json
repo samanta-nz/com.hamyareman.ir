@@ -1,0 +1,261 @@
+{
+  "subject": "آموزش قرآن نهم",
+  "code": "901",
+  "items": [
+    {
+      "kind": "plain",
+      "title": "فهرست",
+      "pdf": "g9-quran-index.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "سخنی با دانش‌آموزان",
+      "pdf": "g9-quran-students.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "سخنی با دبیران و اولیای گرامی",
+      "pdf": "g9-quran-p01.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس یکم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l01.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس دوم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l02.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس سوم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l03.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس چهارم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l04.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس پنجم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l05.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس ششم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l06.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس هفتم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l07.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس هشتم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l08.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس نهم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l09.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس دهم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l10.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس یازدهم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "خانه‌های نورانی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-quran-l11.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "نیایش: دعای ختم قرآن کریم",
+      "pdf": "g9-quran-pray.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "فهرست کلمات",
+      "pdf": "g9-quran-vocab.pdf",
+      "tabs": [],
+      "children": []
+    }
+  ]
+}

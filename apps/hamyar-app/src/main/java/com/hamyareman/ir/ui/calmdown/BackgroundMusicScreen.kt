@@ -6,7 +6,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,12 +16,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.hamyareman.ir.platform.core.designsystem.AppTopBar
-import com.hamyareman.ir.ui.study.SecureWebEffect
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 
 private class MusicSheetBridge(private val onExpanded: (Boolean) -> Unit) {
@@ -40,16 +41,25 @@ private class MusicSheetBridge(private val onExpanded: (Boolean) -> Unit) {
 fun BackgroundMusicHost(
     modifier: Modifier = Modifier,
     startExpanded: Boolean = false,
+    onExpandedChanged: (Boolean) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(startExpanded) }
+    val appearance = LocalUiPrefs.current
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val webRef = remember { arrayOfNulls<WebView>(1) }
+    fun setExpanded(value: Boolean) {
+        expanded = value
+        onExpandedChanged(value)
+    }
     DisposableEffect(Unit) {
         onDispose { webRef[0]?.stopManagedMedia() }
     }
     val hostModifier = modifier.then(
         when {
-            expanded && startExpanded -> Modifier.fillMaxSize()
-            expanded -> Modifier.fillMaxWidth().height(620.dp)
+            // در «بشنو و بخواب» این ارتفاع تا پایین viewport می‌رود و والد
+            // محتوای زیرین را هنگام باز بودن پنهان می‌کند؛ sheet دیگر بریده یا
+            // پشت صفحهٔ میزبان نمی‌ماند.
+            expanded -> Modifier.fillMaxWidth().height((screenHeight - 56.dp).coerceAtLeast(420.dp))
             else -> Modifier.fillMaxWidth().height(92.dp)
         },
     )
@@ -57,17 +67,19 @@ fun BackgroundMusicHost(
         AndroidView(
             factory = { context ->
                 WebView(context).apply {
+                    installHamyarAppearanceBridge(appearance)
                     setBackgroundColor(Color.TRANSPARENT)
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.mediaPlaybackRequiresUserGesture = false
                     settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                     addJavascriptInterface(
-                        MusicSheetBridge { value -> post { expanded = value } },
+                        MusicSheetBridge { value -> post { setExpanded(value) } },
                         "HamyarMusicHost",
                     )
                     webViewClient = object : android.webkit.WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
+                            view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                             view.bindManagedMediaLifecycle()
                             view.evaluateJavascript(
                                 """
@@ -89,6 +101,7 @@ fun BackgroundMusicHost(
                     loadUrl("file:///android_asset/content/background-music.html#embedded")
                 }
             },
+            update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
             modifier = Modifier.fillMaxSize(),
             onRelease = {
                 it.stopManagedMedia()
@@ -99,11 +112,9 @@ fun BackgroundMusicHost(
     }
 }
 
+/**
+ * صفحهٔ «فضای آرام من» حالا همان نجواهای آرام‌بخش است: فایل کامل از باکت و
+ * تایمر خواب بومی. کادر جمع‌شوندهٔ قبلی از اینجا و از یوگا/حرکات ورزشی برداشته شد.
+ */
 @Composable
-fun BackgroundMusicScreen(onBack: () -> Unit) {
-    SecureWebEffect()
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar("فضای آرام من", onBack)
-        BackgroundMusicHost(Modifier.weight(1f), startExpanded = true)
-    }
-}
+fun BackgroundMusicScreen(onBack: () -> Unit) = CalmWhispersScreen(onBack)

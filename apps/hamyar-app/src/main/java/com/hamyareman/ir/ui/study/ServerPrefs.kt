@@ -30,10 +30,11 @@ object ServerPrefs {
         }
     }
 
+    /** نصب تازه به‌صورت پیش‌فرض از سرور ایران می‌خواند؛ انتخابِ ذخیره‌شدهٔ کاربر حفظ می‌شود. */
     var mode: Mode
         get() = runCatching {
-            Mode.valueOf(prefs?.getString(KEY_MODE, Mode.FASTEST.name) ?: Mode.FASTEST.name)
-        }.getOrDefault(Mode.FASTEST)
+            Mode.valueOf(prefs?.getString(KEY_MODE, Mode.INTERNAL.name) ?: Mode.INTERNAL.name)
+        }.getOrDefault(Mode.INTERNAL)
         set(value) { prefs?.edit()?.putString(KEY_MODE, value.name)?.apply() }
 
     var fastestOrigin: Origin?

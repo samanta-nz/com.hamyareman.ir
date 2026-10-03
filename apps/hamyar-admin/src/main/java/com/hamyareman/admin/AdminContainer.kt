@@ -11,7 +11,7 @@ import com.hamyareman.ir.platform.core.common.UserRole
 
 class AdminContainer(context: Context) {
     val store = LocalStore(context.applicationContext, "hamyar_admin")
-    val prefs = AdminPrefs(store)
+    val prefs = AdminPrefs(context.applicationContext, store)
 
     val appwrite = AppwriteClientProvider(
         context = context,
@@ -22,6 +22,7 @@ class AdminContainer(context: Context) {
     val functions = AppwriteFunctionsService(appwrite)
     val storage = AppwriteStorageService(appwrite)
     val billing = BillingGateway(functions)
+    val parsPack = ParsPackStorage(prefs)
     val api = AdminApi(
         endpoint = prefs.endpoint,
         projectId = prefs.projectId,

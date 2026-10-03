@@ -1,0 +1,255 @@
+name: Release grade 9 v2.4.4 (forced)
+
+# ساخت و انتشار نسخهٔ ۲٫۴٫۴ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
+#
+# ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
+# ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. بنابراین حتی
+# در این انتشار نیز هیچ اعلانِ دارای لینک خراب منتشر نمی‌شود.
+#
+# راه‌اندازی: کامیتی روی همین برنچ که پیامش با «Release grade 9 v2.4.4» شروع شود.
+
+on:
+  push:
+    branches: [arena/01a0fe97-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arena-release-grade9-v2.4.4
+  cancel-in-progress: false
+
+env:
+  VERSION_NAME: '2.4.4'
+  VERSION_CODE: '244'
+  MIN_CODE: '244'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
+  ROLLOUT: '100'
+  GRADE_ID: grade9
+  PACKAGE: com.hamyareman.p09
+  ROW_ID: app_release_grade9
+  ASSET: hamyar-grade9-2.4.4-debug.apk
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade 9 v2.4.4')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: ۰) بررسی کلیدها پیش از هر کاری
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in APPWRITE_API_KEY PARSPACK_ACCESS_KEY PARSPACK_SECRET_KEY; do
+            [ -n "${!name:-}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::این secretها تنظیم نشده‌اند:$missing"
+            exit 1
+          fi
+          if [ -n "${RELEASES_TOKEN:-}" ] && [ -n "${RELEASES_REPO:-}" ]; then
+            echo "PUBLIC_REPO=$RELEASES_REPO" >> "$GITHUB_ENV"
+          else
+            echo "::warning::RELEASES_TOKEN/RELEASES_REPO نیست — externalUrl از همین مخزنِ عمومی برداشته می‌شود."
+          fi
+
+      - name: ۱) تست و ساخت APK نهم ۲٫۴٫۴
+        run: |
+          set -euo pipefail
+          ./gradlew --console=plain --stacktrace \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:assembleP09Debug \
+            -PhamyarVersionCode="$VERSION_CODE" -PhamyarVersionName="$VERSION_NAME"
+          mkdir -p dist
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          cp -f "${files[0]}" "dist/$ASSET"
+          ls -l "dist/$ASSET"
+
+      - name: ۲) اعتبارسنجی هویت و امضای APK
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          BADGING="$($AAPT dump badging "dist/$ASSET" | head -1)"
+          echo "$BADGING"
+          grep -F "name='$PACKAGE'"            <<<"$BADGING"
+          grep -F "versionCode='$VERSION_CODE'" <<<"$BADGING"
+          grep -F "versionName='$VERSION_NAME'" <<<"$BADGING"
+          SIGNER="$($APKSIGNER verify --print-certs "dist/$ASSET" \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED=$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')
+          test "$SIGNER" = "$EXPECTED" || { echo "::error::کلید امضا عوض شده است"; exit 1; }
+          {
+            echo "SIGNER_SHA256=$SIGNER"
+            echo "APK_SIZE=$(stat -c%s "dist/$ASSET")"
+            echo "APK_SHA256=$(sha256sum "dist/$ASSET" | cut -d' ' -f1)"
+          } >> "$GITHUB_ENV"
+
+      - name: ۲٫۵) انتشار امن سه قاب HTML موسیقی روی سرور داخلی
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID || '6abb238d000d05730d10' }}
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          pip install --quiet boto3 requests cryptography
+          mkdir -p /tmp/music-html ci-report
+          cp Bucket/Html-files/background-music.html /tmp/music-html/
+          cp Bucket/Html-files/background-music-full.html /tmp/music-html/
+          cp Bucket/Html-files/background-music-tile.html /tmp/music-html/
+          python3 scripts/upload_encoded_to_parspack.py \
+            --source /tmp/music-html \
+            --prefix Bucket/Html-files \
+            --report ci-report/release-2.4.4-html.md
+
+      - name: ۳) بایگانی در Release «ci-apk» همین مخزن
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # آپلود به ریلیز گاهی با خطای گذرای شبکه می‌افتد؛ اینجا به‌جای اعتماد به
+          # خروجیِ فرمان، «اندازهٔ واقعی فایلِ نشسته روی ریلیز» را ملاک موفقیت می‌گیریم.
+          set +e
+          mkdir -p ci-report
+          LOG=ci-report/release-2.4.4.log
+          WANT=$(stat -c%s "dist/$ASSET")
+          echo "== مرحلهٔ ۳: بایگانی $ASSET ($WANT بایت)" >> "$LOG"
+
+          gh release view ci-apk >/dev/null 2>&1 || \
+            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم." >> "$LOG" 2>&1
+
+          got() {
+            gh api "/repos/${GITHUB_REPOSITORY}/releases/tags/ci-apk" \
+              -q ".assets[]|select(.name==\"$ASSET\")|.size" 2>/dev/null | head -1
+          }
+
+          for i in 1 2 3; do
+            echo "-- تلاش $i" >> "$LOG"
+            gh release delete-asset ci-apk "$ASSET" -y  >> "$LOG" 2>&1
+            gh release upload ci-apk "dist/$ASSET" --clobber >> "$LOG" 2>&1
+            HAVE=$(got)
+            echo "   اندازهٔ روی ریلیز: ${HAVE:-هیچ}" >> "$LOG"
+            [ "${HAVE:-0}" = "$WANT" ] && break
+            sleep 20
+          done
+
+          HAVE=$(got)
+          if [ "${HAVE:-0}" != "$WANT" ]; then
+            echo "✗ آپلود ریلیز ناموفق (${HAVE:-هیچ} ≠ $WANT)" >> "$LOG"
+            exit 1
+          fi
+          echo "✓ آپلود ریلیز تأیید شد" >> "$LOG"
+          echo "FALLBACK_URL=https://github.com/${GITHUB_REPOSITORY}/releases/download/ci-apk/$ASSET" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: ۴) انتشار در مخزن عمومی (externalUrl)
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PUBLIC_REPO:-}" ]; then
+            echo "EXTERNAL_URL=$FALLBACK_URL" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          TAG="grade9-v$VERSION_NAME"
+          gh release view "$TAG" --repo "$PUBLIC_REPO" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$PUBLIC_REPO" \
+              --title "همیار من نهم $VERSION_NAME" \
+              --notes "versionCode $VERSION_CODE — آپدیت اجباری"
+          gh release upload "$TAG" "dist/$ASSET" --repo "$PUBLIC_REPO" --clobber
+          echo "EXTERNAL_URL=https://github.com/$PUBLIC_REPO/releases/download/$TAG/$ASSET" >> "$GITHUB_ENV"
+
+      - name: ۵) آپلود روی سرور داخلی (internalUrl)
+        shell: bash
+        env:
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          pip install --quiet boto3 requests
+          python3 scripts/put_public_object.py \
+            --file "dist/$ASSET" \
+            --key "apk/$GRADE_ID/$ASSET" \
+            --provider parspack \
+            --content-type application/vnd.android.package-archive \
+            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.4.4.log
+
+      - name: ۶) اعلام نسخه و اعلام آپدیت اجباری
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-report
+          python3 scripts/publish_grade9_update.py \
+            --apk "dist/$ASSET" \
+            --version-code "$VERSION_CODE" \
+            --version-name "$VERSION_NAME" \
+            --min-code "$MIN_CODE" \
+            --rollout "$ROLLOUT" \
+            --external-url "$EXTERNAL_URL" \
+            --internal-url "$INTERNAL_URL" \
+            --signer-sha256 "$SIGNER_SHA256" \
+            --row-id "$ROW_ID" \
+            --package "$PACKAGE" \
+            --grade-id "$GRADE_ID" \
+            --notes "صدای بشنو و بخواب با قفل شدن صفحه دیگر قطع نمی‌شود|بسته شدن درست پنجرهٔ تمام‌صفحهٔ موسیقی در یوگا و ورزش و بازگشت دکمهٔ برگشت|دکمه‌های پلی و بستن صفحهٔ خواب روی صدای واقعی اثر می‌گذارند" \
+            --out ci-report/release-2.4.4.json 2>&1 | tee -a ci-report/release-2.4.4.log
+
+      - name: ۷) ثبت نتیجه روی برنچ
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          mkdir -p ci-report
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/release-2.4.4.json ci-report/release-2.4.4.log
+          if ! git diff --cached --quiet; then
+            git commit -m "نتیجهٔ انتشار نهم ۲٫۴٫۴"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          for f in ci-report/release-2.4.4.json ci-report/release-2.4.4.log; do
+            if [ -f "$f" ]; then
+              { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          exit 0
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hamyar-grade9-2.4.4-debug
+          path: dist/*.apk
+          if-no-files-found: warn
+          retention-days: 14

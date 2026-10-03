@@ -33,7 +33,6 @@ import com.hamyareman.ir.ui.wellness.WellnessMoveRepository
 import com.hamyareman.ir.ui.wellness.WellnessTimingProvider
 import com.hamyareman.ir.BuildConfig
 import com.hamyareman.ir.ui.auth.DeviceIdentity
-import com.hamyareman.ir.ui.chatbot.AiCompanion
 import com.hamyareman.ir.ui.content.CatalogRepository
 import com.hamyareman.ir.ui.profile.AppEdition
 
@@ -192,17 +191,6 @@ class AppContainer(context: Context) {
 
     /** کلید در Android Keystore است؛ هیچ بایتی از آن روی دیسک نمی‌ماند. */
     val encryptor = Encryptor()
-
-    /**
-     * لایه‌ی AI «همراه زهرا».
-     *
-     * کلید مدل **در اپ نیست**: فقط تابع سرور `ai-companion` آن را دارد.
-     * اگر بک‌اند تنظیم نشده باشد یا AI خاموش باشد، گفت‌وگو با قواعد محلی ادامه پیدا می‌کند
-     * و پیام‌های بحران هیچ‌وقت به سرور نمی‌روند.
-     * حافظه‌ی گفت‌وگو هم مثل ژورنال با همین [encryptor] رمز می‌شود (بعد از آن تعریف شده
-     * چون ترتیب مقداردهی اولیه در کلاس مهم است).
-     */
-    val ai = AiCompanion(functions, store, encryptor, serverActions)
 
     /**
      * پرامپت ۰۴: بسته‌های مطالعه از assets (پایلوت: C905_E01-L01).

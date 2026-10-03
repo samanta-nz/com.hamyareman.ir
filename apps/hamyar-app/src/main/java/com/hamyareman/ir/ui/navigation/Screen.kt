@@ -17,7 +17,8 @@ sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object Study : Screen("study")
     data object StudyHome : Screen("study-home")
-    data object Chat : Screen("chat")
+    /** جایگزین تب بازنشسته‌شدهٔ «همراه من»: فایل placeholder مشترک. */
+    data object Placeholder : Screen("placeholder")
     data object More : Screen("more")
     data object About : Screen("about")
     data object Contact : Screen("contact")
@@ -129,7 +130,6 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object UserProfile : Screen("user-profile")
     data object Privacy : Screen("privacy")
-    data object ChatSettings : Screen("chatsettings")
     data object Badges : Screen("badges")
     data object Lock : Screen("lock")
     data object Reminders : Screen("reminders")
@@ -142,6 +142,13 @@ sealed class Screen(val route: String) {
     }
     data object ContentHtml : Screen("content-html/{id}") {
         fun of(id: String) = "content-html/${Uri.encode(id)}"
+    }
+
+    /** یک گرهٔ منوی کتاب: اگر فایلش آماده باشد PDF، وگرنه «در دست تولید». */
+    data object BookNode : Screen("book-node/{key}/{title}?audio={audio}") {
+        fun of(key: String, title: String, audio: String = "") =
+            "book-node/${Uri.encode(key)}/${Uri.encode(title.ifBlank { "درس" })}" +
+                "?audio=${Uri.encode(audio)}"
     }
     /** پرامپت ۰۲: ماژول سلامتی (یوگا/ورزش/تنفس/یادگیری). `cat` اختیاری: yoga/exercise/breathing/learning. */
     data object Wellness : Screen("wellness?cat={cat}") {
@@ -179,6 +186,6 @@ val Tabs = listOf(
     Tab(Screen.Study.route, Icons.Filled.School, "مدرسه"),
     Tab(Screen.Academy.route, Icons.Filled.LocalLibrary, "آموزشگاه"),
     Tab(Screen.HealthHub.route, Icons.Filled.FitnessCenter, "سلامتی"),
-    Tab(Screen.Chat.route, Icons.Filled.SmartToy, "همراه من"),
+    Tab(Screen.Placeholder.route, Icons.Filled.SmartToy, "به‌زودی"),
     Tab(Screen.More.route, Icons.Filled.MoreHoriz, "بیشتر"))
 val TopRoutes = Tabs.map { it.route }.toSet()

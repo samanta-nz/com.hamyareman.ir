@@ -12,10 +12,7 @@ import org.junit.Test
  * معیارهای پذیرش پرامپت ۰۲:
  *  - ۱۵ یوگا، ۱۵ ورزش، ۸ تنفس، ۵ یادگیری = ۴۳ حرکت
  *  - هر حرکت slug یکتا دارد
- *  - audioCueId برای هر حرکت غیرخالی است
  *  - durationSec > 0
- *  - یوگا audioCueId فرمت ۳-فایلی (start|mid|end) دارد
- *  - سایر دسته‌ها audioCueId تک فایل دارند
  */
 class WellnessCatalogTest {
 
@@ -51,12 +48,6 @@ class WellnessCatalogTest {
     }
 
     @Test
-    fun `every move has non-blank audioCueId`() {
-        val empty = WellnessCatalog.all.filter { it.audioCueId.isBlank() }
-        assertTrue("moves with blank audioCueId: $empty", empty.isEmpty())
-    }
-
-    @Test
     fun `every move has positive durationSec`() {
         val invalid = WellnessCatalog.all.filter { it.durationSec <= 0 }
         assertTrue("moves with non-positive durationSec: $invalid", invalid.isEmpty())
@@ -66,55 +57,6 @@ class WellnessCatalogTest {
     fun `every move has level between 1 and 10`() {
         val invalid = WellnessCatalog.all.filter { it.level !in 1..10 }
         assertTrue("moves with invalid level: $invalid", invalid.isEmpty())
-    }
-
-    @Test
-    fun `yoga moves use 3-file audioCueId format`() {
-        // هر یوگا باید audioCueId با | جدا شده داشته باشد و ۳ فایل داشته باشد
-        WellnessCatalog.yoga.forEach { move ->
-            val ids = move.audioCueId.split("|").map { it.trim() }
-            assertEquals(
-                "yoga ${move.slug} باید ۳ فایل صوتی داشته باشد، ولی ${ids.size} تا دارد",
-                3, ids.size,
-            )
-            assertTrue("فایل صوتی یوگا ${move.slug} باید شامل -start باشد", ids[0].endsWith("-start.mp3"))
-            assertTrue("فایل صوتی یوگا ${move.slug} باید شامل -mid باشد", ids[1].endsWith("-mid.mp3"))
-            assertTrue("فایل صوتی یوگا ${move.slug} باید شامل -end باشد", ids[2].endsWith("-end.mp3"))
-        }
-    }
-
-    @Test
-    fun `exercise moves use single-file audioCueId`() {
-        WellnessCatalog.exercise.forEach { move ->
-            assertTrue(
-                "exercise ${move.slug} نباید | داشته باشد، ولی audioCueId=${move.audioCueId}",
-                !move.audioCueId.contains("|"),
-            )
-            assertTrue(
-                "exercise ${move.slug} باید .mp3 داشته باشد",
-                move.audioCueId.endsWith(".mp3"),
-            )
-        }
-    }
-
-    @Test
-    fun `breathing moves use single-file audioCueId`() {
-        WellnessCatalog.breathing.forEach { move ->
-            assertTrue(
-                "breathing ${move.slug} نباید | داشته باشد",
-                !move.audioCueId.contains("|"),
-            )
-        }
-    }
-
-    @Test
-    fun `learning moves use single-file audioCueId`() {
-        WellnessCatalog.learning.forEach { move ->
-            assertTrue(
-                "learning ${move.slug} نباید | داشته باشد",
-                !move.audioCueId.contains("|"),
-            )
-        }
     }
 
     @Test
@@ -138,46 +80,40 @@ class WellnessCatalogTest {
         assertEquals(8, breathing.size)
     }
 
-    @Test
-    fun `referenceImageUrl keeps lesson media separate from menu covers`() {
-        // پوسترهای yga/spo فقط برای کاشی منو هستند؛ نمایشگر حرکت باید همان رسانهٔ
-        // آموزشی wellness-media را بخواند و هیچ‌وقت asset منو را داخل محتوا تزریق نکند.
-        WellnessCatalog.all.forEach { move ->
-            assertTrue(
-                "move ${move.slug} باید به wellness-media اشاره کند، ولی url=${move.referenceImageUrl}",
-                move.referenceImageUrl.contains("wellness-media"),
-            )
-            assertTrue(
-                "move ${move.slug} نباید از practice-covers در محتوای تمرین استفاده کند",
-                !move.referenceImageUrl.contains("practice-covers"),
-            )
-        }
-    }
+    // کاتالوگ دیگر audioCueId ندارد، پس این سه تست قرارداد خودِ helper را روی
+    // یک نمونهٔ ساختگی می‌سنجند تا اگر روزی مقدار از جدول Appwrite آمد، کار کند.
 
     @Test
     fun `audioCueIds helper splits pipe-separated values`() {
-        val balasana = WellnessCatalog.bySlug("yoga-balasana")!!
-        val ids = balasana.audioCueIds
+        val move = WellnessCatalog.bySlug("yoga-balasana")!!
+            .copy(audioCueId = "a-start.mp3|a-mid.mp3|a-end.mp3")
+        val ids = move.audioCueIds
         assertEquals(3, ids.size)
-        assertEquals("cue-yoga-balasana-start.mp3", ids[0])
-        assertEquals("cue-yoga-balasana-mid.mp3", ids[1])
-        assertEquals("cue-yoga-balasana-end.mp3", ids[2])
+        assertEquals("a-start.mp3", ids[0])
+        assertEquals("a-mid.mp3", ids[1])
+        assertEquals("a-end.mp3", ids[2])
     }
 
     @Test
     fun `audioCueIds helper returns single element for non-pipe value`() {
-        val squat = WellnessCatalog.bySlug("ex-squat")!!
-        val ids = squat.audioCueIds
+        val move = WellnessCatalog.bySlug("ex-squat")!!.copy(audioCueId = "solo.mp3")
+        val ids = move.audioCueIds
         assertEquals(1, ids.size)
-        assertEquals("cue-ex-squat.mp3", ids[0])
+        assertEquals("solo.mp3", ids[0])
     }
 
     @Test
     fun `startCueId, midCueId, endCueId return correct files`() {
-        val balasana = WellnessCatalog.bySlug("yoga-balasana")!!
-        assertEquals("cue-yoga-balasana-start.mp3", balasana.startCueId)
-        assertEquals("cue-yoga-balasana-mid.mp3", balasana.midCueId)
-        assertEquals("cue-yoga-balasana-end.mp3", balasana.endCueId)
+        val move = WellnessCatalog.bySlug("yoga-balasana")!!
+            .copy(audioCueId = "a-start.mp3|a-mid.mp3|a-end.mp3")
+        assertEquals("a-start.mp3", move.startCueId)
+        assertEquals("a-mid.mp3", move.midCueId)
+        assertEquals("a-end.mp3", move.endCueId)
+    }
+
+    @Test
+    fun `audioCueIds helper returns empty list for blank value`() {
+        assertTrue(WellnessCatalog.bySlug("yoga-balasana")!!.audioCueIds.isEmpty())
     }
 
     @Test
@@ -202,5 +138,21 @@ class WellnessCatalogTest {
         )
         val actual = WellnessCatalog.yoga.map { it.slug }.toSet()
         assertEquals(required, actual)
+    }
+
+    @Test
+    fun `catalog carries no dead media addresses`() {
+        // تصاویر و صوت‌های باکت wellness-media هرگز ساخته نشدند؛ آدرسشان حذف شد.
+        // این تست جلوی برگشتن اتفاقی آن ارجاع‌های مرده را می‌گیرد.
+        WellnessCatalog.all.forEach { move ->
+            assertTrue(
+                "move ${move.slug} نباید referenceImageUrl داشته باشد",
+                move.referenceImageUrl.isBlank(),
+            )
+            assertTrue(
+                "move ${move.slug} نباید audioCueId داشته باشد",
+                move.audioCueId.isBlank(),
+            )
+        }
     }
 }

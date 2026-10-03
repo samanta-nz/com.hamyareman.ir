@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.feature.study.BookModuleRegistry
@@ -135,7 +136,9 @@ fun MathLessonScreen(
     }
     if (tab > tabs.lastIndex) tab = 0
     val chromeStore = remember { com.hamyareman.ir.platform.core.common.LocalStore(ctx, "hamyar_math_ui") }
-    var autoHide by rememberSaveable(packId) { mutableStateOf(chromeStore.getBool("autohide_$packId", true)) }
+    // محتوای درس و رسانه تمام‌صفحه‌اند؛ player نباید با یک تنظیم مانده از نسخهٔ
+    // قبلی ناپدید شود. کاربر هنوز در همان نشست می‌تواند جمع‌شدن را انتخاب کند.
+    var autoHide by rememberSaveable(packId) { mutableStateOf(false) }
     var chromeHidden by remember { mutableStateOf(false) }
     var hideGen by remember { mutableIntStateOf(0) }
 
@@ -153,7 +156,6 @@ fun MathLessonScreen(
     // پلیرِ صوت + سربرگ‌ها را دارند (حتی اگر صوتشان هنوز روی سرور نباشد).
     if (pack.pdfOnly || pack.lessonId == "TOC" || pack.packId == "C905_TOC") {
         Column(Modifier.fillMaxSize()) {
-            AppTopBar(title = pack.title, onBack = onBack)
             TeachPdfPages(modifier = Modifier.weight(1f), fileId = pack.pdfFileName, pack = pack)
         }
         return
@@ -162,7 +164,7 @@ fun MathLessonScreen(
     Column(Modifier.fillMaxSize()) {
         val tracksForBar = teachTracksOf(pack)
         if (!chromeHidden) {
-            AppTopBar(title = pack.title, onBack = onBack)
+            // در حالت تمام‌صفحه عنوان/فلش برگشت نداریم؛ فقط کنترل خود محتواست.
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = autoHide,
@@ -392,6 +394,7 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
     val tracks = teachTracksOf(pack)
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val container = LocalAppContainer.current
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     ManagedWebMediaEffect { webRef[0] }
     var remoteHtml by remember(pack.packId) { mutableStateOf<String?>(null) }
@@ -438,9 +441,11 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
             } else if (teachHtml.isNotBlank()) {
                 AndroidView(
                     factory = { c ->
-                        WebView(c).apply {
+                        ZoomResetWebView(c).apply {
+                            installHamyarAppearanceBridge(appearance)
                             webViewClient = object : WebViewClient() {
                                 override fun onPageFinished(view: WebView, url: String) {
+                                    view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                                     view.bindManagedMediaLifecycle()
                                 }
                             }
@@ -463,6 +468,7 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
                         }
                     },
                     update = { wv ->
+                        wv.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                         val tag = teachHtml.hashCode()
                         if (wv.tag != tag) {
                             wv.tag = tag
@@ -670,6 +676,7 @@ private fun MathFlashTab(pack: StudyPack) {
 
 @Composable
 private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoomChanged: (Boolean) -> Unit = {}) {
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     ManagedWebMediaEffect { webRef[0] }
     val summary = pack.summary.ifBlank {
@@ -690,9 +697,11 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
     Column(Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
-                WebView(ctx).apply {
+                ZoomResetWebView(ctx).apply {
+                    installHamyarAppearanceBridge(appearance)
                     webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
+                            view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                             view.bindManagedMediaLifecycle()
                         }
                     }
@@ -714,6 +723,7 @@ private fun MathSummaryTab(pack: StudyPack, isSum: Boolean, chapter: Int, onZoom
                 }
             },
             update = { wv ->
+                wv.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                 val tag = html.hashCode()
                 if (wv.tag != tag) {
                     wv.tag = tag

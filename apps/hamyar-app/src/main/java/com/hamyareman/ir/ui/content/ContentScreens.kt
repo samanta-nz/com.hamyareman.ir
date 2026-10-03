@@ -3,6 +3,7 @@ package com.hamyareman.ir.ui.content
 import android.annotation.SuppressLint
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,17 +27,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
-import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.hub.HubCoverGrid
 import com.hamyareman.ir.ui.hub.HubCoverTile
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.study.SecureWebEffect
 import com.hamyareman.ir.ui.study.ManagedWebMediaEffect
+import com.hamyareman.ir.ui.study.MusicEmbedPalette
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.closeMusicFrameOverlay
+import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installMusicOverlayHost
+import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -122,47 +127,66 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
+    val appearance = LocalUiPrefs.current
     val webRef = remember { arrayOfNulls<WebView>(1) }
     SecureWebEffect()
     ManagedWebMediaEffect { webRef[0] }
+    // popup تمام‌صفحهٔ پلیر موسیقی داخل iframe (یوگا/ورزش) باز است؟ در این حالت Back
+    // فقط همان popup را می‌بندد؛ قبلاً کل درس را می‌بست.
+    var musicOverlayOpen by remember { mutableStateOf(false) }
+    BackHandler(enabled = musicOverlayOpen) { webRef[0]?.closeMusicFrameOverlay() }
     var activeId by remember(itemId) { mutableStateOf(itemId) }
-    var html by remember(activeId) { mutableStateOf<String?>(null) }
+    var pageUrl by remember(activeId) { mutableStateOf<String?>(null) }
     var error by remember(activeId) { mutableStateOf<String?>(null) }
     var progress by remember(activeId) { mutableStateOf(0) }
     var retry by remember(activeId) { mutableStateOf(0) }
+    // برای موسیقی، cache قدیمی و دریافت شبکه دو مسیر دیداری متفاوت دارند.
+    // این state قبل از ensure ثبت می‌شود تا cache شدن همان navigationِ تازه،
+    // به اشتباه «بارگذاری از cache» تلقی نشود.
+    var pageWasCached by remember(activeId) { mutableStateOf(false) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
+    // پالت دوم فقط برای iframeهای موسیقیِ فایل‌های «حرکات ورزشی» است.
+    // یوگا و همهٔ دسته‌های دیگر همان سبز استاندارد پلیر را نگه می‌دارند.
+    val musicPalette = if (item?.cat == "sport") {
+        MusicEmbedPalette.SPORT
+    } else {
+        MusicEmbedPalette.DEFAULT
+    }
 
     LaunchedEffect(activeId, retry) {
         val current = item
-        html = null
+        pageUrl = null
         error = null
         progress = 0
+        pageWasCached = false
         if (current == null) {
             error = "این فایل در کاتالوگ نیست."
             return@LaunchedEffect
         }
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
-        val loaded = withContext(Dispatchers.IO) {
+        val url = com.hamyareman.ir.ui.study.ServerResolver.internal(current.key)
+        // بایت‌های رمزشده را از قبل می‌گیریم تا نوار پیشرفت معنا داشته باشد؛
+        // رمزگشایی بعداً و فقط لحظهٔ تحویل به WebView انجام می‌شود.
+        val ready = withContext(Dispatchers.IO) {
             val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-            if (!keyReady) {
-                Result.failure(IllegalStateException("کد بازگشایی محتوا دریافت نشد؛ دوباره وارد حساب شو."))
-            } else {
-                com.hamyareman.ir.ui.study.RemoteHtmlCache.load(ctx, current.aw, current.key) { done, total, _ ->
-                    if (total > 0) {
-                        val p = ((done * 100L) / total).toInt().coerceIn(0, 100)
-                        handler.post {
-                            progress = p
-                        }
-                    }
+            if (!keyReady) return@withContext "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو." to false
+            val alreadyCached = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
+            if (alreadyCached) return@withContext null to true
+            val file = com.hamyareman.ir.ui.study.LessonCache.ensure(ctx, url) { done, total ->
+                if (total > 0) {
+                    val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                    handler.post { progress = p }
                 }
             }
+            (if (file == null) "برای بار اول باز کردن این درس به اینترنت نیاز است." else null) to false
         }
-        loaded.onSuccess {
-            html = it.html
+        pageWasCached = ready.second
+        if (ready.first != null) {
+            error = ready.first
+        } else {
             progress = 100
-        }.onFailure {
-            error = it.message?.take(220) ?: "دریافت فایل از سرور انتخاب‌شده ممکن نشد."
+            pageUrl = url
         }
     }
 
@@ -172,7 +196,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         if (item != null) {
             AndroidView(
                 factory = { c ->
-                    WebView(c).apply {
+                    com.hamyareman.ir.ui.study.ZoomResetWebView(c).apply {
+                        installHamyarAppearanceBridge(appearance)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.setSupportZoom(true)
@@ -181,57 +206,59 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                         settings.useWideViewPort = true
                         settings.loadWithOverviewMode = true
-                        webViewClient = object : android.webkit.WebViewClient() {
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView,
-                                request: android.webkit.WebResourceRequest,
-                            ): Boolean {
-                                val target = ContentCatalog.itemIdForRelativeFile(
-                                    request.url.lastPathSegment.orEmpty(),
-                                ) ?: return false
-                                activeId = target
-                                return true
-                            }
-
+                        // صفحه روی origin واقعی باکت باز می‌شود تا لینک نسبی «قبلی/بعدی»،
+                        // iframe موسیقی و localStorage کار کنند. میانجی، بایت HMK1 را
+                        // لحظهٔ تحویل رمزگشایی می‌کند و متن‌ساده روی دیسک نمی‌نشیند.
+                        settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                        settings.mediaPlaybackRequiresUserGesture = false
+                        webViewClient = object : com.hamyareman.ir.ui.study.HmkWebViewClient(
+                            c.applicationContext,
+                            com.hamyareman.ir.ui.study.HmkWebViewClient.bucketHost(),
+                        ) {
                             override fun onPageFinished(view: WebView, url: String) {
+                                musicOverlayOpen = false
+                                super.onPageFinished(view, url)
+                                view.publishHamyarAppearance(
+                                    appearance.darkMode,
+                                    appearance.darkTheme,
+                                    musicPalette = musicPalette,
+                                    cacheHit = pageWasCached,
+                                )
                                 view.bindManagedMediaLifecycle()
-                                // در یوگا/ورزش، میزبان ثابت Android همان mini-player را نگه می‌دارد.
-                                // فقط نمونهٔ تکراریِ DOM پنهان می‌شود؛ رشتهٔ HTML دریافتی تغییر نمی‌کند.
-                                if (item?.cat == "yoga" || item?.cat == "sport") {
-                                    view.evaluateJavascript(
-                                        """document.querySelectorAll('iframe[src*="background-music"],[data-background-music],#background-music,#backgroundMusic').forEach(function(e){e.style.display="none"});""",
-                                        null,
-                                    )
-                                }
+                                // درس بعدی که کاربر با لینک نسبی به آن رفته را در وضعیت اپ
+                                // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()
+                                // صفحه‌ای را که همین الان بار شده دوباره لود نکند.
+                                view.tag = url.substringBefore('#')
+                                ContentCatalog.itemIdForRelativeFile(
+                                    url.substringBefore('#').substringBefore('?').substringAfterLast('/'),
+                                )?.let { if (it != activeId) activeId = it }
                             }
                         }
                         installManagedMediaLifecycle()
+                        installMusicOverlayHost { musicOverlayOpen = it }
                         webRef[0] = this
                     }
                 },
                 update = { view ->
-                    val payload = html
-                    if (payload != null && view.tag != activeId) {
-                        view.tag = activeId
-                        view.loadDataWithBaseURL(
-                            "https://local.hamyar/", payload, "text/html", "utf-8", null,
-                        )
+                    view.publishHamyarAppearance(
+                        appearance.darkMode,
+                        appearance.darkTheme,
+                        musicPalette = musicPalette,
+                        cacheHit = pageWasCached,
+                    )
+                    val target = pageUrl
+                    if (target != null && view.tag != target) {
+                        view.tag = target
+                        view.loadUrl(target)
                     }
                 },
-                modifier = Modifier.fillMaxSize().then(
-                    if (item.cat == "yoga" || item.cat == "sport") Modifier.padding(top = 92.dp) else Modifier,
-                ),
+                modifier = Modifier.fillMaxSize(),
                 onRelease = {
                     it.stopManagedMedia()
                     if (webRef[0] === it) webRef[0] = null
                     it.destroy()
                 },
             )
-            if (item.cat == "yoga" || item.cat == "sport") {
-                BackgroundMusicHost(
-                    modifier = Modifier.align(Alignment.TopCenter).zIndex(4f),
-                )
-            }
         }
         when {
             error != null -> Column(
@@ -242,7 +269,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                 Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
                 androidx.compose.material3.TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
             }
-            html == null -> Box(
+            pageUrl == null -> Box(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             ) {
                 com.hamyareman.ir.ui.study.HtmlPercentLoader(progress)

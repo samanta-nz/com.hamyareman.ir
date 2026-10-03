@@ -1,0 +1,49 @@
+== مرحلهٔ ۳: بایگانی hamyar-grade9-2.4.3-debug.apk (72110272 بایت)
+-- تلاش 1
+asset hamyar-grade9-2.4.3-debug.apk not found in release ci-apk
+   اندازهٔ روی ریلیز: 72110272
+✓ آپلود ریلیز تأیید شد
+آپلود شد: apk/grade9/hamyar-grade9-2.4.3-debug.apk (68.8 MB)
+خواندن ناشناس: HTTP 206 — https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.4.3-debug.apk
+https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.4.3-debug.apk
+{
+  "rowId": "app_release_grade9",
+  "versionCode": 243,
+  "versionName": "2.4.3",
+  "min": 243,
+  "forced": true,
+  "size": 72110272,
+  "sha256": "8aecc77fb52b02f6b414fad6fd56a93761bbf00b8262b4c18e41a8756494f921",
+  "externalUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.4.3-debug.apk",
+  "internalUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.4.3-debug.apk",
+  "checks": {
+    "external": "HTTP 206",
+    "internal": "HTTP 206"
+  },
+  "previous": {
+    "latest": 242,
+    "name": "2.4.2",
+    "min": 242
+  },
+  "payload": {
+    "latest": 243,
+    "name": "2.4.3",
+    "min": 243,
+    "url": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.4.3-debug.apk",
+    "externalUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/ci-apk/hamyar-grade9-2.4.3-debug.apk",
+    "internalUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-2.4.3-debug.apk",
+    "size": 72110272,
+    "sha256": "8aecc77fb52b02f6b414fad6fd56a93761bbf00b8262b4c18e41a8756494f921",
+    "chan": "stable",
+    "rollout": 100,
+    "notes": [
+      "موسیقی مستقیم از نشانی ثابت سرور داخلی، بدون عبور از انتخاب‌گر سرور",
+      "باز شدن کامل قاب تمام‌صفحه روی مرورگرهای داخلی قدیمی‌تر",
+      "نمایش کاملِ هر سه شمارهٔ نسخه و شمارهٔ ساخت در کارت آپدیت"
+    ],
+    "packageName": "com.hamyareman.p09",
+    "gradeId": "grade9",
+    "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959"
+  },
+  "published": true
+}

@@ -210,10 +210,6 @@ fun AiLearningHomeScreen(nav: NavController) {
                 ) { nav.navigate(Screen.Lesson.of(lesson.id)) }
             }
 
-            SectionCard(
-                title = "سؤال داری؟ از دستیار بپرس",
-                body = "چت با قواعد محلی و تشخیص بحران؛ اگر بک‌اند و کلید مدل وصل باشد، از لایه‌ی AI هم جواب می‌گیری.",
-            ) { nav.navigate(Screen.Chat.route) }
         }
     }
 }

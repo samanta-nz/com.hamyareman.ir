@@ -2,6 +2,7 @@ package com.hamyareman.ir.ui.study
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,6 +62,7 @@ fun BookDetailScreen(
     onStudy: (String) -> Unit,
     onVideoTeach: (String) -> Unit,
     onCharts: () -> Unit,
+    onOpenNode: (String, String, String) -> Unit = { _, _, _ -> },
 ) {
     val module = remember(bookCode) {
         runCatching { BookModuleRegistry.modules.firstOrNull { it.bookCode == bookCode } }.getOrNull()
@@ -84,7 +86,7 @@ fun BookDetailScreen(
                     Image(
                         bitmap = cover.asImageBitmap(),
                         contentDescription = "کاور ${module.title}",
-                        modifier = Modifier.width(96.dp).height(128.dp),
+                        modifier = Modifier.width(88.dp).height(116.dp),
                         contentScale = ContentScale.Fit,
                     )
                     Spacer(Modifier.width(12.dp))
@@ -114,9 +116,47 @@ fun BookDetailScreen(
             openSection = next
             tocStore.putString("acc_$bookCode", next)
         }
+        // در هر سطح فقط یک گره باز می‌ماند (باز کردن فصل دوم، فصل اول را می‌بندد)
+        // ولی فصلِ والد با باز کردن درسش بسته نمی‌شود. وضعیت ذخیره می‌شود.
+        var openNodes by remember(bookCode) {
+            mutableStateOf(
+                tocStore.getString("accset_$bookCode", "")
+                    .split('|').filter { it.isNotBlank() }.toSet(),
+            )
+        }
+        val toggleNode: (String) -> Unit = { path ->
+            val depth = path.count { it == '.' }
+            val next = if (path in openNodes) {
+                // بستن یک گره، زیرشاخه‌های بازش را هم جمع می‌کند.
+                openNodes.filterNot { it == path || it.startsWith("$path.") }.toSet()
+            } else {
+                (openNodes.filterNot { it.count { c -> c == '.' } >= depth } + path).toSet()
+            }
+            openNodes = next
+            tocStore.putString("accset_$bookCode", next.joinToString("|"))
+        }
+        // منو دقیقاً از `books-menu.json` ساخته می‌شود — همان عنوان‌هایی که در
+        // menu.json هر کتاب روی باکت نوشته شده‌اند. گره‌ای که فایل آماده ندارد
+        // به تک‌فایل مشترک «در دست تولید» می‌رود.
+        val menu = remember(bookCode) { BooksMenu.forBook(ctx, bookCode) }
         Column(Modifier.fillMaxWidth()) {
-            runCatching { BookToc.forBook(bookCode) }.getOrDefault(emptyList()).forEach { node ->
-                TocRow(bookCode, node, 0, tocStore, onTeach, onStudy, onVideoTeach, openId = openSection, onToggle = toggle)
+            if (menu == null) {
+                runCatching { BookToc.forBook(bookCode) }.getOrDefault(emptyList()).forEach { node ->
+                    TocRow(bookCode, node, 0, tocStore, onTeach, onStudy, onVideoTeach, openId = openSection, onToggle = toggle)
+                }
+            } else {
+                // آکاردئون چندسطحی: چند گره هم‌زمان باز می‌مانند، وگرنه باز کردن
+                // یک درس، فصلِ بالای سرش را می‌بست.
+                menu.items.forEachIndexed { index, node ->
+                    BookMenuNode(
+                        node = node,
+                        path = "n$index",
+                        depth = 0,
+                        openPaths = openNodes,
+                        onToggle = toggleNode,
+                        onOpen = onOpenNode,
+                    )
+                }
             }
         }
     }
@@ -320,4 +360,118 @@ private fun StaticCard(node: TocNode, depth: Int) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
         )
     }
+}
+
+/**
+ * یک گره از منوی کتاب. گرهٔ `plain` یک ردیف ساده است؛ گرهٔ `lesson` آکاردئونی
+ * است که سربرگ‌هایش (تدریس، تمرینات کتابی، نکات گرامری، …) داخلش باز می‌شوند.
+ * هر ردیف که فایل آماده نداشته باشد با برچسب «به‌زودی» به اسپیس‌هولدر می‌رود.
+ */
+@Composable
+private fun BookMenuNode(
+    node: BooksMenu.Node,
+    path: String,
+    depth: Int,
+    openPaths: Set<String>,
+    onToggle: (String) -> Unit,
+    onOpen: (String, String, String) -> Unit,
+) {
+    val open = path in openPaths
+    val indent = (depth * 14).dp
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = indent, top = 3.dp, bottom = 3.dp),
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (node.expandable) onToggle(path)
+                        else onOpen(BooksMenu.destination(node.key, node.ready), node.title, "")
+                    }
+                    .padding(horizontal = 12.dp, vertical = 11.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    if (node.expandable) (if (open) "▾" else "▸") else "•",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    node.title,
+                    style = if (depth == 0) MaterialTheme.typography.bodyMedium
+                    else MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                )
+                if (!node.expandable && !node.hasContent) SoonBadge()
+            }
+
+            if (open) {
+                Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+                    // فصلی که PDF خودش را دارد، آن را به‌صورت یک ردیف جدا نشان
+                    // می‌دهد تا با باز شدن زیرشاخه‌ها دسترسی به خودش از بین نرود.
+                    if (node.hasContent) {
+                        LeafRow(node.title, node.key, node.ready, depth + 1, "", onOpen)
+                    }
+                    node.tabs.forEach { tab ->
+                        // سربرگ «تدریس» اگر صفحهٔ آمادهٔ exam داشته باشد، به همان
+                        // می‌رود و صوت همان درس هم بالای صفحه بار می‌شود.
+                        val isTeach = tab.title.trim().startsWith("تدریس")
+                        if (isTeach && node.teachKey != null) {
+                            LeafRow(tab.title, node.teachKey, true, depth + 1, node.audioKey.orEmpty(), onOpen)
+                        } else {
+                            LeafRow(tab.title, tab.key, tab.ready, depth + 1, "", onOpen)
+                        }
+                    }
+                    node.children.forEachIndexed { i, child ->
+                        BookMenuNode(child, "$path.$i", depth + 1, openPaths, onToggle, onOpen)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LeafRow(
+    title: String,
+    key: String?,
+    ready: Boolean?,
+    depth: Int,
+    audio: String,
+    onOpen: (String, String, String) -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onOpen(BooksMenu.destination(key, ready), title, audio) }
+            .padding(start = (depth * 14).dp + 14.dp, end = 12.dp, top = 9.dp, bottom = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            title,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        if (ready != true || key.isNullOrBlank()) SoonBadge()
+    }
+}
+
+@Composable
+private fun SoonBadge() {
+    Text(
+        "به‌زودی",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+            )
+            .padding(horizontal = 7.dp, vertical = 2.dp),
+    )
 }

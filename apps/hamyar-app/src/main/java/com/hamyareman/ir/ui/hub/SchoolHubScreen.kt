@@ -78,11 +78,11 @@ fun SchoolHubScreen(nav: NavController) {
                                     Image(
                                         bitmap = cover.asImageBitmap(),
                                         contentDescription = "کاور ${book.title}",
-                                        modifier = Modifier.fillMaxWidth().height(84.dp),
+                                        modifier = Modifier.fillMaxWidth().height(142.dp),
                                         contentScale = ContentScale.Fit,
                                     )
                                 }
-                                Column(Modifier.fillMaxWidth().height(56.dp).padding(6.dp)) {
+                                Column(Modifier.fillMaxWidth().height(95.dp).padding(6.dp)) {
                                     AutoShrinkTileText(
                                         text = book.title,
                                         style = MaterialTheme.typography.titleSmall.copy(

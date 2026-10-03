@@ -1,0 +1,108 @@
+name: Encode Bucket HTML files
+
+# فایل‌های خام Bucket/Html-files روی main را با کلید زندهٔ محتوا به فرمت HMK1
+# رمز می‌کند، طبق پوشه‌بندی باکت زیپ می‌کند و روی یک Release می‌گذارد تا دانلود شود.
+# با «[encode-html]» در پیام کامیت یا دستی اجرا می‌شود.
+
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: encode-html-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  encode:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[encode-html]')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      HTML_MEDIA_KEY_B64: ${{ secrets.HTML_MEDIA_KEY_B64 }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: html-encoded-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install --quiet requests cryptography
+
+      - name: آوردن فایل‌های خام از main
+        run: |
+          set -e
+          mkdir -p /tmp/src
+          git fetch --no-tags --depth=1 origin main
+          git archive FETCH_HEAD "Bucket/Html-files" | tar -x -C /tmp/src
+          echo "تعداد فایل خام: $(find /tmp/src -type f | wc -l)"
+          du -sh /tmp/src
+
+      - name: رمزگذاری و زیپ
+        run: |
+          set +e
+          python3 scripts/encode_html_bucket.py \
+            --source "/tmp/src/Bucket/Html-files" \
+            --layout repo \
+            --prefix "Html-files" \
+            --zips /tmp/zips \
+            --report ci-report/html-encode-report.md
+          code=$?
+          echo "exit=$code"
+          ls -lh /tmp/zips || true
+          exit 0
+
+      - name: ساخت Release و بارگذاری زیپ‌ها
+        run: |
+          set +e
+          if [ ! -d /tmp/zips ] || [ -z "$(ls -A /tmp/zips 2>/dev/null)" ]; then
+            echo "هیچ زیپی ساخته نشد." >> "$GITHUB_STEP_SUMMARY"; exit 0
+          fi
+          gh release create "$TAG" \
+            --title "HTML رمزشدهٔ باکت ($TAG)" \
+            --notes "فایل‌های Bucket/Html-files با فرمت HMK1 رمز شده‌اند (هر فایل دقیقاً ۳۲ بایت بزرگ‌تر از نسخهٔ خام). ساختار داخل هر زیپ عیناً همان پوشهٔ Bucket/Html-files در مخزن است." \
+            --target "$GITHUB_SHA" 2>&1 | tail -3
+          for f in /tmp/zips/*.zip; do
+            for attempt in 1 2 3; do
+              gh release upload "$TAG" "$f" --clobber 2>&1 | tail -2 && break
+              echo "تلاش $attempt برای $f ناموفق بود؛ دوباره…"; sleep 10
+            done
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## لینک دانلود" >> "$GITHUB_STEP_SUMMARY"
+          gh release view "$TAG" --json assets \
+            -q '.assets[] | "- [\(.name)](\(.url)) — \(.size/1048576 | floor) MB"' >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: خلاصه در صفحهٔ ران
+        if: always()
+        run: |
+          set +e
+          head -n 40 ci-report/html-encode-report.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null \
+            || echo "گزارشی تولید نشد." >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: کامیت گزارش
+        if: always()
+        run: |
+          set +e
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/html-encode-report.md
+          if git diff --cached --quiet; then
+            echo "گزارش تغییری نکرده است."
+          else
+            git commit -m "گزارش رمزگذاری HTML باکت ${GITHUB_SHA::7} [skip-report]"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          exit 0

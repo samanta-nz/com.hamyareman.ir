@@ -17,15 +17,27 @@ fun WebView.installManagedMediaLifecycle() {
     addJavascriptInterface(HtmlMediaLifecycleBridge(context.applicationContext), BRIDGE_NAME)
 }
 
-/** بعد از هر load صدا/ویدیوهای فعلی و عناصر بعدی را زیر نظر می‌گیرد. */
-fun WebView.bindManagedMediaLifecycle() {
+/**
+ * بعد از هر load صدا/ویدیوهای فعلی و عناصر بعدی را زیر نظر می‌گیرد.
+ *
+ * پلیر موسیقی (`BackgroundMusic`) با Web Audio پخش می‌کند، نه با `<audio>`؛ پس رویداد
+ * `play` هرگز نمی‌آمد و HtmlAudioKeepAliveService با خاموش‌شدن صفحه شروع نمی‌شد
+ * (صدای «بشنو و بخواب» با قفل صفحه قطع می‌شد). حالا وضعیت `BackgroundMusic.state.playing`
+ * هر ثانیه از خود صفحه و iframeهای هم‌origin خوانده می‌شود.
+ */
+fun WebView.bindManagedMediaLifecycle(watchWebAudio: Boolean = false) {
     evaluateJavascript(
         """
         (function(){
           if(window.__hamyarMediaLifecycleInstalled){return;}
           window.__hamyarMediaLifecycleInstalled=true;
-          var active=new Set();
-          function tell(){try{HamyarMediaLifecycle.onPlaybackChanged(active.size>0);}catch(e){}}
+          var active=new Set(), webAudio=false, last=null;
+          function tell(){
+            var now=active.size>0||webAudio;
+            if(now===last)return;
+            last=now;
+            try{HamyarMediaLifecycle.onPlaybackChanged(now);}catch(e){}
+          }
           function bind(el){
             if(el.__hamyarBound)return; el.__hamyarBound=true;
             el.addEventListener('play',function(){active.add(el);tell();});
@@ -36,13 +48,42 @@ fun WebView.bindManagedMediaLifecycle() {
             if(root&&root.matches&&root.matches('audio,video'))bind(root);
             (root||document).querySelectorAll('audio,video').forEach(bind);
           }
+          // صفحه + iframeهای هم‌origin (تو در تو). cross-origin بی‌صدا رد می‌شود.
+          function windows(win,out,depth){
+            out.push(win);
+            if(depth>3)return out;
+            try{
+              var l=win.document.querySelectorAll('iframe'),i;
+              for(i=0;i<l.length;i++){
+                try{ if(l[i].contentWindow && l[i].contentWindow.document) windows(l[i].contentWindow,out,depth+1); }catch(e){}
+              }
+            }catch(e){}
+            return out;
+          }
+          function musicPlaying(){
+            var w=windows(window,[],0),i;
+            for(i=0;i<w.length;i++){
+              try{var b=w[i].BackgroundMusic; if(b&&b.state&&b.state.playing)return true;}catch(e){}
+            }
+            return false;
+          }
           scan(document);
           new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(scan);});})
             .observe(document.documentElement,{childList:true,subtree:true});
+          // فقط در صفحات موسیقی/خواب: هر ۳ ثانیه (نه ۱ ثانیه) و فقط وقتی صفحه مخفی
+          // نیست، تا باتری درس‌های یوگا/ورزش درگیر نشود.
+          if(${watchWebAudio}){
+            setInterval(function(){
+              if(document.hidden)return;
+              webAudio=musicPlaying();tell();
+            },3000);
+          }
           window.__hamyarStopAllMedia=function(){
-            document.querySelectorAll('audio,video').forEach(function(el){try{el.pause();el.currentTime=0;}catch(e){}});
-            try{if(window.AudioContext){} }catch(e){}
-            active.clear();tell();
+            windows(window,[],0).forEach(function(w){
+              try{w.document.querySelectorAll('audio,video').forEach(function(el){try{el.pause();el.currentTime=0;}catch(e){}});}catch(e){}
+              try{if(w.BackgroundMusic&&w.BackgroundMusic.pause)w.BackgroundMusic.pause();}catch(e){}
+            });
+            active.clear(); webAudio=false; last=null; tell();
           };
         })();
         """.trimIndent(),
@@ -53,7 +94,7 @@ fun WebView.bindManagedMediaLifecycle() {
 /** قطع کامل صدا هنگام خروج از صفحه یا رفتن واقعی اپ به پس‌زمینه. */
 fun WebView.stopManagedMedia() {
     evaluateJavascript(
-        "try{if(window.__hamyarStopAllMedia)window.__hamyarStopAllMedia();else document.querySelectorAll('audio,video').forEach(function(x){x.pause();x.currentTime=0;});}catch(e){}",
+        "try{if(window.__hamyarStopAllMedia)window.__hamyarStopAllMedia();else{document.querySelectorAll('audio,video').forEach(function(x){x.pause();x.currentTime=0;});if(window.BackgroundMusic&&window.BackgroundMusic.pause)window.BackgroundMusic.pause();}}catch(e){}",
         null,
     )
     HtmlAudioKeepAliveService.stop(context)
