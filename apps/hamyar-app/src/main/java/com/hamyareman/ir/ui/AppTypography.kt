@@ -291,21 +291,21 @@ object AppTypography {
         val table = pageTable.style
         val button = pageButton.style
         return Typography(
-            displayLarge = title.copy(lineHeight = 32.sp),
-            displayMedium = title.copy(lineHeight = 32.sp),
-            displaySmall = heading.copy(lineHeight = 26.sp),
-            headlineLarge = title.copy(lineHeight = 32.sp),
-            headlineMedium = heading.copy(lineHeight = 28.sp),
-            headlineSmall = heading.copy(lineHeight = 26.sp),
-            titleLarge = title.copy(lineHeight = 28.sp),
-            titleMedium = heading.copy(lineHeight = 26.sp),
-            titleSmall = heading.copy(lineHeight = 22.sp),
-            bodyLarge = body.copy(lineHeight = 26.sp),
-            bodyMedium = body.copy(lineHeight = 24.sp),
-            bodySmall = body.copy(lineHeight = 22.sp),
-            labelLarge = button.copy(lineHeight = 22.sp),
-            labelMedium = table.copy(lineHeight = 22.sp),
-            labelSmall = table.copy(lineHeight = 20.sp),
+            displayLarge = TextStyle(fontFamily = body.fontFamily, fontSize = 30.sp, fontWeight = FontWeight.Bold, lineHeight = 36.sp),
+            displayMedium = TextStyle(fontFamily = body.fontFamily, fontSize = 26.sp, fontWeight = FontWeight.Bold, lineHeight = 32.sp),
+            displaySmall = TextStyle(fontFamily = body.fontFamily, fontSize = 22.sp, fontWeight = FontWeight.Bold, lineHeight = 28.sp),
+            headlineLarge = TextStyle(fontFamily = body.fontFamily, fontSize = 22.sp, fontWeight = FontWeight.Bold, lineHeight = 28.sp),
+            headlineMedium = TextStyle(fontFamily = body.fontFamily, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 26.sp),
+            headlineSmall = TextStyle(fontFamily = body.fontFamily, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 24.sp),
+            titleLarge = TextStyle(fontFamily = body.fontFamily, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 24.sp),
+            titleMedium = TextStyle(fontFamily = body.fontFamily, fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp),
+            titleSmall = TextStyle(fontFamily = body.fontFamily, fontSize = 14.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp),
+            bodyLarge = TextStyle(fontFamily = body.fontFamily, fontSize = 16.sp, fontWeight = FontWeight.Normal, lineHeight = 24.sp),
+            bodyMedium = TextStyle(fontFamily = body.fontFamily, fontSize = 14.sp, fontWeight = FontWeight.Normal, lineHeight = 22.sp),
+            bodySmall = TextStyle(fontFamily = body.fontFamily, fontSize = 12.sp, fontWeight = FontWeight.Normal, lineHeight = 18.sp),
+            labelLarge = TextStyle(fontFamily = body.fontFamily, fontSize = 14.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp),
+            labelMedium = TextStyle(fontFamily = body.fontFamily, fontSize = 13.sp, fontWeight = FontWeight.Bold, lineHeight = 18.sp),
+            labelSmall = TextStyle(fontFamily = body.fontFamily, fontSize = 12.sp, fontWeight = FontWeight.Bold, lineHeight = 18.sp),
         )
     }
 }
