@@ -477,6 +477,8 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         }
     }
 
+    var volOpen by remember { mutableStateOf(false) }
+
     LaunchedEffect(playerTouchTick, playing, downloading, volOpen, activeIdx) {
         delay(5000)
         playerExpanded = false
@@ -487,7 +489,6 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     val sysMax = remember { runCatching { am?.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC) ?: 15 }.getOrDefault(15) }
     var sysVol by remember { mutableIntStateOf(runCatching { am?.getStreamVolume(android.media.AudioManager.STREAM_MUSIC) ?: 5 }.getOrDefault(5)) }
     var lastUnmuted by remember { mutableIntStateOf(if (sysVol > 0) sysVol else (sysMax / 2).coerceAtLeast(1)) }
-    var volOpen by remember { mutableStateOf(false) }
     var volTick by remember { mutableIntStateOf(0) }
     fun applyVol(v: Int) {
         sysVol = v.coerceIn(0, sysMax)
