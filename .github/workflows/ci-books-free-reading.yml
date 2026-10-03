@@ -1,0 +1,38 @@
+name: Books, free reading and sync validation
+
+on:
+  push:
+    branches: [feat/books-free-reading-sync-20261003]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: books-free-reading-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+      - name: Build student app and admin
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --console=plain             :core-common:testDebugUnitTest             :hamyar-app:testP09DebugUnitTest             :hamyar-app:assembleP09Debug             :hamyar-admin:assembleDebug             --stacktrace
+      - name: Android resource lint
+        run: ./gradlew --console=plain :hamyar-app:lintP09Debug --stacktrace
