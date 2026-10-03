@@ -108,20 +108,14 @@ fun SleepNightScreen(onBack: () -> Unit) {
 
     val anyPlaying = state.playing || musicPlaying
 
-    Column(Modifier.fillMaxSize()) {
-        // پلیر باید در جریان صفحه باشد؛ WebView تمام‌صفحهٔ overlay قبلی هنگام
-        // بازشدن لمس و اسکرول میزبان را می‌گرفت و در بعضی WebViewها محتوای iframe
-        // داخلی بیرون قاب می‌افتاد و سفید دیده می‌شد.
-        BackgroundMusicTileHost(
-            modifier = Modifier.fillMaxWidth().zIndex(20f),
-            handle = music,
-        )
+    Box(Modifier.fillMaxSize()) {
         Column(
             Modifier
-                .weight(1f)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            Spacer(Modifier.height(92.dp))
             Column(
                 Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -190,6 +184,13 @@ fun SleepNightScreen(onBack: () -> Unit) {
                 }
             }
         }
+        BackgroundMusicTileHost(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .zIndex(20f),
+            handle = music,
+        )
     }
 }
 
