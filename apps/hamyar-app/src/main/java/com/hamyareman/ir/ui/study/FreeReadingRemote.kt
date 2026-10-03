@@ -2,11 +2,6 @@ package com.hamyareman.ir.ui.study
 
 import android.webkit.WebSettings
 import android.webkit.WebView
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,20 +20,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBackIosNew
-import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.Book
-import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.Comment
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Headphones
-import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Replay
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Send
-import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.FastForward
@@ -642,6 +625,8 @@ private fun FreeAudioReader(
     var sleepMinutes by remember(book.id) { mutableStateOf("") }
     var background by remember(book.id) { mutableStateOf(true) }
     val currentChapter = book.chapters.getOrNull(currentIndex)
+    val spectrumPrimary = MaterialTheme.colorScheme.primary
+    val spectrumContainer = MaterialTheme.colorScheme.primaryContainer
     val currentUrl = if (currentChapter?.audioKey?.isNotBlank() == true) {
         FreeReadingRepository.absoluteKey(currentChapter.audioKey)
     } else {
@@ -658,6 +643,15 @@ private fun FreeAudioReader(
         }
     }
 
+    LaunchedEffect(state.connected, state.playing) {
+        if (!state.connected) return@LaunchedEffect
+        while (true) {
+            delay(5_000)
+            onState("READING", playback.positionMs)
+            if (!state.playing) break
+        }
+    }
+
     LaunchedEffect(state.playing, sleepEnds) {
         if (!state.playing) return@LaunchedEffect
         while (sleepEnds > 0L && System.currentTimeMillis() < sleepEnds) delay(500)
@@ -671,6 +665,7 @@ private fun FreeAudioReader(
     androidx.compose.runtime.DisposableEffect(Unit) {
         onDispose {
             onState("READING", playback.positionMs)
+            if (!background) playback.stop()
             playback.release()
         }
     }
@@ -684,11 +679,11 @@ private fun FreeAudioReader(
                 ) {
                     Canvas(Modifier.fillMaxSize()) {
                         drawCircle(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = .09f),
+                            color = spectrumPrimary.copy(alpha = .09f),
                             radius = size.minDimension * .45f,
                         )
                         drawArc(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = spectrumPrimary,
                             startAngle = -90f,
                             sweepAngle = (if (state.durationMs > 0) state.positionMs.toFloat() / state.durationMs else 0f).coerceIn(0f, 1f) * 360f,
                             useCenter = false,
@@ -736,7 +731,13 @@ private fun FreeAudioReader(
                     Icon(Icons.Outlined.Headphones, null, Modifier.size(18.dp))
                     Spacer(Modifier.width(5.dp))
                     Text("پخش در پس‌زمینه", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-                    Switch(checked = background, onCheckedChange = { background = it })
+                    Switch(
+                        checked = background,
+                        onCheckedChange = {
+                            background = it
+                            if (!it && state.playing) playback.pause()
+                        },
+                    )
                 }
             }
         }
@@ -806,6 +807,7 @@ private fun FreeAudioReader(
         }
 
         BookCommentsSection(book.id, repo)
+        Spacer(Modifier.height(24.dp))
     }
 }
 
