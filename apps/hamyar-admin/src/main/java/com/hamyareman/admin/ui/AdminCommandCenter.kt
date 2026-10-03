@@ -167,7 +167,7 @@ fun AdminCommandCenter(onLogout: () -> Unit, onSettings: () -> Unit) {
                             )
                             DropdownMenuItem(
                                 text = { Text("مطالعهٔ آزاد") },
-                                leadingIcon = { Icon(Icons.Outlined.Book, null) },
+                                leadingIcon = { Icon(Icons.Outlined.FolderOpen, null) },
                                 onClick = { moreOpen = false; moreScreen = "free-reading" },
                             )
                             DropdownMenuItem(
