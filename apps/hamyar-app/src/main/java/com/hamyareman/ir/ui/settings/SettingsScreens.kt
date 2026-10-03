@@ -1,3 +1,4 @@
+import android.content.Intent
 package com.hamyareman.ir.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -273,7 +275,7 @@ fun AppLockScreen(onBack: () -> Unit) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         (7..9).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
                     }
-                    Text(if (pattern.isBlank()) "الگو را با حداقل ۴ نقطه انتخاب کن." else "الگوی انتخاب‌شده: " + pattern.replace(Regex("."), "•")))
+                    Text(if (pattern.isBlank()) "الگو را با حداقل ۴ نقطه انتخاب کن." else "الگوی انتخاب‌شده: " + pattern.replace(Regex("."), "•"))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { pattern = "" }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
                         PrimaryButton("ثبت الگو", Modifier.weight(2f)) {
