@@ -217,6 +217,9 @@ object AppTypography {
     var bodyDelta by mutableIntStateOf(0)
         private set
 
+    // Initialize legacy aliases only after their backing MutableState properties exist.
+    init { syncAliases() }
+
     val h1: TextStyle get() = pageTitle.style.copy(lineHeight = (32 + pageTitle.delta).coerceAtLeast(20).sp)
     val h2: TextStyle get() = pageHeading.style.copy(lineHeight = (26 + pageHeading.delta).coerceAtLeast(18).sp)
     val text: TextStyle get() = pageBody.style.copy(lineHeight = (24 + pageBody.delta).coerceAtLeast(18).sp)
