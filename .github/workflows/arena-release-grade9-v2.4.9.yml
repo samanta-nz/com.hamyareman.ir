@@ -21,8 +21,8 @@ concurrency:
 
 env:
   VERSION_NAME: '2.4.9'
-  VERSION_CODE: '249'
-  MIN_CODE: '249'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
+  VERSION_CODE: '250'
+  MIN_CODE: '250'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
