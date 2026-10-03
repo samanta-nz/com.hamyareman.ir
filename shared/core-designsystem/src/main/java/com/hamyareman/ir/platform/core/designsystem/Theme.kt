@@ -181,7 +181,8 @@ fun PlatformTheme(
         else -> if (darkTheme) DollDark else DollLight
     }
     val base = LocalDensity.current
-    val scale = ((13f + textSizeOffset.coerceIn(-6, 6)) / 13f).coerceAtLeast(0.4f)
+    // مقیاس دسترس‌پذیری فقط یک‌بار روی تایپوگرافی استاندارد اعمال می‌شود.
+    val scale = (1f + textSizeOffset.coerceIn(-6, 6) * 0.06f).coerceIn(0.70f, 1.36f)
     CompositionLocalProvider(
         LocalLayoutDirection provides LayoutDirection.Rtl,
         LocalPlatformFont provides fontFamily,
