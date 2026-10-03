@@ -22,23 +22,35 @@ import androidx.compose.ui.unit.LayoutDirection
  * - Mint: سبز نعنایی تازه
  * - CalmFather: تم آرامِ اپ پدر (تغییر نکند)
  */
-enum class BrandTheme(val label: String) {
-    DollStage("عروسکی"),
-    Stitch("جزیره‌ای (استیچ)"),
-    MoonNight("شب ماه"),
-    Mint("نعنایی"),
-    CalmFather("آرام جنگلی"),
-    RoseGarden("باغ گل"),
-    CandyCloud("آبنبات ابری"),
-    LavenderMist("مه بنفش"),
-    SunsetBloom("غروب گل"),
-    CherryFizz("آلبالو"),
-    StarryPink("صورتی ستاره‌ای"),
-    OceanBlue("اقیانوس"),
-    ForestTrail("مسیر جنگل"),
-    RocketNavy("موشک"),
-    EmberSport("ورزشی"),
-    ThunderLime("رعد لیمویی"),
+enum class BrandTheme(
+    val label: String,
+    val visibleInAppearance: Boolean = true,
+) {
+    // مجموعهٔ تازهٔ کاربری: سه تم دخترانه و سه تم پسرانه، با نام‌های کوتاه و مدرن.
+    PetalBloom("شکوفه"),
+    LilacAir("یاسی هوا"),
+    BerryGlow("بری گلو"),
+    OceanPulse("پالس اقیانوس"),
+    ForestForge("جنگل نیرومند"),
+    NightOrbit("مدار شب"),
+
+    // تم‌های قدیمی فقط برای سازگاری با تنظیمات ذخیره‌شده نگه داشته شده‌اند.
+    DollStage("عروسکی", false),
+    Stitch("جزیره‌ای (استیچ)", false),
+    MoonNight("شب ماه", false),
+    Mint("نعنایی", false),
+    CalmFather("آرام جنگلی", false),
+    RoseGarden("باغ گل", false),
+    CandyCloud("آبنبات ابری", false),
+    LavenderMist("مه بنفش", false),
+    SunsetBloom("غروب گل", false),
+    CherryFizz("آلبالو", false),
+    StarryPink("صورتی ستاره‌ای", false),
+    OceanBlue("اقیانوس", false),
+    ForestTrail("مسیر جنگل", false),
+    RocketNavy("موشک", false),
+    EmberSport("ورزشی", false),
+    ThunderLime("رعد لیمویی", false),
 }
 
 /** فونت جاری اپ — از ظاهر/تنظیمات عوض می‌شود؛ پیش‌فرض فونت سیستم. */
