@@ -49,7 +49,10 @@ object SchoolSync {
             var merged = 0
 
             // ---------- آمار تدریس ----------
-            when (val r = tables.list(TEACH_TABLE)) {
+            // فقط ردیف‌های خود کاربر را از سرور می‌گیریم؛ list بدون query باعث
+            // واکشی کل جدول می‌شد و سپس تازه روی کلاینت فیلتر می‌کرد.
+            val ownerQuery = listOf("equal(\"userId\",[\"$userId\"])")
+            when (val r = tables.list(TEACH_TABLE, ownerQuery)) {
                 is com.hamyareman.ir.platform.core.common.AppResult.Ok -> {
                     r.value.forEach { row ->
                         val packId = row.payload["packId"] as? String ?: return@forEach
@@ -62,7 +65,7 @@ object SchoolSync {
             }
 
             // ---------- پیشرفت مطالعه (فلش‌کارت + آزمون) ----------
-            when (val r = tables.list(STUDY_TABLE)) {
+            when (val r = tables.list(STUDY_TABLE, ownerQuery)) {
                 is com.hamyareman.ir.platform.core.common.AppResult.Ok -> {
                     r.value.forEach { row ->
                         val rowUserId = row.payload["userId"] as? String
