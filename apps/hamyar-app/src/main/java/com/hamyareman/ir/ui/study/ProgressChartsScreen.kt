@@ -477,62 +477,43 @@ private fun Modifier.androidClickable(onClick: () -> Unit): Modifier =
 
 /** ردیف تدریس یک درس — وضعیت اولین دوره با محاسبه‌ی مشاهده/باقیمانده و نشست‌ها. */
 @Composable
+@Composable
 private fun TeachRow(pack: StudyPack) {
-    val snap = TeachStats.snap(LocalContext.current, pack.packId)
+    val ctx = LocalContext.current
+    val snap = TeachStats.snap(ctx, pack.packId)
     val totalSec = (snap.audioDurSec + snap.videoDurSec).coerceAtLeast(1)
     val watched = snap.watchedSec.coerceAtMost(totalSec)
     val remainSec = (totalSec - watched).coerceAtLeast(0)
     val pct = (watched * 100) / totalSec
+    var open by remember(pack.packId) { mutableStateOf(false) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    if (snap.done) "✅" else "⏳",
-                    style = MaterialTheme.typography.titleSmall,
-                )
+            Row(Modifier.fillMaxWidth().clickable { open = !open }, verticalAlignment = Alignment.CenterVertically) {
+                Text(if (snap.done) "✅" else "⏳", style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.width(6.dp))
                 Text(pack.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Text("${toPersianDigits(pct.toString())}٪", style = MaterialTheme.typography.labelMedium)
+                Spacer(Modifier.width(6.dp))
+                Text(if (open) "⌃" else "⌄", style = MaterialTheme.typography.titleMedium)
             }
-            Spacer(Modifier.height(4.dp))
-            LinearProgressIndicator(
-                progress = { watched.toFloat() / totalSec },
-                modifier = Modifier.fillMaxWidth().height(8.dp),
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "مشاهده: ${teachMmss(watched * 1000L)} از ${teachMmss(totalSec * 1000L)} · باقیمانده: ${teachMmss(remainSec * 1000L)} · نشست‌ها: ${toPersianDigits(snap.sessions.toString())}" +
-                    if (snap.done) " · اتمام دوره‌ی اول: ${toPersianDigits(snap.sessionsToDone.toString())} نشست"
-                    else "",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                buildString {
-                    append("شروع: ")
-                    append(if (snap.startedAtMs > 0) JalaliDate.stampFa(snap.startedAtMs) else "—")
-                    append(" · آخرین نشست: ")
-                    append(if (snap.lastSessionAtMs > 0) JalaliDate.stampFa(snap.lastSessionAtMs) else "—")
-                    if (snap.done && snap.completedAtMs > 0) {
-                        append(" · اتمام: ")
-                        append(JalaliDate.stampFa(snap.completedAtMs))
-                    }
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val log = StudyActivity.rows(LocalContext.current, pack.packId).asReversed().take(12)
-            if (log.isNotEmpty()) {
-                Spacer(Modifier.height(4.dp))
-                Text("فعالیت‌ها:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                log.forEach { row ->
-                    Text("• ${row.whenFa} — ${row.label}", style = MaterialTheme.typography.labelSmall)
+            LinearProgressIndicator(progress = { watched.toFloat() / totalSec }, modifier = Modifier.fillMaxWidth().height(8.dp))
+            if (open) {
+                Spacer(Modifier.height(6.dp))
+                Text("مشاهده: ${teachMmss(watched * 1000L)} از ${teachMmss(totalSec * 1000L)} · باقیمانده: ${teachMmss(remainSec * 1000L)} · نشست‌ها: ${toPersianDigits(snap.sessions.toString())}" + if (snap.done) " · اتمام دوره‌ی اول: ${toPersianDigits(snap.sessionsToDone.toString())} نشست" else "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(buildString {
+                    append("شروع: "); append(if (snap.startedAtMs > 0) JalaliDate.stampFa(snap.startedAtMs) else "—")
+                    append(" · آخرین نشست: "); append(if (snap.lastSessionAtMs > 0) JalaliDate.stampFa(snap.lastSessionAtMs) else "—")
+                    if (snap.done && snap.completedAtMs > 0) { append(" · اتمام: "); append(JalaliDate.stampFa(snap.completedAtMs)) }
+                }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val log = StudyActivity.rows(ctx, pack.packId).asReversed().take(12)
+                if (log.isNotEmpty()) {
+                    Spacer(Modifier.height(4.dp)); Text("فعالیت‌ها:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    log.forEach { row -> Text("• ${row.whenFa} — ${row.label}", style = MaterialTheme.typography.labelSmall) }
                 }
             }
         }
     }
 }
-
 /**
  * «پیگیری دروس و نواقص غیبت و مرخصی‌ها» — درس‌های روزهایی که مرخصی بوده،
  * پیش از فهرستِ کتاب‌ها می‌آید تا جبران‌شان راحت‌تر پیگیری شود.
