@@ -9,7 +9,6 @@ name: Release grade 9 v2.4.6 (forced)
 on:
   push:
     branches:
-      - 'arena/01a10145-com-hamyareman-ir'
       - 'main'
   workflow_dispatch:
 
