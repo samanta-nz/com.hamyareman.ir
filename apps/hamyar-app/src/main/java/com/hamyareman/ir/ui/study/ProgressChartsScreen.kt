@@ -477,7 +477,6 @@ private fun Modifier.androidClickable(onClick: () -> Unit): Modifier =
 
 /** ردیف تدریس یک درس — وضعیت اولین دوره با محاسبه‌ی مشاهده/باقیمانده و نشست‌ها. */
 @Composable
-@Composable
 private fun TeachRow(pack: StudyPack) {
     val ctx = LocalContext.current
     val snap = TeachStats.snap(ctx, pack.packId)
