@@ -1,4 +1,4 @@
-name: Release grade 9 v2.4.7 (forced)
+name: Release grade 9 v2.4.8 (forced)
 
 # ساخت و انتشار نسخهٔ ۲٫۴٫۷ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
 #
@@ -16,18 +16,18 @@ permissions:
   contents: write
 
 concurrency:
-  group: arena-release-grade9-v2.4.7-final
+  group: arena-release-grade9-v2.4.8-final
   cancel-in-progress: false
 
 env:
-  VERSION_NAME: '2.4.7'
-  VERSION_CODE: '247'
-  MIN_CODE: '247'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
+  VERSION_NAME: '2.4.8'
+  VERSION_CODE: '248'
+  MIN_CODE: '248'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
   ROW_ID: app_release_grade9
-  ASSET: hamyar-grade9-2.4.7-debug.apk
+  ASSET: hamyar-grade9-2.4.8.apk
 
 jobs:
   release:
@@ -80,15 +80,22 @@ jobs:
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
-            :core-common:testDebugUnitTest \
-            :hamyar-app:testP09DebugUnitTest \
-            :hamyar-app:assembleP09Debug \
+            :core-common:testReleaseUnitTest \
+            :hamyar-app:testP09ReleaseUnitTest \
+            :hamyar-app:assembleP09Release \
             -PhamyarVersionCode="$VERSION_CODE" -PhamyarVersionName="$VERSION_NAME"
           mkdir -p dist
-          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/release -type f -name '*.apk' -print)
           test "${#files[@]}" -eq 1
           cp -f "${files[0]}" "dist/$ASSET"
           ls -l "dist/$ASSET"
+          APK_BYTES=$(stat -c%s "dist/$ASSET")
+          echo "APK_BYTES=$APK_BYTES"
+          MAX_BYTES=$((60*1024*1024))
+          if [ "$APK_BYTES" -gt "$MAX_BYTES" ]; then
+            echo "::error::APK بزرگ‌تر از سقف 60 MiB است: $APK_BYTES bytes"
+            exit 1
+          fi
 
       - name: ۲) اعتبارسنجی هویت و امضای APK
         run: |
@@ -127,7 +134,7 @@ jobs:
           python3 scripts/upload_encoded_to_parspack.py \
             --source /tmp/music-html \
             --prefix Bucket/Html-files \
-            --report ci-report/release-2.4.7-html.md
+            --report ci-report/release-2.4.8-html.md
 
       - name: ۳) بایگانی در Release «ci-apk» همین مخزن
         shell: bash
@@ -136,12 +143,12 @@ jobs:
         run: |
           set +e
           mkdir -p ci-report
-          LOG=ci-report/release-2.4.7.log
+          LOG=ci-report/release-2.4.8.log
           WANT=$(stat -c%s "dist/$ASSET")
           echo "== مرحلهٔ ۳: بایگانی $ASSET ($WANT بایت)" >> "$LOG"
 
           gh release view ci-apk >/dev/null 2>&1 || \
-            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی debug نهم." >> "$LOG" 2>&1
+            gh release create ci-apk --title "CI APK" --notes "آخرین فایل نصبی release نهم." >> "$LOG" 2>&1
 
           got() {
             gh api "/repos/${GITHUB_REPOSITORY}/releases/tags/ci-apk" \
@@ -197,7 +204,7 @@ jobs:
             --key "apk/$GRADE_ID/$ASSET" \
             --provider parspack \
             --content-type application/vnd.android.package-archive \
-            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.4.7.log
+            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.4.8.log
 
       - name: ۶) اعلام نسخه و اعلام آپدیت اجباری
         env:
@@ -219,7 +226,7 @@ jobs:
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
             --notes "یکپارچه‌سازی تایپوگرافی استاندارد با حفظ داشبورد و دفترچه‌های دست‌نویس|روتین امروز با افزودن، ویرایش، کپی، حذف و جابه‌جایی|اتصال آب و فعالیت‌های یوگا/ورزش به سلامت روزانه|کاورهای بدون تصویر و کارت‌های آیکونی با گرافیک سبک‌تر|آواتار پیش‌فرض وکتوری برای ساعت داشبورد|افکت‌های سبک و مدرن داشبورد|بازطراحی شش تم نمایشی دخترانه/پسرانه|بهینه‌سازی تصاویر embedded؛ یوگا با حفظ کامل قاب ۲×۳" \
-            --out ci-report/release-2.4.7.json 2>&1 | tee -a ci-report/release-2.4.7.log
+            --out ci-report/release-2.4.8.json 2>&1 | tee -a ci-report/release-2.4.8.log
 
       - name: ۷) آماده‌سازی گزارش و اعلان
         if: always()
@@ -227,7 +234,7 @@ jobs:
         run: |
           set +e
           mkdir -p ci-report
-          for f in ci-report/release-2.4.7.json ci-report/release-2.4.7.log ci-report/release-2.4.7-html.md; do
+          for f in ci-report/release-2.4.8.json ci-report/release-2.4.8.log ci-report/release-2.4.8-html.md; do
             if [ -f "$f" ]; then
               { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
             fi
@@ -236,7 +243,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hamyar-grade9-2.4.7-debug
+          name: hamyar-grade9-2.4.8-release
           path: dist/*.apk
           if-no-files-found: warn
           retention-days: 14
