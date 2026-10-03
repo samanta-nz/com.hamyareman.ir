@@ -10,6 +10,7 @@ enum class ThemeGender { GIRL, BOY }
 
 val BrandTheme.themeGender: ThemeGender
     get() = when (this) {
+        BrandTheme.PetalBloom, BrandTheme.LilacAir, BrandTheme.BerryGlow,
         BrandTheme.DollStage, BrandTheme.MoonNight, BrandTheme.RoseGarden,
         BrandTheme.CandyCloud, BrandTheme.LavenderMist, BrandTheme.SunsetBloom,
         BrandTheme.CherryFizz, BrandTheme.StarryPink -> ThemeGender.GIRL
@@ -17,6 +18,12 @@ val BrandTheme.themeGender: ThemeGender
     }
 
 fun BrandTheme.swatches(): List<Color> = when (this) {
+    BrandTheme.PetalBloom -> listOf(Color(0xFFD34D7B), Color(0xFF8B63C7), Color(0xFFE0A15D))
+    BrandTheme.LilacAir -> listOf(Color(0xFF7E57C2), Color(0xFF46A79D), Color(0xFFB47AE0))
+    BrandTheme.BerryGlow -> listOf(Color(0xFFB83272), Color(0xFFE47B9E), Color(0xFFE9B949))
+    BrandTheme.OceanPulse -> listOf(Color(0xFF1677B8), Color(0xFF16A6A0), Color(0xFF5F88D3))
+    BrandTheme.ForestForge -> listOf(Color(0xFF2F7A5A), Color(0xFF7AAE43), Color(0xFFC38B3A))
+    BrandTheme.NightOrbit -> listOf(Color(0xFF4A67C9), Color(0xFF7A8AE6), Color(0xFF4AB8C4))
     BrandTheme.DollStage -> listOf(Color(0xFFE96A8D), Color(0xFFF4916B), Color(0xFFA77BD4))
     BrandTheme.Stitch -> listOf(Color(0xFF2F7FD6), Color(0xFFF26FA7), Color(0xFF27B5A8))
     BrandTheme.MoonNight -> listOf(Color(0xFF7C6BD9), Color(0xFFE8B84B), Color(0xFFC97BA8))
@@ -37,6 +44,30 @@ fun BrandTheme.swatches(): List<Color> = when (this) {
 
 /** پالت‌های ۱۱ تم جدید — روشن/تاریک. */
 fun extraScheme(brand: BrandTheme, dark: Boolean): ColorScheme? = when (brand) {
+    BrandTheme.PetalBloom -> trio(
+        dark, 0xFFD34D7B, 0xFF8B63C7, 0xFFE0A15D,
+        0xFFFFF8FB, 0xFF2A141E, 0xFF24121A, 0xFFF9D8E5, 0xFF482132,
+    )
+    BrandTheme.LilacAir -> trio(
+        dark, 0xFF7E57C2, 0xFF46A79D, 0xFFB47AE0,
+        0xFFF8F5FF, 0xFF1D1630, 0xFF191327, 0xFFE6DFFF, 0xFF34274E,
+    )
+    BrandTheme.BerryGlow -> trio(
+        dark, 0xFFB83272, 0xFFE47B9E, 0xFFE9B949,
+        0xFFFFF5FA, 0xFF2A101E, 0xFF24101A, 0xFFF6D1E5, 0xFF452039,
+    )
+    BrandTheme.OceanPulse -> trio(
+        dark, 0xFF1677B8, 0xFF16A6A0, 0xFF5F88D3,
+        0xFFF2F9FD, 0xFF0E1B26, 0xFF0B1720, 0xFFD5ECF7, 0xFF18374A,
+    )
+    BrandTheme.ForestForge -> trio(
+        dark, 0xFF2F7A5A, 0xFF7AAE43, 0xFFC38B3A,
+        0xFFF3F9F4, 0xFF102019, 0xFF0D1A14, 0xFFD6EBD9, 0xFF234331,
+    )
+    BrandTheme.NightOrbit -> trio(
+        dark, 0xFF4A67C9, 0xFF7A8AE6, 0xFF4AB8C4,
+        0xFFF1F5FF, 0xFF0F1528, 0xFF0B1122, 0xFFDDE4FF, 0xFF1E2C4A,
+    )
     BrandTheme.RoseGarden -> trio(
         dark, 0xFFD94A7A, 0xFF5FA36A, 0xFFC47BA0,
         0xFFFFF6F8, 0xFF2A1218, 0xFF2A1218, 0xFFFFD0DC, 0xFF3A1822,

@@ -138,6 +138,16 @@ fun HomeScreen(nav: NavController) {
         com.hamyareman.ir.ui.appearance.EmbeddedFonts.W_BOLD,
     )
     val who = StudentProfileState.firstName.ifBlank { "دوست من" }
+    val dashboardMotion = rememberInfiniteTransition(label = "dashboard-motion")
+    val motionPhase by dashboardMotion.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(5200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "dashboard-phase",
+    )
 
     Scaffold(floatingActionButton = {
         FloatingActionButton(onClick = { nav.navigate(Screen.BetweenLessons.route) }) { Text("💛") }
@@ -150,6 +160,7 @@ fun HomeScreen(nav: NavController) {
                 title = "${greeting()} $who جان",
                 subtitle = "همیار من کنارت است؛ از مدرسه تا آرامش",
                 modifier = Modifier.padding(horizontal = HomeSide),
+                motionPhase = motionPhase,
             )
 
             Card(
@@ -286,7 +297,12 @@ fun HomeScreen(nav: NavController) {
 }
 
 @Composable
-private fun GreetingBanner(title: String, subtitle: String, modifier: Modifier = Modifier) {
+private fun GreetingBanner(
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+    motionPhase: Float = 0f,
+) {
     val shape = RoundedCornerShape(28.dp)
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -301,8 +317,19 @@ private fun GreetingBanner(title: String, subtitle: String, modifier: Modifier =
                 .background(
                     Brush.linearGradient(
                         listOf(Color(0xFF0F766E), Color(0xFF115E59), Color(0xFF1E3A8A)),
+                        start = Offset(-120f + motionPhase * 180f, 0f),
+                        end = Offset(520f + motionPhase * 180f, 220f),
                     ),
                 )
+                .drawBehind {
+                    val glowX = size.width * (0.18f + motionPhase * 0.56f)
+                    val glowY = size.height * 0.18f
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.065f),
+                        radius = size.minDimension * 0.62f,
+                        center = Offset(glowX, glowY),
+                    )
+                }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             contentAlignment = Alignment.Center,
         ) {

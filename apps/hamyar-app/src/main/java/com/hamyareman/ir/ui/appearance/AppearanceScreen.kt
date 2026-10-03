@@ -55,7 +55,7 @@ fun AppearanceScreen(onBack: () -> Unit) {
             Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("تم، اندازهٔ نوشته و فونت را خودت انتخاب کن ✨", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("تم‌های تازهٔ هماهنگ با هویت همیار من، همراه با اندازهٔ نوشتهٔ سراسری ✨", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Text("اندازهٔ نوشتهٔ سراسری", style = MaterialTheme.typography.titleMedium)
             Text(
@@ -91,10 +91,10 @@ fun AppearanceScreen(onBack: () -> Unit) {
             val girl = com.hamyareman.ir.ui.profile.StudentProfileState.gender.equals("girl", ignoreCase = true)
             if (girl) {
                 Text("تم‌های دخترانه", style = MaterialTheme.typography.titleMedium)
-                ThemeGroup(BrandTheme.entries.filter { it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
+                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
             } else {
                 Text("تم‌های پسرانه", style = MaterialTheme.typography.titleMedium)
-                ThemeGroup(BrandTheme.entries.filter { it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
+                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
             }
 
             pendingTheme?.let { brand ->

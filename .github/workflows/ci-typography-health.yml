@@ -3,10 +3,12 @@ name: Typography + health CI
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [fix/android10]
   workflow_dispatch:
 
 concurrency:
-  group: typography-health-ci
+  group: typography-health-ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -29,6 +31,8 @@ jobs:
         with:
           cache-cleanup: never
       - run: ./gradlew --console=plain :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Debug --stacktrace
+      - name: Detect unused Android resources
+        run: ./gradlew --console=plain :hamyar-app:lintP09Debug --stacktrace
       - name: Verify APK
         run: |
           set -euo pipefail
