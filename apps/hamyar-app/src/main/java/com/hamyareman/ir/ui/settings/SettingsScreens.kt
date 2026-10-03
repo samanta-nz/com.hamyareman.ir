@@ -1,5 +1,6 @@
-import android.content.Intent
 package com.hamyareman.ir.ui.settings
+
+import android.content.Intent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -58,6 +58,7 @@ import com.hamyareman.ir.ui.study.SecureWebEffect
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
+import kotlinx.coroutines.launch
 
 private const val DIARY_STORE = "hamyar_private_diary"
 private const val DIARY_ENTRIES = "entries"
