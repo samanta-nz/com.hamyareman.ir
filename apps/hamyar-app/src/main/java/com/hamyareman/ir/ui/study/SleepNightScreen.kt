@@ -146,14 +146,14 @@ fun SleepNightScreen(onBack: () -> Unit) {
                 }
             }
         }
-            BackgroundMusicTileHost(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .zIndex(20f),
-                handle = music,
-            )
         }
+        BackgroundMusicTileHost(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .zIndex(20f),
+            handle = music,
+        )
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
                 onClick = {
