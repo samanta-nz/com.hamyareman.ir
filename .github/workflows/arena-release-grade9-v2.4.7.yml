@@ -81,7 +81,7 @@ jobs:
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
             :core-common:testDebugUnitTest \
-            :hamyar-app:testP09ReleaseUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
             :hamyar-app:assembleP09Release \
             -PhamyarVersionCode="$VERSION_CODE" -PhamyarVersionName="$VERSION_NAME"
           mkdir -p dist
