@@ -50,21 +50,12 @@ fun HealthHubScreen(nav: NavController) {
     val scope = rememberCoroutineScope()
     val water = remember { WaterRepository(container.store, container.sync) }
     var snapshot by remember { mutableStateOf(daily.snapshot()) }
-    var refreshing by remember { mutableStateOf(false) }
 
-    suspend fun refreshCloud() {
-        refreshing = true
+    // داده محلی بلافاصله نمایش داده می‌شود و آخرین وضعیت سرور در شروع صفحه دریافت می‌شود.
+    // ارسال تغییرات از outbox و AutoSync برنامه انجام می‌شود.
+    LaunchedEffect(Unit) {
         snapshot = daily.pullToday()
-        daily.syncNow()
-        snapshot = daily.snapshot()
-        refreshing = false
     }
-
-    fun runSync() {
-        scope.launch(Dispatchers.IO) { runCatching { refreshCloud() } }
-    }
-
-    LaunchedEffect(Unit) { refreshCloud() }
 
     val girl = com.hamyareman.ir.ui.profile.StudentProfileState.gender != "boy"
     val tiles = buildList {
@@ -77,19 +68,18 @@ fun HealthHubScreen(nav: NavController) {
         add(HubCoverTile("hl-food", "آب و تغذیه", "ثبت سریع آب و هدف روزانه", { nav.hubTo(Screen.PracticeGroup.of("hl-nutrition")) }))
         add(HubCoverTile("hl-sleep", "خواب", "ثبت زمان خواب و بیداری", { nav.hubTo(Screen.PracticeGroup.of("hl-sleep")) }))
         add(HubCoverTile("hl-meds", "یادآور دارو و مراقبت", "هشدارهای زمان‌دار", { nav.hubTo(Screen.Meds.route) }))
-        add(HubCoverTile("hl-routine", "روتین امروز", "افزودن، ویرایش، تیک‌زدن و سینک", { nav.hubTo(Screen.Routine.route) }))
+        add(HubCoverTile("hl-routine", "روتین امروز", "افزودن، ویرایش و تیک‌زدن", { nav.hubTo(Screen.Routine.route) }))
     }
 
     HubBody {
         HubHeader("سلامتی 💚", "بدنت دوست توست — هر روز یک قدم مهربانی", slotId = "hub.health.header")
         DailyHealthCard(
             snapshot = snapshot,
-            busy = refreshing,
+            busy = false,
             onWaterDelta = { delta ->
                 if (delta > 0) water.addGlass() else water.undoGlass()
                 val state = water.state()
                 snapshot = daily.recordWater(state.goal, state.consumed, delta)
-                runSync()
             },
             onRoutine = { nav.hubTo(Screen.Routine.route) },
             onYoga = { nav.hubTo(Screen.ContentCategory.of("yoga")) },
@@ -97,7 +87,7 @@ fun HealthHubScreen(nav: NavController) {
             onBreathing = { nav.hubTo(Screen.ContentCategory.of("breath")) },
             onSleep = { nav.hubTo(Screen.PracticeGroup.of("hl-sleep")) },
             onProgress = { nav.hubTo(Screen.HealthProgress.route) },
-            onSync = { runSync() },
+            onSync = {},
         )
         HubCoverGrid(tiles)
     }
@@ -195,13 +185,6 @@ private fun DailyHealthCard(
                 }
             }
 
-            Button(
-                onClick = onSync,
-                enabled = !busy,
-                modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp),
-            ) {
-                Text(if (busy) "در حال دریافت و ارسال…" else "دریافت و ارسال با دیتابیس")
-            }
         }
     }
 }
