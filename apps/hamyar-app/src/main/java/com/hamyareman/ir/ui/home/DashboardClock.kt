@@ -53,6 +53,8 @@ internal fun ProfileClockAvatar(
     }
     val ring = MaterialTheme.colorScheme.primary
     val outline = MaterialTheme.colorScheme.outline
+    val avatarPrimary = MaterialTheme.colorScheme.primary
+    val avatarPrimaryContainer = MaterialTheme.colorScheme.primaryContainer
     val time = remember(now) { LocalDateTime.ofInstant(Instant.ofEpochMilli(now), JalaliDate.TEHRAN) }
     val avatarPath = StudentProfileState.avatarPath
     val initial = StudentProfileState.firstName.take(1).ifBlank { "؟" }
@@ -77,25 +79,25 @@ internal fun ProfileClockAvatar(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop)
             } else {
-                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.fillMaxSize()) {
+                Surface(shape = CircleShape, color = avatarPrimaryContainer, modifier = Modifier.fillMaxSize()) {
                     Canvas(Modifier.fillMaxSize()) {
                         val w = size.width
                         val h = size.height
                         val c = Offset(w / 2f, h / 2f)
                         // آواتار پیش‌فرض وکتوری: سبک، مدرن و مرتبط با هویت «دانش‌آموز/کاربر».
                         drawCircle(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                            color = avatarPrimary.copy(alpha = 0.10f),
                             radius = w * 0.39f,
                             center = c,
                         )
                         drawCircle(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
+                            color = avatarPrimary.copy(alpha = 0.20f),
                             radius = w * 0.28f,
                             center = Offset(c.x, c.y - w * 0.13f),
                             style = Stroke(width = w * 0.055f),
                         )
                         drawArc(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = avatarPrimary,
                             startAngle = 205f,
                             sweepAngle = 130f,
                             useCenter = false,
@@ -104,12 +106,12 @@ internal fun ProfileClockAvatar(
                             style = Stroke(width = w * 0.065f),
                         )
                         drawCircle(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = avatarPrimary,
                             radius = w * 0.045f,
                             center = Offset(c.x - w * 0.13f, c.y - w * 0.13f),
                         )
                         drawCircle(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = avatarPrimary,
                             radius = w * 0.045f,
                             center = Offset(c.x + w * 0.13f, c.y - w * 0.13f),
                         )
