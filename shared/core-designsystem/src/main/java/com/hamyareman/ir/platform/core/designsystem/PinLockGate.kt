@@ -1,6 +1,7 @@
 package com.hamyareman.ir.platform.core.designsystem
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,7 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +55,8 @@ fun PinLockGate(
     maxLength: Int = 8,
     maxAttempts: Int = 5,
     biometricLabel: String? = null,
+    patternEnabled: Boolean = false,
+    onPatternVerify: ((String) -> Boolean)? = null,
     biometricBusy: Boolean = false,
     externalNotice: String? = null,
     onBiometricRequest: (() -> Unit)? = null,
@@ -59,6 +66,7 @@ fun PinLockGate(
     var pin by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var attempts by remember { mutableIntStateOf(0) }
+    var pattern by remember { mutableStateOf("") }
     val lockedOut = attempts >= maxAttempts
 
     Column(
@@ -77,6 +85,30 @@ fun PinLockGate(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(20.dp))
+        if (patternEnabled && onPatternVerify != null) {
+            Text("الگوی اختصاصی همیار من", style = MaterialTheme.typography.titleMedium)
+            Text("چهار نقطه یا بیشتر را به ترتیب انتخاب کن؛ این الگو مستقل از قفل خود گوشی است.", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(10.dp))
+            Column(Modifier.width(240.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                listOf(0, 1, 2).forEach { row ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        listOf(0, 1, 2).forEach { col ->
+                            val n = row * 3 + col + 1
+                            val chosen = pattern.contains(n.toString())
+                            Box(Modifier.weight(1f).size(66.dp).clip(CircleShape).background(if (chosen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant).clickable(enabled = !lockedOut && !chosen) { pattern += n.toString(); error = null }, contentAlignment = Alignment.Center) {
+                                Text(if (chosen) "✓" else n.toString(), style = MaterialTheme.typography.titleLarge)
+                            }
+                        }
+                    }
+                }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { pattern = ""; error = null }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
+                PrimaryButton(text = if (lockedOut) "قفل موقت" else "بازکردن با الگو", onClick = { if (pattern.length < 4) error = "الگو باید حداقل ۴ نقطه داشته باشد." else if (onPatternVerify(pattern)) { pattern = ""; onUnlocked() } else { attempts += 1; pattern = ""; error = "الگو درست نیست." } }, modifier = Modifier.weight(2f))
+            }
+            Spacer(Modifier.height(12.dp))
+            Text("یا PIN را وارد کن", style = MaterialTheme.typography.labelLarge)
+        }
         OutlinedTextField(
             value = pin,
             onValueChange = { value ->
