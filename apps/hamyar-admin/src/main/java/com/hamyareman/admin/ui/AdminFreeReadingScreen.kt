@@ -228,7 +228,7 @@ private fun AddFreeBookDialog(
                                     safeId,
                                     JSONObject()
                                         .put("bookId", safeId)
-                                        .put("type", type)
+                                        .put("type", if (type == "AUDIO") "free_audio_book" else "free_text_book")
                                         .put("title", title.trim())
                                         .put("author", author.trim())
                                         .put("description", description.trim())
