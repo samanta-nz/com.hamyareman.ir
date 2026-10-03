@@ -28,8 +28,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.hamyareman.ir.platform.core.common.JalaliDate
@@ -78,8 +78,41 @@ internal fun ProfileClockAvatar(
                     contentScale = ContentScale.Crop)
             } else {
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.fillMaxSize()) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(initial, style = MaterialTheme.typography.headlineMedium)
+                    Canvas(Modifier.fillMaxSize()) {
+                        val w = size.width
+                        val h = size.height
+                        val c = Offset(w / 2f, h / 2f)
+                        // آواتار پیش‌فرض وکتوری: سبک، مدرن و مرتبط با هویت «دانش‌آموز/کاربر».
+                        drawCircle(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                            radius = w * 0.39f,
+                            center = c,
+                        )
+                        drawCircle(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
+                            radius = w * 0.28f,
+                            center = Offset(c.x, c.y - w * 0.13f),
+                            style = Stroke(width = w * 0.055f),
+                        )
+                        drawArc(
+                            color = MaterialTheme.colorScheme.primary,
+                            startAngle = 205f,
+                            sweepAngle = 130f,
+                            useCenter = false,
+                            topLeft = Offset(c.x - w * 0.30f, c.y + w * 0.02f),
+                            size = androidx.compose.ui.geometry.Size(w * 0.60f, w * 0.47f),
+                            style = Stroke(width = w * 0.065f),
+                        )
+                        drawCircle(
+                            color = MaterialTheme.colorScheme.primary,
+                            radius = w * 0.045f,
+                            center = Offset(c.x - w * 0.13f, c.y - w * 0.13f),
+                        )
+                        drawCircle(
+                            color = MaterialTheme.colorScheme.primary,
+                            radius = w * 0.045f,
+                            center = Offset(c.x + w * 0.13f, c.y - w * 0.13f),
+                        )
                     }
                 }
             }
