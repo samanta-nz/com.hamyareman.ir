@@ -25,7 +25,10 @@ internal fun settingsTypography(
     fun scaled(style: TextStyle): TextStyle = style.copy(
         fontSize = (style.fontSize.value + sizeDelta).coerceAtLeast(7f).sp,
         fontFamily = SettingsVazirmatn,
-        fontWeight = if (style.fontWeight >= FontWeight.SemiBold) FontWeight.Bold else FontWeight.Normal,
+        fontWeight = when (style.fontWeight) {
+            FontWeight.Bold, FontWeight.SemiBold, FontWeight.ExtraBold, FontWeight.Black -> FontWeight.Bold
+            else -> FontWeight.Normal
+        },
     )
     return Typography(
         displayLarge = scaled(base.displayLarge),
