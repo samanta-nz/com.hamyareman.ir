@@ -26,6 +26,8 @@ window.HamyaremanBackground={mount};function auto(){document.querySelectorAll('[
 (()=>{'use strict';const $=id=>document.getElementById(id),fa=s=>String(s).replace(/\d/g,n=>'۰۱۲۳۴۵۶۷۸۹'[n]),clock=t=>fa(Math.floor(Math.max(0,t)/60)+':'+String(Math.floor(Math.max(0,t)%60)).padStart(2,'0'));const audio=$('coach');let started=false,ended=false,theme='dark',ready=false,frame='',lastFocus=''
 ```
 
+- نسخهٔ سبک برای بازسازی: `ci-report/lesson-yoga-stripped.html` (30,442 نویسه)
+
 ## ورزش — `Bucket/Html-files/اسکوات آرام.html`
 
 - HTTP 200، 1,884,196 بایت، HMK1: True
@@ -51,4 +53,6 @@ window.HamyaremanBackground={mount};function auto(){document.querySelectorAll('[
 
 (()=>{'use strict';const $=id=>document.getElementById(id),fa=s=>String(s).replace(/\d/g,n=>'۰۱۲۳۴۵۶۷۸۹'[n]),clock=t=>fa(Math.floor(Math.max(0,t)/60)+':'+String(Math.floor(Math.max(0,t)%60)).padStart(2,'0'));const audio=$('coach');let started=false,ended=false,theme='dark',ready=false,frame='',lastFocus=''
 ```
+
+- نسخهٔ سبک برای بازسازی: `ci-report/lesson-sport-stripped.html` (43,260 نویسه)
 
