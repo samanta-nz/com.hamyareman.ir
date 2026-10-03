@@ -40,4 +40,5 @@ jobs:
             exit 0
           fi
           git commit -m "assets: optimize embedded images"
+          git pull --rebase origin fix/android10
           git push origin HEAD:fix/android10
