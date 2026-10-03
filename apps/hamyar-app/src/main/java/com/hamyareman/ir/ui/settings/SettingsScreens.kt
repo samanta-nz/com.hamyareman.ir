@@ -45,6 +45,8 @@ import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.navigation.Screen
+import com.hamyareman.ir.ui.hub.MedsStore
+import android.provider.Settings
 import kotlinx.coroutines.launch
 import com.hamyareman.ir.platform.core.appwrite.AppwriteAuthService
 import com.hamyareman.ir.platform.core.appwrite.AppwriteClientProvider
@@ -371,197 +373,79 @@ fun RemindersScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scheduler = container.reminders
     val quiet = container.quiet
-    fun visibleReminders() = scheduler.all().filterNot {
-        it.id == com.hamyareman.ir.ui.ailearning.AI_LESSON_REMINDER_ID ||
-            it.id == com.hamyareman.ir.ui.study.SchoolAlarmStore.SCHOOL_M ||
-            it.id == com.hamyareman.ir.ui.study.SchoolAlarmStore.SCHOOL_N
-    }
-    var reminders by remember { mutableStateOf(visibleReminders()) }
+    var reminders by remember { mutableStateOf(scheduler.all()) }
+    var meds by remember { mutableStateOf(MedsStore.load(LocalStore(context, "hamyar_health"))) }
     var quietState by remember { mutableStateOf(quiet.state()) }
     var policyGranted by remember { mutableStateOf(QuietHoursAutomation.hasPolicyAccess(context)) }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf("") }
     var hour by remember { mutableStateOf("18") }
-    var minute by remember { mutableStateOf("0") }
+    var minute by remember { mutableStateOf("00") }
     var message by remember { mutableStateOf<String?>(null) }
-
-    LifecycleResumeEffect(Unit) {
-        policyGranted = QuietHoursAutomation.hasPolicyAccess(context)
-        QuietHoursAutomation.syncNow(context)
-        onPauseOrDispose { }
+    fun refresh() { reminders = scheduler.all(); meds = MedsStore.load(LocalStore(context, "hamyar_health")); policyGranted = QuietHoursAutomation.hasPolicyAccess(context); quietState = quiet.state() }
+    LifecycleResumeEffect(Unit) { refresh(); QuietHoursAutomation.syncNow(context); onPauseOrDispose { } }
+    fun openNotificationSettings() {
+        runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply { putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName) }) }
     }
-
-    fun pickQuietTime(start: Boolean) {
-        val h = if (start) quietState.startHour else quietState.endHour
-        val m = if (start) quietState.startMinute else quietState.endMinute
-        android.app.TimePickerDialog(context, { _, pickedHour, pickedMinute ->
-            if (start) {
-                quiet.update(startHour = pickedHour, startMinute = pickedMinute)
-            } else {
-                quiet.update(endHour = pickedHour, endMinute = pickedMinute)
-            }
-            quietState = quiet.state()
-            QuietHoursAutomation.schedule(context)
-            scheduler.rescheduleAll()
-        }, h, m, true).show()
-    }
-
-    fun timeLabel(hourValue: Int, minuteValue: Int): String =
-        toPersianDigits("%02d:%02d".format(hourValue, minuteValue))
-
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        AppTopBar("یادآورها", onBack)
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        AppTopBar("یادآورها و اعلان‌ها", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                "در بازهٔ سکوت، یادآورها متوقف می‌شوند و گوشی با اجازهٔ سیستم روی سکوت کامل می‌رود.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("مرکز اعلان‌ها", style = MaterialTheme.typography.titleMedium)
+                    Text("همهٔ زمان‌بندی‌های برنامه و یادآورهای دارو از همین‌جا دیده می‌شوند.", style = MaterialTheme.typography.bodySmall)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PrimaryButton("تنظیمات اعلان اندروید", Modifier.weight(1f), onClick = ::openNotificationSettings)
+                        OutlinedButton(onClick = { scheduler.rescheduleAll(); MedsStore.scheduleAll(context); refresh() }, modifier = Modifier.weight(1f)) { Text("فعال‌سازی دوباره") }
+                    }
+                }
+            }
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text("ساعات سکوت", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-                        Switch(
-                            checked = quietState.enabled,
-                            onCheckedChange = { enabled ->
-                                quiet.update(enabled = enabled)
-                                quietState = quiet.state()
-                                QuietHoursAutomation.schedule(context)
-                                scheduler.rescheduleAll()
-                                message = if (enabled && !policyGranted) {
-                                    "برای سایلنت‌شدن گوشی، دسترسی «مزاحم نشو» را فعال کن."
-                                } else null
-                            },
-                        )
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        InlineButton(
-                            "از  ${timeLabel(quietState.startHour, quietState.startMinute)}",
-                            Modifier.weight(1f),
-                        ) { pickQuietTime(start = true) }
-                        InlineButton(
-                            "تا  ${timeLabel(quietState.endHour, quietState.endMinute)}",
-                            Modifier.weight(1f),
-                        ) { pickQuietTime(start = false) }
-                    }
-                    Text(
-                        if (policyGranted) {
-                            "دسترسی سکوت گوشی فعال است. در شروع بازه، اعلان وضعیت با گزینهٔ «غیرفعال شود» نمایش داده می‌شود."
-                        } else {
-                            "برای خاموش‌شدن صدای گوشی و آلارم‌ها، دسترسی ویژهٔ «مزاحم نشو» لازم است."
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (policyGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    )
-                    if (!policyGranted) {
-                        TextButton(onClick = {
-                            runCatching { context.startActivity(QuietHoursAutomation.policySettingsIntent()) }
-                        }) { Text("دادن دسترسی سکوت گوشی") }
+                    Text("ساعات سکوت", style = MaterialTheme.typography.titleSmall)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Switch(checked = quietState.enabled, onCheckedChange = { quiet.update(enabled = it); quietState = quiet.state(); QuietHoursAutomation.schedule(context); scheduler.rescheduleAll() })
+                        Text("${toPersianDigits("%02d:%02d".format(quietState.startHour, quietState.startMinute))} تا ${toPersianDigits("%02d:%02d".format(quietState.endHour, quietState.endMinute))}", modifier = Modifier.weight(1f))
+                        TextButton(onClick = { runCatching { context.startActivity(QuietHoursAutomation.policySettingsIntent()) } }) { Text(if (policyGranted) "دسترسی فعال" else "دسترسی سیستم") }
                     }
                 }
             }
-
-            Text("یادآورهای فعال", style = MaterialTheme.typography.titleMedium)
-            if (reminders.isEmpty()) {
-                Text("هنوز یادآوری نداری.", style = MaterialTheme.typography.bodySmall)
-            }
-            reminders.forEach { reminder ->
+            Text("همهٔ یادآورها", style = MaterialTheme.typography.titleMedium)
+            reminders.sortedWith(compareBy<Reminder> { it.hour }.thenBy { it.minute }).forEach { reminder ->
                 Card(Modifier.fillMaxWidth()) {
-                    Row(
-                        Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(reminder.title, style = MaterialTheme.typography.titleSmall)
-                            Text(reminder.body, style = MaterialTheme.typography.bodySmall)
-                            Text(
-                                toPersianDigits("%02d:%02d".format(reminder.hour, reminder.minute)),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                        Switch(
-                            checked = reminder.enabled,
-                            onCheckedChange = { enabled ->
-                                scheduler.setEnabled(reminder.id, enabled)
-                                reminders = visibleReminders()
-                            },
-                        )
+                    Row(Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) { Text(reminder.title, style = MaterialTheme.typography.titleSmall); Text(reminder.body, style = MaterialTheme.typography.bodySmall); Text(toPersianDigits("%02d:%02d".format(reminder.hour, reminder.minute)), color = MaterialTheme.colorScheme.primary) }
+                        Switch(checked = reminder.enabled, onCheckedChange = { scheduler.setEnabled(reminder.id, it); refresh() })
                     }
                 }
             }
-
-            Spacer(Modifier.height(8.dp))
-            Text("یادآور تازه", style = MaterialTheme.typography.titleMedium)
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("عنوان") },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            OutlinedTextField(
-                value = body,
-                onValueChange = { body = it },
-                label = { Text("متن") },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = hour,
-                    onValueChange = { hour = it.filter(Char::isDigit).take(2) },
-                    label = { Text("ساعت") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedTextField(
-                    value = minute,
-                    onValueChange = { minute = it.filter(Char::isDigit).take(2) },
-                    label = { Text("دقیقه") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            PrimaryButton("افزودن یادآور") {
-                if (title.isBlank()) {
-                    message = "عنوان خالی است."
-                } else {
-                    val h = hour.toIntOrNull()?.coerceIn(0, 23) ?: 18
-                    val m = minute.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                    scheduler.upsert(
-                        Reminder(
-                            id = UUID.randomUUID().toString(),
-                            title = title.trim(),
-                            body = body.trim().ifBlank { title.trim() },
-                            hour = h,
-                            minute = m,
-                        ),
-                    )
-                    reminders = visibleReminders()
-                    title = ""
-                    body = ""
-                    message = "یادآور برای ${toPersianDigits("%02d:%02d".format(h, m))} تنظیم شد."
+            Text("یادآورهای دارو", style = MaterialTheme.typography.titleMedium)
+            if (meds.isEmpty()) Text("دارویی برای یادآوری ثبت نشده.", style = MaterialTheme.typography.bodySmall)
+            meds.sortedWith(compareBy<com.hamyareman.ir.ui.hub.MedicationReminder> { it.hour }.thenBy { it.minute }).forEach { med ->
+                Card(Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) { Text(med.name, style = MaterialTheme.typography.titleSmall); Text(listOf(med.dose, med.note).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodySmall); Text(toPersianDigits("%02d:%02d".format(med.hour, med.minute)), color = MaterialTheme.colorScheme.primary) }
+                        Switch(checked = med.enabled, onCheckedChange = { next -> val store = LocalStore(context, "hamyar_health"); val nextList = meds.map { if (it.id == med.id) it.copy(enabled = next) else it }; MedsStore.save(store, nextList); MedsStore.scheduleAll(context); meds = nextList })
+                    }
                 }
             }
-            message?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            Text("یادآور تازه", style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(title, { title = it }, label = { Text("عنوان") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(body, { body = it }, label = { Text("متن") }, modifier = Modifier.fillMaxWidth())
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(hour, { hour = it.filter(Char::isDigit).take(2) }, label = { Text("ساعت") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
+                OutlinedTextField(minute, { minute = it.filter(Char::isDigit).take(2) }, label = { Text("دقیقه") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
             }
+            PrimaryButton("افزودن یادآور", Modifier.fillMaxWidth()) {
+                if (title.isBlank()) message = "عنوان خالی است." else {
+                    val h = hour.toIntOrNull()?.coerceIn(0,23) ?: 18; val m = minute.toIntOrNull()?.coerceIn(0,59) ?: 0
+                    scheduler.upsert(Reminder(UUID.randomUUID().toString(), title.trim(), body.trim().ifBlank { title.trim() }, h, m)); refresh(); title = ""; body = ""; message = "یادآور ثبت شد."
+                }
+            }
+            message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
         }
     }
 }
-
 @Composable
 fun SyncScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
