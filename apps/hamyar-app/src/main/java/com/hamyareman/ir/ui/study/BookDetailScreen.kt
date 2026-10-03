@@ -140,11 +140,6 @@ fun BookDetailScreen(
                     )
                 }
             }
-        Spacer(Modifier.height(12.dp))
-        BookCommentsPanel(
-            bookId = bookCode,
-            modifier = Modifier.padding(horizontal = 4.dp),
-        )
         }
     }
     }
