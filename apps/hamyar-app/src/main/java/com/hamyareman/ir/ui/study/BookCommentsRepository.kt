@@ -1,15 +1,15 @@
 package com.hamyareman.ir.ui.study
 
 import android.content.Context
+import com.hamyareman.ir.platform.core.appwrite.AppResult
 import com.hamyareman.ir.platform.core.appwrite.TableRow
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
-import com.hamyareman.ir.platform.core.common.AppResult
-import com.hamyareman.ir.platform.core.common.TableIds
 import com.hamyareman.ir.platform.core.common.LocalStore
-import org.json.JSONArray
+import com.hamyareman.ir.platform.core.common.TableIds
 import io.appwrite.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import java.text.Normalizer
 import java.util.Locale
 
@@ -33,25 +33,13 @@ object CommentModerationFilter {
             .lowercase(Locale.ROOT)
             .replace("ي", "ی").replace("ى", "ی").replace("ك", "ک")
             .replace("ۀ", "ه").replace("ة", "ه").replace("ؤ", "و")
-            .replace("إ", "ا").replace("أ", "ا")
-            .replace("‌", "")
+            .replace("إ", "ا").replace("أ", "ا").replace("‌", "")
             .replace(Regex("[\\u064B-\\u065F\\u0670]"), "")
             .filterNot { it.isWhitespace() || it in ".,،؛,:!؟?/_|*~'\"()[]{}<>+=-" }
-
         return raw.map { c ->
             when (c) {
-                '0' -> 'o'
-                '1' -> 'i'
-                '3' -> 'e'
-                '4' -> 'a'
-                '5' -> 's'
-                '7' -> 't'
-                'а' -> 'a'
-                'е' -> 'e'
-                'о' -> 'o'
-                'р' -> 'p'
-                'с' -> 'c'
-                'х' -> 'x'
+                '0' -> 'o'; '1' -> 'i'; '3' -> 'e'; '4' -> 'a'; '5' -> 's'; '7' -> 't'
+                'а' -> 'a'; 'е' -> 'e'; 'о' -> 'o'; 'р' -> 'p'; 'с' -> 'c'; 'х' -> 'x'
                 else -> c
             }
         }.joinToString("")
@@ -60,9 +48,9 @@ object CommentModerationFilter {
     fun check(input: String, extraBlocked: Set<String> = emptySet()): CommentModeration {
         val trimmed = input.trim()
         if (trimmed.length !in 2..1000) return CommentModeration(false, "متن نظر باید بین ۲ تا ۱۰۰۰ نویسه باشد.")
-        val n = normalize(trimmed)
-        if (n.isBlank()) return CommentModeration(false, "متن نظر خالی است.")
-        return if ((BLOCKED + extraBlocked).any { it.isNotBlank() && n.contains(it) })
+        val normalized = normalize(trimmed)
+        if (normalized.isBlank()) return CommentModeration(false, "متن نظر خالی است.")
+        return if ((BLOCKED + extraBlocked).any { it.isNotBlank() && normalized.contains(it) })
             CommentModeration(false, "این متن به دلیل واژه یا عبارت نامناسب قابل ارسال نیست.")
         else CommentModeration(true)
     }
@@ -80,33 +68,51 @@ class BookCommentsRepository(
 ) {
     companion object {
         private const val PUBLIC_READ = "read(\"any\")"
+        private const val USER_CREATE = "create(\"users\")"
         private const val USER_UPDATE = "update(\"users\")"
     }
 
     suspend fun list(bookId: String): List<BookComment> = withContext(Dispatchers.IO) {
-        when (val r = tables.list(
+        when (val result = tables.list(
             TableIds.BOOK_COMMENTS,
-            listOf(Query.equal("bookId", bookId), Query.orderAsc("createdAtMs"), Query.limit(100)),
+            listOf(
+                Query.equal("bookId", bookId),
+                Query.orderAsc("createdAtMs"),
+                Query.limit(100),
+            ),
         )) {
-            is AppResult.Ok -> r.value.mapNotNull(::fromRow)
+            is AppResult.Ok -> result.value.mapNotNull(::fromRow)
             is AppResult.Err -> emptyList()
         }
     }
 
-    suspend fun create(bookId: String, userId: String, displayName: String, text: String, parentId: String = ""): Result<Unit> =
+    suspend fun create(bookId: String, userId: String, username: String, text: String, parentId: String = ""): Result<Unit> =
         withContext(Dispatchers.IO) {
-            val dynamicTerms = loadModerationTerms()
-            val moderation = CommentModerationFilter.check(text, dynamicTerms)
+            val moderation = CommentModerationFilter.check(text, loadModerationTerms())
             if (!moderation.allowed) return@withContext Result.failure(IllegalArgumentException(moderation.reason))
-            val id = "bc_" + userId.take(16) + "_" + System.currentTimeMillis().toString(36)
-            when (val r = tables.create(
+            if (parentId.isNotBlank()) {
+                when (val parent = tables.get(TableIds.BOOK_COMMENTS, parentId)) {
+                    is AppResult.Ok -> if (parent.value == null) return@withContext Result.failure(IllegalArgumentException("این دیدگاه دیگر وجود ندارد."))
+                    is AppResult.Err -> return@withContext Result.failure(RuntimeException("دیدگاه والد پیدا نشد."))
+                }
+            }
+            val id = "bc_" + userId.take(18) + "_" + System.currentTimeMillis().toString(36)
+            when (val result = tables.create(
                 TableIds.BOOK_COMMENTS,
                 mapOf(
-                    "bookId" to bookId, "userId" to userId, "displayName" to displayName.take(80),
-                    "parentId" to parentId, "text" to text.trim().take(1000),
-                    "createdAtMs" to System.currentTimeMillis(), "likes" to 0, "dislikes" to 0,
+                    "commentId" to id,
+                    "bookId" to bookId,
+                    "userId" to userId,
+                    "displayName" to username.trim().take(32).ifBlank { "کاربر" },
+                    "body" to text.trim().take(1000),
+                    "parentId" to parentId,
+                    "createdAtMs" to System.currentTimeMillis(),
+                    "status" to "APPROVED",
+                    "likes" to 0,
+                    "dislikes" to 0,
                 ),
-                listOf(PUBLIC_READ, USER_UPDATE), id,
+                listOf(PUBLIC_READ, USER_CREATE, USER_UPDATE),
+                id,
             )) {
                 is AppResult.Ok -> Result.success(Unit)
                 is AppResult.Err -> Result.failure(RuntimeException("نظر ثبت نشد."))
@@ -114,47 +120,90 @@ class BookCommentsRepository(
         }
 
     suspend fun react(comment: BookComment, userId: String, like: Boolean): Result<Unit> = withContext(Dispatchers.IO) {
-        val rowId = "bcr_" + comment.id + "_" + userId.take(20)
-        val data = mapOf("commentId" to comment.id, "bookId" to comment.bookId, "userId" to userId, "value" to if (like) 1 else -1, "updatedAtMs" to System.currentTimeMillis())
-        when (val e = tables.get(TableIds.BOOK_COMMENT_REACTIONS, rowId)) {
-            is AppResult.Ok -> if (e.value == null) result(tables.create(TableIds.BOOK_COMMENT_REACTIONS, data, listOf(PUBLIC_READ, USER_UPDATE), rowId))
-                else result(tables.update(TableIds.BOOK_COMMENT_REACTIONS, rowId, data))
-            is AppResult.Err -> Result.failure(RuntimeException("واکنش ثبت نشد."))
+        if (userId.isBlank()) return@withContext Result.failure(IllegalArgumentException("کاربر وارد نشده است."))
+        val rowId = "bcr_" + comment.id + "_" + userId.take(24)
+        val reaction = if (like) "like" else "dislike"
+        val existing = when (val result = tables.get(TableIds.BOOK_COMMENT_REACTIONS, rowId)) {
+            is AppResult.Ok -> result.value
+            is AppResult.Err -> return@withContext Result.failure(RuntimeException("واکنش ثبت نشد."))
+        }
+        val previous = existing?.string("reaction").orEmpty()
+        if (previous == reaction) return@withContext Result.success(Unit)
+
+        val saved = if (existing == null) {
+            tables.create(
+                TableIds.BOOK_COMMENT_REACTIONS,
+                mapOf(
+                    "userId" to userId,
+                    "commentId" to comment.id,
+                    "reaction" to reaction,
+                    "updatedAtMs" to System.currentTimeMillis(),
+                ),
+                listOf(PUBLIC_READ, USER_CREATE, USER_UPDATE),
+                rowId,
+            )
+        } else {
+            tables.update(
+                TableIds.BOOK_COMMENT_REACTIONS,
+                rowId,
+                mapOf("reaction" to reaction, "updatedAtMs" to System.currentTimeMillis()),
+            )
+        }
+        if (saved is AppResult.Err) return@withContext Result.failure(RuntimeException("واکنش ثبت نشد."))
+
+        val likeDelta = (if (like) 1 else 0) - (if (previous == "like") 1 else 0)
+        val dislikeDelta = (if (!like) 1 else 0) - (if (previous == "dislike") 1 else 0)
+        when (val updated = tables.update(
+            TableIds.BOOK_COMMENTS,
+            comment.id,
+            mapOf(
+                "likes" to (comment.likes + likeDelta).coerceAtLeast(0),
+                "dislikes" to (comment.dislikes + dislikeDelta).coerceAtLeast(0),
+            ),
+        )) {
+            is AppResult.Ok -> Result.success(Unit)
+            is AppResult.Err -> Result.failure(RuntimeException("شمارش واکنش به‌روزرسانی نشد."))
         }
     }
 
     private suspend fun loadModerationTerms(): Set<String> {
         val store = LocalStore(context, "hamyar_comment_moderation")
-        val cachedAt = store.getLong("terms_at", 0L)
         val cached = runCatching {
-            val a = JSONArray(store.getString("terms", "[]"))
-            buildSet { for (i in 0 until a.length()) add(a.optString(i)) }
+            val arr = JSONArray(store.getString("terms", "[]"))
+            buildSet { for (i in 0 until arr.length()) add(arr.optString(i)) }
         }.getOrDefault(emptySet())
+        val cachedAt = store.getLong("terms_at", 0L)
         if (cached.isNotEmpty() && System.currentTimeMillis() - cachedAt < 6 * 60 * 60 * 1000L) return cached
         return runCatching {
-            when (val r = tables.list(TableIds.MODERATION_TERMS, listOf("equal(\"active\",[1])", "limit(500)"))) {
-                is AppResult.Ok -> r.value.mapNotNull { it.string("term").takeIf(String::isNotBlank)?.let(CommentModerationFilter::normalize) }
-                    .toSet()
+            when (val result = tables.list(
+                TableIds.MODERATION_TERMS,
+                listOf(Query.equal("active", 1), Query.limit(500)),
+            )) {
+                is AppResult.Ok -> result.value.mapNotNull {
+                    it.string("term").takeIf(String::isNotBlank)?.let(CommentModerationFilter::normalize)
+                }.toSet()
                 is AppResult.Err -> emptySet()
             }.also { terms ->
                 if (terms.isNotEmpty()) {
-                    val a = JSONArray(); terms.forEach(a::put)
-                    store.putString("terms", a.toString())
+                    val arr = JSONArray()
+                    terms.forEach(arr::put)
+                    store.putString("terms", arr.toString())
                     store.putLong("terms_at", System.currentTimeMillis())
                 }
             }
         }.getOrElse { cached }
     }
 
-    private fun result(r: AppResult<Unit>): Result<Unit> = when (r) {
-        is AppResult.Ok -> Result.success(Unit)
-        is AppResult.Err -> Result.failure(RuntimeException("عملیات سرور ناموفق بود."))
-    }
-
-    private fun fromRow(row: TableRow) = BookComment(
-        id = row.id, bookId = row.string("bookId"), userId = row.string("userId"),
-        displayName = row.string("displayName", "کاربر"), parentId = row.string("parentId"),
-        text = row.string("text"), createdAtMs = row.long("createdAtMs"),
-        likes = row.long("likes").toInt(), dislikes = row.long("dislikes").toInt(),
-    ).takeIf { it.bookId.isNotBlank() && it.text.isNotBlank() }
+    private fun fromRow(row: TableRow): BookComment =
+        BookComment(
+            id = row.id.ifBlank { row.string("commentId") },
+            bookId = row.string("bookId"),
+            userId = row.string("userId"),
+            displayName = row.string("displayName", "کاربر").trim().take(32),
+            parentId = row.string("parentId"),
+            text = row.string("body").ifBlank { row.string("text") },
+            createdAtMs = row.long("createdAtMs"),
+            likes = row.long("likes").toInt().coerceAtLeast(0),
+            dislikes = row.long("dislikes").toInt().coerceAtLeast(0),
+        ).takeIf { it.bookId.isNotBlank() && it.text.isNotBlank() }
 }
