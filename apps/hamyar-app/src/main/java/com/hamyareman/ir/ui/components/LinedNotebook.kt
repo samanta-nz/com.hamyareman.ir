@@ -53,7 +53,7 @@ fun LinedNotebookInput(
     Box(
         modifier
             .fillMaxWidth()
-            .height(236.dp)
+            .aspectRatio(0.707f)
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
             .border(2.dp, Color(0xFFF59E0B), RoundedCornerShape(16.dp)),
@@ -71,10 +71,10 @@ fun LinedNotebookInput(
                 scope.launch { if (scroll.maxValue > 0) scroll.animateScrollTo(scroll.maxValue) }
             },
             textStyle = TextStyle(
-                fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT),
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Light,
-                lineHeight = lineSp,
+                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Normal,
+                lineHeight = 24.sp,
                 color = Color(0xFF1E3A5F),
                 textAlign = TextAlign.Right,
                 platformStyle = PlatformTextStyle(includeFontPadding = false),
@@ -86,7 +86,7 @@ fun LinedNotebookInput(
             cursorBrush = SolidColor(Color(0xFF1E3A5F)),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 18.dp, end = 46.dp, top = 6.dp, bottom = 6.dp)
+                .padding(start = 24.dp, end = 48.dp, top = 10.dp, bottom = 8.dp)
                 .verticalScroll(scroll),
         )
     }
