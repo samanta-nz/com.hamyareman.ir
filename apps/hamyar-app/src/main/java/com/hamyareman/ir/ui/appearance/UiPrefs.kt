@@ -19,8 +19,8 @@ class UiPrefs(context: Context) {
     private val store = LocalStore(context, "hamyar_appearance")
 
     var theme by mutableStateOf(
-        runCatching { BrandTheme.valueOf(store.getString(KEY_THEME, BrandTheme.Stitch.name)) }
-            .getOrDefault(BrandTheme.Stitch)
+        runCatching { BrandTheme.valueOf(store.getString(KEY_THEME, BrandTheme.OceanPulse.name)) }
+            .getOrDefault(BrandTheme.OceanPulse)
     )
         private set
 
@@ -75,7 +75,7 @@ class UiPrefs(context: Context) {
     /** پیش‌فرض تم بر اساس جنسیت — فقط اگر کاربر هنوز تم را دستی عوض نکرده. */
     fun applyDefaultForGender(genderId: String) {
         if (themeUserSet) return
-        theme = if (genderId == "girl") BrandTheme.DollStage else BrandTheme.Stitch
+        theme = if (genderId == "girl") BrandTheme.PetalBloom else BrandTheme.OceanPulse
         store.putString(KEY_THEME, theme.name)
     }
 
