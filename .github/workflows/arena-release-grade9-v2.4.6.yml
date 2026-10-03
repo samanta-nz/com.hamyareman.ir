@@ -218,30 +218,21 @@ jobs:
             --row-id "$ROW_ID" \
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
-            --notes "رفع قطعی بسته‌شدن و اسکرول در پنجرهٔ موسیقی دروس یوگا و ورزش|بهینه‌سازی کاشی پخش موسیقی در صفحهٔ بشنو و بخواب بدون لرزش و قفل صفحه|پایداری کامل کنترل‌های پلیر و دکمهٔ بازگشت" \
+            --notes "تایپوگرافی یکپارچهٔ استاندارد در کل اپ با حفظ فونت‌های داشبورد و دفترچه‌های دست‌نویس|روتین امروز تعاملی با افزودن، ویرایش، کپی، حذف، جابه‌جایی و دریافت/ارسال دیتابیس|کارت آب بنوش بازطراحی شد و همهٔ اکشن‌های آب در سلامت روزانه ثبت و دریافت/ارسال می‌شوند|همهٔ فعالیت‌های ورزش و یوگا در سلامت روزانه ثبت و دریافت/ارسال می‌شوند|کارت سلامت روزانه پویا شد و وضعیت آب، ورزش، روتین و فعالیت‌های اخیر را یکجا نشان می‌دهد|رفع قطعی بسته‌شدن و اسکرول پنجرهٔ موسیقی یوگا و ورزش" \
             --out ci-report/release-2.4.6.json 2>&1 | tee -a ci-report/release-2.4.6.log
 
-      - name: ۷) ثبت نتیجه روی برنچ
+      - name: ۷) آماده‌سازی گزارش و اعلان
         if: always()
         shell: bash
         run: |
           set +e
           mkdir -p ci-report
-          git config user.name  'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -f ci-report/release-2.4.6.json ci-report/release-2.4.6.log
-          if ! git diff --cached --quiet; then
-            git commit -m "نتیجهٔ انتشار نهم ۲٫۴٫۵"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
-          for f in ci-report/release-2.4.6.json ci-report/release-2.4.6.log; do
+          for f in ci-report/release-2.4.6.json ci-report/release-2.4.6.log ci-report/release-2.4.6-html.md; do
             if [ -f "$f" ]; then
               { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
             fi
           done
-          exit 0
-
+          true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
