@@ -3,6 +3,8 @@ name: Typography + health CI
 on:
   push:
     branches: [feat/typography-health-routine-20261003]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
