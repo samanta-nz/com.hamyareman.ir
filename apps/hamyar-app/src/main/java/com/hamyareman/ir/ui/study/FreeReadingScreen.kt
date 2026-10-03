@@ -41,6 +41,7 @@ import coil.compose.AsyncImage
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.toPersianDigits
+import com.hamyareman.ir.platform.feature.playback.BackgroundPlaybackGate
 import com.hamyareman.ir.platform.feature.playback.PlaybackController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -196,9 +197,16 @@ private fun FreeAudioReader(book: FreeStudyBook) {
     var phase by remember { mutableFloatStateOf(0f) }
     val prefs = remember { LocalStore(ctx, FREE_STATE_STORE) }
     var customTimer by remember { mutableStateOf("") }
-    var timerUntil by remember { mutableLongStateOf(0L) }
+    var timerUntil by remember {
+        mutableLongStateOf(prefs.getString("sleep_timer_until", "0").toLongOrNull()?.coerceAtLeast(0L) ?: 0L)
+    }
     var backgroundPlayback by remember { mutableStateOf(prefs.getBool("background_playback", true)) }
     var note by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(backgroundPlayback) {
+        BackgroundPlaybackGate.enabled = backgroundPlayback
+        if (!backgroundPlayback) playback.stop()
+    }
 
     LaunchedEffect(Unit) {
         playback.connect()
@@ -223,11 +231,15 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         while (System.currentTimeMillis() < timerUntil) delay(500L)
         playback.pause()
         timerUntil = 0L
+        prefs.putString("sleep_timer_until", "0")
     }
     DisposableEffect(Unit) {
         onDispose {
             FreeReadingState.save(ctx, book.id, playback.positionMs, playback.durationMs, "reading")
-            if (!backgroundPlayback) playback.stop()
+            if (!backgroundPlayback) {
+                BackgroundPlaybackGate.enabled = false
+                playback.stop()
+            }
             playback.release()
         }
     }
@@ -345,6 +357,8 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                     onCheckedChange = {
                         backgroundPlayback = it
                         prefs.putBool("background_playback", it)
+                        BackgroundPlaybackGate.enabled = it
+                        if (!it) playback.stop()
                     },
                 )
             }
@@ -358,13 +372,28 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     listOf(15, 30, 45, 60).forEach { m ->
-                        FilterChip(selected = false, onClick = { timerUntil = System.currentTimeMillis() + m * 60_000L }, label = { Text(toPersianDigits(m.toString())) })
+                        FilterChip(
+                            selected = timerUntil > System.currentTimeMillis() && timerUntil <= System.currentTimeMillis() + m * 60_000L,
+                            onClick = {
+                                timerUntil = System.currentTimeMillis() + m.toLong() * 60_000L
+                                prefs.putString("sleep_timer_until", timerUntil.toString())
+                            },
+                            label = { Text(toPersianDigits(m.toString())) },
+                        )
                     }
                 }
-                OutlinedTextField(value = customTimer, onValueChange = { customTimer = it.filter(Char::isDigit).take(4) }, label = { Text("زمان دلخواه (دقیقه)") }, singleLine = true)
+                OutlinedTextField(
+                    value = customTimer,
+                    onValueChange = { customTimer = it.filter(Char::isDigit).take(18) },
+                    label = { Text("زمان دلخواه (دقیقه)") },
+                    singleLine = true,
+                    supportingText = { Text("هر عدد مثبت؛ فقط زمان پایان ذخیره می‌شود.") },
+                )
                 OutlinedButton(onClick = {
-                    val m = customTimer.toIntOrNull()?.coerceIn(1, 1440) ?: return@OutlinedButton
-                    timerUntil = System.currentTimeMillis() + m * 60_000L
+                    val m = customTimer.toLongOrNull()?.takeIf { it > 0L } ?: return@OutlinedButton
+                    val maxMinutes = Long.MAX_VALUE / 60_000L
+                    timerUntil = System.currentTimeMillis() + m.coerceAtMost(maxMinutes) * 60_000L
+                    prefs.putString("sleep_timer_until", timerUntil.toString())
                 }) {
                     Icon(Icons.Outlined.MoreTime, null)
                     Spacer(Modifier.width(4.dp))
