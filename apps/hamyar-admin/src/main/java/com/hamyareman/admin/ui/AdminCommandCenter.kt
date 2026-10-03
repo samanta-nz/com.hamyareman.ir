@@ -123,6 +123,10 @@ fun AdminCommandCenter(onLogout: () -> Unit, onSettings: () -> Unit) {
             AdminAuxiliaryFrame("حساب‌ها و نشست‌ها", onBack = { moreScreen = null }) { AdminAuthScreen(onOpen = { selectedUser = it }) }
             return
         }
+        "free-reading" -> {
+            AdminAuxiliaryFrame("مطالعهٔ آزاد", onBack = { moreScreen = null }) { AdminFreeReadingScreen() }
+            return
+        }
     }
 
     Scaffold(
@@ -159,6 +163,11 @@ fun AdminCommandCenter(onLogout: () -> Unit, onSettings: () -> Unit) {
                                 text = { Text("حساب‌ها و نشست‌ها") },
                                 leadingIcon = { Icon(Icons.Outlined.PersonSearch, null) },
                                 onClick = { moreOpen = false; moreScreen = "auth" },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("مطالعهٔ آزاد") },
+                                leadingIcon = { Icon(Icons.Outlined.Book, null) },
+                                onClick = { moreOpen = false; moreScreen = "free-reading" },
                             )
                             DropdownMenuItem(
                                 text = { Text("تنظیمات اتصال و کلیدها") },
