@@ -5,8 +5,6 @@ import android.graphics.Color
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -139,6 +137,25 @@ fun BackgroundMusicTileHost(
                             )
                             // تنها صفحات موسیقی/خواب نگهبان Web Audio دارند تا با قفل صفحه قطع نشوند.
                             view.bindManagedMediaLifecycle(watchWebAudio = true)
+                            // background-music-tile.html خودش iframe داخلی را fixed می‌کند.
+                            // در Android WebView آن لایهٔ fixed را به flow محلی تبدیل می‌کنیم؛
+                            // خود فایل باکت، رمزنگاری و ۲۹ صدای embed شده دست‌نخورده می‌مانند.
+                            view.evaluateJavascript(
+                                """
+                                (function(){
+                                  if(window.__hamyarSleepTileSafe)return;
+                                  window.__hamyarSleepTileSafe=true;
+                                  var s=document.createElement('style');
+                                  s.setAttribute('data-hamyar-sleep-tile-safe','');
+                                  s.textContent=
+                                    'body.is-open{overflow:visible!important}' +
+                                    'body.is-open #scrim{position:absolute!important;inset:0!important;z-index:2147483646!important}' +
+                                    'body.is-open #backgroundMusicFrame{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-height:none!important;z-index:2147483647!important}';
+                                  (document.head||document.documentElement).appendChild(s);
+                                })();
+                                """.trimIndent(),
+                                null,
+                            )
                             // پشتیبان: اگر رابط HamyarHost به هر دلیل صدا نخورد،
                             // تغییر کلاس body همان وضعیت را گزارش می‌کند.
                             view.evaluateJavascript(
@@ -184,9 +201,8 @@ fun BackgroundMusicTileHost(
                 }
             }
 
-            // باز که می‌شود، میزبان تا ته صفحه بالا می‌آید تا آکاردئون بریده نشود.
-            val target = if (expanded) (screenHeight - 24.dp).coerceAtLeast(420.dp) else TILE_HEIGHT
-            val height by animateDpAsState(target, tween(340), label = "music tile height")
+            // فقط یک اندازهٔ نهایی؛ بدون انیمیشنِ چندچرخه‌ای روی Android WebView.
+            val height = if (expanded) (screenHeight - 24.dp).coerceAtLeast(420.dp) else TILE_HEIGHT
             Box(modifier.fillMaxWidth().height(height)) {
                 AndroidView(
                     factory = { web },
