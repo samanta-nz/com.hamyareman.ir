@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,6 +26,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,9 +79,27 @@ fun HubCard(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Row(Modifier.padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(emoji, style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.width(7.dp))
+        Row(Modifier.padding(horizontal = 8.dp, vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(40.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(emoji, style = MaterialTheme.typography.titleLarge)
+                }
+                Icon(
+                    Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
+                    modifier = Modifier.size(10.dp).align(Alignment.TopEnd),
+                )
+            }
+            Spacer(Modifier.width(9.dp))
             Column(Modifier.weight(1f).height(46.dp)) {
                 AutoShrinkTileText(
                     text = title,
@@ -167,7 +189,20 @@ private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String)
                     Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(tile.title.take(1), style = MaterialTheme.typography.headlineLarge)
+                    Box(
+                        Modifier.size(58.dp).background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            CircleShape,
+                        ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Outlined.AutoAwesome,
+                            contentDescription = tile.title,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(30.dp),
+                        )
+                    }
                 }
             }
             // ارتفاع متن ثابت: یک سطر عنوان + دو سطر توضیح. فونت فقط کوچک می‌شود
