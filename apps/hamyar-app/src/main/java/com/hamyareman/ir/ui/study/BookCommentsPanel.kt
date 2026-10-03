@@ -48,6 +48,7 @@ fun BookCommentsPanel(bookId: String, modifier: Modifier = Modifier) {
     var notice by remember(bookId) { mutableStateOf<String?>(null) }
     var loading by remember(bookId) { mutableStateOf(true) }
 
+    val userId = container.auth.cachedUserId().orEmpty()
     val username = remember {
         container.auth.cachedUsername().orEmpty()
             .ifBlank { container.auth.cachedUser()?.username.orEmpty() }
@@ -82,7 +83,7 @@ fun BookCommentsPanel(bookId: String, modifier: Modifier = Modifier) {
             else -> comments.filter { it.parentId.isBlank() }.forEach { root ->
                 CommentThread(root, children, onReply = { replyTo = it }) { target ->
                     scope.launch {
-                        if (repository.react(target, username, like = true).isSuccess) reload()
+                        if (repository.react(target, userId, like = true).isSuccess) reload()
                     }
                 }
             }
