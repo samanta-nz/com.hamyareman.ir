@@ -31,7 +31,6 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.study.HmkWebViewClient
 import com.hamyareman.ir.ui.study.HtmlMediaKey
-import com.hamyareman.ir.ui.study.ServerResolver
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
@@ -39,7 +38,11 @@ import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 
 /** فایل tile کاملِ باکت (خودبسنده، همهٔ صداها داخل خودش). */
+// نشانی مستقیم و ثابتِ باکت: مسیر موسیقی عمداً از ServerResolver رد نمی‌شود تا
+// صفحه و هر درخواستِ داخلِ آن روی یک origin بمانند و حتماً از HmkWebViewClient
+// (و در نتیجه رمزگشاییِ HMK1) عبور کنند.
 private const val MUSIC_TILE_KEY = "Bucket/Html-files/background-music-tile.html"
+private val MUSIC_TILE_URL = HmkWebViewClient.bucketUrl(MUSIC_TILE_KEY)
 private val TILE_HEIGHT = 92.dp
 
 /**
@@ -123,7 +126,7 @@ fun BackgroundMusicTileHost(
                         }
                     }
                     installManagedMediaLifecycle()
-                    loadUrl(ServerResolver.internal(MUSIC_TILE_KEY))
+                    loadUrl(MUSIC_TILE_URL)
                 }
             }
 

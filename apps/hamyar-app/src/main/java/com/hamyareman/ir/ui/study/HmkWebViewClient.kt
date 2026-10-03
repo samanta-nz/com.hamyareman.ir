@@ -1,7 +1,6 @@
 package com.hamyareman.ir.ui.study
 
 import android.content.Context
-import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -170,8 +169,23 @@ open class HmkWebViewClient(
         const val MSG_CORRUPT = "فایل درس خراب است. دوباره تلاش کن."
         const val MSG_TOO_BIG = "این فایل برای باز شدن روی این دستگاه خیلی بزرگ است."
 
-        /** هاست باکت داخلی، از روی همان ثابت [ServerResolver.INTERNAL_PUBLIC]. */
-        fun bucketHost(): String =
-            runCatching { Uri.parse(ServerResolver.INTERNAL_PUBLIC).host.orEmpty() }.getOrDefault("")
+        /**
+         * ریشهٔ ثابتِ باکت محتوا.
+         *
+         * عمداً از [ServerResolver] خوانده نمی‌شود: لایهٔ WebView باید یک origin
+         * قطعی داشته باشد تا هر درخواستِ داخلِ صفحه (از جمله iframe و دارایی‌های
+         * آن) حتماً از همین مسیرِ رمزگشایی رد شود. اگر host از Resolver بیاید و
+         * Resolver روزی مقصد را عوض کند، `shouldInterceptRequest` دیگر آن
+         * درخواست‌ها را نمی‌گیرد و محتوای رمزشده خام به WebView می‌رسد.
+         */
+        const val BUCKET_BASE = "https://c539776.parspack.net"
+        const val BUCKET_HOST = "c539776.parspack.net"
+
+        /** هاست باکت محتوا — ثابت و مستقل از انتخاب سرور. */
+        fun bucketHost(): String = BUCKET_HOST
+
+        /** نشانی کاملِ یک کلیدِ باکت روی همان origin ثابت. */
+        fun bucketUrl(key: String): String =
+            BUCKET_BASE + "/" + key.trimStart('/').replace(" ", "%20")
     }
 }

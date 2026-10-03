@@ -60,8 +60,15 @@ internal fun WebView.installMusicFrameOverlayBridge() {
             snapshot(frame);
             document.body.style.overflow='hidden';
             document.documentElement.style.overflow='hidden';
+            // ترتیب عمدی: اول vh به‌عنوان پشتیبان، بعد dvh که اگر WebView
+            // پشتیبانی کند جایش را بگیرد. inset هم با چهار سمتِ صریح تکرار شده
+            // چون بعضی WebViewهای قدیمی‌تر inset را روی iframe نادیده می‌گیرند.
             frame.style.cssText += ';display:block!important;position:fixed!important;inset:0!important;'+
-              'width:100vw!important;height:100dvh!important;min-width:100vw!important;min-height:100dvh!important;'+
+              'top:0!important;left:0!important;right:0!important;bottom:0!important;'+
+              'width:100vw!important;min-width:100vw!important;'+
+              'height:100vh!important;min-height:100vh!important;'+
+              'height:100dvh!important;min-height:100dvh!important;'+
+              'overflow:hidden!important;overscroll-behavior:none!important;'+
               'max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;'+
               'border:0!important;border-radius:0!important;z-index:2147483647!important;'+
               'background:'+(theme()==='dark'?'#101713':'#f4faf7')+'!important;'+

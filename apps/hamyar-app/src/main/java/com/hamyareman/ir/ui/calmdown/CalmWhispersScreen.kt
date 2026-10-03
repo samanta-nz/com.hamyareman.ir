@@ -65,7 +65,6 @@ import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.study.HmkWebViewClient
 import com.hamyareman.ir.ui.study.HtmlAudioKeepAliveService
 import com.hamyareman.ir.ui.study.SecureWebEffect
-import com.hamyareman.ir.ui.study.ServerResolver
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
@@ -74,7 +73,9 @@ import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.delay
 
 /** «نجواهای آرام‌بخش طبیعت» — صفحهٔ کامل موسیقی با تایمر خواب بومی. */
+// همان قاعدهٔ کاشی: origin ثابتِ باکت، بدون عبور از انتخاب‌گر سرور.
 private const val MUSIC_FULL_KEY = "Bucket/Html-files/background-music-full.html"
+private val MUSIC_FULL_URL = HmkWebViewClient.bucketUrl(MUSIC_FULL_KEY)
 private val TIMER_CHOICES = listOf(5, 10, 15, 20, 30, 45, 60, 90, 120)
 
 /** فونت اختصاصی ناحیهٔ تایمر: پنج واحد کوچک‌تر از تایپوگرافی عادی همان نقش. */
@@ -188,7 +189,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                     }
                     installManagedMediaLifecycle()
                     webRef[0] = this
-                    loadUrl(ServerResolver.internal(MUSIC_FULL_KEY))
+                    loadUrl(MUSIC_FULL_URL)
                 }
             },
             update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
