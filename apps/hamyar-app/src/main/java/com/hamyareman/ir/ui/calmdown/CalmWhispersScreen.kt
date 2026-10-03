@@ -184,7 +184,8 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                                 appearance.darkTheme,
                                 cacheHit = mainDocumentWasLoadedFromCache(),
                             )
-                            view.bindManagedMediaLifecycle()
+                            // تنها صفحات موسیقی/خواب نگهبان Web Audio دارند تا با قفل صفحه قطع نشوند.
+                            view.bindManagedMediaLifecycle(watchWebAudio = true)
                         }
                     }
                     installManagedMediaLifecycle()

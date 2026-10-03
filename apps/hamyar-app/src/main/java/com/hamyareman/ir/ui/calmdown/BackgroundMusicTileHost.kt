@@ -137,7 +137,8 @@ fun BackgroundMusicTileHost(
                                 liveAppearance.value.darkTheme,
                                 cacheHit = mainDocumentWasLoadedFromCache(),
                             )
-                            view.bindManagedMediaLifecycle()
+                            // تنها صفحات موسیقی/خواب نگهبان Web Audio دارند تا با قفل صفحه قطع نشوند.
+                            view.bindManagedMediaLifecycle(watchWebAudio = true)
                             // پشتیبان: اگر رابط HamyarHost به هر دلیل صدا نخورد،
                             // تغییر کلاس body همان وضعیت را گزارش می‌کند.
                             view.evaluateJavascript(

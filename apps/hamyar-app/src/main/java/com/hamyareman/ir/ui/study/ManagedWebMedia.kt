@@ -25,7 +25,7 @@ fun WebView.installManagedMediaLifecycle() {
  * (صدای «بشنو و بخواب» با قفل صفحه قطع می‌شد). حالا وضعیت `BackgroundMusic.state.playing`
  * هر ثانیه از خود صفحه و iframeهای هم‌origin خوانده می‌شود.
  */
-fun WebView.bindManagedMediaLifecycle() {
+fun WebView.bindManagedMediaLifecycle(watchWebAudio: Boolean = false) {
     evaluateJavascript(
         """
         (function(){
@@ -70,7 +70,14 @@ fun WebView.bindManagedMediaLifecycle() {
           scan(document);
           new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(scan);});})
             .observe(document.documentElement,{childList:true,subtree:true});
-          setInterval(function(){webAudio=musicPlaying();tell();},1000);
+          // فقط در صفحات موسیقی/خواب: هر ۳ ثانیه (نه ۱ ثانیه) و فقط وقتی صفحه مخفی
+          // نیست، تا باتری درس‌های یوگا/ورزش درگیر نشود.
+          if(${watchWebAudio}){
+            setInterval(function(){
+              if(document.hidden)return;
+              webAudio=musicPlaying();tell();
+            },3000);
+          }
           window.__hamyarStopAllMedia=function(){
             windows(window,[],0).forEach(function(w){
               try{w.document.querySelectorAll('audio,video').forEach(function(el){try{el.pause();el.currentTime=0;}catch(e){}});}catch(e){}

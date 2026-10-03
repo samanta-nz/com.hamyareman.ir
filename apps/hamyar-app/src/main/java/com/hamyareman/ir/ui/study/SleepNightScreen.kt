@@ -49,6 +49,11 @@ data class SleepTrack(val id: String, val title: String, val subtitle: String, v
 /** گزینه‌های تایمر خواب (دقیقه). صفر یعنی بدون تایمر. */
 private val SLEEP_TIMER_OPTIONS = listOf(0, 15, 30, 60)
 
+// این دو تکه به درخواست کاربر فعلاً نمایش داده نمی‌شوند ولی حذف هم نشده‌اند:
+// تایمر خوابِ این صفحه (تایمرِ معتبر در «نجواهای آرام‌بخش» است) و نوار بالای صفحه.
+private const val SHOW_SLEEP_TIMER = false
+private const val SHOW_TOP_BAR = false
+
 @Composable
 fun SleepNightScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
@@ -67,7 +72,7 @@ fun SleepNightScreen(onBack: () -> Unit) {
     LaunchedEffect(Unit) {
         while (true) {
             music.queryPlaying { musicPlaying = it }
-            delay(1000)
+            delay(3000)
         }
     }
     // تایمر خواب: پس از مدت انتخاب‌شده هر دو منبع صدا متوقف می‌شوند.
@@ -103,7 +108,7 @@ fun SleepNightScreen(onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         // نسخهٔ قبلی نوار بالا را نداشت و onBack هیچ‌جا استفاده نمی‌شد؛ تنها راه
         // برگشت دکمهٔ سیستم بود.
-        AppTopBar("بشنو و بخواب", onBack)
+        if (SHOW_TOP_BAR) AppTopBar("بشنو و بخواب", onBack)
         // tile در جریان طبیعی صفحه است: با بازشدن به پایین بزرگ می‌شود و محتوای
         // زیر آن را می‌راند؛ نه اینکه روی صفحهٔ خواب یک overlay غیرقابل لمس بسازد.
         Column(
@@ -121,15 +126,17 @@ fun SleepNightScreen(onBack: () -> Unit) {
                     val first = audioTracks.firstOrNull { it.uri.isNotBlank() }
                     if (first != null) play(first) else if (!musicPlaying) music.toggle()
                 }
-                Text("تایمر خواب", style = AppTypography.pageHeading.style)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SLEEP_TIMER_OPTIONS.forEach { m ->
-                        val selected = timerMinutes == m
-                        OutlinedButton(onClick = { timerMinutes = m }, modifier = Modifier.weight(1f)) {
-                            Text(
-                                (if (selected) "✓ " else "") +
-                                    if (m == 0) "بدون" else toPersianDigits(m.toString()) + " دقیقه",
-                            )
+                if (SHOW_SLEEP_TIMER) {
+                    Text("تایمر خواب", style = AppTypography.pageHeading.style)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SLEEP_TIMER_OPTIONS.forEach { m ->
+                            val selected = timerMinutes == m
+                            OutlinedButton(onClick = { timerMinutes = m }, modifier = Modifier.weight(1f)) {
+                                Text(
+                                    (if (selected) "✓ " else "") +
+                                        if (m == 0) "بدون" else toPersianDigits(m.toString()) + " دقیقه",
+                                )
+                            }
                         }
                     }
                 }
