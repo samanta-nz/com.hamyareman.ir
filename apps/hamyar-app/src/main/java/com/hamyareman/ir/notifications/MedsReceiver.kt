@@ -12,6 +12,7 @@ import com.hamyareman.ir.R
 import com.hamyareman.ir.ui.hub.MedsStore
 
 class MedsReceiver : BroadcastReceiver() {
+    companion object { private const val CHANNEL_ID = "medication_reminders" }
     override fun onReceive(context: Context, intent: Intent) {
         val id = intent.getStringExtra("id").orEmpty()
         val name = intent.getStringExtra("name").orEmpty()
