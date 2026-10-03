@@ -1,23 +1,13 @@
 package com.hamyareman.ir.ui.study
 
-import android.webkit.JavascriptInterface
 import android.webkit.WebView
-
-private const val OVERLAY_BRIDGE = "HamyarMusicOverlay"
 
 /**
  * پلِ popup پلیر موسیقی برای iframeهای درس‌های یوگا و ورزش.
  *
- * ⚠️ خود صفحهٔ درس (`HamyaremanBackground.mount`) هم روی پیام `state` همین iframe را
- * تمام‌صفحه و برگشت می‌دهد (`resize(open)` با `frame.style.cssText`) و `body.overflow`
- * را خودش نگه می‌دارد/برمی‌گرداند. نسخهٔ قبلیِ پل از style «snapshot» می‌گرفت؛ ولی
- * listener صفحه زودتر اجرا می‌شود، پس snapshot همان style تمام‌صفحهٔ صفحه بود و روی
- * close همان برمی‌گشت: iframe بعد از بستن روی کل درس می‌ماند و body قفل (hidden) می‌ماند.
- *
- * حالا پل هیچ style inline را نمی‌خواند و نمی‌نویسد. فقط attribute
- * `data-hamyar-music-open` را روی iframe می‌گذارد و یک stylesheet ثابت (با !important)
- * روی همین attribute، viewport واقعی (vh/dvh) را اعمال می‌کند. با برداشتن attribute،
- * همان style خود صفحه (۸۸px) بدون هیچ بازیابی دستی دوباره اثر می‌کند.
+ * iframe فقط پس از پیام صریحِ open تمام viewport را می‌گیرد و با پیام close دقیقاً
+ * به style قبلی برمی‌گردد. هیچ navigation یا دست‌کاری history برای بستن انجام
+ * نمی‌شود؛ بنابراین خروج از iframe/درسِ مادر دوباره رخ نمی‌دهد.
  */
 internal fun WebView.installMusicFrameOverlayBridge() {
     evaluateJavascript(
@@ -25,29 +15,10 @@ internal fun WebView.installMusicFrameOverlayBridge() {
         (function(){
           if(window.__hamyarMusicFrameOverlayBridge)return;
           window.__hamyarMusicFrameOverlayBridge=true;
-          var CHANNEL='hamyareman-background-v1';
-          var ATTR='data-hamyar-music-open';
-
-          var css=
-            'iframe['+ATTR+'="true"]{display:block!important;position:fixed!important;inset:0!important;'+
-            'top:0!important;left:0!important;right:0!important;bottom:0!important;'+
-            // ترتیب عمدی: اول vh به‌عنوان پشتیبان، بعد dvh که اگر WebView پشتیبانی کند جایش را بگیرد.
-            'width:100vw!important;min-width:100vw!important;'+
-            'height:100vh!important;min-height:100vh!important;'+
-            'height:100dvh!important;min-height:100dvh!important;'+
-            'max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;'+
-            'border:0!important;border-radius:0!important;overflow:hidden!important;'+
-            'overscroll-behavior:none!important;z-index:2147483647!important;'+
-            'touch-action:auto!important;pointer-events:auto!important;background:#f4faf7!important}'+
-            'html[data-hamyar-theme="dark"] iframe['+ATTR+'="true"]{background:#101713!important}'+
-            'html.hamyar-music-open,html.hamyar-music-open body{overflow:hidden!important}';
-          var style=document.createElement('style');
-          style.setAttribute('data-hamyar-music-overlay','');
-          style.textContent=css;
-          (document.head||document.documentElement).appendChild(style);
+          var saved=new WeakMap();
+          var COLLAPSED_HEIGHT='92px';
 
           function usable(f){return f && !f.hasAttribute('data-hamyar-ignore-inflow-bridge');}
-          function isOpen(f){return f.getAttribute(ATTR)==='true';}
           function musicFrame(source){
             var frames=document.querySelectorAll('iframe'),i,f;
             // اولویت قطعی با همان iframe ای که پیام از آن آمده است.
@@ -57,57 +28,63 @@ internal fun WebView.installMusicFrameOverlayBridge() {
               if((f.getAttribute('src')||'').toLowerCase().indexOf('background-music')>=0 && usable(f)) return f; }
             return null;
           }
-          function sync(){
-            var any=!!document.querySelector('iframe['+ATTR+'="true"]');
-            document.documentElement.classList.toggle('hamyar-music-open',any);
-            try{HamyarMusicOverlay.onChanged(any);}catch(e){}
+          function theme(){
+            var t=document.documentElement.getAttribute('data-hamyar-theme');
+            return t==='dark'?'dark':'light';
           }
-          function set(frame,open){
-            if(!frame || isOpen(frame)===open)return;   // پیام‌های state تکراری بی‌اثرند
-            frame.setAttribute(ATTR,open?'true':'false');
-            if(open){try{frame.focus()}catch(_){}}
-            sync();
+          function tellVariant(frame,full){
+            // پاپ‌آپ تمام‌صفحه = پخش‌کننده بدون سقف ارتفاع، ولی قابل بستن (locked=false).
+            try{ frame.contentWindow.postMessage(
+              {channel:'hamyareman-background-v1',type:'variant',full:full,locked:false},'*'); }catch(_){}
+            try{ var api=frame.contentWindow.BackgroundMusic;
+              if(api&&api.setFull)api.setFull(full,false); }catch(_){}
+          }
+          function snapshot(frame){
+            if(saved.has(frame))return saved.get(frame);
+            var value={style:frame.getAttribute('style'),bodyOverflow:document.body.style.overflow,
+              rootOverflow:document.documentElement.style.overflow,scrollX:window.scrollX,scrollY:window.scrollY};
+            saved.set(frame,value); return value;
+          }
+          function close(frame){
+            if(!frame)return;
+            var old=saved.get(frame);
+            if(old){
+              old.style===null?frame.removeAttribute('style'):frame.setAttribute('style',old.style);
+              document.body.style.overflow=old.bodyOverflow;
+              document.documentElement.style.overflow=old.rootOverflow;
+              window.scrollTo(old.scrollX,old.scrollY);
+              saved.delete(frame);
+            }else{
+              frame.style.setProperty('height',COLLAPSED_HEIGHT,'important');
+              frame.style.setProperty('min-height',COLLAPSED_HEIGHT,'important');
+              frame.style.setProperty('max-height',COLLAPSED_HEIGHT,'important');
+            }
+            tellVariant(frame,false);
+            frame.setAttribute('data-hamyar-music-open','false');
+          }
+          function open(frame){
+            if(!frame)return;
+            snapshot(frame);
+            document.body.style.overflow='hidden';
+            document.documentElement.style.overflow='hidden';
+            frame.style.cssText += ';display:block!important;position:fixed!important;inset:0!important;'+
+              'width:100vw!important;height:100dvh!important;min-width:100vw!important;min-height:100dvh!important;'+
+              'max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;'+
+              'border:0!important;border-radius:0!important;z-index:2147483647!important;'+
+              'background:'+(theme()==='dark'?'#101713':'#f4faf7')+'!important;'+
+              'touch-action:auto!important;pointer-events:auto!important;';
+            tellVariant(frame,true);
+            frame.setAttribute('data-hamyar-music-open','true');
+            try{frame.focus()}catch(_){}
           }
           window.addEventListener('message',function(event){
             var data=event.data;
-            if(!data || data.channel!==CHANNEL || typeof data.opened!=='boolean')return;
-            set(musicFrame(event.source),data.opened);
+            if(!data || data.channel!=='hamyareman-background-v1' || typeof data.opened!=='boolean')return;
+            var frame=musicFrame(event.source);
+            data.opened?open(frame):close(frame);
           },false);
-
-          // فراخوانی از سمت اپ (دکمهٔ Back): از iframe می‌خواهد خودش را ببندد؛ اگر جواب
-          // نداد (نسخهٔ قدیمی فایل)، پس از ۳۵۰ms attribute به‌زور برداشته می‌شود.
-          window.__hamyarCloseMusicOverlay=function(){
-            var list=document.querySelectorAll('iframe['+ATTR+'="true"]');
-            Array.prototype.forEach.call(list,function(f){
-              try{f.contentWindow.postMessage({channel:CHANNEL,type:'close'},'*');}catch(e){}
-              setTimeout(function(){ set(f,false); },350);
-            });
-          };
         })();
         """.trimIndent(),
         null,
     )
-}
-
-/** وقتی popup موسیقی داخل درس باز/بسته می‌شود به اپ خبر می‌دهد (روی main thread). */
-internal fun WebView.installMusicOverlayHost(onChanged: (Boolean) -> Unit) {
-    addJavascriptInterface(MusicOverlayHost(this, onChanged), OVERLAY_BRIDGE)
-}
-
-/** برای BackHandler: popup باز را می‌بندد. */
-internal fun WebView.closeMusicFrameOverlay() {
-    evaluateJavascript(
-        "try{window.__hamyarCloseMusicOverlay&&window.__hamyarCloseMusicOverlay();}catch(e){}",
-        null,
-    )
-}
-
-private class MusicOverlayHost(
-    private val web: WebView,
-    private val callback: (Boolean) -> Unit,
-) {
-    @JavascriptInterface
-    fun onChanged(open: Boolean) {
-        web.post { callback(open) }
-    }
 }
