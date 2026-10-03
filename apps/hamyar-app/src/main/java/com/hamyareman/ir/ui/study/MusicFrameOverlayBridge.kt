@@ -1,90 +1,78 @@
 package com.hamyareman.ir.ui.study
 
+import android.os.Handler
+import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 
 private const val OVERLAY_BRIDGE = "HamyarMusicOverlay"
 
 /**
- * Stable in-flow bridge for music iframes inside lesson HTML.
+ * وضعیت باز/بسته‌شدن iframe موسیقی را فقط گزارش می‌کند.
  *
- * The lesson document already has its own message listener which changes the
- * music iframe to position:fixed and locks the parent body. In Android WebView
- * that creates a nested fullscreen iframe transition and steals the host input
- * surface. This bridge listens in the capture phase, consumes the state message
- * before the lesson listener sees it, and expands only the iframe's own flow box.
+ * مالک هندسه خود فایل HTML درس است: HamyaremanBackground.mount().
+ * این پل عمداً هیچ style، position، اندازه یا scroll را روی iframe دستکاری نمی‌کند؛
+ * چون دو مالک همزمانِ layout باعث گیرکردن لمس/اسکرول در WebView می‌شد.
  */
 internal fun WebView.installMusicFrameOverlayBridge() {
     evaluateJavascript(
         """
         (function(){
-          if(window.__hamyarMusicInflowBridge)return;
-          window.__hamyarMusicInflowBridge=true;
+          if(window.__hamyarMusicStateReporter)return;
+          window.__hamyarMusicStateReporter=true;
           var CHANNEL='hamyareman-background-v1';
-          var ATTR='data-hamyar-music-open';
-          var OPEN_HEIGHT='min(620px,78vh)';
-          var CLOSED_HEIGHT='88px';
+          var activeFrame=null;
 
-          function musicFrame(source){
+          function findFrame(source){
             var frames=document.querySelectorAll('iframe'),i,f,src;
             for(i=0;i<frames.length;i++){
               f=frames[i];
-              if(f.contentWindow===source){
-                if(f.hasAttribute('data-hamyar-ignore-inflow-bridge'))return null;
-                return f;
-              }
+              if(f.contentWindow===source)return f;
             }
             for(i=0;i<frames.length;i++){
               f=frames[i];
-              if(f.hasAttribute('data-hamyar-ignore-inflow-bridge'))continue;
               src=(f.getAttribute('src')||'').toLowerCase();
               if(src.indexOf('background-music')>=0)return f;
             }
             return null;
           }
 
-          function setOpen(frame,open){
-            if(!frame)return;
-            var h=open?OPEN_HEIGHT:CLOSED_HEIGHT;
-            frame.style.setProperty('display','block','important');
-            frame.style.setProperty('position','relative','important');
-            frame.style.setProperty('inset','auto','important');
-            frame.style.setProperty('top','auto','important');
-            frame.style.setProperty('right','auto','important');
-            frame.style.setProperty('bottom','auto','important');
-            frame.style.setProperty('left','auto','important');
-            frame.style.setProperty('width','100%','important');
-            frame.style.setProperty('min-width','0','important');
-            frame.style.setProperty('max-width','100%','important');
-            frame.style.setProperty('height',h,'important');
-            frame.style.setProperty('min-height',h,'important');
-            frame.style.setProperty('max-height',h,'important');
-            frame.style.setProperty('margin','0','important');
-            frame.style.setProperty('padding','0','important');
-            frame.style.setProperty('border','0','important');
-            frame.style.setProperty('z-index','auto','important');
-            frame.setAttribute(ATTR,open?'true':'false');
-            try{window.HamyarMusicOverlay.onChanged(!!open)}catch(_){ }
+          function report(open){
+            try{window.HamyarMusicOverlay.onChanged(!!open)}catch(_){}
+            if(!open)activeFrame=null;
           }
 
-          /* Capture-phase is the key: the lesson's own bubble listener never gets
-             the state message, so its fixed/inset/body-overflow code cannot run. */
           window.addEventListener('message',function(event){
             var data=event.data;
             if(!data || data.channel!==CHANNEL || typeof data.opened!=='boolean')return;
-            var frame=musicFrame(event.source);
+            var frame=findFrame(event.source);
             if(!frame)return;
-            try{event.stopImmediatePropagation();}catch(_){ }
-            setOpen(frame,data.opened);
-          },true);
+            activeFrame=frame;
+            report(data.opened);
+          },false);
 
           window.__hamyarCloseMusicOverlay=function(){
-            var list=document.querySelectorAll('iframe['+ATTR+'="true"]'),i,f;
-            for(i=0;i<list.length;i++){
-              f=list[i];
-              try{f.contentWindow.postMessage({channel:CHANNEL,type:'close'},'*')}catch(_){ }
-              setOpen(f,false);
+            var frame=activeFrame;
+            if(!frame){
+              var frames=document.querySelectorAll('iframe'),i,f;
+              for(i=0;i<frames.length;i++){
+                f=frames[i];
+                if((f.getAttribute('src')||'').toLowerCase().indexOf('background-music')>=0){
+                  frame=f;break;
+                }
+              }
             }
+            if(!frame){
+              report(false);
+              return;
+            }
+            try{frame.contentWindow.postMessage({channel:CHANNEL,type:'close'},'*')}catch(_){}
+            setTimeout(function(){
+              if(activeFrame===frame){
+                activeFrame=null;
+                report(false);
+              }
+            },350);
           };
         })();
         """.trimIndent(),
@@ -97,7 +85,7 @@ internal fun WebView.installMusicOverlayHost(onChanged: (Boolean) -> Unit) {
     addJavascriptInterface(MusicOverlayHost(this, onChanged), OVERLAY_BRIDGE)
 }
 
-/** Request the embedded music player to close, then collapse the flow box. */
+/** Request the embedded music player to close; HTML itself owns the geometry restore. */
 internal fun WebView.closeMusicFrameOverlay() {
     evaluateJavascript(
         "try{window.__hamyarCloseMusicOverlay&&window.__hamyarCloseMusicOverlay();}catch(e){}",
