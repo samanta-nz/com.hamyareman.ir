@@ -969,7 +969,7 @@ internal fun ensureSeekShim(html: String, times: List<Long> = emptyList()): Stri
 }
 
 /** پل JS فهرست HTML → سیک پلیر تدریس. */
-private class TeachHtmlBridge {
+internal class TeachHtmlBridge {
     @JavascriptInterface
     fun seek(ms: Int) {
         TeachSeekBus.seekMs(ms.toLong())
