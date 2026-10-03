@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Smartphone
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -66,7 +68,6 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -249,6 +250,8 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     var dragMs by remember { mutableLongStateOf(-1L) }
     var quiet by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf<String?>(null) }
+    var playerExpanded by remember { mutableStateOf(true) }
+    var playerTouchTick by remember { mutableIntStateOf(0) }
 
     val track = tracks[activeIdx]
     LaunchedEffect(packId, tracks.size) {
@@ -474,6 +477,11 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         }
     }
 
+    LaunchedEffect(playerTouchTick, playing, downloading, volOpen, activeIdx) {
+        delay(5000)
+        playerExpanded = false
+    }
+
     // --- ولومِ دستگاه به سبکِ یوتیوب: آیکون میوت + اسلایدرِ لغزنده (بدون سطرِ جدید) ---
     val am = remember { context.getSystemService(android.media.AudioManager::class.java) }
     val sysMax = remember { runCatching { am?.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC) ?: 15 }.getOrDefault(15) }
@@ -498,7 +506,37 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         }
     }
 
-    Card(Modifier.fillMaxWidth()) {
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.changes.any { it.pressed }) { playerExpanded = true; playerTouchTick++ }
+                    }
+                }
+            },
+    ) {
+        if (!playerExpanded) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { playerExpanded = true }
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    Icons.Filled.ExpandMore,
+                    contentDescription = "باز کردن پلیر",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp),
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("نمایش کنترل‌های پخش", style = MaterialTheme.typography.labelLarge)
+            }
+        } else {
         Column(Modifier.padding(10.dp)) {
             // انتخاب ترک — فقط وقتی درس چند صوت دارد.
             if (tracks.size > 1) {
@@ -522,6 +560,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedButton(onClick = {
+                    playerExpanded = true
                     val p = player ?: return@OutlinedButton
                     if (playing) {
                         runCatching { p.pause() }
@@ -581,7 +620,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                             )
                         }
                         TextButton(
-                            onClick = { confirmDelete = true },
+                            onClick = { playerExpanded = true; confirmDelete = true },
                             colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error,
                             ),
@@ -589,7 +628,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                             Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(2.dp))
                             Text(
-                                "حذف آنلاین",
+                                "حذف آفلاین",
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontFamily = TeachVazirmatnRegular,
                                     fontWeight = FontWeight.Normal,
@@ -600,6 +639,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                         }
                     }
                     else -> TextButton(onClick = {
+                        playerExpanded = true
                         downloading = true; doneBytes = 0L; totalBytes = 0L
                         scope.launch {
                             try {
@@ -684,7 +724,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = TeachVazirmatnBold,
                         fontWeight = FontWeight.Bold,
-                        fontSize = (MaterialTheme.typography.bodySmall.fontSize.value - 7f).coerceAtLeast(7f).sp,
+                        fontSize = (MaterialTheme.typography.bodySmall.fontSize.value + 2f).coerceAtLeast(12f).sp,
                     ),
                     maxLines = 1,
                 )
@@ -754,7 +794,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                 androidx.compose.runtime.CompositionLocalProvider(
                     androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
                 ) {
-                    Box(Modifier.width(116.dp), contentAlignment = Alignment.CenterStart) {
+                    Box(Modifier.width(132.dp), contentAlignment = Alignment.CenterEnd) {
                         Text(
                             if (durMs > 0) {
                                 "${teachMmss(if (dragMs >= 0) dragMs else posMs)} / ${teachMmss(durMs)}"
@@ -764,7 +804,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = TeachVazirmatnBold,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = (MaterialTheme.typography.bodySmall.fontSize.value - 7f).coerceAtLeast(7f).sp,
+                                fontSize = (MaterialTheme.typography.bodySmall.fontSize.value + 2f).coerceAtLeast(12f).sp,
                                 fontFeatureSettings = "tnum",
                                 textDirection = TextDirection.Ltr,
                             ),
@@ -785,11 +825,19 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                                 runCatching { player?.setPlaybackSpeed(v) }
                                 store.putString("teach_${packId}_speed", v.toString())
                             },
-                            label = { Text(teachSpeedLabel(v), style = MaterialTheme.typography.labelMedium) },
+                            label = {
+                                Text(
+                                    teachSpeedLabel(v),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontSize = (MaterialTheme.typography.labelMedium.fontSize.value - 2f).coerceAtLeast(9f).sp,
+                                    ),
+                                )
+                            },
                         )
                     }
                 }
             }
+        }
         }
     }
 }
