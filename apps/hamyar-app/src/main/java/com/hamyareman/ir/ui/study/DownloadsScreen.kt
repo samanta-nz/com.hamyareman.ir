@@ -151,8 +151,13 @@ private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
     return out.values.toList()
 }
 
+private val DOWNLOAD_BOOK_ORDER = listOf(
+    "905", "901", "902", "903", "904", "906", "907", "908", "909", "910", "911", "917", "941", "915",
+)
+
 private fun bookOrderKey(book: BooksMenu.Book): Int {
-    return book.folder.filter(Char::isDigit).toIntOrNull() ?: Int.MAX_VALUE
+    val folder = book.folder.filter(Char::isDigit)
+    return DOWNLOAD_BOOK_ORDER.indexOf(folder).let { if (it < 0) Int.MAX_VALUE else it }
 }
 
 private fun fixedNumber(value: Int): String = toPersianDigits(value.toString())
