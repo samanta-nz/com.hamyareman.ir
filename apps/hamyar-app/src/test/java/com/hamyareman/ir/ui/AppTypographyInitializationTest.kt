@@ -10,6 +10,7 @@ import org.junit.Test
  * A regression here previously caused ExceptionInInitializerError during app startup.
  */
 class AppTypographyInitializationTest {
+    // Keep this test in CI so static object initialization is exercised on every release branch update.
 
     @Test
     fun `legacy aliases are initialized before first sync`() {
