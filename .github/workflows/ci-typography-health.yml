@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: typography-health-ci
+  group: typography-health-ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
