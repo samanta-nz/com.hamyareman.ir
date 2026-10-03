@@ -99,7 +99,6 @@ fun HealthProgressScreen(onBack: () -> Unit) {
             daily.pull(base.minusDays((6 - i).toLong()).toString())
         }
     }
-    }
 
     val selectedSnapshot = days.getOrNull(selected)
         ?: com.hamyareman.ir.ui.hub.DailyHealthSnapshot(dayIso = JalaliDate.todayIso())
