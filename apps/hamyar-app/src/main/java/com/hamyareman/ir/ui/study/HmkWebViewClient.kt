@@ -126,12 +126,34 @@ open class HmkWebViewClient(
             mapOf("Cache-Control" to "no-store"), ByteArrayInputStream(ByteArray(0)),
         )
 
-    /** HTML رمزگشایی‌شده فقط همان لحظه در RAM با یک نشانهٔ بسیار کوچک تکمیل می‌شود. */
+    /**
+     * HTML رمزگشایی‌شده فقط همان لحظه در RAM با یک نشانهٔ بسیار کوچک تکمیل می‌شود.
+     *
+     * نشانه باید **داخل `<head>`** برود. نسخهٔ قبل آن را در ابتدای سند می‌گذاشت، یعنی
+     * قبل از `<!doctype html>`؛ هر `<script>` پیش از doctype مرورگر را به quirks mode
+     * می‌برد (box-sizing/ارتفاع ۱۰۰٪ و layout پلیر عوض می‌شود) و این فقط وقتی رخ می‌داد
+     * که فایل موسیقی از cache می‌آمد، یعنی از بار دوم به بعد. اگر `<head>` پیدا نشد،
+     * سند بدون نشانه تحویل می‌شود (فقط badge کش از دست می‌رود، نه حالت rendering).
+     */
     private fun musicCacheHint(plain: ByteArray): ByteArray {
         val hint = "<script>window.__hamyarHmkCacheHit=true;</script>".toByteArray(Charsets.UTF_8)
-        return ByteArray(hint.size + plain.size).also { output ->
-            hint.copyInto(output)
-            plain.copyInto(output, hint.size)
+        val needle = "<head>".toByteArray(Charsets.UTF_8)
+        val limit = minOf(plain.size - needle.size, 4096)
+        var at = -1
+        var i = 0
+        while (i <= limit) {
+            var match = true
+            for (j in needle.indices) {
+                if (plain[i + j] != needle[j]) { match = false; break }
+            }
+            if (match) { at = i + needle.size; break }
+            i++
+        }
+        if (at < 0) return plain
+        return ByteArray(plain.size + hint.size).also { output ->
+            plain.copyInto(output, 0, 0, at)
+            hint.copyInto(output, at)
+            plain.copyInto(output, at + hint.size, at, plain.size)
         }
     }
 

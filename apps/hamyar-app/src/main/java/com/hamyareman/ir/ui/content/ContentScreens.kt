@@ -3,6 +3,7 @@ package com.hamyareman.ir.ui.content
 import android.annotation.SuppressLint
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,8 +37,10 @@ import com.hamyareman.ir.ui.study.SecureWebEffect
 import com.hamyareman.ir.ui.study.ManagedWebMediaEffect
 import com.hamyareman.ir.ui.study.MusicEmbedPalette
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.closeMusicFrameOverlay
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installMusicOverlayHost
 import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.Dispatchers
@@ -128,6 +131,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     val webRef = remember { arrayOfNulls<WebView>(1) }
     SecureWebEffect()
     ManagedWebMediaEffect { webRef[0] }
+    // popup تمام‌صفحهٔ پلیر موسیقی داخل iframe (یوگا/ورزش) باز است؟ در این حالت Back
+    // فقط همان popup را می‌بندد؛ قبلاً کل درس را می‌بست.
+    var musicOverlayOpen by remember { mutableStateOf(false) }
+    BackHandler(enabled = musicOverlayOpen) { webRef[0]?.closeMusicFrameOverlay() }
     var activeId by remember(itemId) { mutableStateOf(itemId) }
     var pageUrl by remember(activeId) { mutableStateOf<String?>(null) }
     var error by remember(activeId) { mutableStateOf<String?>(null) }
@@ -209,6 +216,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                             com.hamyareman.ir.ui.study.HmkWebViewClient.bucketHost(),
                         ) {
                             override fun onPageFinished(view: WebView, url: String) {
+                                musicOverlayOpen = false
                                 super.onPageFinished(view, url)
                                 view.publishHamyarAppearance(
                                     appearance.darkMode,
@@ -227,6 +235,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                             }
                         }
                         installManagedMediaLifecycle()
+                        installMusicOverlayHost { musicOverlayOpen = it }
                         webRef[0] = this
                     }
                 },

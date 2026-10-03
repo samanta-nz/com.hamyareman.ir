@@ -46,6 +46,38 @@ private val MUSIC_TILE_URL = HmkWebViewClient.bucketUrl(MUSIC_TILE_KEY)
 private val TILE_HEIGHT = 92.dp
 
 /**
+ * دستگیرهٔ کنترل پلیر موسیقی از بیرون tile (مثلاً دکمه‌های پایین «بشنو و بخواب»
+ * و تایمر خواب). قبلاً آن دکمه‌ها فقط PlaybackController بومی را کنترل می‌کردند که
+ * هیچ ترکی نداشت؛ پس روی صدای واقعی (Web Audio داخل tile) اثری نداشتند.
+ */
+class MusicTileHandle {
+    internal var web: WebView? = null
+
+    /** پخش/توقف؛ همان کاری که دکمهٔ play خود پلیر می‌کند. */
+    fun toggle() {
+        web?.evaluateJavascript(
+            "try{var p=document.getElementById('miniPlay')||document.getElementById('play');if(p)p.click();}catch(e){}",
+            null,
+        )
+    }
+
+    fun pause() {
+        web?.evaluateJavascript(
+            "try{window.BackgroundMusic&&window.BackgroundMusic.pause();}catch(e){}",
+            null,
+        )
+    }
+
+    /** وضعیت واقعی پخش (AudioContext در حال اجرا). */
+    fun queryPlaying(onResult: (Boolean) -> Unit) {
+        val view = web ?: return onResult(false)
+        view.evaluateJavascript(
+            "(function(){try{return !!(window.BackgroundMusic&&window.BackgroundMusic.state.playing)}catch(e){return false}})()",
+        ) { onResult(it == "true") }
+    }
+}
+
+/**
  * کادر ۹۲dp در جریان صفحه می‌ماند و با لمس، **رو به پایین** باز می‌شود؛ همان
  * آکاردئونِ `body.tilemode` در خود HTML. تایمر دو ثانیه‌ایِ بی‌لمسی هم تنها در
  * HTML است (چون همهٔ لمس‌ها را می‌بیند) و اپ فقط ارتفاع میزبان را دنبال می‌کند
@@ -55,6 +87,7 @@ private val TILE_HEIGHT = 92.dp
 @Composable
 fun BackgroundMusicTileHost(
     modifier: Modifier = Modifier,
+    handle: MusicTileHandle? = null,
     onExpandedChanged: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -129,9 +162,11 @@ fun BackgroundMusicTileHost(
                     loadUrl(MUSIC_TILE_URL)
                 }
             }
+            handle?.web = web
 
             DisposableEffect(Unit) {
                 onDispose {
+                    if (handle?.web === web) handle.web = null
                     web.stopManagedMedia()
                     web.destroy()
                 }
