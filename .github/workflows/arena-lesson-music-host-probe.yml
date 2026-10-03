@@ -78,21 +78,12 @@ jobs:
               for t in re.findall(r'<iframe[\s\S]{0,400}?>',plain,re.I):
                   print("```html\n"+t.strip()+"\n```\n")
 
-              print("### هر جای کد که iframe موسیقی را می‌سازد/تغییر می‌دهد\n")
-              hits=[]
-              for pat in [r'HamyaremanBackground', r'background-music', r'\.src\s*=', r'function\s+resize',
-                          r'cssText', r'appendChild\s*\(\s*frame', r'insertBefore', r'removeChild',
-                          r'replaceChild', r'postMessage', r'setTimeout', r'requestFullscreen']:
-                  for mm in re.finditer(pat,plain):
-                      hits.append((mm.start(),pat))
-              hits.sort()
-              seen=set(); out=[]
-              for pos,pat in hits:
-                  blk=(pos//700)
-                  if blk in seen: continue
-                  seen.add(blk)
-                  out.append(plain[max(0,pos-350):pos+450])
-              print("```js\n"+("\n\n/* ---- */\n\n".join(out))[:24000]+"\n```\n")
+              print("### کل کد HamyaremanBackground (پل موسیقی در خود فایل درس)\n")
+              i=plain.find("window.HamyaremanBackground")
+              if i<0:
+                  print("(پیدا نشد)")
+              else:
+                  print("```js\n"+plain[max(0,i-14000):i+600]+"\n```\n")
           PY
 
       - name: کامیت گزارش
