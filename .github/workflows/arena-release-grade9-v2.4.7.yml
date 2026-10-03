@@ -1,6 +1,6 @@
 name: Release grade 9 v2.4.8 (forced)
 
-# ساخت و انتشار نسخهٔ ۲٫۴٫۷ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
+# ساخت و انتشار نسخهٔ ۲٫۴٫۸ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
 #
 # ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
 # ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. بنابراین حتی
@@ -76,11 +76,11 @@ jobs:
             echo "::warning::RELEASES_TOKEN/RELEASES_REPO نیست — externalUrl از همین مخزنِ عمومی برداشته می‌شود."
           fi
 
-      - name: ۱) تست و ساخت APK نهم ۲٫۴٫۵
+      - name: ۱) تست و ساخت APK نهم ۲٫۴٫۸
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
-            :core-common:testReleaseUnitTest \
+            :core-common:testDebugUnitTest \
             :hamyar-app:testP09ReleaseUnitTest \
             :hamyar-app:assembleP09Release \
             -PhamyarVersionCode="$VERSION_CODE" -PhamyarVersionName="$VERSION_NAME"
@@ -243,7 +243,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hamyar-grade9-2.4.8-release
+          name: hamyar-grade9-2.4.8
           path: dist/*.apk
           if-no-files-found: warn
           retention-days: 14
