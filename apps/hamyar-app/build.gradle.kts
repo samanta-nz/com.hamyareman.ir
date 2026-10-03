@@ -30,7 +30,8 @@ android {
 
     defaultConfig {
         applicationId = "com.hamyareman.p09"
-        minSdk = 26
+        minSdk = 29
+        // انتشار عمومی از Android 10 به بعد؛ APIهای قدیمی‌تر در این محصول پشتیبانی نمی‌شوند.
         targetSdk = 36
         // نسخهٔ عمومی پایهٔ نهم ۲٫۴٫۴؛ workflow انتشار می‌تواند این دو مقدار را override کند.
         versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 244
