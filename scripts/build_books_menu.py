@@ -109,6 +109,66 @@ def convert(items: list, folder: str, exists: dict[str, bool], stats: collection
     return out
 
 
+def _norm_title(title: str) -> str:
+    import re
+    t = (title or "").strip().replace("ي", "ی").replace("ك", "ک").replace("‌", "")
+    return re.sub(r"[^\\w\\u0600-\\u06FF]+", "", t, flags=re.UNICODE).lower()
+
+
+def apply_book_policies(nodes: list, code: str, stats: collections.Counter) -> list:
+    """قوانین منوی فارسی/علوم که باید بعد از هر بازسازی منو باقی بمانند."""
+    out = []
+    for raw in nodes:
+        node = dict(raw)
+        title = node.get("title", "")
+        norm = _norm_title(title)
+        if code == "903" and norm.startswith("پیشگفتار"):
+            stats["farsi_preface_skipped"] += 1
+            continue
+
+        node["children"] = apply_book_policies(node.get("children", []), code, stats)
+
+        if code == "903":
+            if norm.startswith("ستایش") or norm.startswith("نیایش"):
+                key, ready = node.get("key"), node.get("ready")
+                node["key"], node["ready"] = None, None
+                node["tabs"] = [
+                    {"title": "روخوانی", "key": None, "ready": None},
+                    {"title": "نکات ادبی", "key": None, "ready": None},
+                    {"title": "نکات تکمیلی", "key": None, "ready": None},
+                    {"title": "کتاب درسی", "key": key, "ready": ready},
+                ]
+            elif any(norm.startswith(prefix) for prefix in ("حکایت", "شعرخوانی", "روانخوانی")):
+                key, ready = node.get("key"), node.get("ready")
+                node["key"], node["ready"] = None, None
+                node["tabs"] = [
+                    {"title": "خوانش", "key": None, "ready": None},
+                    {"title": "نکات ادبی", "key": None, "ready": None},
+                    {"title": "کتاب درسی", "key": key, "ready": ready},
+                ]
+            elif norm.startswith("فصلآزاد"):
+                key, ready = node.get("key"), node.get("ready")
+                node["key"], node["ready"] = None, None
+                node["tabs"] = [
+                    {"title": "راهنما", "key": None, "ready": None},
+                    {"title": "کتاب درسی", "key": key, "ready": ready},
+                ]
+
+        if code == "906":
+            tabs = list(node.get("tabs") or [])
+            if tabs and not any(str(t.get("title", "")).strip() == "نکات تکمیلی و امتحانی" for t in tabs):
+                index = next(
+                    (i for i, t in enumerate(tabs)
+                     if str(t.get("title", "")).strip().startswith("نمونه سوالات کتابی")),
+                    -1,
+                )
+                if index >= 0:
+                    tabs.insert(index, {"title": "نکات تکمیلی و امتحانی", "key": None, "ready": None})
+                    node["tabs"] = tabs
+        out.append(node)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", default="bucket-sync")
@@ -166,7 +226,7 @@ def main() -> int:
             "folder": folder,
             "code": str(d.get("code", "")),
             "subject": d.get("subject", ""),
-            "items": convert(d.get("items", []), folder, exists, stats),
+            "items": apply_book_policies(convert(d.get("items", []), folder, exists, stats), str(d.get("code", "")), stats),
         })
 
     out = Path(args.out)
@@ -190,7 +250,7 @@ def main() -> int:
           f"- کتاب: **{len(books)}** · گره: **{stats['nodes']}**",
           f"- ارجاع با فایل موجود: **{stats['ready']}** · اعلام‌شده ولی نبود: **{stats['missing']}**",
           f"- بدون فایل (`pdf: null`) → اسپیس‌هولدر: **{stats['none']}**",
-          f"- گرهٔ حذف‌شده (مقدمه / سخنی با…): **{stats['skipped']}**",
+          f"- گرهٔ حذف‌شده (مقدمه / سخنی با…): **{stats['skipped']}** · پیشگفتار فارسی: **{stats['farsi_preface_skipped']}**",
           f"- صفحهٔ تدریس از exam: **{stats['teach']}** · صوت: **{stats['audio']}**", "",
           "| کد | موضوع | پوشه | عمق ۰ | عمق ۱ | عمق ۲ | سربرگ |",
           "|---|---|---|---:|---:|---:|---:|"]
