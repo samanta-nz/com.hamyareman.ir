@@ -1,7 +1,7 @@
 package com.hamyareman.ir.ui.study
 
 import android.content.Context
-import com.hamyareman.ir.platform.core.appwrite.AppResult
+import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.appwrite.TableRow
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
 import com.hamyareman.ir.platform.core.common.LocalStore
@@ -78,7 +78,7 @@ class BookCommentsRepository(
             listOf(
                 Query.equal("bookId", bookId),
                 Query.orderAsc("createdAtMs"),
-                Query.limit(100),
+                Query.limit(500),
             ),
         )) {
             is AppResult.Ok -> result.value.mapNotNull(::fromRow)
@@ -194,7 +194,7 @@ class BookCommentsRepository(
         }.getOrElse { cached }
     }
 
-    private fun fromRow(row: TableRow): BookComment =
+    private fun fromRow(row: TableRow): BookComment? =
         BookComment(
             id = row.id.ifBlank { row.string("commentId") },
             bookId = row.string("bookId"),
