@@ -92,7 +92,6 @@ fun ProgressChartsScreen(bookCode: String?, onBack: () -> Unit, onPickBook: (Str
                     val packIds = module?.packs?.map { it.packId }.orEmpty()
                     TeachCloud.enqueueAll(ctx, container.sync, uid, packIds)
                     packIds.forEach { runCatching { container.studyProgress.flush(it) } }
-                    runCatching { container.sync.pushAll() }
                     runCatching {
                         SchoolSync.restoreAll(ctx, container.tables, container.sync, uid, force = true)
                     }.getOrDefault(0)
