@@ -27,30 +27,30 @@ class HamyarApplication : Application() {
         // شروع فایل APK/part را بعد از تطبیق versionCode حذف می‌کند.
         runCatching { com.hamyareman.ir.ui.update.ApkUpdate.cleanupAfterSuccessfulInstall(this) }
         // نشانی دوگانهٔ محتوا: تنظیمات سرور + کاتالوگ assets (پیش‌بارگذاری در آغاز اجرا)
-        com.hamyareman.ir.ui.study.ServerPrefs.init(this)
+        runCatching { com.hamyareman.ir.ui.study.ServerPrefs.init(this) }
         runCatching { com.hamyareman.ir.ui.content.ContentCatalog.load(this) }
         runCatching { com.hamyareman.ir.ui.tools.ToolRemote.clearPlainCache(this) }
         // کش قدیمی درس‌ها با کلید و مسیر دیگری ساخته شده بود؛ بعد از تغییر آدرس‌ها
         // به Bucket/... دیگر هیچ‌وقت hit نمی‌شود و فقط جا می‌گیرد.
         runCatching { java.io.File(filesDir, "html-cipher-cache").deleteRecursively() }
-        com.hamyareman.ir.ui.study.ServerResolver.probeAsync()
+        runCatching { com.hamyareman.ir.ui.study.ServerResolver.probeAsync() }
         // پخشِ فایل‌های گاوصندوق: طرحِ vault:// به جریانِ رمزگشاییِ تنبل وصل می‌شود
         // (خوانشِ جسته‌گریخته؛ بدونِ بلوکه‌شدنِ لودرِ پلیر برای رمزگشاییِ کل فایل).
         com.hamyareman.ir.platform.feature.playback.VaultSourceHooks.open = { key ->
             runCatching { com.hamyareman.ir.ui.study.MediaVault.openPlainStream(this, key) }.getOrNull()
         }
-        NotificationChannels.ensure(this)
+        runCatching { NotificationChannels.ensure(this) }
         // بازهٔ سکوت بعد از بسته‌شدن برنامه و reboot مستقل از UI اجرا می‌شود.
-        com.hamyareman.ir.platform.core.notifications.QuietHoursAutomation.schedule(this)
-        com.hamyareman.ir.ui.profile.StudentProfileState.loadMirror(this)
-        com.hamyareman.ir.ui.profile.StudentProfileState.applyLauncherIcon(this, com.hamyareman.ir.ui.profile.StudentProfileState.gender)
+        runCatching { com.hamyareman.ir.platform.core.notifications.QuietHoursAutomation.schedule(this) }
+        runCatching { com.hamyareman.ir.ui.profile.StudentProfileState.loadMirror(this) }
+        runCatching { com.hamyareman.ir.ui.profile.StudentProfileState.applyLauncherIcon(this, com.hamyareman.ir.ui.profile.StudentProfileState.gender) }
         runCatching {
             val snap = com.hamyareman.ir.ui.study.ClassPlanStore.load(this)
             com.hamyareman.ir.ui.study.ClassPlanStore.refreshOffCache(this)
             com.hamyareman.ir.ui.study.ClassPlanStore.syncAlarms(
                 this, container.reminders, snap, java.time.LocalDate.now(com.hamyareman.ir.platform.core.common.JalaliDate.TEHRAN))
         }
-        seedDefaultReminders()
+        runCatching { seedDefaultReminders() }
     }
 
     /**
