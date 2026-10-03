@@ -75,14 +75,17 @@ class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ContextCompat.registerReceiver(
-            this,
-            screenOffReceiver,
-            IntentFilter(Intent.ACTION_SCREEN_OFF),
-            ContextCompat.RECEIVER_NOT_EXPORTED,
-        )
+        // Android 10+ fallback: receiver registration must never prevent the UI from starting.
+        runCatching {
+            ContextCompat.registerReceiver(
+                this,
+                screenOffReceiver,
+                IntentFilter(Intent.ACTION_SCREEN_OFF),
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
+        }
         val app = application as HamyarApplication
-        enableEdgeToEdge()
+        runCatching { enableEdgeToEdge() }
         unlocked.value = !app.container.lock.isLockedNow()
         // آینه‌ی محلی پروفایل/پایه — پیش از هر پاسخ شبکه (فیلتر فوری محتوا).
         com.hamyareman.ir.ui.profile.StudentProfileState.loadMirror(this)
