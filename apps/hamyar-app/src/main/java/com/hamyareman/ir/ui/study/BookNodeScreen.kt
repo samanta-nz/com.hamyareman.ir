@@ -97,11 +97,13 @@ private fun RemoteHtmlPage(bucketKey: String) {
                 ) {
                     override fun onPageFinished(view: android.webkit.WebView, url: String) {
                         super.onPageFinished(view, url)
+                        // محتوای HTML کتاب «سند چاپی» است؛ عمداً از تم اپ مستقل است.
                     }
                 }
                 loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
         },
+        update = { },
         modifier = Modifier.fillMaxSize(),
         onRelease = { it.destroy() },
     )
