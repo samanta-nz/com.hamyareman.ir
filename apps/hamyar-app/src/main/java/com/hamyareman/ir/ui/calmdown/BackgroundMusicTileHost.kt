@@ -137,53 +137,6 @@ fun BackgroundMusicTileHost(
                             )
                             // تنها صفحات موسیقی/خواب نگهبان Web Audio دارند تا با قفل صفحه قطع نشوند.
                             view.bindManagedMediaLifecycle(watchWebAudio = true)
-                            // background-music-tile.html خودش iframe داخلی را fixed می‌کند.
-                            // در Android WebView آن لایهٔ fixed را به flow محلی تبدیل می‌کنیم؛
-                            // خود فایل باکت، رمزنگاری و ۲۹ صدای embed شده دست‌نخورده می‌مانند.
-                            view.evaluateJavascript(
-                                """
-                                (function(){
-                                  if(window.__hamyarSleepTileSafe)return;
-                                  window.__hamyarSleepTileSafe=true;
-                                  var s=document.createElement('style');
-                                  s.setAttribute('data-hamyar-sleep-tile-safe','');
-                                  s.textContent =
-                                    'body.tilemode{position:relative!important;overflow:visible!important;touch-action:auto!important}' +
-                                    'body.tilemode .backdrop.open{position:absolute!important;inset:0!important;max-height:none!important;overflow:visible!important}' +
-                                    'body.is-open{position:relative!important;overflow:visible!important;touch-action:auto!important}' +
-                                    'body.is-open #scrim{position:absolute!important;inset:0!important;z-index:2147483646!important}' +
-                                    'body.is-open #backgroundMusicFrame,body.tilemode .backdrop.open iframe{position:absolute!important;top:0!important;right:0!important;bottom:0!important;left:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;z-index:2147483647!important}';
-                                  (document.head||document.documentElement).appendChild(s);
-
-                                  var apply=function(){
-                                    try{
-                                      var body=document.body;
-                                      var backdrop=document.getElementById('backdrop');
-                                      var open=!!((backdrop&&backdrop.classList.contains('open')) || body.classList.contains('is-open'));
-                                      body.style.setProperty('overflow','visible','important');
-                                      body.style.setProperty('position','relative','important');
-                                      if(open){
-                                        var frame=document.getElementById('backgroundMusicFrame');
-                                        if(frame){
-                                          frame.style.setProperty('position','absolute','important');
-                                          frame.style.setProperty('top','0','important');
-                                          frame.style.setProperty('right','0','important');
-                                          frame.style.setProperty('bottom','0','important');
-                                          frame.style.setProperty('left','0','important');
-                                          frame.style.setProperty('width','100%','important');
-                                          frame.style.setProperty('height','100%','important');
-                                          frame.style.setProperty('z-index','2147483647','important');
-                                        }
-                                      }
-                                    }catch(e){}
-                                  };
-                                  new MutationObserver(apply).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});
-                                  window.addEventListener('resize',apply,{passive:true});
-                                  apply();
-                                })();
-                                """.trimIndent(),
-                                null,
-                            )
                             // پشتیبان: اگر رابط HamyarHost به هر دلیل صدا نخورد،
                             // تغییر کلاس body همان وضعیت را گزارش می‌کند.
                             view.evaluateJavascript(
