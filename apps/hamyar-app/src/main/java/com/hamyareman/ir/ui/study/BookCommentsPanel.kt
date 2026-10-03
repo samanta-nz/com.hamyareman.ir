@@ -7,16 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Forum
-import androidx.compose.material.icons.outlined.ThumbDown
-import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material.icons.outlined.Reply
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -31,140 +29,176 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hamyareman.ir.LocalAppContainer
+import com.hamyareman.ir.platform.core.common.toPersianDigits
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 @Composable
-fun BookCommentsPanel(
-    bookId: String,
-    modifier: Modifier = Modifier,
-) {
+fun BookCommentsPanel(bookId: String, modifier: Modifier = Modifier) {
     val container = LocalAppContainer.current
-    val ctx = androidx.compose.ui.platform.LocalContext.current
-    val repo = remember(bookId) { BookCommentsRepository(container.tables, ctx) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val repository = remember(bookId) { BookCommentsRepository(container.tables, context) }
     val scope = rememberCoroutineScope()
     var comments by remember(bookId) { mutableStateOf(emptyList<BookComment>()) }
-    var text by remember(bookId) { mutableStateOf("") }
+    var draft by remember(bookId) { mutableStateOf("") }
     var replyTo by remember(bookId) { mutableStateOf<BookComment?>(null) }
-    var message by remember(bookId) { mutableStateOf<String?>(null) }
+    var notice by remember(bookId) { mutableStateOf<String?>(null) }
     var loading by remember(bookId) { mutableStateOf(true) }
 
-    LaunchedEffect(bookId) {
+    val username = remember {
+        container.auth.cachedUsername().orEmpty()
+            .ifBlank { container.auth.cachedUser()?.username.orEmpty() }
+            .ifBlank { "کاربر" }
+    }
+
+    suspend fun reload() {
         loading = true
-        comments = repo.list(bookId)
+        comments = repository.list(bookId)
         loading = false
     }
 
+    LaunchedEffect(bookId) { reload() }
+
+    val children = remember(comments) { comments.groupBy { it.parentId } }
+
     Column(
-        modifier.fillMaxWidth(),
+        modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Forum, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text("نظرها و گفت‌وگو", style = MaterialTheme.typography.titleMedium)
+            Text("دیدگاه‌ها و گفتگو", style = MaterialTheme.typography.titleLarge)
         }
 
-        replyTo?.let {
-            Card(Modifier.fillMaxWidth()) {
+        when {
+            loading -> LinearProgressIndicator(Modifier.fillMaxWidth())
+            comments.isEmpty() -> Card(Modifier.fillMaxWidth()) {
+                Text("هنوز دیدگاهی ثبت نشده است.", Modifier.padding(16.dp))
+            }
+            else -> comments.filter { it.parentId.isBlank() }.forEach { root ->
+                CommentThread(root, children, onReply = { replyTo = it }) { target ->
+                    scope.launch {
+                        if (repository.react(target, username, like = true).isSuccess) reload()
+                    }
+                }
+            }
+        }
+
+        replyTo?.let { target ->
+            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp)) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text("در پاسخ به " + it.displayName, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { replyTo = null }) { Text("انصراف") }
+                    Text("پاسخ به @" + target.displayName, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                    TextButton(onClick = { replyTo = null }) { Text("لغو") }
                 }
             }
         }
 
         OutlinedTextField(
-            value = text,
-            onValueChange = { text = it.take(1000) },
+            value = draft,
+            onValueChange = { draft = it.take(1000) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("نظر خودت را بنویس") },
             minLines = 3,
-            supportingText = { Text("۲ تا ۱۰۰۰ نویسه؛ بدون توهین و محتوای آزاردهنده") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            label = { Text(if (replyTo == null) "دیدگاه خودت را بنویس" else "پاسخت را بنویس") },
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(
-                enabled = text.trim().length >= 2,
-                onClick = {
-                    val uid = container.auth.cachedUserId().orEmpty()
-                    if (uid.isBlank()) {
-                        message = "برای ثبت نظر باید وارد حساب شوی."
+        TextButton(
+            enabled = draft.trim().length >= 2,
+            onClick = {
+                val userId = container.auth.cachedUserId().orEmpty()
+                if (userId.isBlank()) {
+                    notice = "برای ثبت دیدگاه باید وارد حساب شوی."
+                    return@TextButton
+                }
+                scope.launch {
+                    val result = repository.create(bookId, userId, username, draft, replyTo?.id.orEmpty())
+                    if (result.isSuccess) {
+                        draft = ""
+                        replyTo = null
+                        notice = "ثبت شد."
+                        reload()
                     } else {
-                        scope.launch {
-                            val result = repo.create(bookId, uid, "کاربر", text, replyTo?.id.orEmpty())
-                            if (result.isSuccess) {
-                                text = ""
-                                replyTo = null
-                                comments = repo.list(bookId)
-                                message = "نظر ثبت شد."
-                            } else {
-                                message = result.exceptionOrNull()?.message ?: "ثبت نظر ممکن نشد."
-                            }
-                        }
+                        notice = result.exceptionOrNull()?.message ?: "ثبت دیدگاه ممکن نشد."
                     }
-                },
-            ) { Text("ثبت نظر") }
-        }
+                }
+            },
+        ) { Text("ثبت دیدگاه") }
 
-        message?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary) }
-
-        if (loading) {
-            LinearProgressIndicator(Modifier.fillMaxWidth())
-        }
-
-        comments.filter { !it.isReply }.forEach { comment ->
-            CommentCard(
-                comment = comment,
-                onReply = { replyTo = comment },
-                onReact = { like ->
-                    val uid = container.auth.cachedUserId().orEmpty()
-                    if (uid.isNotBlank()) {
-                        scope.launch { repo.react(comment, uid, like) }
-                    }
-                },
-            )
-            comments.filter { it.parentId == comment.id }.forEach { reply ->
-                CommentCard(
-                    comment = reply,
-                    onReply = { replyTo = reply },
-                    onReact = { like ->
-                        val uid = container.auth.cachedUserId().orEmpty()
-                        if (uid.isNotBlank()) scope.launch { repo.react(reply, uid, like) }
-                    },
-                    nested = true,
-                )
-            }
+        notice?.let {
+            Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
 
 @Composable
-private fun CommentCard(
-    comment: BookComment,
-    onReply: () -> Unit,
-    onReact: (Boolean) -> Unit,
-    nested: Boolean = false,
+private fun CommentThread(
+    root: BookComment,
+    children: Map<String, List<BookComment>>,
+    onReply: (BookComment) -> Unit,
+    onLike: (BookComment) -> Unit,
 ) {
-    Card(
-        Modifier
-            .fillMaxWidth()
-            .padding(start = if (nested) 18.dp else 0.dp),
-    ) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Text(comment.displayName, style = MaterialTheme.typography.labelLarge)
-            Text(comment.text, style = MaterialTheme.typography.bodyMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                IconButton(onClick = { onReact(true) }) { Icon(Icons.Outlined.ThumbUp, contentDescription = "پسندیدن") }
-                Text(comment.likes.toString(), style = MaterialTheme.typography.labelSmall)
-                IconButton(onClick = { onReact(false) }) { Icon(Icons.Outlined.ThumbDown, contentDescription = "نپسندیدن") }
-                Text(comment.dislikes.toString(), style = MaterialTheme.typography.labelSmall)
-                TextButton(onClick = onReply) { Text("پاسخ") }
-            }
+    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            CommentBubble(root, onReply, onLike)
+            renderReplies(root.id, children, onReply, onLike, depth = 1)
         }
+    }
+}
+
+@Composable
+private fun renderReplies(
+    parentId: String,
+    children: Map<String, List<BookComment>>,
+    onReply: (BookComment) -> Unit,
+    onLike: (BookComment) -> Unit,
+    depth: Int,
+) {
+    if (depth > 6) return
+    children[parentId].orEmpty().forEach { reply ->
+        CommentBubble(reply, onReply, onLike, nested = true, depth = depth)
+        renderReplies(reply.id, children, onReply, onLike, depth + 1)
+    }
+}
+
+@Composable
+private fun CommentBubble(
+    comment: BookComment,
+    onReply: (BookComment) -> Unit,
+    onLike: (BookComment) -> Unit,
+    nested: Boolean = false,
+    depth: Int = 0,
+) {
+    Column(
+        Modifier.fillMaxWidth().padding(start = if (nested) (20 + depth * 4).dp else 0.dp, top = 3.dp, bottom = 3.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("@" + comment.displayName, Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+            Text(relativeCommentTime(comment.createdAtMs), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text(comment.text, style = MaterialTheme.typography.bodyMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = { onLike(comment) }) {
+                Icon(Icons.Outlined.FavoriteBorder, contentDescription = "پسندیدن")
+            }
+            Text(toPersianDigits(comment.likes.toString()), style = MaterialTheme.typography.labelSmall)
+            IconButton(onClick = { onReply(comment) }) {
+                Icon(Icons.Outlined.Reply, contentDescription = "پاسخ")
+            }
+            Text("پاسخ", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+private fun relativeCommentTime(createdAtMs: Long): String {
+    val age = (System.currentTimeMillis() - createdAtMs).coerceAtLeast(0L)
+    val minutes = age / 60_000L
+    return when {
+        minutes < 1 -> "اکنون"
+        minutes < 60 -> toPersianDigits(minutes.toString()) + " دقیقه پیش"
+        minutes < 1440 -> toPersianDigits((minutes / 60).toString()) + " ساعت پیش"
+        else -> toPersianDigits((minutes / 1440).toString()) + " روز پیش"
     }
 }
