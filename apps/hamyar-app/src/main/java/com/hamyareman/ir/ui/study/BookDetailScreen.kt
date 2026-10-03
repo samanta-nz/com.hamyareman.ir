@@ -51,6 +51,7 @@ import com.hamyareman.ir.platform.feature.study.BookToc
 import com.hamyareman.ir.platform.feature.study.BookToc.TocNode
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.hub.HubBody
+import com.hamyareman.ir.ui.navigation.Screen
 
 /**
  * صفحه‌ی یک کتاب (v1.13) — فهرست درختیِ رسمی با قالب کارتیِ نسخه‌ی قبلی:
