@@ -2,6 +2,7 @@ package com.hamyareman.ir.ui.study
 
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -374,6 +375,7 @@ internal fun FreeReadingCatalogScreen() {
     }
 
     if (selected != null) {
+        BackHandler { selected = null }
         FreeReadingBookScreen(
             book = selected!!,
             initialState = states[selected!!.id] ?: FreeBookState(),
@@ -528,11 +530,12 @@ private fun FreeBookCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            Icon(
-                if (book.type == FreeBookType.AUDIO) Icons.Outlined.Headphones else Icons.Outlined.MenuBook,
-                null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            if (book.type == FreeBookType.AUDIO) {
+                IconButton(onClick = onOpen) { Icon(Icons.Outlined.PlayArrow, "پخش") }
+                IconButton(onClick = { /* دانلود جزئی از صفحهٔ داخلی است */ onOpen() }) { Icon(Icons.Outlined.Download, "دانلود") }
+            } else {
+                IconButton(onClick = onOpen) { Icon(Icons.Outlined.Book, "باز کردن") }
+            }
         }
     }
 }
