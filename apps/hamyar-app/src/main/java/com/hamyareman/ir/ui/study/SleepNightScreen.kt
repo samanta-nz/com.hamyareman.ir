@@ -108,23 +108,28 @@ fun SleepNightScreen(onBack: () -> Unit) {
 
     val anyPlaying = state.playing || musicPlaying
 
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
-            // نسخهٔ قبلی نوار بالا را نداشت و onBack هیچ‌جا استفاده نمی‌شد؛ تنها راه
-            // برگشت دکمهٔ سیستم بود.
-            if (SHOW_TOP_BAR) AppTopBar("بشنو و بخواب", onBack)
-            // tile از جریان اسکرول جداست؛ فضای ۹۲dp جای آن را نگه می‌دارد و خود WebView
-            // به‌صورت overlay بالای صفحه قرار می‌گیرد تا بازشدن nested iframe با اسکرول تداخل نکند.
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Spacer(Modifier.height(92.dp))
+    Column(Modifier.fillMaxSize()) {
+        // پلیر باید در جریان صفحه باشد؛ WebView تمام‌صفحهٔ overlay قبلی هنگام
+        // بازشدن لمس و اسکرول میزبان را می‌گرفت و در بعضی WebViewها محتوای iframe
+        // داخلی بیرون قاب می‌افتاد و سفید دیده می‌شد.
+        BackgroundMusicTileHost(
+            modifier = Modifier.fillMaxWidth().zIndex(20f),
+            handle = music,
+        )
+        Column(
+            Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Column(
                 Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("صدای دلخواهت را انتخاب کن، اگر خواستی دو صدا را با هم ترکیب کن و بعد صفحه را برای خواب آرام بگذار.", style = AppTypography.pageBody.style)
+                Text(
+                    "صدای دلخواهت را انتخاب کن، اگر خواستی دو صدا را با هم ترکیب کن و بعد صفحه را برای خواب آرام بگذار.",
+                    style = AppTypography.pageBody.style,
+                )
                 audioTracks.forEach { TrackRow(it, state.playing) { play(it) } }
                 PrimaryButton("شروع جلسهٔ شنیدن") {
                     val first = audioTracks.firstOrNull { it.uri.isNotBlank() }
@@ -135,7 +140,10 @@ fun SleepNightScreen(onBack: () -> Unit) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SLEEP_TIMER_OPTIONS.forEach { m ->
                             val selected = timerMinutes == m
-                            OutlinedButton(onClick = { timerMinutes = m }, modifier = Modifier.weight(1f)) {
+                            OutlinedButton(
+                                onClick = { timerMinutes = m },
+                                modifier = Modifier.weight(1f),
+                            ) {
                                 Text(
                                     (if (selected) "✓ " else "") +
                                         if (m == 0) "بدون" else toPersianDigits(m.toString()) + " دقیقه",
@@ -144,44 +152,43 @@ fun SleepNightScreen(onBack: () -> Unit) {
                         }
                     }
                 }
-            }
-        }
-        }
-        BackgroundMusicTileHost(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .zIndex(20f),
-            handle = music,
-        )
-        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(
-                onClick = {
-                    when {
-                        state.playing -> playback.pause()
-                        musicPlaying -> music.pause()
-                        nativeStarted -> playback.play()
-                        else -> music.toggle()
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            when {
+                                state.playing -> playback.pause()
+                                musicPlaying -> music.pause()
+                                nativeStarted -> playback.play()
+                                else -> music.toggle()
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(if (anyPlaying) "استوپ" else "پلی")
                     }
-                },
-                modifier = Modifier.weight(1f),
-            ) {
-                Text(if (anyPlaying) "استوپ" else "پلی")
+                    OutlinedButton(
+                        onClick = {
+                            music.pause()
+                            playback.stop()
+                            nativeStarted = false
+                            timerMinutes = 0
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("بستن")
+                    }
+                }
+                state.error?.let {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = AppTypography.pageBody.style,
+                    )
+                }
             }
-            OutlinedButton(
-                onClick = {
-                    music.pause()
-                    playback.stop()
-                    nativeStarted = false
-                    timerMinutes = 0
-                },
-                modifier = Modifier.weight(1f),
-            ) {
-                Text("بستن")
-            }
-        }
-        state.error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, style = AppTypography.pageBody.style, modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
 }
