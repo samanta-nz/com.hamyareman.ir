@@ -1,6 +1,6 @@
 package com.hamyareman.ir.ui.hub
 
-import com.hamyareman.ir.platform.core.appwrite.AppResult
+import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.appwrite.BackendConfig
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
 import com.hamyareman.ir.platform.core.common.JalaliDate
