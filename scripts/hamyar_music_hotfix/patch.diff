@@ -1,0 +1,11 @@
+# Human-readable patch summary
+
+1) Replace MusicFrameOverlayBridge.kt with capture-phase in-flow bridge.
+   - consume hamyareman-background-v1 state messages before lesson HTML listener
+   - no position:fixed / inset:0 / body overflow lock
+   - open height: min(620px,78vh), collapsed: 88px
+
+2) BackgroundMusicTileHost.kt
+   - remove animateDpAsState/tween(340) WebView resizing
+   - inject CSS that makes nested backgroundMusicFrame absolute/local when tile opens
+   - keep the tile HTML, HMK1 data and ParsPack URLs unchanged
