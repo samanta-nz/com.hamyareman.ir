@@ -31,13 +31,13 @@ class WaterRepository(
     fun addGlass() {
         val current = state()
         store.putInt(key(), (current.consumed + 1).coerceAtMost(current.goal + 10))
-enqueueIfConfigured()
+        enqueueIfConfigured()
     }
 
     fun undoGlass() {
         val current = state()
         store.putInt(key(), (current.consumed - 1).coerceAtLeast(0))
-        enqueueIfOptedIn()
+        enqueueIfConfigured()
     }
 
     fun setGoal(goal: Int) {
