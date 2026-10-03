@@ -32,6 +32,20 @@ def target(path: Path, im: Image.Image) -> tuple[int, int]:
         return (w, h)
     return (max(1, round(w * scale)), max(1, round(h * scale)))
 
+def optimize_png(path: Path) -> dict:
+    before = path.stat().st_size
+    with Image.open(path) as src:
+        src.load()
+        size = src.size
+        tmp = path.with_suffix(".optimized.png")
+        src.save(tmp, "PNG", optimize=True, compress_level=9)
+        after = tmp.stat().st_size
+    if after < before:
+        tmp.replace(path)
+        return {"path": str(path.relative_to(ROOT)), "before": before, "after": after, "width": size[0], "height": size[1], "changed": True, "mode": "lossless-png"}
+    tmp.unlink(missing_ok=True)
+    return {"path": str(path.relative_to(ROOT)), "before": before, "after": before, "width": size[0], "height": size[1], "changed": False, "mode": "lossless-png"}
+
 def optimize(path: Path) -> dict:
     before = path.stat().st_size
     with Image.open(path) as src:
@@ -52,10 +66,11 @@ def optimize(path: Path) -> dict:
     return {"path": str(path.relative_to(ROOT)), "before": before, "after": before, "width": old_size[0], "height": old_size[1], "changed": False}
 
 def main():
-    paths = sorted(p for p in ASSETS.rglob("*.jpg") if p.is_file() and (
+    jpg_paths = sorted(p for p in ASSETS.rglob("*.jpg") if p.is_file() and (
         "practice-covers" in p.parts or "diary" in p.parts or "book-covers" in p.parts
     ))
-    rows = [optimize(p) for p in paths]
+    png_paths = sorted(p for p in (ROOT / "apps/hamyar-app/src/main/res").rglob("*.png") if p.is_file())
+    rows = [optimize(p) for p in jpg_paths] + [optimize_png(p) for p in png_paths]
     before = sum(r["before"] for r in rows)
     after = sum(r["after"] for r in rows)
     report = {
@@ -65,7 +80,7 @@ def main():
         "after_bytes": after,
         "saved_bytes": before - after,
         "saved_percent": round((before - after) * 100 / before, 2) if before else 0,
-        "rules": {"practice_square": "320x320", "practice_portrait": "320x480", "other_max_dimension": 448, "jpeg_quality": 84},
+        "rules": {"practice_square": "320x320", "practice_portrait": "320x480", "other_jpeg_max_dimension": 448, "jpeg_quality": 84, "png": "lossless optimize/compress-level-9"},
         "items": rows,
     }
     REPORT.parent.mkdir(parents=True, exist_ok=True)
