@@ -3,6 +3,8 @@ name: Typography + health CI
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [fix/android10]
   workflow_dispatch:
 
 concurrency:
