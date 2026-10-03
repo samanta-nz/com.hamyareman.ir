@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.hamyareman.ir.platform.core.common.JalaliDate
+import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.PrivacyPolicy
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
