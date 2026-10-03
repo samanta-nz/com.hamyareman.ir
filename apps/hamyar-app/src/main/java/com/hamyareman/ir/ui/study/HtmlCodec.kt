@@ -13,10 +13,19 @@ object HtmlCodec {
 
     private val MAGIC = byteArrayOf(0x48, 0x4D, 0x4B, 0x31) // HMK1
 
-    fun isWrapped(data: ByteArray): Boolean {
-        if (data.size < 4 + 12 + 16) return false
-        for (i in MAGIC.indices) if (data[i] != MAGIC[i]) return false
+    /** کمینهٔ اندازهٔ یک فایل معتبر: magic ۴ + IV ۱۲ + تگ GCM ۱۶. */
+    const val MIN_WRAPPED_BYTES: Int = 4 + 12 + 16
+
+    /** فقط چهار بایت اول را می‌سنجد — برای وارسی سریع فایل روی دیسک یا سرِ پاسخ. */
+    fun hasMagic(head: ByteArray): Boolean {
+        if (head.size < MAGIC.size) return false
+        for (i in MAGIC.indices) if (head[i] != MAGIC[i]) return false
         return true
+    }
+
+    fun isWrapped(data: ByteArray): Boolean {
+        if (data.size < MIN_WRAPPED_BYTES) return false
+        return hasMagic(data)
     }
 
     fun unwrap(ctx: Context, data: ByteArray): ByteArray {

@@ -1,9 +1,6 @@
 name: Build Hamyar music/WebView hotfix
 
 on:
-  push:
-    branches:
-      - '**'
   workflow_dispatch:
     inputs:
       ref:
@@ -33,7 +30,7 @@ jobs:
       - name: Checkout exact source
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || '19ad0d7f3c9c482616ce3beee512859997028bc5' }}
+          ref: ${{ inputs.ref }}
 
       - name: Apply source hotfix
         shell: bash
@@ -159,13 +156,12 @@ jobs:
             :core-common:testDebugUnitTest \
             :hamyar-app:testP09DebugUnitTest \
             :hamyar-app:assembleP09Debug \
-            -PhamyarVersionCode="${{ inputs.version_code || '2441' }}" \
-            -PhamyarVersionName="${{ inputs.version_name || '2.4.4-hotfix' }}"
+            -PhamyarVersionCode="${{ inputs.version_code }}" \
+            -PhamyarVersionName="${{ inputs.version_name }}"
 
       - name: Validate APK
         run: |
           set -euo pipefail
-          VERSION_NAME="${{ inputs.version_name || '2.4.4-hotfix' }}"
           mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
           test "${#files[@]}" -eq 1
           APK="${files[0]}"
@@ -173,7 +169,7 @@ jobs:
           echo "$BADGING"
           grep -F "name='${PACKAGE}'" <<<"$BADGING"
           mkdir -p dist
-          OUT="dist/hamyar-grade9-${VERSION_NAME}-debug.apk"
+          OUT="dist/hamyar-grade9-${{ inputs.version_name }}-debug.apk"
           cp -f "$APK" "$OUT"
           echo "APK_SHA256=$(sha256sum "$OUT" | cut -d' ' -f1)" >> "$GITHUB_ENV"
           sha256sum "$OUT"
@@ -182,6 +178,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: hamyar-grade9-2.4.4-hotfix
-          path: dist/hamyar-grade9-*.apk
+          path: dist/hamyar-grade9-${{ inputs.version_name }}-debug.apk
           if-no-files-found: error
           retention-days: 14

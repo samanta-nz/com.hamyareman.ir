@@ -37,8 +37,6 @@ import com.hamyareman.ir.ui.calmdown.BreathingScreen
 import com.hamyareman.ir.ui.calmdown.CalmMenuScreen
 import com.hamyareman.ir.ui.calmdown.JournalScreen
 import com.hamyareman.ir.ui.calmdown.GratitudeJournalScreen
-import com.hamyareman.ir.ui.chatbot.ChatScreen
-import com.hamyareman.ir.ui.chatbot.ChatSettingsScreen
 import com.hamyareman.ir.ui.content.ContentCategoryScreen
 import com.hamyareman.ir.ui.content.ContentHubScreen
 import com.hamyareman.ir.ui.content.ContentHtmlScreen
@@ -189,10 +187,13 @@ fun ZahraNavHost() {
             composable(Screen.Home.route) { HomeScreen(nav) }
             composable(Screen.Study.route) { SchoolHubScreen(nav) }
             composable(Screen.StudyHome.route) { StudyHomeScreen(nav) }
-            composable(Screen.Chat.route) {
-                ChatScreen(
-                    onSettings = { nav.navigate(Screen.ChatSettings.route) },
-                    onHelplines = { nav.navigate(Screen.Helplines.route) })
+            // placeholder مشترک جای صفحه و تب بازنشسته‌شدهٔ «همراه من» را گرفته است.
+            composable(Screen.Placeholder.route) {
+                com.hamyareman.ir.ui.study.BookNodeScreen(
+                    title = "به‌زودی",
+                    bucketKey = com.hamyareman.ir.ui.study.BooksMenu.SPACEHOLDER_KEY,
+                    onBack = { nav.popBackStack() },
+                )
             }
             composable(Screen.More.route) { MoreScreen(nav) }
             composable(Screen.About.route) { AboutScreen { nav.popBackStack() } }
@@ -209,7 +210,10 @@ fun ZahraNavHost() {
                     onTeach = { packId -> nav.navigate(Screen.LessonTeach.of(packId)) },
                     onStudy = { packId -> nav.navigate(Screen.LessonStudy.of(packId)) },
                     onVideoTeach = { packId -> nav.navigate(Screen.VideoTeach.of(packId)) },
-                    onCharts = { nav.navigate(Screen.Charts.of(entry.arguments?.getString("bookCode"))) })
+                    onCharts = { nav.navigate(Screen.Charts.of(entry.arguments?.getString("bookCode"))) },
+                    onOpenNode = { key, title, audio ->
+                        nav.navigate(Screen.BookNode.of(key, title, audio))
+                    })
             }
             composable(
                 Screen.LessonTeach.route,
@@ -470,7 +474,6 @@ fun ZahraNavHost() {
                 }
             }
             composable(Screen.Privacy.route) { PrivacySettingsScreen { nav.popBackStack() } }
-            composable(Screen.ChatSettings.route) { ChatSettingsScreen { nav.popBackStack() } }
             composable(Screen.Badges.route) { BadgesScreen { nav.popBackStack() } }
             composable(Screen.Lock.route) { AppLockScreen { nav.popBackStack() } }
             composable(Screen.Reminders.route) { RemindersScreen { nav.popBackStack() } }
@@ -497,6 +500,21 @@ fun ZahraNavHost() {
             ) { entry ->
                 ContentHtmlScreen(
                     itemId = entry.arguments?.getString("id").orEmpty(),
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable(
+                Screen.BookNode.route,
+                listOf(
+                    navArgument("key") { type = NavType.StringType },
+                    navArgument("title") { type = NavType.StringType },
+                    navArgument("audio") { type = NavType.StringType; defaultValue = "" },
+                ),
+            ) { entry ->
+                com.hamyareman.ir.ui.study.BookNodeScreen(
+                    title = entry.arguments?.getString("title").orEmpty(),
+                    bucketKey = entry.arguments?.getString("key").orEmpty(),
+                    audioKey = entry.arguments?.getString("audio").orEmpty(),
                     onBack = { nav.popBackStack() },
                 )
             }

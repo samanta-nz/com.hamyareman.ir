@@ -50,40 +50,45 @@ import com.hamyareman.ir.platform.core.appwrite.AppwriteAuthService
 import com.hamyareman.ir.platform.core.appwrite.AppwriteClientProvider
 import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.common.TableIds
-import com.hamyareman.ir.di.AppContainer
 import androidx.compose.material3.Slider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import com.hamyareman.ir.ui.net.NetState
 import com.hamyareman.ir.ui.sync.SyncCenter
 import java.util.Locale
 
 @Composable
 fun SettingsScreen(nav: NavController) {
     val container = LocalAppContainer.current
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+    // فقط فهرست تنظیمات دو واحد جمع‌تر است؛ خانوادهٔ انتخابی کاربر حفظ می‌شود.
+    val compactTypography = settingsTypography(MaterialTheme.typography, sizeDelta = -2f)
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme,
+        typography = compactTypography,
     ) {
-        AppTopBar("تنظیمات") { nav.popBackStack() }
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SectionCard(
-                "تم برنامه",
-                "رنگ، حالت روشن یا تاریک و اندازهٔ نوشته.",
-            ) { nav.navigate(Screen.Appearance.route) }
-            SectionCard(
-                "قفل برنامه",
-                if (container.lock.isEnabled()) "فعال — ورود با PIN یا بیومتریک." else "غیرفعال — برای محافظت فعالش کن.",
-            ) { nav.navigate(Screen.Lock.route) }
-            SectionCard(
-                "یادآورها و ساعات سکوت",
-                "مدیریت یادآورها و یک بازهٔ سکوت روزانه.",
-            ) { nav.navigate(Screen.Reminders.route) }
-            SectionCard(
-                "تنظیمات سرور",
-                "تنظیمات سرورها و همگام‌سازی و کش گوشی.",
-            ) { nav.navigate(Screen.Sync.route) }
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            AppTopBar("تنظیمات") { nav.popBackStack() }
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionCard(
+                    "تم برنامه",
+                    "رنگ، حالت روشن یا تاریک و اندازهٔ نوشته.",
+                ) { nav.navigate(Screen.Appearance.route) }
+                SectionCard(
+                    "قفل برنامه",
+                    if (container.lock.isEnabled()) "فعال — ورود با PIN یا بیومتریک." else "غیرفعال — برای محافظت فعالش کن.",
+                ) { nav.navigate(Screen.Lock.route) }
+                SectionCard(
+                    "یادآورها و ساعات سکوت",
+                    "مدیریت یادآورها و یک بازهٔ سکوت روزانه.",
+                ) { nav.navigate(Screen.Reminders.route) }
+                SectionCard(
+                    "تنظیمات سرور",
+                    "منبع محتوا، همگام‌سازی و کش دستگاه.",
+                ) { nav.navigate(Screen.Sync.route) }
+            }
         }
     }
 }
@@ -546,165 +551,152 @@ fun SyncScreen(onBack: () -> Unit) {
         status = SyncCenter.status(ctx, container)
     }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AppTopBar("تنظیمات سرور", onBack)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    // صفحهٔ سرور عمداً جمع‌تر و بدون فونت دست‌نویس است تا متن‌های فنی یکنواخت خوانده شوند.
+    val serverTypography = settingsTypography(
+        base = MaterialTheme.typography,
+        sizeDelta = -4f,
+        forceVazirmatnLight = true,
+    )
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme,
+        typography = serverTypography,
+    ) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            AppTopBar("تنظیمات سرور", onBack)
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
-            ServerOptionsSection()
+                ServerOptionsSection()
 
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("همگام‌سازی خودکار روشن است ✅", style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        "هر داده‌ای که باید سینک شود، اول روی همین گوشی ذخیره می‌شود (کش) و بعد " +
-                            "به صفِ ارسال می‌رود؛ اگر اینترنت نباشد هیچ‌چیز گم نمی‌شود و به‌محضِ " +
-                            "برگشتنِ اینترنت خودش فرستاده می‌شود. کارِ دستی لازم نیست.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("وضعیت", style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        "اتصال به سرور: " + when {
-                            !container.isBackendConfigured -> "پیکربندی نشده (حالت محلی)"
-                            status.online -> "آنلاین و آماده"
-                            else -> "آفلاین — داده‌ها در صف می‌مانند"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Text(
-                        "در صفِ ارسال: " + toPersianDigits(status.outbox.toString()) + " قلم" +
-                            "  •  پیام‌های «حرف دل» در انتظار: " + toPersianDigits(status.heartPending.toString()),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Text(
-                        if (status.lastSyncAt > 0) {
-                            "آخرین همگام‌سازی: " + JalaliDate.stampFa(status.lastSyncAt)
-                        } else {
-                            "هنوز همگام‌سازی انجام نشده."
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    status.lastError?.let {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("همگام‌سازی خودکار", style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "آخرین خطای سینک: $it",
+                            "داده‌های قابل همگام‌سازی ابتدا روی دستگاه ذخیره و هنگام اتصال ارسال می‌شوند.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("وضعیت اتصال", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "اتصال به سرور: " + when {
+                                !container.isBackendConfigured -> "پیکربندی نشده (حالت محلی)"
+                                status.online -> "آنلاین و آماده"
+                                else -> "آفلاین — داده‌ها در صف می‌مانند"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            "در صف ارسال: " + toPersianDigits(status.outbox.toString()) +
+                                "  •  پیام‌های در انتظار: " + toPersianDigits(status.heartPending.toString()),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            if (status.lastSyncAt > 0) {
+                                "آخرین همگام‌سازی: " + JalaliDate.stampFa(status.lastSyncAt)
+                            } else {
+                                "هنوز همگام‌سازی انجام نشده."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        status.lastError?.let {
+                            Text(
+                                "آخرین خطای سینک: $it",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                }
+
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("کش دستگاه", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "حجمِ کش: " + mb(status.cacheBytes) + " مگابایت از " +
+                                toPersianDigits(status.limitMb.toString()) + " مگابایت",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            "موارد کش‌شده: " + toPersianDigits(status.cacheItems.toString()) +
+                                "  •  رسانه‌ها: " + toPersianDigits(status.mediaFiles.toString()) +
+                                " فایل، " + mb(status.mediaBytes) + " مگابایت",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            "داده‌های محلی همگام‌سازی‌شده: " +
+                                toPersianDigits(status.stateRows.toString()),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            "سقفِ کش: " + toPersianDigits(limit.toString()) + " مگابایت",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Slider(
+                            value = limit.toFloat(),
+                            onValueChange = { limit = it.toInt() },
+                            valueRange = SyncCenter.MIN_LIMIT_MB.toFloat()..SyncCenter.MAX_LIMIT_MB.toFloat(),
+                        )
+                        Text(
+                            "با عبور از سقف، قدیمی‌ترین رسانه‌ها پاک و در صورت نیاز دوباره دریافت می‌شوند.",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.error,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            PrimaryButton("اعمالِ سقف") {
+                                SyncCenter.setCacheLimitMb(ctx, limit)
+                                refresh()
+                                notice = "سقفِ کش روی " + toPersianDigits(limit.toString()) + " مگابایت تنظیم شد."
+                            }
+                            TextButton(onClick = { askClear = true }) { Text("پاک‌کردنِ کشِ رسانه") }
+                        }
+                        notice?.let {
+                            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+
+                Text(
+                    "چیزی که هرگز همگام نمی‌شود: ${PrivacyPolicy.neverSyncTables.joinToString("، ")}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (!container.isBackendConfigured) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Text(
+                            "همگام‌سازی ابری در این نسخه پیکربندی نشده است.",
+                            Modifier.padding(12.dp),
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 }
             }
-
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("کشِ گوشی", style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        "حجمِ کش: " + mb(status.cacheBytes) + " مگابایت از " +
-                            toPersianDigits(status.limitMb.toString()) + " مگابایت",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Text(
-                        "تعدادِ مواردِ کش‌شده: " + toPersianDigits(status.cacheItems.toString()) + " قلم" +
-                            "  •  صوت/ویدیوی دانلودشده: " + toPersianDigits(status.mediaFiles.toString()) +
-                            " فایل، " + mb(status.mediaBytes) + " مگابایت",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Text(
-                        "داده‌های سینک‌شده (برنامه، تیک‌ها، نکته‌ها): " +
-                            toPersianDigits(status.stateRows.toString()) + " قلم — این‌ها همیشه محلی می‌مانند.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        "سقفِ کش: " + toPersianDigits(limit.toString()) + " مگابایت",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Slider(
-                        value = limit.toFloat(),
-                        onValueChange = { limit = it.toInt() },
-                        valueRange = SyncCenter.MIN_LIMIT_MB.toFloat()..SyncCenter.MAX_LIMIT_MB.toFloat(),
-                    )
-                    Text(
-                        "وقتی کش از سقف بگذرد، قدیمی‌ترین فایل‌های صوتی/تصویری خودکار پاک می‌شوند؛ " +
-                            "داده‌های سینک‌شده پاک نمی‌شوند و فایلِ پاک‌شده اگر لازم شود دوباره دانلود می‌شود.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PrimaryButton("اعمالِ سقف") {
-                            SyncCenter.setCacheLimitMb(ctx, limit)
-                            refresh()
-                            notice = "سقفِ کش روی " + toPersianDigits(limit.toString()) + " مگابایت تنظیم شد."
-                        }
-                        TextButton(onClick = { askClear = true }) { Text("پاک‌کردنِ کشِ رسانه") }
-                    }
-                    notice?.let {
-                        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
-
-            Text(
-                "چیزی که هرگز همگام نمی‌شود: ${PrivacyPolicy.neverSyncTables.joinToString("، ")}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (!container.isBackendConfigured) {
-                Card(Modifier.fillMaxWidth()) {
-                    Text(
-                        "سرور خارجی در این نسخه در دسترس نیست. برای فعال‌شدن همگام‌سازی، نسخهٔ رسمی و به‌روز برنامه را نصب کن.",
-                        Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            }
         }
-    }
 
-    if (askClear) {
-        AlertDialog(
-            onDismissRequest = { askClear = false },
-            title = { Text("پاک‌کردنِ کشِ رسانه؟") },
-            text = {
-                Text(
-                    "فایل‌های صوتی/ویدیویی که دانلود کرده‌ای پاک می‌شوند (برنامه، تیک‌ها و " +
-                        "نکته‌ها دست‌نخورده می‌مانند). هر فایلی لازم شود، دوباره از سرور می‌آید.",
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    SyncCenter.clearMediaCache(ctx)
-                    askClear = false
-                    refresh()
-                    notice = "کشِ رسانه پاک شد."
-                }) { Text("پاک کن") }
-            },
-            dismissButton = { TextButton(onClick = { askClear = false }) { Text("بی‌خیال") } },
-        )
-    }
-}
-
-private fun buildStatus(container: com.hamyareman.ir.di.AppContainer): String {
-    val pending = container.sync.pendingCount()
-    val heartPending = container.heart.pendingCount()
-    val last = container.sync.lastSyncAt()
-    return buildString {
-        append(if (container.isBackendConfigured) "متصل به سرور خارجی" else "حالت محلی (بدون سرور خارجی)")
-        append("\n")
-        append(toPersianDigits("$pending قلم در صف همگام‌سازی"))
-        append("\n")
-        append(toPersianDigits("$heartPending پیام در انتظار ارسال"))
-        append("\n")
-        append(
-            if (last > 0) {
-                "آخرین همگام‌سازی: ${JalaliDate.stampFa(last)}"
-            } else {
-                "هنوز همگام‌سازی انجام نشده."
-            },
-        )
+        if (askClear) {
+            AlertDialog(
+                onDismissRequest = { askClear = false },
+                title = { Text("پاک‌کردنِ کشِ رسانه؟") },
+                text = {
+                    Text(
+                        "فایل‌های صوتی/ویدیویی که دانلود کرده‌ای پاک می‌شوند (برنامه، تیک‌ها و " +
+                            "نکته‌ها دست‌نخورده می‌مانند). هر فایلی لازم شود، دوباره از سرور می‌آید.",
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        SyncCenter.clearMediaCache(ctx)
+                        askClear = false
+                        refresh()
+                        notice = "کشِ رسانه پاک شد."
+                    }) { Text("پاک کن") }
+                },
+                dismissButton = { TextButton(onClick = { askClear = false }) { Text("بی‌خیال") } },
+            )
+        }
     }
 }

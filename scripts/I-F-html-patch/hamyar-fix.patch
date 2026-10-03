@@ -1,0 +1,525 @@
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ManagedWebMedia.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ManagedWebMedia.kt
+@@ -17,15 +17,27 @@
+     addJavascriptInterface(HtmlMediaLifecycleBridge(context.applicationContext), BRIDGE_NAME)
+ }
+ 
+-/** بعد از هر load صدا/ویدیوهای فعلی و عناصر بعدی را زیر نظر می‌گیرد. */
++/**
++ * بعد از هر load صدا/ویدیوهای فعلی و عناصر بعدی را زیر نظر می‌گیرد.
++ *
++ * پلیر موسیقی (`BackgroundMusic`) با Web Audio پخش می‌کند، نه با `<audio>`؛ پس رویداد
++ * `play` هرگز نمی‌آمد و HtmlAudioKeepAliveService با خاموش‌شدن صفحه شروع نمی‌شد
++ * (صدای «بشنو و بخواب» با قفل صفحه قطع می‌شد). حالا وضعیت `BackgroundMusic.state.playing`
++ * هر ثانیه از خود صفحه و iframeهای هم‌origin خوانده می‌شود.
++ */
+ fun WebView.bindManagedMediaLifecycle() {
+     evaluateJavascript(
+         """
+         (function(){
+           if(window.__hamyarMediaLifecycleInstalled){return;}
+           window.__hamyarMediaLifecycleInstalled=true;
+-          var active=new Set();
+-          function tell(){try{HamyarMediaLifecycle.onPlaybackChanged(active.size>0);}catch(e){}}
++          var active=new Set(), webAudio=false, last=null;
++          function tell(){
++            var now=active.size>0||webAudio;
++            if(now===last)return;
++            last=now;
++            try{HamyarMediaLifecycle.onPlaybackChanged(now);}catch(e){}
++          }
+           function bind(el){
+             if(el.__hamyarBound)return; el.__hamyarBound=true;
+             el.addEventListener('play',function(){active.add(el);tell();});
+@@ -36,13 +48,35 @@
+             if(root&&root.matches&&root.matches('audio,video'))bind(root);
+             (root||document).querySelectorAll('audio,video').forEach(bind);
+           }
++          // صفحه + iframeهای هم‌origin (تو در تو). cross-origin بی‌صدا رد می‌شود.
++          function windows(win,out,depth){
++            out.push(win);
++            if(depth>3)return out;
++            try{
++              var l=win.document.querySelectorAll('iframe'),i;
++              for(i=0;i<l.length;i++){
++                try{ if(l[i].contentWindow && l[i].contentWindow.document) windows(l[i].contentWindow,out,depth+1); }catch(e){}
++              }
++            }catch(e){}
++            return out;
++          }
++          function musicPlaying(){
++            var w=windows(window,[],0),i;
++            for(i=0;i<w.length;i++){
++              try{var b=w[i].BackgroundMusic; if(b&&b.state&&b.state.playing)return true;}catch(e){}
++            }
++            return false;
++          }
+           scan(document);
+           new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(scan);});})
+             .observe(document.documentElement,{childList:true,subtree:true});
++          setInterval(function(){webAudio=musicPlaying();tell();},1000);
+           window.__hamyarStopAllMedia=function(){
+-            document.querySelectorAll('audio,video').forEach(function(el){try{el.pause();el.currentTime=0;}catch(e){}});
+-            try{if(window.AudioContext){} }catch(e){}
+-            active.clear();tell();
++            windows(window,[],0).forEach(function(w){
++              try{w.document.querySelectorAll('audio,video').forEach(function(el){try{el.pause();el.currentTime=0;}catch(e){}});}catch(e){}
++              try{if(w.BackgroundMusic&&w.BackgroundMusic.pause)w.BackgroundMusic.pause();}catch(e){}
++            });
++            active.clear(); webAudio=false; last=null; tell();
+           };
+         })();
+         """.trimIndent(),
+@@ -53,7 +87,7 @@
+ /** قطع کامل صدا هنگام خروج از صفحه یا رفتن واقعی اپ به پس‌زمینه. */
+ fun WebView.stopManagedMedia() {
+     evaluateJavascript(
+-        "try{if(window.__hamyarStopAllMedia)window.__hamyarStopAllMedia();else document.querySelectorAll('audio,video').forEach(function(x){x.pause();x.currentTime=0;});}catch(e){}",
++        "try{if(window.__hamyarStopAllMedia)window.__hamyarStopAllMedia();else{document.querySelectorAll('audio,video').forEach(function(x){x.pause();x.currentTime=0;});if(window.BackgroundMusic&&window.BackgroundMusic.pause)window.BackgroundMusic.pause();}}catch(e){}",
+         null,
+     )
+     HtmlAudioKeepAliveService.stop(context)
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/MusicFrameOverlayBridge.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/MusicFrameOverlayBridge.kt
+@@ -1,13 +1,23 @@
+ package com.hamyareman.ir.ui.study
+ 
++import android.webkit.JavascriptInterface
+ import android.webkit.WebView
+ 
++private const val OVERLAY_BRIDGE = "HamyarMusicOverlay"
++
+ /**
+  * پلِ popup پلیر موسیقی برای iframeهای درس‌های یوگا و ورزش.
+  *
+- * iframe فقط پس از پیام صریحِ open تمام viewport را می‌گیرد و با پیام close دقیقاً
+- * به style قبلی برمی‌گردد. هیچ navigation یا دست‌کاری history برای بستن انجام
+- * نمی‌شود؛ بنابراین خروج از iframe/درسِ مادر دوباره رخ نمی‌دهد.
++ * ⚠️ خود صفحهٔ درس (`HamyaremanBackground.mount`) هم روی پیام `state` همین iframe را
++ * تمام‌صفحه و برگشت می‌دهد (`resize(open)` با `frame.style.cssText`) و `body.overflow`
++ * را خودش نگه می‌دارد/برمی‌گرداند. نسخهٔ قبلیِ پل از style «snapshot» می‌گرفت؛ ولی
++ * listener صفحه زودتر اجرا می‌شود، پس snapshot همان style تمام‌صفحهٔ صفحه بود و روی
++ * close همان برمی‌گشت: iframe بعد از بستن روی کل درس می‌ماند و body قفل (hidden) می‌ماند.
++ *
++ * حالا پل هیچ style inline را نمی‌خواند و نمی‌نویسد. فقط attribute
++ * `data-hamyar-music-open` را روی iframe می‌گذارد و یک stylesheet ثابت (با !important)
++ * روی همین attribute، viewport واقعی (vh/dvh) را اعمال می‌کند. با برداشتن attribute،
++ * همان style خود صفحه (۸۸px) بدون هیچ بازیابی دستی دوباره اثر می‌کند.
+  */
+ internal fun WebView.installMusicFrameOverlayBridge() {
+     evaluateJavascript(
+@@ -15,10 +25,29 @@
+         (function(){
+           if(window.__hamyarMusicFrameOverlayBridge)return;
+           window.__hamyarMusicFrameOverlayBridge=true;
+-          var saved=new WeakMap();
+-          var COLLAPSED_HEIGHT='92px';
++          var CHANNEL='hamyareman-background-v1';
++          var ATTR='data-hamyar-music-open';
++
++          var css=
++            'iframe['+ATTR+'="true"]{display:block!important;position:fixed!important;inset:0!important;'+
++            'top:0!important;left:0!important;right:0!important;bottom:0!important;'+
++            // ترتیب عمدی: اول vh به‌عنوان پشتیبان، بعد dvh که اگر WebView پشتیبانی کند جایش را بگیرد.
++            'width:100vw!important;min-width:100vw!important;'+
++            'height:100vh!important;min-height:100vh!important;'+
++            'height:100dvh!important;min-height:100dvh!important;'+
++            'max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;'+
++            'border:0!important;border-radius:0!important;overflow:hidden!important;'+
++            'overscroll-behavior:none!important;z-index:2147483647!important;'+
++            'touch-action:auto!important;pointer-events:auto!important;background:#f4faf7!important}'+
++            'html[data-hamyar-theme="dark"] iframe['+ATTR+'="true"]{background:#101713!important}'+
++            'html.hamyar-music-open,html.hamyar-music-open body{overflow:hidden!important}';
++          var style=document.createElement('style');
++          style.setAttribute('data-hamyar-music-overlay','');
++          style.textContent=css;
++          (document.head||document.documentElement).appendChild(style);
+ 
+           function usable(f){return f && !f.hasAttribute('data-hamyar-ignore-inflow-bridge');}
++          function isOpen(f){return f.getAttribute(ATTR)==='true';}
+           function musicFrame(source){
+             var frames=document.querySelectorAll('iframe'),i,f;
+             // اولویت قطعی با همان iframe ای که پیام از آن آمده است.
+@@ -28,62 +57,57 @@
+               if((f.getAttribute('src')||'').toLowerCase().indexOf('background-music')>=0 && usable(f)) return f; }
+             return null;
+           }
+-          function theme(){
+-            var t=document.documentElement.getAttribute('data-hamyar-theme');
+-            return t==='dark'?'dark':'light';
+-          }
+-
+-          function snapshot(frame){
+-            if(saved.has(frame))return saved.get(frame);
+-            var value={style:frame.getAttribute('style'),bodyOverflow:document.body.style.overflow,
+-              rootOverflow:document.documentElement.style.overflow,scrollX:window.scrollX,scrollY:window.scrollY};
+-            saved.set(frame,value); return value;
+-          }
+-          function close(frame){
+-            if(!frame)return;
+-            var old=saved.get(frame);
+-            if(old){
+-              old.style===null?frame.removeAttribute('style'):frame.setAttribute('style',old.style);
+-              document.body.style.overflow=old.bodyOverflow;
+-              document.documentElement.style.overflow=old.rootOverflow;
+-              window.scrollTo(old.scrollX,old.scrollY);
+-              saved.delete(frame);
+-            }else{
+-              frame.style.setProperty('height',COLLAPSED_HEIGHT,'important');
+-              frame.style.setProperty('min-height',COLLAPSED_HEIGHT,'important');
+-              frame.style.setProperty('max-height',COLLAPSED_HEIGHT,'important');
+-            }
+-            frame.setAttribute('data-hamyar-music-open','false');
++          function sync(){
++            var any=!!document.querySelector('iframe['+ATTR+'="true"]');
++            document.documentElement.classList.toggle('hamyar-music-open',any);
++            try{HamyarMusicOverlay.onChanged(any);}catch(e){}
+           }
+-          function open(frame){
+-            if(!frame)return;
+-            snapshot(frame);
+-            document.body.style.overflow='hidden';
+-            document.documentElement.style.overflow='hidden';
+-            // ترتیب عمدی: اول vh به‌عنوان پشتیبان، بعد dvh که اگر WebView
+-            // پشتیبانی کند جایش را بگیرد. inset هم با چهار سمتِ صریح تکرار شده
+-            // چون بعضی WebViewهای قدیمی‌تر inset را روی iframe نادیده می‌گیرند.
+-            frame.style.cssText += ';display:block!important;position:fixed!important;inset:0!important;'+
+-              'top:0!important;left:0!important;right:0!important;bottom:0!important;'+
+-              'width:100vw!important;min-width:100vw!important;'+
+-              'height:100vh!important;min-height:100vh!important;'+
+-              'height:100dvh!important;min-height:100dvh!important;'+
+-              'overflow:hidden!important;overscroll-behavior:none!important;'+
+-              'max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;'+
+-              'border:0!important;border-radius:0!important;z-index:2147483647!important;'+
+-              'background:'+(theme()==='dark'?'#101713':'#f4faf7')+'!important;'+
+-              'touch-action:auto!important;pointer-events:auto!important;';
+-            frame.setAttribute('data-hamyar-music-open','true');
+-            try{frame.focus()}catch(_){}
++          function set(frame,open){
++            if(!frame || isOpen(frame)===open)return;   // پیام‌های state تکراری بی‌اثرند
++            frame.setAttribute(ATTR,open?'true':'false');
++            if(open){try{frame.focus()}catch(_){}}
++            sync();
+           }
+           window.addEventListener('message',function(event){
+             var data=event.data;
+-            if(!data || data.channel!=='hamyareman-background-v1' || typeof data.opened!=='boolean')return;
+-            var frame=musicFrame(event.source);
+-            data.opened?open(frame):close(frame);
++            if(!data || data.channel!==CHANNEL || typeof data.opened!=='boolean')return;
++            set(musicFrame(event.source),data.opened);
+           },false);
++
++          // فراخوانی از سمت اپ (دکمهٔ Back): از iframe می‌خواهد خودش را ببندد؛ اگر جواب
++          // نداد (نسخهٔ قدیمی فایل)، پس از ۳۵۰ms attribute به‌زور برداشته می‌شود.
++          window.__hamyarCloseMusicOverlay=function(){
++            var list=document.querySelectorAll('iframe['+ATTR+'="true"]');
++            Array.prototype.forEach.call(list,function(f){
++              try{f.contentWindow.postMessage({channel:CHANNEL,type:'close'},'*');}catch(e){}
++              setTimeout(function(){ set(f,false); },350);
++            });
++          };
+         })();
+         """.trimIndent(),
+         null,
+     )
+ }
++
++/** وقتی popup موسیقی داخل درس باز/بسته می‌شود به اپ خبر می‌دهد (روی main thread). */
++internal fun WebView.installMusicOverlayHost(onChanged: (Boolean) -> Unit) {
++    addJavascriptInterface(MusicOverlayHost(this, onChanged), OVERLAY_BRIDGE)
++}
++
++/** برای BackHandler: popup باز را می‌بندد. */
++internal fun WebView.closeMusicFrameOverlay() {
++    evaluateJavascript(
++        "try{window.__hamyarCloseMusicOverlay&&window.__hamyarCloseMusicOverlay();}catch(e){}",
++        null,
++    )
++}
++
++private class MusicOverlayHost(
++    private val web: WebView,
++    private val callback: (Boolean) -> Unit,
++) {
++    @JavascriptInterface
++    fun onChanged(open: Boolean) {
++        web.post { callback(open) }
++    }
++}
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SleepNightScreen.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SleepNightScreen.kt
+@@ -35,6 +35,8 @@
+ import com.hamyareman.ir.platform.feature.playback.SleepPlaybackService
+ import com.hamyareman.ir.ui.AppTypography
+ import com.hamyareman.ir.ui.calmdown.BackgroundMusicTileHost
++import com.hamyareman.ir.ui.calmdown.MusicTileHandle
++import kotlinx.coroutines.delay
+ import kotlinx.coroutines.launch
+ 
+ object SleepLaunch {
+@@ -44,6 +46,9 @@
+ 
+ data class SleepTrack(val id: String, val title: String, val subtitle: String, val uri: String)
+ 
++/** گزینه‌های تایمر خواب (دقیقه). صفر یعنی بدون تایمر. */
++private val SLEEP_TIMER_OPTIONS = listOf(0, 15, 30, 60)
++
+ @Composable
+ fun SleepNightScreen(onBack: () -> Unit) {
+     val ctx = LocalContext.current
+@@ -53,6 +58,28 @@
+     DisposableEffect(Unit) { onDispose { playback.release() } }
+     LaunchedEffect(Unit) { playback.connect() }
+ 
++    // صدای واقعی این صفحه از tile موسیقی (Web Audio) می‌آید؛ دکمه‌های پایین و تایمر
++    // باید همان را کنترل کنند، نه فقط PlaybackController بومی.
++    val music = remember { MusicTileHandle() }
++    var musicPlaying by remember { mutableStateOf(false) }
++    var nativeStarted by remember { mutableStateOf(false) }
++    var timerMinutes by remember { mutableIntStateOf(0) }
++    LaunchedEffect(Unit) {
++        while (true) {
++            music.queryPlaying { musicPlaying = it }
++            delay(1000)
++        }
++    }
++    // تایمر خواب: پس از مدت انتخاب‌شده هر دو منبع صدا متوقف می‌شوند.
++    LaunchedEffect(timerMinutes) {
++        if (timerMinutes > 0) {
++            delay(timerMinutes * 60_000L)
++            music.pause()
++            playback.stop()
++            timerMinutes = 0
++        }
++    }
++
+     val audioTracks = remember {
+         listOf(
+             SleepTrack("h1", "آرام‌سازی بدن", "خودهیپنوتیزم ملایم — فایل بعداً در باکت", ""),
+@@ -67,17 +94,23 @@
+             playback.connect()
+             playback.setMedia(t.uri, t.title)
+             playback.play()
++            nativeStarted = true
+         }
+     }
+ 
++    val anyPlaying = state.playing || musicPlaying
++
+     Column(Modifier.fillMaxSize()) {
++        // نسخهٔ قبلی نوار بالا را نداشت و onBack هیچ‌جا استفاده نمی‌شد؛ تنها راه
++        // برگشت دکمهٔ سیستم بود.
++        AppTopBar("بشنو و بخواب", onBack)
+         // tile در جریان طبیعی صفحه است: با بازشدن به پایین بزرگ می‌شود و محتوای
+         // زیر آن را می‌راند؛ نه اینکه روی صفحهٔ خواب یک overlay غیرقابل لمس بسازد.
+         Column(
+             Modifier.weight(1f).verticalScroll(rememberScrollState()),
+             verticalArrangement = Arrangement.spacedBy(10.dp),
+         ) {
+-            BackgroundMusicTileHost()
++            BackgroundMusicTileHost(handle = music)
+             Column(
+                 Modifier.padding(horizontal = 16.dp),
+                 verticalArrangement = Arrangement.spacedBy(10.dp),
+@@ -85,15 +118,46 @@
+                 Text("صدای دلخواهت را انتخاب کن، اگر خواستی دو صدا را با هم ترکیب کن و بعد صفحه را برای خواب آرام بگذار.", style = AppTypography.pageBody.style)
+                 audioTracks.forEach { TrackRow(it, state.playing) { play(it) } }
+                 PrimaryButton("شروع جلسهٔ شنیدن") {
+-                    audioTracks.firstOrNull { it.uri.isNotBlank() }?.let { play(it) }
++                    val first = audioTracks.firstOrNull { it.uri.isNotBlank() }
++                    if (first != null) play(first) else if (!musicPlaying) music.toggle()
++                }
++                Text("تایمر خواب", style = AppTypography.pageHeading.style)
++                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
++                    SLEEP_TIMER_OPTIONS.forEach { m ->
++                        val selected = timerMinutes == m
++                        OutlinedButton(onClick = { timerMinutes = m }, modifier = Modifier.weight(1f)) {
++                            Text(
++                                (if (selected) "✓ " else "") +
++                                    if (m == 0) "بدون" else toPersianDigits(m.toString()) + " دقیقه",
++                            )
++                        }
++                    }
+                 }
+             }
+         }
+         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+-            OutlinedButton(onClick = { if (state.playing) playback.pause() else playback.play() }, modifier = Modifier.weight(1f)) {
+-                Text(if (state.playing) "استوپ" else "پلی")
++            OutlinedButton(
++                onClick = {
++                    when {
++                        state.playing -> playback.pause()
++                        musicPlaying -> music.pause()
++                        nativeStarted -> playback.play()
++                        else -> music.toggle()
++                    }
++                },
++                modifier = Modifier.weight(1f),
++            ) {
++                Text(if (anyPlaying) "استوپ" else "پلی")
+             }
+-            OutlinedButton(onClick = { playback.stop() }, modifier = Modifier.weight(1f)) {
++            OutlinedButton(
++                onClick = {
++                    music.pause()
++                    playback.stop()
++                    nativeStarted = false
++                    timerMinutes = 0
++                },
++                modifier = Modifier.weight(1f),
++            ) {
+                 Text("بستن")
+             }
+         }
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/HmkWebViewClient.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/HmkWebViewClient.kt
+@@ -126,12 +126,34 @@
+             mapOf("Cache-Control" to "no-store"), ByteArrayInputStream(ByteArray(0)),
+         )
+ 
+-    /** HTML رمزگشایی‌شده فقط همان لحظه در RAM با یک نشانهٔ بسیار کوچک تکمیل می‌شود. */
++    /**
++     * HTML رمزگشایی‌شده فقط همان لحظه در RAM با یک نشانهٔ بسیار کوچک تکمیل می‌شود.
++     *
++     * نشانه باید **داخل `<head>`** برود. نسخهٔ قبل آن را در ابتدای سند می‌گذاشت، یعنی
++     * قبل از `<!doctype html>`؛ هر `<script>` پیش از doctype مرورگر را به quirks mode
++     * می‌برد (box-sizing/ارتفاع ۱۰۰٪ و layout پلیر عوض می‌شود) و این فقط وقتی رخ می‌داد
++     * که فایل موسیقی از cache می‌آمد، یعنی از بار دوم به بعد. اگر `<head>` پیدا نشد،
++     * سند بدون نشانه تحویل می‌شود (فقط badge کش از دست می‌رود، نه حالت rendering).
++     */
+     private fun musicCacheHint(plain: ByteArray): ByteArray {
+         val hint = "<script>window.__hamyarHmkCacheHit=true;</script>".toByteArray(Charsets.UTF_8)
+-        return ByteArray(hint.size + plain.size).also { output ->
+-            hint.copyInto(output)
+-            plain.copyInto(output, hint.size)
++        val needle = "<head>".toByteArray(Charsets.UTF_8)
++        val limit = minOf(plain.size - needle.size, 4096)
++        var at = -1
++        var i = 0
++        while (i <= limit) {
++            var match = true
++            for (j in needle.indices) {
++                if (plain[i + j] != needle[j]) { match = false; break }
++            }
++            if (match) { at = i + needle.size; break }
++            i++
++        }
++        if (at < 0) return plain
++        return ByteArray(plain.size + hint.size).also { output ->
++            plain.copyInto(output, 0, 0, at)
++            hint.copyInto(output, at)
++            plain.copyInto(output, at + hint.size, at, plain.size)
+         }
+     }
+ 
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt
+@@ -46,6 +46,38 @@
+ private val TILE_HEIGHT = 92.dp
+ 
+ /**
++ * دستگیرهٔ کنترل پلیر موسیقی از بیرون tile (مثلاً دکمه‌های پایین «بشنو و بخواب»
++ * و تایمر خواب). قبلاً آن دکمه‌ها فقط PlaybackController بومی را کنترل می‌کردند که
++ * هیچ ترکی نداشت؛ پس روی صدای واقعی (Web Audio داخل tile) اثری نداشتند.
++ */
++class MusicTileHandle {
++    internal var web: WebView? = null
++
++    /** پخش/توقف؛ همان کاری که دکمهٔ play خود پلیر می‌کند. */
++    fun toggle() {
++        web?.evaluateJavascript(
++            "try{var p=document.getElementById('miniPlay')||document.getElementById('play');if(p)p.click();}catch(e){}",
++            null,
++        )
++    }
++
++    fun pause() {
++        web?.evaluateJavascript(
++            "try{window.BackgroundMusic&&window.BackgroundMusic.pause();}catch(e){}",
++            null,
++        )
++    }
++
++    /** وضعیت واقعی پخش (AudioContext در حال اجرا). */
++    fun queryPlaying(onResult: (Boolean) -> Unit) {
++        val view = web ?: return onResult(false)
++        view.evaluateJavascript(
++            "(function(){try{return !!(window.BackgroundMusic&&window.BackgroundMusic.state.playing)}catch(e){return false}})()",
++        ) { onResult(it == "true") }
++    }
++}
++
++/**
+  * کادر ۹۲dp در جریان صفحه می‌ماند و با لمس، **رو به پایین** باز می‌شود؛ همان
+  * آکاردئونِ `body.tilemode` در خود HTML. تایمر دو ثانیه‌ایِ بی‌لمسی هم تنها در
+  * HTML است (چون همهٔ لمس‌ها را می‌بیند) و اپ فقط ارتفاع میزبان را دنبال می‌کند
+@@ -55,6 +87,7 @@
+ @Composable
+ fun BackgroundMusicTileHost(
+     modifier: Modifier = Modifier,
++    handle: MusicTileHandle? = null,
+     onExpandedChanged: (Boolean) -> Unit = {},
+ ) {
+     val context = LocalContext.current
+@@ -129,9 +162,11 @@
+                     loadUrl(MUSIC_TILE_URL)
+                 }
+             }
++            handle?.web = web
+ 
+             DisposableEffect(Unit) {
+                 onDispose {
++                    if (handle?.web === web) handle.web = null
+                     web.stopManagedMedia()
+                     web.destroy()
+                 }
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentScreens.kt
+@@ -3,6 +3,7 @@
+ import android.annotation.SuppressLint
+ import android.webkit.WebSettings
+ import android.webkit.WebView
++import androidx.activity.compose.BackHandler
+ import androidx.compose.foundation.background
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Box
+@@ -36,8 +37,10 @@
+ import com.hamyareman.ir.ui.study.ManagedWebMediaEffect
+ import com.hamyareman.ir.ui.study.MusicEmbedPalette
+ import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
++import com.hamyareman.ir.ui.study.closeMusicFrameOverlay
+ import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
+ import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
++import com.hamyareman.ir.ui.study.installMusicOverlayHost
+ import com.hamyareman.ir.ui.study.publishHamyarAppearance
+ import com.hamyareman.ir.ui.study.stopManagedMedia
+ import kotlinx.coroutines.Dispatchers
+@@ -128,6 +131,10 @@
+     val webRef = remember { arrayOfNulls<WebView>(1) }
+     SecureWebEffect()
+     ManagedWebMediaEffect { webRef[0] }
++    // popup تمام‌صفحهٔ پلیر موسیقی داخل iframe (یوگا/ورزش) باز است؟ در این حالت Back
++    // فقط همان popup را می‌بندد؛ قبلاً کل درس را می‌بست.
++    var musicOverlayOpen by remember { mutableStateOf(false) }
++    BackHandler(enabled = musicOverlayOpen) { webRef[0]?.closeMusicFrameOverlay() }
+     var activeId by remember(itemId) { mutableStateOf(itemId) }
+     var pageUrl by remember(activeId) { mutableStateOf<String?>(null) }
+     var error by remember(activeId) { mutableStateOf<String?>(null) }
+@@ -209,6 +216,7 @@
+                             com.hamyareman.ir.ui.study.HmkWebViewClient.bucketHost(),
+                         ) {
+                             override fun onPageFinished(view: WebView, url: String) {
++                                musicOverlayOpen = false
+                                 super.onPageFinished(view, url)
+                                 view.publishHamyarAppearance(
+                                     appearance.darkMode,
+@@ -227,6 +235,7 @@
+                             }
+                         }
+                         installManagedMediaLifecycle()
++                        installMusicOverlayHost { musicOverlayOpen = it }
+                         webRef[0] = this
+                     }
+                 },

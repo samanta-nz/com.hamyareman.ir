@@ -1,0 +1,277 @@
+{
+  "subject": "کار و فناوری نهم",
+  "code": "917",
+  "items": [
+    {
+      "kind": "plain",
+      "title": "فهرست مطالب",
+      "pdf": "g9-karfan-index.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان یکم: الگوریتم",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod01.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان دوم: ترسیم با رایانه",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod02.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان سوم: ساز و کارهای حرکتی",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod03.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان چهارم: برنامه‌نویسی پایتون (۳)",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod04.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان پنجم: هدایت تحصیلی ــ حرفه‌ای",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod05.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان ششم: برق",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod06.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان هفتم: تأسیسات مکانیکی",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod07.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان هشتم: عمران",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod08.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان نهم: خودرو",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod09.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان دهم: پایش رشد و تکامل کودک",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod10.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "پودمان یازدهم: صنایع دستی (برجسته‌کاری روی فلز مس)",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "تدریس",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات کتابی",
+          "pdf": null
+        },
+        {
+          "title": "نمونه سوالات آزمونی",
+          "pdf": null
+        },
+        {
+          "title": "کتاب درسی",
+          "pdf": "g9-karfan-pod11.pdf"
+        }
+      ],
+      "children": []
+    }
+  ]
+}

@@ -91,29 +91,6 @@ class AdminMainActivity : AppCompatActivity() {
                                 loading = signingIn,
                                 error = error,
                                 onSettings = { showSettings = true },
-                                onGoogle = {
-                                    signingIn = true
-                                    error = null
-                                    scope.launch {
-                                        val outcome = runCatching {
-                                            when (val r = adminIo { container.auth.signInWithGoogle(this@AdminMainActivity) }) {
-                                                is AppResult.Err -> false to r.error.userMessage
-                                                is AppResult.Ok -> verifyAdmin(container, r.value)
-                                            }
-                                        }
-                                        outcome.fold(
-                                            onSuccess = { (ok, msg) ->
-                                                loggedIn.value = ok
-                                                error = msg
-                                            },
-                                            onFailure = { err ->
-                                                loggedIn.value = false
-                                                error = "ورود گوگل ناموفق: " + (err.message?.ifBlank { null } ?: err.javaClass.simpleName)
-                                            },
-                                        )
-                                        signingIn = false
-                                    }
-                                },
                                 onSignIn = { email, password ->
                                     signingIn = true
                                     error = null
@@ -147,22 +124,19 @@ class AdminMainActivity : AppCompatActivity() {
 }
 
 private suspend fun verifyAdmin(container: AdminContainer, user: AuthUser): Pair<Boolean, String?> {
-    val emailOk = user.email.equals("behzadinfo@gmail.com", true) ||
-        user.email.equals("aydinnz.designer@gmail.com", true)
+    // نقش admin باید سمت Appwrite روی حساب ست شود. هیچ ایمیل hard-code شده‌ای
+    // راه ورود نیست؛ این کار با تعویض ایمیل/مهندسی APK قابل دور زدن می‌شد.
     val labelOk = user.labels.any { it.equals("admin", true) }
     if (container.api.configured) {
         return when (val p = adminIo { container.api.requireAdmin(user.id) }) {
             is AppResult.Ok -> true to null
             is AppResult.Err -> {
-                if (emailOk || labelOk) true to null
-                else {
-                    runCatching { container.auth.logout() }
-                    false to p.error.userMessage
-                }
+                runCatching { container.auth.logout() }
+                false to p.error.userMessage
             }
         }
     }
-    if (emailOk || labelOk) return true to null
+    if (labelOk) return true to null
     runCatching { container.auth.logout() }
-    return false to "این حساب ادمین نیست."
+    return false to "این حساب برچسب admin ندارد. یک مدیرِ فعال باید این برچسب را در Appwrite تنظیم کند."
 }

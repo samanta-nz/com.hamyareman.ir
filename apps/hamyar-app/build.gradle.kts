@@ -32,9 +32,9 @@ android {
         applicationId = "com.hamyareman.p09"
         minSdk = 26
         targetSdk = 36
-        // نسخهٔ عمومی پایهٔ نهم ۲٫۱؛ workflow انتشار می‌تواند این دو مقدار را override کند.
-        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 210
-        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.1"
+        // نسخهٔ عمومی پایهٔ نهم ۲٫۴٫۴؛ workflow انتشار می‌تواند این دو مقدار را override کند.
+        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 244
+        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.4.4"
         ndk {
             // فقط معماری‌های واقعیِ گوشی. x86/x86_64 (شبیه‌ساز) عمداً حذف‌اند:
             // کتابخانه‌ی بومیِ WebRTC برای هر معماری ~۶ تا ۱۲ مگابایت است و هر دو
@@ -94,7 +94,6 @@ android {
     buildTypes {
         debug {
             // بدون applicationIdSuffix: هر اپ فقط یک «Platform» در کنسول Appwrite لازم دارد.
-            versionNameSuffix = "-debug"
         }
         release {
             // امضا با همان کلیدِ دیباگِ داخلِ ریپو (قراردادِ پروژه): بدونِ امضای

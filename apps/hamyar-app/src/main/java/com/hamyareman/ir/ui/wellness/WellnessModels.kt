@@ -7,8 +7,10 @@ package com.hamyareman.ir.ui.wellness
  *  - [category]: yoga | exercise | breathing | learning
  *  - [slug]: شناسه‌ی پایدار (مثل `yoga-balasana`) برای ارجاع در URL و logs.
  *  - [level]: سطح مهارت ۱ تا ۱۰.
- *  - [audioCueId]: نام فایل صوتی در Storage (مثل `cue-box-breath-intro.mp3`).
- *  - [referenceImageUrl]: URL عمومی تصویر مرجع در باکت `wellness-media`.
+ *  - [audioCueId] و [referenceImageUrl]: هر دو در کاتالوگ درون‌برنامه‌ای
+ *    **خالی**اند. فایل‌هایشان هیچ‌وقت ساخته نشد و آدرس قدیمی حذف شده است.
+ *    فیلدها نگه داشته شده‌اند تا اگر روزی جدول Appwrite مقدار بدهد، مدل
+ *    بدون تغییر بپذیرد.
  *  - [referenceImagePromptTemplate]: قالب پرامپت برای «تولید دوباره» با چهره‌ی کاربر.
  */
 data class WellnessMove(

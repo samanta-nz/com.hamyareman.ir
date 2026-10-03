@@ -1,0 +1,36 @@
+{
+  "_comment": "پیکربندی سرور داخلی (ایران) برای محتوا و APK. فقط مقادیر غیرمحرمانه اینجاست؛ کلیدها در GitHub Actions Secrets می‌مانند: PARSPACK_ACCESS_KEY و PARSPACK_SECRET_KEY.",
+  "active": "parspack",
+  "providers": {
+    "parspack": {
+      "label": "پارس‌پک",
+      "endpoint": "https://parspack.net",
+      "region": "us-east-1",
+      "bucket": "c539776",
+      "publicUrlStyle": "virtual-host",
+      "accessKeyEnv": "PARSPACK_ACCESS_KEY",
+      "secretKeyEnv": "PARSPACK_SECRET_KEY",
+      "quotaGb": 20,
+      "notes": "تأییدشده در آمادگی‌سنجی ۲۰۲۶-۰۹-۳۰: فقط SigV2 امضا را می‌پذیرد و ListObjectsV2 خطای ۵۰۰ می‌دهد (نسخهٔ ۱ لازم است). ACL=public-read روی شیء پذیرفته می‌شود.",
+      "addressingStyle": "virtual",
+      "publicBase": "https://c539776.parspack.net",
+      "bucketTitle": "HamyareMan",
+      "signatureVersion": "s3",
+      "listObjectsVersion": 1,
+      "datacenter": "Tehran 3"
+    },
+    "arvan": {
+      "label": "آروان",
+      "endpoint": "https://s3.ir-thr-at1.arvanstorage.ir",
+      "region": "ir-thr-at1",
+      "bucket": "hamyar-e-man",
+      "publicUrlStyle": "virtual-host",
+      "accessKeyEnv": "ARVAN_ACCESS_KEY",
+      "secretKeyEnv": "ARVAN_SECRET_KEY",
+      "notes": "از ۲۰۲۶-۰۹-۳۰ باکت سمت ارائه‌دهنده فقط‌خواندنی شد؛ فقط منبع خواندن برای مهاجرت است.",
+      "addressingStyle": "virtual",
+      "signatureVersion": "s3v4",
+      "listObjectsVersion": 2
+    }
+  }
+}

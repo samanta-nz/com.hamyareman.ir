@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.LocalAppContainer
 
 /**
@@ -71,8 +70,8 @@ fun LessonPdfScreen(packId: String, onBack: () -> Unit) {
         }
     }
 
+    // سند تمام‌صفحه: نوار عنوان/فلش برگشت فضا نمی‌گیرند؛ پلیرِ مرتبط پابرجاست.
     Column(Modifier.fillMaxSize()) {
-        AppTopBar(title = "📕 " + (pack?.title ?: "کتاب درس"), onBack = onBack)
         // v1.9: پلیر صوت در همه‌ی صفحات جزوه‌ها هم هست (صوت همان درس، همان‌جا پخش می‌شود).
         val tracks = remember(packId) { pack?.let { teachTracksOf(it) } ?: emptyList() }
         val bookTitle = remember(packId) {

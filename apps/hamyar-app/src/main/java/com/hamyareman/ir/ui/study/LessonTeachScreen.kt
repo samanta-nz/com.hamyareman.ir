@@ -59,7 +59,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.media3.common.AudioAttributes
@@ -69,6 +74,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.hamyareman.ir.R
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
@@ -84,6 +90,10 @@ import kotlin.math.abs
 
 /** سرعت‌های پخش v1.9 — ترتیب کاربر: x2/x1.5/x1/x0.75/x0.5 (زیر نوار سیک). */
 internal val TEACH_SPEEDS = listOf(2f, 1.5f, 1f, 0.75f, 0.5f)
+
+// فونت‌های قراردادی خود پلیر؛ به انتخاب فونت عمومی صفحه وابسته نیستند.
+private val TeachVazirmatnLight = FontFamily(Font(R.font.vazirmatn_light, FontWeight.Light))
+private val TeachVazirmatnBold = FontFamily(Font(R.font.vazirmatn_bold, FontWeight.Bold))
 
 /** یک فایل صوتی قابل‌پخش در صفحه‌ی تدریس/خلاصه‌ها. */
 internal data class TeachTrack(val label: String, val fileId: String, val cacheKey: String)
@@ -172,8 +182,9 @@ fun LessonTeachScreen(
         return
     }
     if (pack.pdfOnly) {
+        // سند تمام‌صفحه است؛ کنترل برگشتِ جداگانه و عنوان بالا جای صفحه را نمی‌گیرند.
+        // برگشت استاندارد سیستم/ناوبری همچنان کار می‌کند.
         Column(Modifier.fillMaxSize()) {
-            AppTopBar(title = pack.title, onBack = onBack)
             TeachPdfPages(modifier = Modifier.weight(1f), fileId = pack.pdfFileName, pack = pack)
         }
         return
@@ -183,8 +194,7 @@ fun LessonTeachScreen(
         return
     }
 
-    AppTopBar(title = "تدریس — ${pack.title}", onBack = onBack)
-    // پلیر همیشه «بالای صفحه» ثابت می‌ماند و کتاب (PDF) زیرش اسکرول می‌شود.
+    // صفحهٔ رسانه تمام‌صفحه است؛ پلیر در بالا می‌ماند و کتاب (PDF) زیرش اسکرول می‌شود.
     Column(
         Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -539,7 +549,11 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                 )
                 Text(
                     if (online) "پخش آنلاین" else "پخش آفلاین",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontFamily = TeachVazirmatnLight,
+                        fontWeight = FontWeight.Light,
+                        fontSize = (MaterialTheme.typography.labelMedium.fontSize.value - 2f).coerceAtLeast(8f).sp,
+                    ),
                     color = srcColor,
                     maxLines = 1,
                 )
@@ -574,7 +588,15 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                         ) {
                             Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(2.dp))
-                            Text("حذف آفلاین", maxLines = 1)
+                            Text(
+                                "حذف آنلاین",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontFamily = TeachVazirmatnLight,
+                                    fontWeight = FontWeight.Light,
+                                    fontSize = (MaterialTheme.typography.labelMedium.fontSize.value - 6f).coerceAtLeast(7f).sp,
+                                ),
+                                maxLines = 1,
+                            )
                         }
                     }
                     else -> TextButton(onClick = {
@@ -659,8 +681,11 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                     } else {
                         humanSize(doneBytes)
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize * 1.5f,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = TeachVazirmatnBold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = (MaterialTheme.typography.bodySmall.fontSize.value - 7f).coerceAtLeast(7f).sp,
+                    ),
                     maxLines = 1,
                 )
                 Spacer(Modifier.height(4.dp))
@@ -719,32 +744,50 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                     modifier = Modifier.fillMaxWidth().height(26.dp),
                 )
             }
-            // زمان‌ها + چیپ‌های سرعت در یک ردیف؛ اگر جا نشد، ردیف لغزنده است
-            // (زمان‌ها همیشه سمتِ راست و چیپ‌ها بعد از آن‌ها).
+            // زمان یک اسلات با عرض ثابت دارد؛ نه تغییر ثانیه و نه تفاوت عرض رقم‌ها
+            // نمی‌تواند محل کنترل‌های سرعت را جابه‌جا کند. ترتیبِ زمان عمداً LTR است.
             Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (durMs > 0) {
-                    Text(
-                        "${teachMmss(if (dragMs >= 0) dragMs else posMs)} از ${teachMmss(durMs)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 1.5f,
-                        maxLines = 1,
-                    )
-                    Spacer(Modifier.width(10.dp))
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
+                ) {
+                    Box(Modifier.width(116.dp), contentAlignment = Alignment.CenterStart) {
+                        Text(
+                            if (durMs > 0) {
+                                "${teachMmss(if (dragMs >= 0) dragMs else posMs)} / ${teachMmss(durMs)}"
+                            } else {
+                                "--:-- / --:--"
+                            },
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = TeachVazirmatnBold,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = (MaterialTheme.typography.bodySmall.fontSize.value - 7f).coerceAtLeast(7f).sp,
+                                fontFeatureSettings = "tnum",
+                                textDirection = TextDirection.Ltr,
+                            ),
+                            maxLines = 1,
+                        )
+                    }
                 }
-                TEACH_SPEEDS.forEach { v ->
-                    FilterChip(
-                        selected = speed == v,
-                        onClick = {
-                            speed = v
-                            runCatching { player?.setPlaybackSpeed(v) }
-                            store.putString("teach_${packId}_speed", v.toString())
-                        },
-                        label = { Text(teachSpeedLabel(v), style = MaterialTheme.typography.labelMedium) },
-                    )
+                Row(
+                    modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TEACH_SPEEDS.forEach { v ->
+                        FilterChip(
+                            selected = speed == v,
+                            onClick = {
+                                speed = v
+                                runCatching { player?.setPlaybackSpeed(v) }
+                                store.putString("teach_${packId}_speed", v.toString())
+                            },
+                            label = { Text(teachSpeedLabel(v), style = MaterialTheme.typography.labelMedium) },
+                        )
+                    }
                 }
             }
         }

@@ -38,7 +38,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,7 +72,6 @@ fun WellnessScreen(
     onSketchGallery: () -> Unit,
     initialCategory: String? = null) {
     val container = LocalAppContainer.current
-    val scope = rememberCoroutineScope()
     var moves by remember { mutableStateOf<List<WellnessMove>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     val selectedCategory = remember(initialCategory) {
@@ -112,16 +110,7 @@ fun WellnessScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 val filtered = moves.filter { it.category == selectedCategory }
                 items(filtered, key = { it.slug }) { move ->
-                    val ctx = LocalContext.current
-                    MoveCard(move = move, onStart = {
-                        scope.launch {
-                            // prefetch همه‌ی فایل‌های صوتی (start/mid/end اگر چندتایی باشد)
-                            move.audioCueIds.forEach { id ->
-                                AudioCueCache.prefetch(ctx, id)
-                            }
-                            activeMove = move
-                        }
-                    })
+                    MoveCard(move = move, onStart = { activeMove = move })
                 }
             }
         }

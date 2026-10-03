@@ -35,16 +35,32 @@ object StudyPdfCache {
      * دوم را از همان offset ادامه می‌دهد؛ mirror قبل از public شدن hash/size verify می‌شود.
      */
     fun obtain(ctx: Context, fileId: String, onProgress: (Int) -> Unit = {}): File {
-        val target = file(ctx, fileId)
+        val remoteId = StudyMedia.resolveFileId(fileId)
+        return obtain(ctx, fileId, StudyMedia.candidateUrls(remoteId), onProgress)
+    }
+
+    /**
+     * دریافت PDF با کلید cache و URLهای جداگانه.
+     *
+     * منوی زندهٔ کتاب‌ها کلید کاملِ Bucket را دارد و نامِ فایل به‌تنهایی در چند
+     * کتاب تکرار می‌شود. این overload باعث می‌شود cache از مسیر واقعی جدا شود،
+     * بی‌آنکه قرارداد قدیمیِ fileIdهای server-map شکسته شود.
+     */
+    fun obtain(
+        ctx: Context,
+        cacheId: String,
+        urls: List<String>,
+        onProgress: (Int) -> Unit = {},
+    ): File {
+        val target = file(ctx, cacheId)
         if (isValid(target)) return target
         target.delete()
         val part = File(target.absolutePath + ".part")
-        val remoteId = StudyMedia.resolveFileId(fileId)
-        val urls = StudyMedia.candidateUrls(remoteId).distinct()
-        require(urls.isNotEmpty()) { "برای PDF نشانی سرور وجود ندارد." }
+        val candidates = urls.distinct().filter { it.isNotBlank() }
+        require(candidates.isNotEmpty()) { "برای PDF نشانی سرور وجود ندارد." }
         var last: Throwable? = null
 
-        for ((originIndex, url) in urls.withIndex()) {
+        for ((originIndex, url) in candidates.withIndex()) {
             var attempts = 0
             while (attempts < 7) {
                 val offset = part.takeIf { it.isFile }?.length() ?: 0L
@@ -96,7 +112,7 @@ object StudyPdfCache {
                     runCatching { conn?.disconnect() }
                 }
             }
-            if (originIndex < urls.lastIndex) continue
+            if (originIndex < candidates.lastIndex) continue
         }
         part.delete()
         throw IOException(last?.message ?: "دانلود PDF کامل نشد.", last)

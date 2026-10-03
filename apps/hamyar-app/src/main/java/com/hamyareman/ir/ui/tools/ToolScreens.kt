@@ -51,11 +51,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.ui.AppTypography
+import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.hub.AutoShrinkTileText
 import com.hamyareman.ir.ui.profile.AppEdition
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
+import com.hamyareman.ir.ui.study.publishHamyarAppearance
 import com.hamyareman.ir.ui.study.stopManagedMedia
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -189,6 +192,7 @@ internal fun toolTitle(id: String): String = when (id) {
 fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     val ctx = LocalContext.current
     val container = LocalAppContainer.current
+    val appearance = LocalUiPrefs.current
     val scope = rememberCoroutineScope()
     val webRef = remember { arrayOfNulls<WebView>(1) }
     // همهٔ جعبه‌ابزارها و آزمایشگاه‌ها محتوای محافظت‌شده‌اند.
@@ -270,6 +274,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                     AndroidView(
                     factory = { c ->
                         WebView(c).apply {
+                            installHamyarAppearanceBridge(appearance)
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             settings.allowFileAccess = true
@@ -290,6 +295,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
                                 override fun onPageFinished(view: WebView, url: String) {
+                                    view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                                     view.evaluateJavascript(toolPageJs(toolId, premium), null)
                                     view.post { applyLabViewport(view) }
                                     applySaved(view)
@@ -303,6 +309,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                             loadUrl(url)
                         }
                     },
+                    update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
                     modifier = Modifier.fillMaxSize().onSizeChanged {
                         webRef[0]?.let { applyLabViewport(it) }
                     },

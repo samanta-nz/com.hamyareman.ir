@@ -42,7 +42,8 @@ fun AdminLoginScreen(
     loading: Boolean,
     error: String?,
     onSignIn: (email: String, password: String) -> Unit,
-    onGoogle: () -> Unit = {},
+    // OAuth گوگل در پروژهٔ فعلی Appwrite غیرفعال است؛ نمایش دکمهٔ خراب فقط
+    // کاربر را به Error 412 می‌فرستاد. ورود مدیر با email/password انجام می‌شود.
     onSettings: () -> Unit = {},
 ) {
     var email by remember { mutableStateOf("") }
@@ -79,7 +80,7 @@ fun AdminLoginScreen(
         Text("ادمین همیار من", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
         Text(
-            "ورود با حساب ادمین. کلید سرور برای کنسول است؛ برای خودِ ورود لازم نیست.",
+            "ورود امن با ایمیل و رمز حسابی که روی Appwrite برچسب admin دارد. کلید سرور برای مدیریت داده است، نه ورود.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -131,9 +132,6 @@ fun AdminLoginScreen(
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                 }
                 Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = onGoogle, enabled = !loading, modifier = Modifier.fillMaxWidth()) {
-                    Text("ورود با گوگل")
-                }
                 OutlinedButton(onClick = onSettings, modifier = Modifier.fillMaxWidth()) {
                     Text("تنظیمات اتصال سرور")
                 }

@@ -1,0 +1,229 @@
+{
+  "subject": "کتاب کار انگلیسی نهم",
+  "code": "913",
+  "items": [
+    {
+      "kind": "plain",
+      "title": "صفحه عنوان: Workbook: English for Schools 3",
+      "pdf": "g9-english-titlepage.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس یکم: Lesson 1",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "Lesson Teaching",
+          "pdf": null
+        },
+        {
+          "title": "Workbook Exercises",
+          "pdf": null
+        },
+        {
+          "title": "Grammar Notes",
+          "pdf": null
+        },
+        {
+          "title": "Pronunciation Practice",
+          "pdf": null
+        },
+        {
+          "title": "Lesson Summary & Exam Tips",
+          "pdf": null
+        },
+        {
+          "title": "Comprehensive Lesson Test",
+          "pdf": null
+        },
+        {
+          "title": "Workbook PDF",
+          "pdf": "g9-english-p01.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس دوم: Lesson 2",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "Lesson Teaching",
+          "pdf": null
+        },
+        {
+          "title": "Workbook Exercises",
+          "pdf": null
+        },
+        {
+          "title": "Grammar Notes",
+          "pdf": null
+        },
+        {
+          "title": "Pronunciation Practice",
+          "pdf": null
+        },
+        {
+          "title": "Lesson Summary & Exam Tips",
+          "pdf": null
+        },
+        {
+          "title": "Comprehensive Lesson Test",
+          "pdf": null
+        },
+        {
+          "title": "Workbook PDF",
+          "pdf": "g9-english-p02.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس سوم: Lesson 3",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "Lesson Teaching",
+          "pdf": null
+        },
+        {
+          "title": "Workbook Exercises",
+          "pdf": null
+        },
+        {
+          "title": "Grammar Notes",
+          "pdf": null
+        },
+        {
+          "title": "Pronunciation Practice",
+          "pdf": null
+        },
+        {
+          "title": "Lesson Summary & Exam Tips",
+          "pdf": null
+        },
+        {
+          "title": "Comprehensive Lesson Test",
+          "pdf": null
+        },
+        {
+          "title": "Workbook PDF",
+          "pdf": "g9-english-p03.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس چهارم: Lesson 4",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "Lesson Teaching",
+          "pdf": null
+        },
+        {
+          "title": "Workbook Exercises",
+          "pdf": null
+        },
+        {
+          "title": "Grammar Notes",
+          "pdf": null
+        },
+        {
+          "title": "Pronunciation Practice",
+          "pdf": null
+        },
+        {
+          "title": "Lesson Summary & Exam Tips",
+          "pdf": null
+        },
+        {
+          "title": "Comprehensive Lesson Test",
+          "pdf": null
+        },
+        {
+          "title": "Workbook PDF",
+          "pdf": "g9-english-p04.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس پنجم: Lesson 5",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "Lesson Teaching",
+          "pdf": null
+        },
+        {
+          "title": "Workbook Exercises",
+          "pdf": null
+        },
+        {
+          "title": "Grammar Notes",
+          "pdf": null
+        },
+        {
+          "title": "Pronunciation Practice",
+          "pdf": null
+        },
+        {
+          "title": "Lesson Summary & Exam Tips",
+          "pdf": null
+        },
+        {
+          "title": "Comprehensive Lesson Test",
+          "pdf": null
+        },
+        {
+          "title": "Workbook PDF",
+          "pdf": "g9-english-p05.pdf"
+        }
+      ],
+      "children": []
+    },
+    {
+      "kind": "lesson",
+      "title": "درس ششم: Lesson 6",
+      "pdf": null,
+      "tabs": [
+        {
+          "title": "Lesson Teaching",
+          "pdf": null
+        },
+        {
+          "title": "Workbook Exercises",
+          "pdf": null
+        },
+        {
+          "title": "Grammar Notes",
+          "pdf": null
+        },
+        {
+          "title": "Pronunciation Practice",
+          "pdf": null
+        },
+        {
+          "title": "Lesson Summary & Exam Tips",
+          "pdf": null
+        },
+        {
+          "title": "Comprehensive Lesson Test",
+          "pdf": null
+        },
+        {
+          "title": "Workbook PDF",
+          "pdf": "g9-english-p06.pdf"
+        }
+      ],
+      "children": []
+    }
+  ]
+}

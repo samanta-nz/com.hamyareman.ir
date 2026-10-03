@@ -1,0 +1,1083 @@
+{
+  "subject": "مطالعات اجتماعی نهم",
+  "code": "907",
+  "items": [
+    {
+      "kind": "plain",
+      "title": "فهرست",
+      "pdf": "g9-soc-index.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "container",
+      "title": "فصل اول: سیارهٔ ما، زمین",
+      "pdf": "g9-soc-f01.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل اول درس ۱: زمین، مهد زیبای انسان‌ها",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p02.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل اول درس ۲: حرکات زمین",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p03.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل اول",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f01.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل دوم: سنگ‌کره، آب‌کره، هواکره",
+      "pdf": "g9-soc-f02.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس ۳: چهرهٔ زمین",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p04.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل دوم درس ۴: آب فراوان، هوای پاک",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p05.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل دوم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f02.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل سوم: زیست‌کره، تنوع شگفت‌انگیز",
+      "pdf": "g9-soc-f03.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس ۵: پراکندگی زیست‌بوم‌های جهان",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p06.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل سوم درس ۶: زیست‌بوم‌ها در خطرند",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p07.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل سوم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f03.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل چهارم: ساکنان سیارهٔ زمین",
+      "pdf": "g9-soc-f04.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل چهارم درس ۷: جمعیت جهان",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p08.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل چهارم درس ۸: بی‌عدالتی و نابرابری در جهان",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p09.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل چهارم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f04.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل پنجم: عصر یکپارچگی و شکوفایی",
+      "pdf": "g9-soc-f05.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس ۹: ایرانی متحد و یکپارچه",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p10.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل پنجم درس ۱۰: اوضاع اجتماعی، اقتصادی، علمی و فرهنگی ایران در عصر صفوی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p11.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل پنجم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f05.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل ششم: ایران از عهد نادرشاه تا ناصرالدین‌شاه",
+      "pdf": "g9-soc-f06.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل ششم درس ۱۱: تلاش برای حفظ استقلال و اتحاد سیاسی ایران",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p12.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل ششم درس ۱۲: در جست‌وجوی پیشرفت و رهایی از سلطهٔ خارجی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p13.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل ششم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f06.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل هفتم: ایران در عصر مشروطه",
+      "pdf": "g9-soc-f07.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل هفتم درس ۱۳: نهضت مشروطه",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p14.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل هفتم درس ۱۴: ایران در دوران حکومت پهلوی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p15.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل هفتم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f07.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل هشتم: سقوط حکومت شاهنشاهی و شکل‌گیری نظام جمهوری اسلامی",
+      "pdf": "g9-soc-f08.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل هشتم درس ۱۵: انقلاب اسلامی ایران",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p16.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل هشتم درس ۱۶: ایران در دوران پس از پیروزی انقلاب اسلامی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p17.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل هشتم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f08.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل نهم: فرهنگ و هویت",
+      "pdf": "g9-soc-f09.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل نهم درس ۱۷: فرهنگ",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p18.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل نهم درس ۱۸: هویت",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p19.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل نهم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f09.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل دهم: خانواده و جامعه",
+      "pdf": "g9-soc-f10.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل دهم درس ۱۹: ارزش‌ها و کارکردهای خانواده",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p20.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل دهم درس ۲۰: آرامش در خانواده",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p21.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل دهم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f10.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل یازدهم: حکومت و مردم",
+      "pdf": "g9-soc-f11.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل یازدهم درس ۲۱: نهاد حکومت",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p22.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل یازدهم درس ۲۲: حقوق و تکالیف شهروندی",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p23.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل یازدهم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f11.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "container",
+      "title": "فصل دوازدهم: بهره‌وری",
+      "pdf": "g9-soc-f12.pdf",
+      "tabs": [],
+      "children": [
+        {
+          "kind": "lesson",
+          "title": "فصل دوازدهم درس ۲۳: بهره‌وری چیست؟",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p24.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "lesson",
+          "title": "فصل دوازدهم درس ۲۴: اقتصاد و بهره‌وری",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات کتابی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات آزمونی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-p25.pdf"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "wrapup",
+          "title": "جمع‌بندی فصل دوازدهم",
+          "pdf": null,
+          "tabs": [
+            {
+              "title": "تدریس",
+              "pdf": null
+            },
+            {
+              "title": "فلش کارت",
+              "pdf": null
+            },
+            {
+              "title": "خلاصه فصل و نکات امتحانی",
+              "pdf": null
+            },
+            {
+              "title": "نمونه سوالات جامع فصل",
+              "pdf": null
+            },
+            {
+              "title": "خودآزمایی",
+              "pdf": null
+            },
+            {
+              "title": "کتاب درسی",
+              "pdf": "g9-soc-f12.pdf"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "plain",
+      "title": "کاربرگه‌های فعّالیت",
+      "pdf": "g9-soc-ws01.pdf",
+      "tabs": [],
+      "children": []
+    },
+    {
+      "kind": "plain",
+      "title": "واژه‌نامه",
+      "pdf": "g9-soc-dict.pdf",
+      "tabs": [],
+      "children": []
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+name: Encode and upload tool HTML to ParsPack
+
+# سه پوشهٔ تازهٔ Bucket/Html-files (جعبه ابزارها و آزمایشگاه ۹) به‌علاوهٔ فایل
+# اسپیس‌هولدر را با کلید زندهٔ محتوا رمز می‌کند و با همان پوشه‌بندی روی پارس‌پک
+# می‌گذارد. با «[upload-tools]» در پیام کامیت یا دستی.
+
+on:
+  push:
+    branches: [arena/01a0efde-com-hamyareman-ir]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: upload-tools-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[upload-tools]')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+      APPWRITE_PROJECT_ID: 6abb134a002025222005
+      APPWRITE_DATABASE_ID: 6abb238d000d05730d10
+      APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+      PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+      PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet requests cryptography boto3
+
+      - name: آوردن سه پوشهٔ ابزار از main + اسپیس‌هولدر
+        run: |
+          set -e
+          mkdir -p /tmp/up
+          git fetch --no-tags --depth=1 origin main
+          git archive FETCH_HEAD "Bucket/Html-files" | tar -x -C /tmp/raw --one-top-level 2>/dev/null \
+            || { mkdir -p /tmp/raw && git archive FETCH_HEAD "Bucket/Html-files" | tar -x -C /tmp/raw; }
+          for d in "جعبه ابزار های عمومی" "جعبه ابزار های ریاضی" "آزمایشگاه 9"; do
+            if [ -d "/tmp/raw/Bucket/Html-files/$d" ]; then
+              mkdir -p "/tmp/up/$d"
+              cp -r "/tmp/raw/Bucket/Html-files/$d/." "/tmp/up/$d/"
+            else
+              echo "⚠ پوشه نیست: $d"
+            fi
+          done
+          cp docs/placeholder/spaceholder.html /tmp/up/spaceholder.html
+          find /tmp/up -type f | sed 's|/tmp/up/||'
+          echo "جمع: $(find /tmp/up -type f | wc -l)"
+
+      - name: رمزگذاری و آپلود
+        run: |
+          set +e
+          python3 scripts/upload_encoded_to_parspack.py \
+            --source /tmp/up \
+            --prefix "Bucket/Html-files" \
+            --report ci-report/parspack-upload.md
+          echo "exit=$?"
+          exit 0
+
+      - name: خلاصه
+        if: always()
+        run: |
+          set +e
+          cat ci-report/parspack-upload.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "گزارشی نیست." >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: کامیت گزارش
+        if: always()
+        run: |
+          set +e
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f ci-report/parspack-upload.md
+          if git diff --cached --quiet; then echo "بدون تغییر"; else
+            git commit -m "گزارش آپلود ابزارها روی پارس‌پک ${GITHUB_SHA::7} [skip-report]"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+          exit 0

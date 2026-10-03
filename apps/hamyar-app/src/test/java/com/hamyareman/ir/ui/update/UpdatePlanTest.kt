@@ -132,4 +132,23 @@ class UpdatePlanTest {
         assertEquals(listOf("خط اول", "خط دوم"), table["1.75"])
         assertEquals(listOf("قدیمی"), table["1.74"])
     }
+
+    @Test
+    fun `update card always shows all three version numbers`() {
+        // نامِ کامل دست‌نخورده می‌ماند
+        assertEquals("2.4.2", UpdatePlan.threePart("2.4.2", 242))
+        assertEquals("2.4.2", UpdatePlan.threePart("v2.4.2", 242))
+        // نامِ ناقص با صفر کامل می‌شود
+        assertEquals("2.4.0", UpdatePlan.threePart("2.4", 240))
+        assertEquals("3.0.0", UpdatePlan.threePart("3", 300))
+        // نبودِ نام: سه شماره از versionCode بیرون می‌آید
+        assertEquals("2.4.2", UpdatePlan.threePart("", 242))
+        assertEquals("2.4.1", UpdatePlan.threePart("241", 241))
+        // چیزی که نه نام دارد نه کدِ معتبر، چیزی از خود نمی‌سازد
+        assertEquals("", UpdatePlan.threePart("", 0))
+
+        val info = UpdatePlan.parse("""{"latest":242,"min":242,"name":"2.4"}""")
+        assertEquals("2.4", UpdatePlan.versionLabel(info))
+        assertEquals("2.4.0", UpdatePlan.fullVersionLabel(info))
+    }
 }

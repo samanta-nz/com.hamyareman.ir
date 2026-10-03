@@ -26,7 +26,7 @@ class AdminApi(
     private val endpoint: String,
     private val projectId: String,
     private val apiKey: String,
-    private val databaseId: String = "ZahraDB",
+    private val databaseId: String = AdminPrefs.DEFAULT_APPWRITE_DATABASE,
     private val bucketId: String = MEDIA_BUCKET,
 ) {
     val configured: Boolean get() = apiKey.isNotBlank()
@@ -137,18 +137,35 @@ class AdminApi(
             AppResult.Ok(block())
         } catch (t: Throwable) {
             if (t is kotlinx.coroutines.CancellationException) throw t
-            AppResult.Err(AppError.Local(t.message?.ifBlank { null } ?: t.javaClass.simpleName))
+            AppResult.Err(AppError.Local(adminMessage(t)))
         }
 
-    fun isAdminUser(user: JSONObject): Boolean {
-        val labels = user.optJSONArray("labels")
-        if (labels != null) {
-            for (i in 0 until labels.length()) {
-                if (labels.optString(i).equals("admin", true)) return true
-            }
+    /** خطای خام scope را به راهنمای عملیِ بدون افشای کلید تبدیل می‌کند. */
+    private fun adminMessage(t: Throwable): String {
+        val raw = t.message?.ifBlank { null } ?: t.javaClass.simpleName
+        if (raw.contains("missing scopes", ignoreCase = true) || raw.contains("role: applications", ignoreCase = true)) {
+            return "کلید Appwrite scope لازم را ندارد. در Console › Overview › API Keys یک کلید «Admin mobile» بسازید و دست‌کم دسترسی خواندن/نوشتن کاربران، جدول‌ها/ستون‌ها/ردیف‌ها، باکت‌ها/فایل‌ها و توابع را بدهید. سپس فقط همان کلید را در تنظیمات امن اپ جایگزین کنید. جزئیات سرور: ${raw.take(140)}"
         }
-        val email = user.optString("email").lowercase()
-        return email == "behzadinfo@gmail.com" || email == "aydinnz.designer@gmail.com"
+        if (raw.contains("Database with the requested ID", ignoreCase = true) && raw.contains("could not be found", ignoreCase = true)) {
+            return "شناسهٔ دیتابیسِ ذخیره‌شده برای این پروژه وجود ندارد. از تنظیمات اتصال، Database ID محیط فعلی را بررسی کنید؛ نسخهٔ ۲٫۱ مقدار تاریخی HM_BCKT را خودکار به محیط جدید منتقل می‌کند."
+        }
+        return raw
+    }
+
+    /** fallback قدیمی فقط برای endpoint واقعاً ناموجود است، نه خطای permission. */
+    private fun isLegacyRouteError(t: Throwable): Boolean {
+        val text = t.message.orEmpty().lowercase()
+        return "404" in text || "route not found" in text || "endpoint not found" in text ||
+            ("could not be found" in text && "scope" !in text && "permission" !in text)
+    }
+
+    /** نقش فقط از label کنترل‌شدهٔ سمت Appwrite می‌آید؛ allow-list ایمیل در APK امن نیست. */
+    fun isAdminUser(user: JSONObject): Boolean {
+        val labels = user.optJSONArray("labels") ?: return false
+        for (i in 0 until labels.length()) {
+            if (labels.optString(i).equals("admin", true)) return true
+        }
+        return false
     }
 
     suspend fun requireAdmin(userId: String): AppResult<Unit> = run {
@@ -161,6 +178,31 @@ class AdminApi(
         val users = call("GET", "/users", query = mapOf("limit" to "1"))
         val db = call("GET", "/tablesdb/$databaseId/tables", query = mapOf("limit" to "1"))
         "سلامت ${health.optString("status").ifBlank { "ok" }} · کاربران ${users.optInt("total")} · جدول‌ها ${db.optInt("total")}"
+    }
+
+    /**
+     * کلید HMK1 از همان جدول Appwrite گرفته می‌شود که اپ دانش‌آموز می‌خواند.
+     * payload این ردیف JSON با کلید `b` است. مقدار فقط برای cache رمز‌شدهٔ گوشی
+     * ادمین بازگردانده می‌شود و هرگز در log یا UI نمایش داده نمی‌شود.
+     */
+    suspend fun fetchHtmlMediaKeyB64(): AppResult<String> = run {
+        val row = try {
+            call("GET", "/tablesdb/$databaseId/tables/app_state/rows/html_media_key")
+        } catch (t: Throwable) {
+            if (isLegacyRouteError(t)) {
+                call("GET", "/databases/$databaseId/collections/app_state/documents/html_media_key")
+            } else throw t
+        }
+        val rawPayload = row.opt("payload")
+        val payload = when (rawPayload) {
+            is JSONObject -> rawPayload
+            is String -> runCatching { JSONObject(rawPayload) }.getOrNull()
+            else -> null
+        } ?: error("ردیف کلید HTML فرمت معتبر ندارد.")
+        val encoded = payload.optString("b").trim()
+        val raw = runCatching { android.util.Base64.decode(encoded, android.util.Base64.DEFAULT) }.getOrNull()
+        require(!encoded.isBlank() && raw?.size == 32) { "کلید HTML در Appwrite معتبر نیست." }
+        encoded
     }
 
     suspend fun getUserRaw(id: String): JSONObject = call("GET", "/users/$id")
@@ -456,10 +498,10 @@ class AdminApi(
     }
 
     suspend fun listTables(): AppResult<List<Pair<String, String>>> = run {
-        val o = runCatching {
+        val o = try {
             call("GET", "/tablesdb/$databaseId/tables", query = mapOf("limit" to "100"))
-        }.getOrElse {
-            call("GET", "/databases/$databaseId/collections", query = mapOf("limit" to "100"))
+        } catch (t: Throwable) {
+            if (isLegacyRouteError(t)) call("GET", "/databases/$databaseId/collections", query = mapOf("limit" to "100")) else throw t
         }
         arr(o, "tables", "collections").map {
             it.optString("\$id").ifBlank { it.optString("id") } to it.optString("name")
@@ -467,14 +509,14 @@ class AdminApi(
     }
 
     suspend fun listColumns(tableId: String): AppResult<List<String>> = run {
-        val o = runCatching {
+        val o = try {
             call("GET", "/tablesdb/$databaseId/tables/$tableId/columns", query = mapOf("limit" to "100"))
-        }.getOrElse {
-            runCatching {
+        } catch (t: Throwable) {
+            if (isLegacyRouteError(t)) {
                 call("GET", "/databases/$databaseId/collections/$tableId/attributes", query = mapOf("limit" to "100"))
-            }.getOrNull()
+            } else throw t
         }
-        val cols = if (o != null) arr(o, "columns", "attributes") else emptyList()
+        val cols = arr(o, "columns", "attributes")
         val names = cols.map { it.optString("key").ifBlank { it.optString("\$id") } }.filter { it.isNotBlank() }
         if (names.isNotEmpty()) names
         else {
@@ -503,10 +545,12 @@ class AdminApi(
             val qs = mutableListOf(awQuery("limit", 100))
             val c = cursor
             if (!c.isNullOrBlank()) qs += awQuery("cursorAfter", c)
-            val batch = runCatching {
+            val batch = try {
                 arr(call("GET", "/tablesdb/$databaseId/tables/$tableId/rows", queries = qs), "rows", "documents")
-            }.getOrElse {
-                arr(call("GET", "/databases/$databaseId/collections/$tableId/documents", queries = qs), "documents", "rows")
+            } catch (t: Throwable) {
+                if (isLegacyRouteError(t)) {
+                    arr(call("GET", "/databases/$databaseId/collections/$tableId/documents", queries = qs), "documents", "rows")
+                } else throw t
             }
             out += batch
             if (batch.size < 100) return@run out

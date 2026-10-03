@@ -121,17 +121,6 @@ class WellnessTimingTest {
     }
 
     @Test
-    fun `all yoga cues use audioCueId in the move for intro`() {
-        // cue معرفی باید فایل start را برگرداند (نه mid یا end)
-        val move = WellnessCatalog.bySlug("yoga-balasana")!!
-        val timing = provider.timingFor(move)
-        val intro = timing.cues.first { it.kind == AudioCue.Kind.INTRO }
-        // منطق pickCueFilename در WellnessTimer: INTRO → فایل اول
-        val expected = move.startCueId
-        assertEquals(expected, move.audioCueIds.first())
-    }
-
-    @Test
     fun `total seconds equals sum of step seconds`() {
         WellnessCatalog.all.forEach { move ->
             val timing = provider.timingFor(move)

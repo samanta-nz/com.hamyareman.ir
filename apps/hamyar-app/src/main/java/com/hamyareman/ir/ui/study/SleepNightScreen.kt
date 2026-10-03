@@ -34,7 +34,9 @@ import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.feature.playback.PlaybackController
 import com.hamyareman.ir.platform.feature.playback.SleepPlaybackService
 import com.hamyareman.ir.ui.AppTypography
-import com.hamyareman.ir.ui.calmdown.BackgroundMusicHost
+import com.hamyareman.ir.ui.calmdown.BackgroundMusicTileHost
+import com.hamyareman.ir.ui.calmdown.MusicTileHandle
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object SleepLaunch {
@@ -44,6 +46,14 @@ object SleepLaunch {
 
 data class SleepTrack(val id: String, val title: String, val subtitle: String, val uri: String)
 
+/** گزینه‌های تایمر خواب (دقیقه). صفر یعنی بدون تایمر. */
+private val SLEEP_TIMER_OPTIONS = listOf(0, 15, 30, 60)
+
+// این دو تکه به درخواست کاربر فعلاً نمایش داده نمی‌شوند ولی حذف هم نشده‌اند:
+// تایمر خوابِ این صفحه (تایمرِ معتبر در «نجواهای آرام‌بخش» است) و نوار بالای صفحه.
+private const val SHOW_SLEEP_TIMER = false
+private const val SHOW_TOP_BAR = false
+
 @Composable
 fun SleepNightScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
@@ -52,6 +62,28 @@ fun SleepNightScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     DisposableEffect(Unit) { onDispose { playback.release() } }
     LaunchedEffect(Unit) { playback.connect() }
+
+    // صدای واقعی این صفحه از tile موسیقی (Web Audio) می‌آید؛ دکمه‌های پایین و تایمر
+    // باید همان را کنترل کنند، نه فقط PlaybackController بومی.
+    val music = remember { MusicTileHandle() }
+    var musicPlaying by remember { mutableStateOf(false) }
+    var nativeStarted by remember { mutableStateOf(false) }
+    var timerMinutes by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            music.queryPlaying { musicPlaying = it }
+            delay(3000)
+        }
+    }
+    // تایمر خواب: پس از مدت انتخاب‌شده هر دو منبع صدا متوقف می‌شوند.
+    LaunchedEffect(timerMinutes) {
+        if (timerMinutes > 0) {
+            delay(timerMinutes * 60_000L)
+            music.pause()
+            playback.stop()
+            timerMinutes = 0
+        }
+    }
 
     val audioTracks = remember {
         listOf(
@@ -67,27 +99,72 @@ fun SleepNightScreen(onBack: () -> Unit) {
             playback.connect()
             playback.setMedia(t.uri, t.title)
             playback.play()
+            nativeStarted = true
         }
     }
 
+    val anyPlaying = state.playing || musicPlaying
+
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("بشنو و بخواب", onBack)
-        BackgroundMusicHost()
+        // نسخهٔ قبلی نوار بالا را نداشت و onBack هیچ‌جا استفاده نمی‌شد؛ تنها راه
+        // برگشت دکمهٔ سیستم بود.
+        if (SHOW_TOP_BAR) AppTopBar("بشنو و بخواب", onBack)
+        // tile در جریان طبیعی صفحه است: با بازشدن به پایین بزرگ می‌شود و محتوای
+        // زیر آن را می‌راند؛ نه اینکه روی صفحهٔ خواب یک overlay غیرقابل لمس بسازد.
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("صوت یکنواخت برای خواب. قصه و تنفس در کاشی‌های جدا هستند.", style = AppTypography.pageBody.style)
-            audioTracks.forEach { TrackRow(it, state.playing) { play(it) } }
-            PrimaryButton("شروع جلسهٔ شنیدن") {
-                audioTracks.firstOrNull { it.uri.isNotBlank() }?.let { play(it) }
+            BackgroundMusicTileHost(handle = music)
+            Column(
+                Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("صدای دلخواهت را انتخاب کن، اگر خواستی دو صدا را با هم ترکیب کن و بعد صفحه را برای خواب آرام بگذار.", style = AppTypography.pageBody.style)
+                audioTracks.forEach { TrackRow(it, state.playing) { play(it) } }
+                PrimaryButton("شروع جلسهٔ شنیدن") {
+                    val first = audioTracks.firstOrNull { it.uri.isNotBlank() }
+                    if (first != null) play(first) else if (!musicPlaying) music.toggle()
+                }
+                if (SHOW_SLEEP_TIMER) {
+                    Text("تایمر خواب", style = AppTypography.pageHeading.style)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SLEEP_TIMER_OPTIONS.forEach { m ->
+                            val selected = timerMinutes == m
+                            OutlinedButton(onClick = { timerMinutes = m }, modifier = Modifier.weight(1f)) {
+                                Text(
+                                    (if (selected) "✓ " else "") +
+                                        if (m == 0) "بدون" else toPersianDigits(m.toString()) + " دقیقه",
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { if (state.playing) playback.pause() else playback.play() }, modifier = Modifier.weight(1f)) {
-                Text(if (state.playing) "استوپ" else "پلی")
+            OutlinedButton(
+                onClick = {
+                    when {
+                        state.playing -> playback.pause()
+                        musicPlaying -> music.pause()
+                        nativeStarted -> playback.play()
+                        else -> music.toggle()
+                    }
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(if (anyPlaying) "استوپ" else "پلی")
             }
-            OutlinedButton(onClick = { playback.stop() }, modifier = Modifier.weight(1f)) {
+            OutlinedButton(
+                onClick = {
+                    music.pause()
+                    playback.stop()
+                    nativeStarted = false
+                    timerMinutes = 0
+                },
+                modifier = Modifier.weight(1f),
+            ) {
                 Text("بستن")
             }
         }
