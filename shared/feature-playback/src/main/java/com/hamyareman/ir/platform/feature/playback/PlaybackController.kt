@@ -2,6 +2,7 @@ package com.hamyareman.ir.platform.feature.playback
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -9,6 +10,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -175,6 +177,22 @@ class PlaybackController(
     /** سرعت پخش — برای کتاب صوتی واقعاً استفاده می‌شود (۰٫۷۵ تا ۱٫۵). */
     fun setSpeed(speed: Float) {
         controller?.setPlaybackSpeed(speed.coerceIn(MIN_SPEED, MAX_SPEED))
+    }
+
+    /** تایمر خواب را در خود سرویس رسانه ثبت می‌کند تا با بستن صفحه باقی بماند. */
+    fun setSleepTimer(untilEpochMs: Long) {
+        val until = untilEpochMs.coerceAtLeast(System.currentTimeMillis() + 1L)
+        controller?.sendCustomCommand(
+            SessionCommand(PlaybackService.ACTION_SET_SLEEP_TIMER, Bundle.EMPTY),
+            Bundle().apply { putLong(PlaybackService.EXTRA_SLEEP_UNTIL, until) },
+        )
+    }
+
+    fun clearSleepTimer() {
+        controller?.sendCustomCommand(
+            SessionCommand(PlaybackService.ACTION_CLEAR_SLEEP_TIMER, Bundle.EMPTY),
+            Bundle.EMPTY,
+        )
     }
 
     /** قطع اتصال UI (پخش متوقف نمی‌شود). */
