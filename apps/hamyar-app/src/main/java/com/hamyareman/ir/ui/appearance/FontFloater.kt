@@ -126,7 +126,7 @@ private fun FloaterSlotRow(
         else EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_BOLD)
     }
     val fw = if (dashboard) EmbeddedFonts.fontWeight(EmbeddedFonts.W_BOLD) else EmbeddedFonts.fontWeight(choice.weight)
-    val sampleSp = if (dashboard) choice.size.coerceIn(8, 40) else slot.baseSp
+    val sampleSp = if (dashboard) choice.size.coerceIn(8, 40) else 16
     Column(
         Modifier
             .fillMaxWidth()
@@ -176,7 +176,7 @@ private fun FloaterSlotRow(
             }
             Text(
                 if (dashboard) "سایز " + toPersianDigits(sampleSp.toString())
-                else "اندازهٔ استاندارد نقش: " + toPersianDigits(slot.baseSp.toString()) + "sp",
+                else "اندازهٔ استاندارد نقش: 16sp",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
