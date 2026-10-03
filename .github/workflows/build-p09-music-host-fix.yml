@@ -1,0 +1,82 @@
+name: Build P09 music host fix
+
+on:
+  push:
+    branches:
+      - 'fix/music-host-20261003'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - name: Static architecture check
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SleepNightScreen.kt")
+          text = path.read_text(encoding="utf-8")
+
+          assert "Box(Modifier.fillMaxSize())" in text
+          assert "Spacer(Modifier.height(92.dp))" in text
+          assert ".align(Alignment.TopCenter)" in text
+          assert ".zIndex(20f)" in text
+
+          scroll_start = text.index("Modifier.weight(1f).verticalScroll")
+          bottom_start = text.index("Row(Modifier.fillMaxWidth().padding(12.dp)")
+          scroll_block = text[scroll_start:bottom_start]
+          assert "BackgroundMusicTileHost(" not in scroll_block
+
+          overlay_start = text.index("BackgroundMusicTileHost(")
+          overlay_block = text[overlay_start:text.index("    }\n}", overlay_start)]
+          assert "Alignment.TopCenter" in overlay_block
+          assert "zIndex(20f)" in overlay_block
+
+          print("SleepNightScreen architecture check: PASS")
+          PY
+
+      - name: Tests and debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --console=plain --stacktrace             :core-common:testDebugUnitTest             :hamyar-app:testP09DebugUnitTest             :hamyar-app:assembleP09Debug             -PhamyarVersionCode=245             -PhamyarVersionName=2.4.5
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/debug -type f -name '*.apk' -print)
+          test "${#files[@]}" -eq 1
+          cp -f "${files[0]}" dist/hamyar-grade9-2.4.5-music-host-fix.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging dist/hamyar-grade9-2.4.5-music-host-fix.apk | head -1
+          sha256sum dist/hamyar-grade9-2.4.5-music-host-fix.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hamyar-grade9-2.4.5-music-host-fix
+          path: dist/hamyar-grade9-2.4.5-music-host-fix.apk
+          retention-days: 30
