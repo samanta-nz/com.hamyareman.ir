@@ -51,6 +51,8 @@ import com.hamyareman.ir.R
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
+import com.hamyareman.ir.platform.feature.study.BookModuleRegistry
+import com.hamyareman.ir.platform.feature.study.BookToc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -91,8 +93,44 @@ private fun cachedBytes(context: android.content.Context, item: BookDownload): L
 }
 
 /** تمام PDFها و صوت‌های حاضر در درخت یک کتاب، با حذف تکرارهای tab/گره. */
+private fun normalizedLessonTitle(title: String): String {
+    val t = title.trim()
+        .replace('\u200f'.toString(), "")
+        .replace('\u200e'.toString(), "")
+        .replace('ي', 'ی')
+        .replace('ك', 'ک')
+        .replace('ة', 'ه')
+        .replace("ِ", "")
+        .replace("َ", "")
+        .replace("ُ", "")
+        .replace("ّ", "")
+        .replace("ْ", "")
+    return t.substringAfterLast(':').substringAfterLast('：')
+        .substringAfterLast('—').substringAfterLast('-')
+        .filterNot { it.isWhitespace() }
+        .filter { it.isLetterOrDigit() }
+}
+
+private fun packByLessonTitle(bookCode: String): Map<String, String> {
+    fun flatten(nodes: List<BookToc.TocNode>): List<BookToc.TocNode> =
+        nodes.flatMap { listOf(it) + flatten(it.children) }
+    return flatten(BookToc.forBook(bookCode))
+        .mapNotNull { n ->
+            val id = n.packId ?: return@mapNotNull null
+            val pack = BookModuleRegistry.pack(id) ?: return@mapNotNull null
+            pack.audioFileId.takeIf { it.isNotBlank() }?.let {
+                normalizedLessonTitle(n.title) to it
+            }
+        }
+        .distinctBy { it.first }
+        .toMap()
+}
+
 private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
     val out = linkedMapOf<String, BookDownload>()
+    val audioFallback = packByLessonTitle(
+        "C" + book.code.filter { it.isDigit() }.padStart(3, '0'),
+    )
 
     fun addPdf(key: String?, ready: Boolean?, label: String) {
         if (ready != true || key.isNullOrBlank() || !BooksMenu.isPdf(key)) return
@@ -127,7 +165,8 @@ private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
             addPdf(node.key, node.ready, node.title)
             // audioKey فقط در منوی تولیدشده و فقط وقتی فایل واقعی وجود داشته باشد
             // نوشته می‌شود؛ پس دکمهٔ دانلود هرگز برای صوت placeholder ساخته نمی‌شود.
-            addAudio(node.audioKey, node.title)
+            val fallbackAudio = audioFallback[normalizedLessonTitle(node.title)]
+            addAudio(node.audioKey ?: fallbackAudio, node.title)
             node.tabs.forEach { tab ->
                 addPdf(tab.key, tab.ready, "${node.title} · ${tab.title}")
             }
@@ -135,29 +174,7 @@ private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
         }
     }
     walk(book.items)
-
-    // مرجع دوم برای صوت تدریس: حتی اگر books-menu.json یک audioKey را جا انداخته باشد،
-    // تمام Trackهای واقعی registry درس‌ها وارد مدیریت دانلود می‌شوند.
-    runCatching {
-        val digits = book.folder.filter(Char::isDigit)
-        BookModuleRegistry.modules
-            .firstOrNull { it.bookCode.filter(Char::isDigit) == digits }
-            ?.packs
-            ?.forEach { pack ->
-                teachTracksOf(pack).forEach { track -> addAudio(track.fileId, pack.title) }
-            }
-    }
-
     return out.values.toList()
-}
-
-private val DOWNLOAD_BOOK_ORDER = listOf(
-    "905", "901", "902", "903", "904", "906", "907", "908", "909", "910", "911", "917", "941", "915",
-)
-
-private fun bookOrderKey(book: BooksMenu.Book): Int {
-    val folder = book.folder.filter(Char::isDigit)
-    return DOWNLOAD_BOOK_ORDER.indexOf(folder).let { if (it < 0) Int.MAX_VALUE else it }
 }
 
 private fun fixedNumber(value: Int): String = toPersianDigits(value.toString())
@@ -174,7 +191,12 @@ private fun DownloadsTypography(content: @Composable () -> Unit) {
 fun DownloadsScreen(onBack: () -> Unit) = DownloadsTypography {
     val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember { LocalStore(context, "hamyar_downloads") }
-    val books = remember(context) { BooksMenu.all(context).sortedBy(::bookOrderKey) }
+    val books = remember(context) {
+        val order = listOf("C905", "C901", "C902", "C903", "C904", "C906", "C907", "C908", "C909", "C910", "C911", "C917", "C941", "C915")
+        BooksMenu.all(context).sortedWith(compareBy { b ->
+            order.indexOfFirst { code -> b.code == code }.let { if (it < 0) Int.MAX_VALUE else it }
+        })
+    }
     var openBook by remember { mutableStateOf(store.getString("dl_openbook_current", "")) }
     val scope = rememberCoroutineScope()
     val progress = remember { mutableStateMapOf<String, Int>() }
