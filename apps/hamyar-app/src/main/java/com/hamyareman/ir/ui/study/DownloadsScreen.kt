@@ -135,10 +135,27 @@ private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
         }
     }
     walk(book.items)
+
+    // مرجع دوم برای صوت تدریس: حتی اگر books-menu.json یک audioKey را جا انداخته باشد،
+    // تمام Trackهای واقعی registry درس‌ها وارد مدیریت دانلود می‌شوند.
+    runCatching {
+        val digits = book.folder.filter(Char::isDigit)
+        BookModuleRegistry.modules
+            .firstOrNull { it.bookCode.filter(Char::isDigit) == digits }
+            ?.packs
+            ?.forEach { pack ->
+                teachTracksOf(pack).forEach { track -> addAudio(track.fileId, pack.title) }
+            }
+    }
+
     return out.values.toList()
 }
 
-private fun fixedNumber(value: Int): String = toPersianDigits(value.toString()).padStart(3, '۰')
+private fun bookOrderKey(book: BooksMenu.Book): Int {
+    return book.folder.filter(Char::isDigit).toIntOrNull() ?: Int.MAX_VALUE
+}
+
+private fun fixedNumber(value: Int): String = toPersianDigits(value.toString())
 private fun megabytes(bytes: Long): String =
     toPersianDigits((bytes / (1024.0 * 1024.0)).roundToInt().toString()) + " مگابایت"
 
@@ -152,7 +169,7 @@ private fun DownloadsTypography(content: @Composable () -> Unit) {
 fun DownloadsScreen(onBack: () -> Unit) = DownloadsTypography {
     val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember { LocalStore(context, "hamyar_downloads") }
-    val books = remember(context) { BooksMenu.all(context) }
+    val books = remember(context) { BooksMenu.all(context).sortedBy(::bookOrderKey) }
     var openBook by remember { mutableStateOf(store.getString("dl_openbook_current", "")) }
     val scope = rememberCoroutineScope()
     val progress = remember { mutableStateMapOf<String, Int>() }
