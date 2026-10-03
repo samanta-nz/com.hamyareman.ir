@@ -98,6 +98,72 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         ],
     },
     {
+        "$id": "free_books", "name": "کتاب‌های مطالعه آزاد", "rowSecurity": false,
+        "$permissions": ['read("any")'],
+        "columns": [
+            col("bookId", size=128, required=True), col("type", size=16, required=True),
+            col("title", size=256, required=True), col("description", size=4096, default=""),
+            col("author", size=256, default=""), col("coverKey", size=512, default=""),
+            col("htmlKey", size=512, default=""), col("chaptersJson", size=100000, default=""),
+            col("audioKey", size=512, default=""), col("published", "integer", default=1),
+            col("sortOrder", "integer", default=0), col("updatedAtMs", "integer", default=0),
+        ],
+        "indexes": [{"$id": "freeBooksPublishedSort", "type": "key", "attributes": ["published", "sortOrder"]}],
+    },
+    {
+        "$id": "free_book_user_state", "name": "وضعیت مطالعه آزاد کاربران", "rowSecurity": true,
+        "$permissions": USER_CREATE,
+        "columns": [
+            col("userId", size=64, required=True), col("bookId", size=128, required=True),
+            col("status", size=16, default="WANT"), col("positionMs", "integer", default=0),
+            col("updatedAtMs", "integer", default=0),
+        ],
+        "indexes": [{"$id": "freeStateUserBook", "type": "unique", "attributes": ["userId", "bookId"]}],
+    },
+    {
+        "$id": "free_book_requests", "name": "درخواست کتاب از همیار", "rowSecurity": true,
+        "$permissions": USER_CREATE,
+        "columns": [
+            col("userId", size=64, required=True), col("title", size=256, required=True),
+            col("author", size=256, default=""), col("type", size=16, default="TEXT"),
+            col("note", size=4096, default=""), col("createdAtMs", "integer", default=0),
+            col("status", size=24, default="PENDING"),
+        ],
+        "indexes": [{"$id": "freeRequestsUserTime", "type": "key", "attributes": ["userId", "createdAtMs"]}],
+    },
+    {
+        "$id": "book_comments", "name": "نظرات کتاب", "rowSecurity": false,
+        "$permissions": ['read("any")', 'create("users")'],
+        "columns": [
+            col("commentId", size=128, required=True), col("bookId", size=128, required=True),
+            col("userId", size=64, required=True), col("displayName", size=128, default=""),
+            col("body", size=8192, required=True), col("parentId", size=128, default=""),
+            col("createdAtMs", "integer", default=0), col("status", size=24, default="APPROVED"),
+            col("likes", "integer", default=0), col("dislikes", "integer", default=0),
+        ],
+        "indexes": [
+            {"$id": "commentsBookTime", "type": "key", "attributes": ["bookId", "createdAtMs"]},
+        ],
+    },
+    {
+        "$id": "book_comment_reactions", "name": "واکنش‌های نظرات کتاب", "rowSecurity": true,
+        "$permissions": USER_CREATE,
+        "columns": [
+            col("userId", size=64, required=True), col("commentId", size=128, required=True),
+            col("reaction", size=8, required=True), col("updatedAtMs", "integer", default=0),
+        ],
+        "indexes": [{"$id": "commentReactionUser", "type": "unique", "attributes": ["userId", "commentId"]}],
+    },
+    {
+        "$id": "moderation_terms", "name": "واژگان پالایش دیدگاه", "rowSecurity": false,
+        "$permissions": ['read("any")'],
+        "columns": [
+            col("term", size=128, required=True), col("kind", size=24, default="insult"),
+            col("active", "integer", default=1),
+        ],
+        "indexes": [{"$id": "moderationTermUnique", "type": "unique", "attributes": ["term"]}],
+    },
+    {
         "$id": "subscription_orders", "name": "سفارش‌های اشتراک", "rowSecurity": True,
         "$permissions": USER_CREATE,
         "columns": [
