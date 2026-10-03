@@ -126,11 +126,9 @@ class SyncEngine(
                 is AppResult.Ok -> pushed++
                 is AppResult.Err -> {
                     failed++
-                    if (item.attempts + 1 < MAX_ATTEMPTS) {
-                        survivors += item.copy(attempts = item.attempts + 1)
-                    }
-                    // بعد از MAX_ATTEMPTS آیتم دور انداخته می‌شود تا صف قفل نشود؛
-                    // داده‌ی اصلی همیشه در کش محلی اپ باقی است.
+                    // خطا باعث حذف داده نمی‌شود؛ آخرین snapshot تا اتصال بعدی در صف
+                    // می‌ماند و retry توسط WorkManager/شبکه انجام می‌شود.
+                    survivors += item.copy(attempts = item.attempts + 1)
                 }
             }
         }
@@ -158,6 +156,5 @@ class SyncEngine(
         private const val KEY_OUTBOX = "sync_outbox"
         private const val KEY_LAST_SYNC = "sync_last_at"
         private const val MAX_BATCH = 25
-        private const val MAX_ATTEMPTS = 5
     }
 }
