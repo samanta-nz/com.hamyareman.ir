@@ -9,29 +9,49 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.hamyareman.ir.MainActivity
 import com.hamyareman.ir.R
+import com.hamyareman.ir.ui.hub.MedsStore
 
-/** دریافت هشدار یادآور دارو و نمایش نوتیفیکیشن. */
 class MedsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val name = intent.getStringExtra("name") ?: "دارو"
-        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, "یادآور دارو و مراقبت", NotificationManager.IMPORTANCE_HIGH),
+        val id = intent.getStringExtra("id").orEmpty()
+        val name = intent.getStringExtra("name").orEmpty()
+            .ifBlank {
+                MedsStore.load(com.hamyareman.ir.platform.core.common.LocalStore(context, "hamyar_health"))
+                    .firstOrNull { it.id == id }?.name ?: "دارو"
+            }
+
+        val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notifications.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ID,
+                "یادآور دارو و مراقبت",
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = "هشدارهای زمان‌دار دارو و مراقبت"
+                enableVibration(true)
+            },
         )
-        val pi = PendingIntent.getActivity(
-            context, 101,
+
+        val openApp = PendingIntent.getActivity(
+            context,
+            8101,
             Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        val notif = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("یادآور مراقبت 💊")
-            .setContentText("وقت $name است؛ مراقب خودت باش 🌿")
-            .setAutoCancel(true)
-            .setContentIntent(pi)
-            .build()
-        nm.notify(name.hashCode(), notif)
-    }
 
-    companion object { private const val CHANNEL_ID = "meds_reminder" }
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("وقت دارو 💊")
+            .setContentText("وقت «$name» است.")
+            .setStyle(NotificationCompat.BigTextStyle().bigText("وقت «$name» است."))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setAutoCancel(true)
+            .setContentIntent(openApp)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .build()
+
+        notifications.notify(if (id.isBlank()) name.hashCode() else id.hashCode(), notification)
+        if (id.isNotBlank()) MedsStore.scheduleNext(context, id)
+    }
 }
