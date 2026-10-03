@@ -194,8 +194,10 @@ private fun FreeAudioReader(book: FreeStudyBook) {
     val playback = remember { PlaybackController(ctx) }
     val state by playback.state.collectAsState()
     var phase by remember { mutableFloatStateOf(0f) }
+    val prefs = remember { LocalStore(ctx, FREE_STATE_STORE) }
     var customTimer by remember { mutableStateOf("") }
     var timerUntil by remember { mutableLongStateOf(0L) }
+    var backgroundPlayback by remember { mutableStateOf(prefs.getBool("background_playback", true)) }
     var note by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -225,6 +227,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
     DisposableEffect(Unit) {
         onDispose {
             FreeReadingState.save(ctx, book.id, playback.positionMs, playback.durationMs, "reading")
+            if (!backgroundPlayback) playback.stop()
             playback.release()
         }
     }
@@ -323,6 +326,30 @@ private fun FreeAudioReader(book: FreeStudyBook) {
             }
         }
         Card(Modifier.fillMaxWidth()) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.Headphones, null)
+                Spacer(Modifier.width(8.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("پخش در پس‌زمینه", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "با بسته‌شدن صفحه، صدا ادامه پیدا کند.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = backgroundPlayback,
+                    onCheckedChange = {
+                        backgroundPlayback = it
+                        prefs.putBool("background_playback", it)
+                    },
+                )
+            }
+        }
+        Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.Timer, null)
@@ -336,7 +363,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                 }
                 OutlinedTextField(value = customTimer, onValueChange = { customTimer = it.filter(Char::isDigit).take(4) }, label = { Text("زمان دلخواه (دقیقه)") }, singleLine = true)
                 OutlinedButton(onClick = {
-                    val m = customTimer.toIntOrNull()?.coerceIn(1, 240) ?: return@OutlinedButton
+                    val m = customTimer.toIntOrNull()?.coerceIn(1, 1440) ?: return@OutlinedButton
                     timerUntil = System.currentTimeMillis() + m * 60_000L
                 }) {
                     Icon(Icons.Outlined.MoreTime, null)
