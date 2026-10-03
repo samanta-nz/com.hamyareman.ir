@@ -25,6 +25,34 @@ class AppLock(private val store: LocalStore) {
 
     fun hasPin(): Boolean = store.getString(KEY_HASH).isNotBlank()
 
+    fun hasPattern(): Boolean = store.getString(KEY_PATTERN_HASH).isNotBlank()
+
+    fun setPattern(pattern: String): Boolean {
+        if (!validatePattern(pattern)) return false
+        val salt = ByteArray(SALT_BYTES).also { SecureRandom().nextBytes(it) }
+        store.putString(KEY_PATTERN_SALT, salt.toHex())
+        store.putString(KEY_PATTERN_HASH, hash(pattern, salt).toHex())
+        store.putBool(KEY_ENABLED, true)
+        unlockedAtMs = System.currentTimeMillis()
+        backgroundedAtMs = 0L
+        return true
+    }
+
+    fun verifyPattern(pattern: String): Boolean {
+        val saltHex = store.getString(KEY_PATTERN_SALT)
+        val expectedHex = store.getString(KEY_PATTERN_HASH)
+        if (saltHex.isBlank() || expectedHex.isBlank()) return false
+        val salt = saltHex.fromHex() ?: return false
+        val ok = constantTimeEquals(hash(pattern, salt).toHex(), expectedHex)
+        if (ok) unlockedAtMs = System.currentTimeMillis()
+        return ok
+    }
+
+    fun clearPattern() { store.remove(KEY_PATTERN_SALT, KEY_PATTERN_HASH) }
+
+    fun validatePattern(pattern: String): Boolean =
+        pattern.length in 4..9 && pattern.all { it in "123456789" } && pattern.toSet().size == pattern.length
+
     fun isEnabled(): Boolean = hasPin() && store.getBool(KEY_ENABLED, false)
 
     fun setEnabled(enabled: Boolean) {
@@ -51,7 +79,7 @@ class AppLock(private val store: LocalStore) {
     }
 
     fun clearPin() {
-        store.remove(KEY_SALT, KEY_HASH, KEY_ENABLED, KEY_TIMEOUT)
+        store.remove(KEY_SALT, KEY_HASH, KEY_PATTERN_SALT, KEY_PATTERN_HASH, KEY_ENABLED, KEY_TIMEOUT)
         unlockedAtMs = 0L
         backgroundedAtMs = 0L
     }
@@ -119,6 +147,8 @@ class AppLock(private val store: LocalStore) {
     companion object {
         private const val KEY_HASH = "app_lock_hash"
         private const val KEY_SALT = "app_lock_salt"
+        private const val KEY_PATTERN_HASH = "app_lock_pattern_hash"
+        private const val KEY_PATTERN_SALT = "app_lock_pattern_salt"
         private const val KEY_ENABLED = "app_lock_enabled"
         private const val KEY_TIMEOUT = "app_lock_timeout"
         private const val ALGORITHM = "PBKDF2WithHmacSHA256"
