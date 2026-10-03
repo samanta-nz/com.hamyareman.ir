@@ -42,25 +42,177 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-/** هاب «سلامتی»: جلدهای مربعی ۲ در ردیف، مثل کتاب‌ها. */
+/** هاب «سلامتی» با کارت روزانهٔ تعاملی و منوی میانبرها. */
 @Composable
 fun HealthHubScreen(nav: NavController) {
+    val container = LocalAppContainer.current
+    val daily = container.dailyHealth
+    val scope = rememberCoroutineScope()
+    val water = remember { WaterRepository(container.store, container.sync) }
+    var snapshot by remember { mutableStateOf(daily.snapshot()) }
+    var refreshing by remember { mutableStateOf(false) }
+
+    suspend fun refreshCloud() {
+        refreshing = true
+        snapshot = daily.pullToday()
+        daily.syncNow()
+        snapshot = daily.snapshot()
+        refreshing = false
+    }
+
+    fun runSync() {
+        scope.launch(Dispatchers.IO) { runCatching { refreshCloud() } }
+    }
+
+    LaunchedEffect(Unit) { refreshCloud() }
+
     val girl = com.hamyareman.ir.ui.profile.StudentProfileState.gender != "boy"
     val tiles = buildList {
-        add(HubCoverTile("hl-progress", "پیشرفت سلامتی", "آب، ورزش و آمار درس", { nav.hubTo(Screen.HealthProgress.route) }))
+        add(HubCoverTile("hl-progress", "پیشرفت سلامتی", "آب، ورزش، روتین و فعالیت‌های روزانه", { nav.hubTo(Screen.HealthProgress.route) }))
         if (girl) {
             add(HubCoverTile("hl-period", "چرخه ماهانه", "تقویم، علائم، تنفس درد و تمرین ملایم", { nav.hubTo(Screen.PracticeGroup.of("hl-cycle")) }))
         }
-        add(HubCoverTile("hl-yoga", "یوگا", "حرکات تعاملی با راهنمای کامل", { nav.hubTo(Screen.ContentCategory.of("yoga")) }))
-        add(HubCoverTile("hl-exercise", "ورزش عمومی", "تمرین‌های تعاملی مرحله‌به‌مرحله", { nav.hubTo(Screen.ContentCategory.of("sport")) }))
-        add(HubCoverTile("hl-food", "آب و تغذیه", "یادآور آب و راهنمای تمرکز", { nav.hubTo(Screen.PracticeGroup.of("hl-nutrition")) }))
-        add(HubCoverTile("hl-sleep", "خواب", "ثبت، قصه، بشنو و بخواب، تنفس شب", { nav.hubTo(Screen.PracticeGroup.of("hl-sleep")) }))
-        add(HubCoverTile("hl-meds", "یادآور دارو و مراقبت", "هشدار سرِ وقت", { nav.hubTo(Screen.Meds.route) }))
-        add(HubCoverTile("hl-routine", "روتین روز", "بلوک‌های روز یا روز سبک", { nav.hubTo(Screen.Routine.route) }))
+        add(HubCoverTile("hl-yoga", "یوگا", "حرکات تعاملی با ثبت خودکار فعالیت", { nav.hubTo(Screen.ContentCategory.of("yoga")) }))
+        add(HubCoverTile("hl-exercise", "ورزش عمومی", "تمرین‌های مرحله‌به‌مرحله با ثبت خودکار", { nav.hubTo(Screen.ContentCategory.of("sport")) }))
+        add(HubCoverTile("hl-food", "آب و تغذیه", "ثبت سریع آب و هدف روزانه", { nav.hubTo(Screen.PracticeGroup.of("hl-nutrition")) }))
+        add(HubCoverTile("hl-sleep", "خواب", "ثبت زمان خواب و بیداری", { nav.hubTo(Screen.PracticeGroup.of("hl-sleep")) }))
+        add(HubCoverTile("hl-meds", "یادآور دارو و مراقبت", "هشدارهای زمان‌دار", { nav.hubTo(Screen.Meds.route) }))
+        add(HubCoverTile("hl-routine", "روتین امروز", "افزودن، ویرایش، تیک‌زدن و سینک", { nav.hubTo(Screen.Routine.route) }))
     }
+
     HubBody {
         HubHeader("سلامتی 💚", "بدنت دوست توست — هر روز یک قدم مهربانی", slotId = "hub.health.header")
+        DailyHealthCard(
+            snapshot = snapshot,
+            busy = refreshing,
+            onWaterDelta = { delta ->
+                if (delta > 0) water.addGlass() else water.undoGlass()
+                val state = water.state()
+                snapshot = daily.recordWater(state.goal, state.consumed, delta)
+                runSync()
+            },
+            onRoutine = { nav.hubTo(Screen.Routine.route) },
+            onYoga = { nav.hubTo(Screen.ContentCategory.of("yoga")) },
+            onExercise = { nav.hubTo(Screen.ContentCategory.of("sport")) },
+            onBreathing = { nav.hubTo(Screen.ContentCategory.of("breath")) },
+            onSleep = { nav.hubTo(Screen.PracticeGroup.of("hl-sleep")) },
+            onProgress = { nav.hubTo(Screen.HealthProgress.route) },
+            onSync = { runSync() },
+        )
         HubCoverGrid(tiles)
+    }
+}
+
+@Composable
+private fun DailyHealthCard(
+    snapshot: DailyHealthSnapshot,
+    busy: Boolean,
+    onWaterDelta: (Int) -> Unit,
+    onRoutine: () -> Unit,
+    onYoga: () -> Unit,
+    onExercise: () -> Unit,
+    onBreathing: () -> Unit,
+    onSleep: () -> Unit,
+    onProgress: () -> Unit,
+    onSync: () -> Unit,
+) {
+    val waterProgress = (snapshot.waterConsumed.toFloat() / snapshot.waterGoal).coerceIn(0f, 1f)
+    val routineProgress = if (snapshot.routineTotal == 0) 0f else snapshot.routineDone.toFloat() / snapshot.routineTotal
+    Card(
+        Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("سلامتی امروز", style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        "آب، ورزش، روتین و فعالیت‌ها در این کارت جمع می‌شوند.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                FilterChip(
+                    selected = snapshot.lightDay,
+                    onClick = {},
+                    label = { Text(if (snapshot.lightDay) "روز سبک" else "روز معمولی") },
+                )
+            }
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DailyMetric("💧", snapshot.waterConsumed.toString() + "/" + snapshot.waterGoal, "لیوان", Modifier.weight(1f))
+                DailyMetric("🏃", snapshot.sportsMinutes.toString(), "دقیقه ورزش", Modifier.weight(1f))
+                DailyMetric("✅", snapshot.routineDone.toString() + "/" + snapshot.routineTotal, "روتین", Modifier.weight(1f))
+            }
+
+            Text("آب", style = MaterialTheme.typography.labelLarge)
+            androidx.compose.material3.LinearProgressIndicator(
+                progress = { waterProgress },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text("روتین", style = MaterialTheme.typography.labelLarge)
+            androidx.compose.material3.LinearProgressIndicator(
+                progress = { routineProgress },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { onWaterDelta(1) }, modifier = Modifier.weight(1f)) { Text("آب +۱") }
+                Button(
+                    onClick = { onWaterDelta(-1) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                ) { Text("آب −۱") }
+            }
+
+            Text("فعالیت سریع", style = MaterialTheme.typography.titleMedium)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                TextButton(onClick = onRoutine, modifier = Modifier.weight(1f)) { Text("روتین") }
+                TextButton(onClick = onExercise, modifier = Modifier.weight(1f)) { Text("ورزش") }
+                TextButton(onClick = onYoga, modifier = Modifier.weight(1f)) { Text("یوگا") }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                TextButton(onClick = onBreathing, modifier = Modifier.weight(1f)) { Text("تنفس") }
+                TextButton(onClick = onSleep, modifier = Modifier.weight(1f)) { Text("خواب") }
+                TextButton(onClick = onProgress, modifier = Modifier.weight(1f)) { Text("گزارش") }
+            }
+
+            if (snapshot.activities.isNotEmpty()) {
+                Text("آخرین فعالیت‌ها", style = MaterialTheme.typography.titleMedium)
+                snapshot.activities.take(4).forEach { activity ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(activity.title, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                        if (activity.value != 0) {
+                            Text(activity.value.toString(), style = MaterialTheme.typography.labelMedium)
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Text(
+                            JalaliDate.stampFa(activity.atMs),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            Button(
+                onClick = onSync,
+                enabled = !busy,
+                modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp),
+            ) {
+                Text(if (busy) "در حال دریافت و ارسال…" else "دریافت و ارسال با دیتابیس")
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyMetric(icon: String, value: String, label: String, modifier: Modifier = Modifier) {
+    Card(modifier, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.62f))) {
+        Column(Modifier.padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(icon + " " + value, style = MaterialTheme.typography.titleMedium)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 
