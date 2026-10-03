@@ -1,4 +1,4 @@
-name: Release grade 9 v2.4.9 (forced)
+name: Release grade 9 v2.5.2 (forced)
 
 # ساخت و انتشار نسخهٔ ۲٫۴٫۹ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
 #
@@ -16,22 +16,22 @@ permissions:
   contents: write
 
 concurrency:
-  group: arena-release-grade9-v2.4.9-final
+  group: arena-release-grade9-v2.5.2-final
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: '2.4.9'
-  VERSION_CODE: '250'
-  MIN_CODE: '250'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
+  VERSION_NAME: '2.5.2'
+  VERSION_CODE: '252'
+  MIN_CODE: '252'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
   ROW_ID: app_release_grade9
-  ASSET: hamyar-grade9-2.4.9.apk
+  ASSET: hamyar-grade9-2.5.2.apk
 
 jobs:
   release:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade 9 v2.4.9')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade 9 v2.5.2')
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
@@ -135,7 +135,7 @@ jobs:
           python3 scripts/upload_encoded_to_parspack.py \
             --source /tmp/music-html \
             --prefix Bucket/Html-files \
-            --report ci-report/release-2.4.9-html.md
+            --report ci-report/release-2.5.2-html.md
 
       - name: ۳) بایگانی در Release «ci-apk» همین مخزن
         shell: bash
@@ -144,7 +144,7 @@ jobs:
         run: |
           set +e
           mkdir -p ci-report
-          LOG=ci-report/release-2.4.9.log
+          LOG=ci-report/release-2.5.2.log
           WANT=$(stat -c%s "dist/$ASSET")
           echo "== مرحلهٔ ۳: بایگانی $ASSET ($WANT بایت)" >> "$LOG"
 
@@ -205,7 +205,7 @@ jobs:
             --key "apk/$GRADE_ID/$ASSET" \
             --provider parspack \
             --content-type application/vnd.android.package-archive \
-            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.4.9.log
+            --env-name INTERNAL_URL 2>&1 | tee -a ci-report/release-2.5.2.log
 
       - name: ۶) اعلام نسخه و اعلام آپدیت اجباری
         env:
@@ -227,7 +227,7 @@ jobs:
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
             --notes "یکپارچه‌سازی تایپوگرافی استاندارد با حفظ داشبورد و دفترچه‌های دست‌نویس|روتین امروز با افزودن، ویرایش، کپی، حذف و جابه‌جایی|اتصال آب و فعالیت‌های یوگا/ورزش به سلامت روزانه|کاورهای بدون تصویر و کارت‌های آیکونی با گرافیک سبک‌تر|آواتار پیش‌فرض وکتوری برای ساعت داشبورد|افکت‌های سبک و مدرن داشبورد|بازطراحی شش تم نمایشی دخترانه/پسرانه|بهینه‌سازی تصاویر embedded؛ یوگا با حفظ کامل قاب ۲×۳" \
-            --out ci-report/release-2.4.9.json 2>&1 | tee -a ci-report/release-2.4.9.log
+            --out ci-report/release-2.5.2.json 2>&1 | tee -a ci-report/release-2.5.2.log
 
       - name: ۷) آماده‌سازی گزارش و اعلان
         if: always()
@@ -235,7 +235,7 @@ jobs:
         run: |
           set +e
           mkdir -p ci-report
-          for f in ci-report/release-2.4.9.json ci-report/release-2.4.9.log ci-report/release-2.4.9-html.md; do
+          for f in ci-report/release-2.5.2.json ci-report/release-2.5.2.log ci-report/release-2.5.2-html.md; do
             if [ -f "$f" ]; then
               { echo "### $f"; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
             fi
@@ -244,7 +244,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hamyar-grade9-2.4.9
+          name: hamyar-grade9-2.5.2
           path: dist/*.apk
           if-no-files-found: warn
           retention-days: 14
