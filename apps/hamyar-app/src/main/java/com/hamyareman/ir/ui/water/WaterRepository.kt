@@ -45,6 +45,11 @@ class WaterRepository(
         enqueueIfConfigured()
     }
 
+    fun applyRemoteState(goal: Int, consumed: Int) {
+        store.putInt("water_goal", goal.coerceIn(1, 30))
+        store.putInt(key(), consumed.coerceAtLeast(0))
+    }
+
     private fun enqueueIfConfigured() {
         val engine = sync ?: return
         val dayIso = JalaliDate.todayIso()
