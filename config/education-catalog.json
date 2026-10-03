@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "strategy": "one-codebase-nine-flavors-external-content-packs",
+  "stages": [
+    {
+      "id": "stage1",
+      "titleFa": "ابتدایی",
+      "grades": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "stage2",
+      "titleFa": "متوسطه اول",
+      "grades": [
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "stage3",
+      "titleFa": "متوسطه دوم",
+      "grades": [
+        10,
+        11,
+        12
+      ]
+    }
+  ],
+  "apps": [
+    {
+      "grade": 4,
+      "gradeId": "grade4",
+      "applicationId": "com.hamyareman.p04",
+      "stageId": "stage1",
+      "contentProfileId": "grade4",
+      "contentRoot": "Base-04",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 5,
+      "gradeId": "grade5",
+      "applicationId": "com.hamyareman.p05",
+      "stageId": "stage1",
+      "contentProfileId": "grade5",
+      "contentRoot": "Base-05",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 6,
+      "gradeId": "grade6",
+      "applicationId": "com.hamyareman.p06",
+      "stageId": "stage1",
+      "contentProfileId": "grade6",
+      "contentRoot": "Base-06",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 7,
+      "gradeId": "grade7",
+      "applicationId": "com.hamyareman.p07",
+      "stageId": "stage2",
+      "contentProfileId": "grade7",
+      "contentRoot": "Base-07",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 8,
+      "gradeId": "grade8",
+      "applicationId": "com.hamyareman.p08",
+      "stageId": "stage2",
+      "contentProfileId": "grade8",
+      "contentRoot": "Base-08",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 9,
+      "gradeId": "grade9",
+      "applicationId": "com.hamyareman.p09",
+      "stageId": "stage2",
+      "contentProfileId": "grade9",
+      "contentRoot": "Base-09",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 10,
+      "gradeId": "grade10",
+      "applicationId": "com.hamyareman.p10",
+      "stageId": "stage3",
+      "contentProfileId": "grade10",
+      "contentRoot": "Base-10",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 11,
+      "gradeId": "grade11",
+      "applicationId": "com.hamyareman.p11",
+      "stageId": "stage3",
+      "contentProfileId": "grade11",
+      "contentRoot": "Base-11",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    },
+    {
+      "grade": 12,
+      "gradeId": "grade12",
+      "applicationId": "com.hamyareman.p12",
+      "stageId": "stage3",
+      "contentProfileId": "grade12",
+      "contentRoot": "Base-12",
+      "subjects": [],
+      "laboratories": [],
+      "books": []
+    }
+  ],
+  "rules": {
+    "sourceOfTruth": "config/education-catalog.json",
+    "codeReuse": "shared-ui-and-feature-code; grade differences are configuration/content, not source forks",
+    "contentDelivery": "versioned external content packs with manifest and checksum",
+    "releaseIsolation": "one Appwrite update row and one package/applicationId per grade"
+  }
+}

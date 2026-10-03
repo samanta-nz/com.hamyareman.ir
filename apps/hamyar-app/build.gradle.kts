@@ -33,7 +33,7 @@ android {
         minSdk = 29
         // انتشار عمومی از Android 10 به بعد؛ APIهای قدیمی‌تر در این محصول پشتیبانی نمی‌شوند.
         targetSdk = 36
-        // نسخهٔ عمومی پایهٔ نهم ۲٫۴٫۴؛ workflow انتشار می‌تواند این دو مقدار را override کند.
+        // نسخهٔ پیش‌فرض توسعه؛ workflow انتشار versionCode/versionName را برای هر انتشار override می‌کند.
         versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 244
         versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.4.4"
         ndk {
@@ -63,6 +63,9 @@ android {
             faNumeral: String,
             applicationId: String,
             folder: String,
+            stageId: String,
+            stageFa: String,
+            contentProfile: String,
             defaultFlavor: Boolean = false,
         ) {
             create(flavorName) {
@@ -74,6 +77,9 @@ android {
                 buildConfigField("String", "GRADE_FA_SHORT", "\"$faShort\"")
                 buildConfigField("String", "GRADE_FA_NUMERAL", "\"$faNumeral\"")
                 buildConfigField("String", "BOOKS_FOLDER", "\"$folder\"")
+                buildConfigField("String", "EDUCATION_STAGE_ID", "\"$stageId\"")
+                buildConfigField("String", "EDUCATION_STAGE_FA", "\"$stageFa\"")
+                buildConfigField("String", "CONTENT_PROFILE_ID", "\"$contentProfile\"")
                 // کانال آپدیت هر پایه مستقل است؛ هیچ APK پایه‌ای به پایهٔ دیگر
                 // پیشنهاد یا نصب نمی‌شود.
                 buildConfigField("String", "UPDATE_ROW_ID", "\"app_release_$id\"")
@@ -81,15 +87,15 @@ android {
                 resValue("string", "app_name", publicName)
             }
         }
-        gradeApp("p04", 4, "grade4", "چهارم", "۴", "com.hamyareman.p04", "Base-04")
-        gradeApp("p05", 5, "grade5", "پنجم", "۵", "com.hamyareman.p05", "Base-05")
-        gradeApp("p06", 6, "grade6", "ششم", "۶", "com.hamyareman.p06", "Base-06")
-        gradeApp("p07", 7, "grade7", "هفتم", "۷", "com.hamyareman.p07", "Base-07")
-        gradeApp("p08", 8, "grade8", "هشتم", "۸", "com.hamyareman.p08", "Base-08")
-        gradeApp("p09", 9, "grade9", "نهم", "۹", "com.hamyareman.p09", "Base-09", defaultFlavor = true)
-        gradeApp("p10", 10, "grade10", "دهم", "۱۰", "com.hamyareman.p10", "Base-10")
-        gradeApp("p11", 11, "grade11", "یازدهم", "۱۱", "com.hamyareman.p11", "Base-11")
-        gradeApp("p12", 12, "grade12", "دوازدهم", "۱۲", "com.hamyareman.p12", "Base-12")
+        gradeApp("p04", 4, "grade4", "چهارم", "۴", "com.hamyareman.p04", "Base-04", "stage1", "ابتدایی", "grade4")
+        gradeApp("p05", 5, "grade5", "پنجم", "۵", "com.hamyareman.p05", "Base-05", "stage1", "ابتدایی", "grade5")
+        gradeApp("p06", 6, "grade6", "ششم", "۶", "com.hamyareman.p06", "Base-06", "stage1", "ابتدایی", "grade6")
+        gradeApp("p07", 7, "grade7", "هفتم", "۷", "com.hamyareman.p07", "Base-07", "stage2", "متوسطه اول", "grade7")
+        gradeApp("p08", 8, "grade8", "هشتم", "۸", "com.hamyareman.p08", "Base-08", "stage2", "متوسطه اول", "grade8")
+        gradeApp("p09", 9, "grade9", "نهم", "۹", "com.hamyareman.p09", "Base-09", "stage2", "متوسطه اول", "grade9", defaultFlavor = true)
+        gradeApp("p10", 10, "grade10", "دهم", "۱۰", "com.hamyareman.p10", "Base-10", "stage3", "متوسطه دوم", "grade10")
+        gradeApp("p11", 11, "grade11", "یازدهم", "۱۱", "com.hamyareman.p11", "Base-11", "stage3", "متوسطه دوم", "grade11")
+        gradeApp("p12", 12, "grade12", "دوازدهم", "۱۲", "com.hamyareman.p12", "Base-12", "stage3", "متوسطه دوم", "grade12")
     }
 
     buildTypes {
