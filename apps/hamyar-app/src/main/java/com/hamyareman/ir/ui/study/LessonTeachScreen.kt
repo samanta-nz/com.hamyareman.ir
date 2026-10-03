@@ -268,7 +268,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         return if (d > 3000 && p >= d - 1500) 0L else p
     }
     fun savePos(t: TeachTrack, v: Long) { if (v > 0) store.putString(posKey(t), v.toString()) else store.remove(posKey(t)) }
-    fun cached(t: TeachTrack) = cacheTick >= 0 && MediaVault.isVerified(context, t.cacheKey)
+    fun cached(t: TeachTrack) = MediaVault.isVerified(context, t.cacheKey)
 
     /** «زمان درس» — سکوتِ اجباری پلیر دروس (کلید سراسری از «بیشتر»). */
     var quietTick by remember { mutableIntStateOf(0) }
@@ -579,16 +579,16 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                     CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 1.5.dp)
                 }
                 // منبع + دانلود/حذف آفلاین.
-                val online = !cached(track)
-                val srcColor = if (online) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                val offlineReady = cached(track) || (loadedKey == track.cacheKey && loadedLocal)
+                val srcColor = if (offlineReady) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
                 Icon(
-                    if (online) Icons.Outlined.Cloud else Icons.Outlined.Smartphone,
+                    if (offlineReady) Icons.Outlined.Smartphone else Icons.Outlined.Cloud,
                     contentDescription = null,
                     tint = srcColor,
                     modifier = Modifier.size(16.dp),
                 )
                 Text(
-                    if (online) "پخش آنلاین" else "پخش آفلاین",
+                    if (offlineReady) "پخش آفلاین" else "پخش آنلاین",
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontFamily = TeachVazirmatnRegular,
                         fontWeight = FontWeight.Normal,
@@ -610,6 +610,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                                     TextButton(onClick = {
                                         confirmDelete = false
                                         MediaVault.delete(context, track.cacheKey)
+                                        if (loadedKey == track.cacheKey) loadedLocal = false
                                         cacheTick++
                                     }) { Text("حذف") }
                                 },
@@ -656,8 +657,9 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                                     }
                                 }
                                 note = "دانلود کامل شد؛ پخشِ بعدی آفلاین است."
+                                loadedLocal = true
                                 // دانلود که تمام، آیتمِ آنلاینِ کهنه را با همان ترکِ محلی عوض کن.
-                                if (loadedKey == track.cacheKey) startTrack(track, autoplay = playing)
+                                if (loadedKey == track.cacheKey) startTrack(track, autoplay = playing, preferLocal = true)
                             } catch (e: Exception) {
                                 android.util.Log.w("TeachVault", "download failed: ${track.fileId}", e)
                                 note = "دانلود کامل نشد؛ دوباره تلاش کن."
@@ -795,7 +797,10 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                 androidx.compose.runtime.CompositionLocalProvider(
                     androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
                 ) {
-                    Box(Modifier.width(132.dp), contentAlignment = Alignment.CenterEnd) {
+                    Box(
+                        Modifier.width(108.dp).height(24.dp),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
                         Text(
                             if (durMs > 0) {
                                 "${teachMmss(if (dragMs >= 0) dragMs else posMs)} / ${teachMmss(durMs)}"
