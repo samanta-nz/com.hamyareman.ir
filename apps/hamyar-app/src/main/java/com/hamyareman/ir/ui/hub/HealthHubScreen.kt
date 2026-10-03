@@ -1,16 +1,19 @@
 package com.hamyareman.ir.ui.hub
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,22 +22,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.hamyareman.ir.LocalAppContainer
-import com.hamyareman.ir.R
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.ui.navigation.Screen
+import com.hamyareman.ir.ui.water.WaterRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -216,12 +215,6 @@ private fun DailyMetric(icon: String, value: String, label: String, modifier: Mo
     }
 }
 
-private val SleepLalezar = FontFamily(Font(R.font.lalezar, FontWeight.Normal))
-private val SleepVazirmatnRegular = FontFamily(Font(R.font.vazirmatn_regular, FontWeight.Normal))
-
-private fun TextStyle.sleepHeading() = copy(fontFamily = SleepLalezar, fontWeight = FontWeight.Normal)
-private fun TextStyle.sleepBody() = copy(fontFamily = SleepVazirmatnRegular, fontWeight = FontWeight.Normal)
-
 /**
  * «خواب من» یک دفترچه‌ی خودکار است: زمان تایپ نمی‌شود تا یک مهر نادرست وارد نشود.
  * ساعت و تاریخ همیشه با منطقهٔ تهران/تقویم جلالی نشان داده می‌شوند؛ هر رویداد اول
@@ -264,12 +257,12 @@ fun SleepLogScreen(onBack: () -> Unit) {
             ) {
                 Text(
                     sleepClock(now),
-                    style = MaterialTheme.typography.displayMedium.sleepHeading().copy(fontSize = 42.sp),
+                    style = MaterialTheme.typography.displayMedium.copy(fontSize = 42.sp),
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
                     "${JalaliDate.weekDayFa(JalaliDate.todayIso())}، ${JalaliDate.formatFaLong(now)}",
-                    style = MaterialTheme.typography.bodyMedium.sleepBody(),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
@@ -277,7 +270,7 @@ fun SleepLogScreen(onBack: () -> Unit) {
 
         Text(
             "برای ثبت زمان واقعی، فقط همان لحظه دکمه را بزن. ساعت‌ها خودکار روی همین دستگاه ذخیره می‌شوند.",
-            style = MaterialTheme.typography.bodyMedium.sleepBody(),
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
@@ -290,20 +283,20 @@ fun SleepLogScreen(onBack: () -> Unit) {
                 modifier = Modifier.weight(1f).sizeIn(minHeight = 54.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF294A74)),
             ) {
-                Text("الان می‌خوابم", style = MaterialTheme.typography.labelLarge.sleepBody())
+                Text("الان می‌خوابم", style = MaterialTheme.typography.labelLarge)
             }
             Button(
                 onClick = { saveAndSync(SleepLogStore.recordWakeTime(store)) },
                 modifier = Modifier.weight(1f).sizeIn(minHeight = 54.dp),
             ) {
-                Text("الان بیدار شدم", style = MaterialTheme.typography.labelLarge.sleepBody())
+                Text("الان بیدار شدم", style = MaterialTheme.typography.labelLarge)
             }
         }
 
         SleepStatusCard(openEntry = openEntry, completed = completed)
 
         if (entries.isNotEmpty()) {
-            Text("ثبت‌های پیشین", style = MaterialTheme.typography.titleLarge.sleepHeading())
+            Text("ثبت‌های پیشین", style = MaterialTheme.typography.titleLarge)
             entries.forEach { entry ->
                 Card(Modifier.fillMaxWidth()) {
                     Row(
@@ -311,13 +304,13 @@ fun SleepLogScreen(onBack: () -> Unit) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(JalaliDate.toPersianDigits(entry.dayIso), style = MaterialTheme.typography.bodyMedium.sleepBody())
+                            Text(JalaliDate.toPersianDigits(entry.dayIso), style = MaterialTheme.typography.bodyMedium)
                             Text(
                                 listOfNotNull(
                                     entry.bedtimeAt?.let { "خواب: ${JalaliDate.stampFa(it)}" },
                                     entry.wokeAt?.let { "بیداری: ${JalaliDate.stampFa(it)}" },
                                 ).joinToString("  •  "),
-                                style = MaterialTheme.typography.bodySmall.sleepBody(),
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -336,12 +329,12 @@ fun SleepLogScreen(onBack: () -> Unit) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     "رشتهٔ خواب",
-                    style = MaterialTheme.typography.titleLarge.sleepHeading(),
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 Text(
                     if (streak > 0) "${JalaliDate.toPersianDigits(streak.toString())} شبِ پیوسته ثبت شده" else "با اولین ثبت، رشتهٔ خوابت از همین‌جا شروع می‌شود.",
-                    style = MaterialTheme.typography.bodyMedium.sleepBody(),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
@@ -349,7 +342,7 @@ fun SleepLogScreen(onBack: () -> Unit) {
 
         Text(
             "ثبت‌ها در صف امن همگام‌سازی قرار می‌گیرند و وقتی اتصال آماده باشد خودکار فرستاده می‌شوند.",
-            style = MaterialTheme.typography.bodySmall.sleepBody(),
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp),
         )
@@ -363,31 +356,31 @@ private fun SleepStatusCard(openEntry: SleepLogEntry?, completed: SleepLogEntry?
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("ثبت امروز", style = MaterialTheme.typography.titleLarge.sleepHeading())
+            Text("ثبت امروز", style = MaterialTheme.typography.titleLarge)
             when {
                 openEntry != null -> {
                     Text(
                         "زمان خواب: ${JalaliDate.stampFa(openEntry.bedtimeAt ?: 0L)}",
-                        style = MaterialTheme.typography.bodyMedium.sleepBody(),
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                     Text(
                         "وقتی بیدار شدی «الان بیدار شدم» را بزن تا همان شب کامل شود.",
-                        style = MaterialTheme.typography.bodySmall.sleepBody(),
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 completed != null -> {
                     completed.bedtimeAt?.let {
-                        Text("خواب: ${JalaliDate.stampFa(it)}", style = MaterialTheme.typography.bodyMedium.sleepBody())
+                        Text("خواب: ${JalaliDate.stampFa(it)}", style = MaterialTheme.typography.bodyMedium)
                     }
                     Text(
                         "بیداری: ${JalaliDate.stampFa(completed.wokeAt ?: 0L)}",
-                        style = MaterialTheme.typography.bodyMedium.sleepBody(),
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
                 else -> Text(
                     "هنوز زمانی ثبت نشده؛ هر زمان آماده بودی یکی از دو دکمه را لمس کن.",
-                    style = MaterialTheme.typography.bodyMedium.sleepBody(),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
