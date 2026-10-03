@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -100,13 +99,11 @@ private fun RemoteHtmlPage(bucketKey: String) {
                 ) {
                     override fun onPageFinished(view: android.webkit.WebView, url: String) {
                         super.onPageFinished(view, url)
-                        view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                     }
                 }
                 loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
         },
-        update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
         modifier = Modifier.fillMaxSize(),
         onRelease = { it.destroy() },
     )
