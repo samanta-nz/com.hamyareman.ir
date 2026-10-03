@@ -47,3 +47,4 @@ node_modules/
 /package-lock.json
 __pycache__/
 # 2.5.2 CI validation marker
+# 2.5.2 import fix validation
