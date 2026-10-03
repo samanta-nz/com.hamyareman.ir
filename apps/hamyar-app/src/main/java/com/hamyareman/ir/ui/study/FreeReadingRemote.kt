@@ -99,7 +99,10 @@ internal data class FreeBook(
     val htmlKey: String,
     val audioKey: String,
     val chapters: List<FreeBookChapter>,
-)
+) {
+    val coverUrl: String get() = FreeReadingRepository.absoluteKey(coverKey)
+    val htmlUrl: String get() = FreeReadingRepository.absoluteKey(htmlKey)
+}
 
 internal data class FreeBookState(
     val status: String = "WANT",
@@ -226,7 +229,7 @@ internal class FreeReadingRepository(
 
     suspend fun comments(bookId: String): List<BookComment> {
         val q = listOf(
-            "equal(\"bookId\",[ \"" + bookId + "\"])".replace("[ \"", "[\""),
+            "equal(\"bookId\",[\"" + bookId + "\"])".replace("[ \"", "[\""),
             "equal(\"status\",[\"APPROVED\"])",
             "orderDesc(\"createdAtMs\")",
             "limit(100)",
@@ -265,7 +268,7 @@ internal class FreeReadingRepository(
                 "body" to body.trim(),
                 "parentId" to parentId,
                 "createdAtMs" to System.currentTimeMillis(),
-                "status" to "APPROVED",
+                "status" to "PENDING",
                 "likes" to 0,
                 "dislikes" to 0,
             ),
@@ -532,7 +535,7 @@ private fun FreeBookCard(
             }
             if (book.type == FreeBookType.AUDIO) {
                 IconButton(onClick = onOpen) { Icon(Icons.Outlined.PlayArrow, "پخش") }
-                IconButton(onClick = { /* دانلود جزئی از صفحهٔ داخلی است */ onOpen() }) { Icon(Icons.Outlined.Download, "دانلود") }
+                IconButton(onClick = onOpen) { Icon(Icons.Outlined.Download, "دانلود") }
             } else {
                 IconButton(onClick = onOpen) { Icon(Icons.Outlined.Book, "باز کردن") }
             }
@@ -609,6 +612,8 @@ private fun FreeTextReader(
             },
             onRelease = { web -> web.stopLoading(); web.destroy() },
         )
+        Spacer(Modifier.height(4.dp))
+        BookCommentsSection(book.id, repo)
     }
 }
 
