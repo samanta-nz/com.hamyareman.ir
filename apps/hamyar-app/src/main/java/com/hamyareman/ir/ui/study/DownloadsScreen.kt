@@ -51,8 +51,6 @@ import com.hamyareman.ir.R
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
-import com.hamyareman.ir.platform.feature.study.BookModuleRegistry
-import com.hamyareman.ir.platform.feature.study.BookToc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -111,26 +109,8 @@ private fun normalizedLessonTitle(title: String): String {
         .filter { it.isLetterOrDigit() }
 }
 
-private fun packByLessonTitle(bookCode: String): Map<String, String> {
-    fun flatten(nodes: List<BookToc.TocNode>): List<BookToc.TocNode> =
-        nodes.flatMap { listOf(it) + flatten(it.children) }
-    return flatten(BookToc.forBook(bookCode))
-        .mapNotNull { n ->
-            val id = n.packId ?: return@mapNotNull null
-            val pack = BookModuleRegistry.pack(id) ?: return@mapNotNull null
-            pack.audioFileId.takeIf { it.isNotBlank() }?.let {
-                normalizedLessonTitle(n.title) to it
-            }
-        }
-        .distinctBy { it.first }
-        .toMap()
-}
-
 private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
     val out = linkedMapOf<String, BookDownload>()
-    val audioFallback = packByLessonTitle(
-        "C" + book.code.filter { it.isDigit() }.padStart(3, '0'),
-    )
 
     fun addPdf(key: String?, ready: Boolean?, label: String) {
         if (ready != true || key.isNullOrBlank() || !BooksMenu.isPdf(key)) return
@@ -165,8 +145,7 @@ private fun collectDownloads(book: BooksMenu.Book): List<BookDownload> {
             addPdf(node.key, node.ready, node.title)
             // audioKey فقط در منوی تولیدشده و فقط وقتی فایل واقعی وجود داشته باشد
             // نوشته می‌شود؛ پس دکمهٔ دانلود هرگز برای صوت placeholder ساخته نمی‌شود.
-            val fallbackAudio = audioFallback[normalizedLessonTitle(node.title)]
-            addAudio(node.audioKey ?: fallbackAudio, node.title)
+            addAudio(node.audioKey, node.title)
             node.tabs.forEach { tab ->
                 addPdf(tab.key, tab.ready, "${node.title} · ${tab.title}")
             }
