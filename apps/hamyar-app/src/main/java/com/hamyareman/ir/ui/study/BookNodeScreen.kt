@@ -72,13 +72,13 @@ fun BookNodeScreen(
                 tracks = listOf(TeachTrack("صوت تدریس", audioKey, cacheKey)),
             )
         }
-        if (BooksMenu.isPdf(bucketKey)) BookPdfPages(bucketKey) else RemoteHtmlPage(bucketKey)
+        if (BooksMenu.isPdf(bucketKey)) BookPdfPages(bucketKey) else RemoteHtmlPage(bucketKey, audioKey)
     }
 }
 
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
-private fun RemoteHtmlPage(bucketKey: String) {
+private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
     SecureWebEffect()
     AndroidView(
         factory = { context ->
@@ -91,12 +91,38 @@ private fun RemoteHtmlPage(bucketKey: String) {
                 settings.setSupportZoom(true)
                 settings.builtInZoomControls = true
                 settings.displayZoomControls = false
+                if (audioKey.isNotBlank()) addJavascriptInterface(TeachHtmlBridge(), "HamyarPlayer")
                 webViewClient = object : HmkWebViewClient(
                     context.applicationContext,
                     HmkWebViewClient.bucketHost(),
                 ) {
                     override fun onPageFinished(view: android.webkit.WebView, url: String) {
                         super.onPageFinished(view, url)
+                        if (audioKey.isNotBlank()) {
+                            view.evaluateJavascript(
+                                """
+                                (function(){
+                                  if(window.__hamyarSeekBound)return;
+                                  window.__hamyarSeekBound=true;
+                                  function bind(){
+                                    document.querySelectorAll('[data-seek-ms]').forEach(function(el){
+                                      if(el.dataset.hamyarSeekBound)return;
+                                      el.dataset.hamyarSeekBound='1';
+                                      el.addEventListener('click',function(ev){
+                                        var ms=parseInt(this.getAttribute('data-seek-ms')||'',10);
+                                        if(!Number.isFinite(ms)||ms<0)return;
+                                        ev.preventDefault();ev.stopPropagation();
+                                        if(window.HamyarPlayer&&window.HamyarPlayer.seek)window.HamyarPlayer.seek(ms);
+                                      },false);
+                                    });
+                                  }
+                                  bind();
+                                  new MutationObserver(bind).observe(document.documentElement,{subtree:true,childList:true});
+                                })();
+                                """.trimIndent(),
+                                null,
+                            )
+                        }
                         // محتوای HTML کتاب «سند چاپی» است؛ عمداً از تم اپ مستقل است.
                     }
                 }
