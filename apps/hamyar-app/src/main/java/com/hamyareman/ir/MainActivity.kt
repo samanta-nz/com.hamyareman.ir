@@ -152,21 +152,14 @@ class MainActivity : FragmentActivity() {
             // صفحه‌ی لاگین فقط وقتی سشنی نیست. (قانون قدیمیِ «لاگین هر اجرا» حذف شد.)
             LaunchedEffect(Unit) {
                 if (loggedIn.value == null) {
-                    val u = runCatching { container.auth.currentUser() }.getOrNull()
-                    if (u == null) {
-                        loggedIn.value = false
-                    } else {
-                        when (val g = container.auth.enforceAccountGate()) {
-                            is AppResult.Err -> {
-                                loginError = g.error.userMessage
-                                loggedIn.value = false
-                            }
-                            is AppResult.Ok -> loggedIn.value = true
-                        }
+                    val cached = container.auth.cachedUserId().orEmpty()
+                    loggedIn.value = cached.isNotBlank()
+                    if (cached.isBlank()) {
+                        val u = runCatching { container.auth.currentUser() }.getOrNull()
+                        loggedIn.value = u != null
                     }
                 }
             }
-
             // v1.25 — پس از ورود: اگر ردیف پروفایل دانش‌آموز ندارد → فرم ثبت‌نام اجباری.
             // (آفلاین بودن سرور را با آینه‌ی محلی جبران می‌کنیم تا فرم بی‌دلیل نیاید.)
             LaunchedEffect(loggedIn.value == true) {
@@ -419,6 +412,8 @@ class MainActivity : FragmentActivity() {
                             PinLockGate(
                                 title = "همیار من قفل است",
                                 subtitle = "برای دیدن دفترچه‌ات PIN را وارد کن.",
+                                patternEnabled = container.lock.hasPattern(),
+                                onPatternVerify = { value -> container.lock.verifyPattern(value).also { ok -> if (ok) container.lock.markUnlocked() } },
                                 minLength = AppLock.MIN_PIN,
                                 maxLength = AppLock.MAX_PIN,
                                 biometricLabel = if (offerBiometric) "بازکردن با اثر انگشت/چهره" else null,
