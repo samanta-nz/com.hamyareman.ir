@@ -1,6 +1,5 @@
 package com.hamyareman.ir.ui.study
 
-import android.os.Handler
 import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
