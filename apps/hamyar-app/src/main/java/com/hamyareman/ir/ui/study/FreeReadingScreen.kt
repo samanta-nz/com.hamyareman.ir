@@ -82,6 +82,7 @@ fun FreeReadingScreen(nav: androidx.navigation.NavController, onBack: () -> Unit
     var books by remember { mutableStateOf(emptyList<FreeStudyBook>()) }
     var selected by remember { mutableStateOf<FreeStudyBook?>(null) }
     var tab by remember { mutableIntStateOf(0) }
+    var detailTab by remember { mutableIntStateOf(0) }
     var filter by remember { mutableStateOf("همه") }
     var requestBook by remember { mutableStateOf<FreeStudyBook?>(null) }
     var requestText by remember { mutableStateOf("") }
@@ -117,7 +118,20 @@ fun FreeReadingScreen(nav: androidx.navigation.NavController, onBack: () -> Unit
     }
 
     selected?.let { book ->
-        if (book.isAudio) FreeAudioReader(book) else FreeHtmlReader(book)
+        Column(Modifier.fillMaxSize()) {
+            TabRow(selectedTabIndex = detailTab) {
+                Tab(selected = detailTab == 0, onClick = { detailTab = 0 }, text = { Text(if (book.isAudio) "کتاب صوتی" else "کتاب متنی") })
+                Tab(selected = detailTab == 1, onClick = { detailTab = 1 }, text = { Text("متای کتاب") })
+                Tab(selected = detailTab == 2, onClick = { detailTab = 2 }, text = { Text("دیدگاه‌ها و گفتگو") })
+            }
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                when (detailTab) {
+                    0 -> if (book.isAudio) FreeAudioReader(book) else FreeHtmlReader(book)
+                    1 -> FreeBookMeta(book)
+                    else -> BookCommentsPanel(bookId = book.id, modifier = Modifier.fillMaxSize().padding(12.dp))
+                }
+            }
+        }
         return
     }
 
@@ -181,6 +195,45 @@ fun FreeReadingScreen(nav: androidx.navigation.NavController, onBack: () -> Unit
                         Spacer(Modifier.height(8.dp))
                         Text("کتابی در این بخش منتشر نشده است.")
                         Text("ادمین می‌تواند کتاب، کاور، توضیح، HTML، صوت و فصل‌ها را بدون انتشار APK اضافه کند.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FreeBookMeta(book: FreeStudyBook) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(book.title, style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    book.summary.ifBlank { "اطلاعات کتاب در حال تکمیل است." },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FilterChip(
+                    selected = true,
+                    onClick = {},
+                    label = { Text(if (book.isAudio) "کتاب صوتی" else "کتاب متنی") },
+                )
+            }
+        }
+        if (book.chapters.isNotEmpty()) {
+            Text("فهرست بخش‌ها", style = MaterialTheme.typography.titleMedium)
+            book.chapters.forEachIndexed { index, chapter ->
+                Card(Modifier.fillMaxWidth()) {
+                    Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(toPersianDigits((index + 1).toString()), style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(chapter.title, style = MaterialTheme.typography.bodyMedium)
+                            if (chapter.startMs > 0) Text(clock(chapter.startMs), style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                 }
             }
@@ -408,7 +461,6 @@ private fun FreeAudioReader(book: FreeStudyBook) {
             }
         }
         Spacer(Modifier.height(8.dp))
-        BookCommentsPanel(bookId = book.id, modifier = Modifier.fillMaxWidth())
     }
 }
 
