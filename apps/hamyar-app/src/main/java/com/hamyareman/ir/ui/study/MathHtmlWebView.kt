@@ -13,7 +13,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
-import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.feature.study.StudyProgressRepository
 
@@ -27,7 +26,6 @@ internal fun MathInteractiveHtml(
     onZoomChanged: (Boolean) -> Unit = {},
 ) {
     val ctx = LocalContext.current
-    val appearance = LocalUiPrefs.current
     val progress = LocalAppContainer.current.studyProgress
     val store = remember { LocalStore(ctx, "hamyar_math_html") }
     val webRef = remember { arrayOfNulls<WebView>(1) }
@@ -38,7 +36,6 @@ internal fun MathInteractiveHtml(
     AndroidView(
         factory = { c ->
             ZoomResetWebView(c).apply {
-                installHamyarAppearanceBridge(appearance)
                 webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
 
@@ -47,7 +44,6 @@ internal fun MathInteractiveHtml(
                     }
 
                     override fun onPageFinished(view: WebView, url: String) {
-                        view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                         view.evaluateJavascript(
                             "(function(){var s=document.createElement('script');s.src='file:///android_asset/math/c905/hamyar-persist.js';document.documentElement.appendChild(s);})();",
                             null,
@@ -75,7 +71,6 @@ internal fun MathInteractiveHtml(
             }
         },
         update = { wv ->
-            wv.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
             val target = "file:///android_asset/$assetPath"
             if (wv.tag != target) {
                 wv.tag = target
