@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.hamyareman.ir.LocalAppContainer
-import com.hamyareman.ir.platform.core.appwrite.AppResult
+import com.hamyareman.ir.platform.core.common.AppResult
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.TableIds
 import com.hamyareman.ir.platform.core.common.toPersianDigits
