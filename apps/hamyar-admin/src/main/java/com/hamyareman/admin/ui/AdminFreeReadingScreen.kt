@@ -83,7 +83,7 @@ fun AdminFreeReadingScreen() {
             Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(rows, key = { it.optString("$id").ifBlank { it.optString("id") } }) { row ->
+            items(rows, key = { it.optString("\$id").ifBlank { it.optString("id") } }) { row ->
                 when (tab) {
                     "requests" -> RequestRow(row, api, scope) { load() }
                     "books" -> BookRow(row)
@@ -108,7 +108,7 @@ private fun RequestRow(
     scope: kotlinx.coroutines.CoroutineScope,
     reload: () -> Unit,
 ) {
-    val id = row.optString("$id").ifBlank { row.optString("id") }
+    val id = row.optString("\$id").ifBlank { row.optString("id") }
     val title = row.optString("title").ifBlank { "بدون عنوان" }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -156,7 +156,7 @@ private fun BookRow(row: JSONObject) {
 @Composable
 private fun CommentRow(
     row: JSONObject,
-    api: com.hamyarareman.admin.AdminApi,
+    api: com.hamyareman.admin.AdminApi,
     scope: kotlinx.coroutines.CoroutineScope,
     reload: () -> Unit,
 ) {
@@ -164,7 +164,7 @@ private fun CommentRow(
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text(row.optString("displayName").ifBlank { "کاربر" }, fontWeight = FontWeight.Bold)
-            Text(row.optString("body"))
+            Text(row.optString("text").ifBlank { row.optString("body") })
             Text("کتاب: " + row.optString("bookId") + " · وضعیت: " + row.optString("status"))
             if (row.optString("status") != "APPROVED") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
