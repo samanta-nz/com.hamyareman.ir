@@ -364,14 +364,15 @@ private fun DiaryFullscreenViewer(
                             Column(Modifier.fillMaxSize().padding(start = 34.dp, end = 58.dp, top = 42.dp, bottom = 30.dp)) {
                                 Text(page.date, color = Color(0xFF36506B), fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_BOLD))
                                 if (page.subtitle.isNotBlank()) {
-                                    Text(page.subtitle, color = Color(0xFF5F4774), fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT), fontSize = 15.sp)
+                                    Text(page.subtitle, color = Color(0xFF5F4774), fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD), fontSize = 16.sp)
                                 }
                                 Text(
                                     page.text,
                                     color = Color(0xFF172B3A),
                                     fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT),
+                                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                                     fontSize = 18.sp,
-                                    lineHeight = 27.sp,
+                                    lineHeight = 24.sp,
                                     textAlign = TextAlign.Right,
                                 )
                             }
@@ -448,7 +449,8 @@ fun NotebooksScreen(onBack: () -> Unit) {
                             notebooks = notebooks.map { if (it.id == changed.id) changed else it }
                             writeNotebooks(store, notebooks)
                             text = ""
-                            notice = "متن به انتهای دفترچه اضافه شد."
+                            notice = "متن ذخیره شد؛ دفترچه بسته شد."
+                            selectedId = null
                         }
                     }
                     notice?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
@@ -456,7 +458,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                 val fullText = container.encryptor.decrypt(selected.cipher).orEmpty()
                 items(paginate(fullText).mapIndexed { index, page -> index to page }, key = { it.first }) { (index, page) ->
                     Card(Modifier.fillMaxWidth()) {
-                        Box(Modifier.fillMaxWidth().height(360.dp)) {
+                        Box(Modifier.fillMaxWidth().aspectRatio(0.707f)) {
                             AsyncImage(
                                 model = "file:///android_asset/diary/page-lined.jpg",
                                 contentDescription = null,
@@ -469,8 +471,9 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                     page,
                                     color = Color(0xFF172B3A),
                                     fontFamily = EmbeddedFonts.family("vazirmatn", EmbeddedFonts.W_LIGHT),
-                                    fontSize = 17.sp,
-                                    lineHeight = 25.sp,
+                                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                                    fontSize = 18.sp,
+                                    lineHeight = 24.sp,
                                     textAlign = TextAlign.Right,
                                 )
                             }
