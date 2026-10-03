@@ -94,12 +94,11 @@ fun HealthProgressScreen(onBack: () -> Unit) {
     var detailMode by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        val today = JalaliDate.todayIso()
-        val parts = today.split("-").mapNotNull { it.toIntOrNull() }
-        val base = if (parts.size == 3) java.time.LocalDate.of(parts[0], parts[1], parts[2]) else java.time.LocalDate.now()
+        val base = java.time.LocalDate.parse(JalaliDate.todayIso())
         days = (0..6).map { i ->
             daily.pull(base.minusDays((6 - i).toLong()).toString())
         }
+    }
     }
 
     val selectedSnapshot = days.getOrNull(selected)
