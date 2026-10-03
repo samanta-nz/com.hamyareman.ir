@@ -2,6 +2,7 @@ package com.hamyareman.ir.ui.study
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,8 +26,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.dp
 import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
@@ -105,17 +108,18 @@ fun SleepNightScreen(onBack: () -> Unit) {
 
     val anyPlaying = state.playing || musicPlaying
 
-    Column(Modifier.fillMaxSize()) {
-        // نسخهٔ قبلی نوار بالا را نداشت و onBack هیچ‌جا استفاده نمی‌شد؛ تنها راه
-        // برگشت دکمهٔ سیستم بود.
-        if (SHOW_TOP_BAR) AppTopBar("بشنو و بخواب", onBack)
-        // tile در جریان طبیعی صفحه است: با بازشدن به پایین بزرگ می‌شود و محتوای
-        // زیر آن را می‌راند؛ نه اینکه روی صفحهٔ خواب یک overlay غیرقابل لمس بسازد.
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            BackgroundMusicTileHost(handle = music)
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            // نسخهٔ قبلی نوار بالا را نداشت و onBack هیچ‌جا استفاده نمی‌شد؛ تنها راه
+            // برگشت دکمهٔ سیستم بود.
+            if (SHOW_TOP_BAR) AppTopBar("بشنو و بخواب", onBack)
+            // tile از جریان اسکرول جداست؛ فضای ۹۲dp جای آن را نگه می‌دارد و خود WebView
+            // به‌صورت overlay بالای صفحه قرار می‌گیرد تا بازشدن nested iframe با اسکرول تداخل نکند.
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Spacer(Modifier.height(92.dp))
             Column(
                 Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -141,6 +145,14 @@ fun SleepNightScreen(onBack: () -> Unit) {
                     }
                 }
             }
+        }
+            BackgroundMusicTileHost(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .zIndex(20f),
+                handle = music,
+            )
         }
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
