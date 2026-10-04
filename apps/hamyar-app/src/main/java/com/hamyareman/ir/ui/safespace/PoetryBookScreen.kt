@@ -84,7 +84,7 @@ private fun readPoems(container: com.hamyareman.ir.di.AppContainer): List<Poem> 
     buildList {
         for (i in 0 until arr.length()) {
             val o = arr.getJSONObject(i)
-            add(Poem(o.optString("id"), o.optLong("createdAt"), o.optString("title"), o.optString("type"), o.optString("cipher")))
+            add(Poem(o.optString("id"), o.optLong("createdAt"), o.optString("title"), o.optString("type"), o.optString("cipher"), o.optString("alignment", "right")))
         }
     }.sortedByDescending { it.createdAt }
 }.getOrDefault(emptyList())
@@ -116,6 +116,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
     var viewer by remember { mutableStateOf<Poem?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
     var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
+    var guideExpanded by remember { mutableStateOf(false) }
 
     fun reset() {
         editingId = null
@@ -210,17 +211,40 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                 }
             }
             item {
-                Card(Modifier.fillMaxWidth()) {
+                Card(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { guideExpanded = !guideExpanded },
+                ) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("راهنمای دفتر شعر", style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            "برای غزل، قصیده، دوبیتی، رباعی، قطعه و مثنوی، هر بیت از دو مصراع تشکیل می‌شود و در نمایش کتاب دو سمت جدا دارد. قاب‌ها عمداً بدون کادر واضح‌اند؛ با لمس هر بیت فقط همان بیت انتخاب می‌شود.",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        Text(
-                            "برای شعر سپید و نثر شاعرانه، متن مانند دفتر معمولی راست‌چین و خط‌دار نمایش داده می‌شود.",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text("✒️", style = MaterialTheme.typography.titleLarge)
+                                Text("راهنمای دفتر شعر", style = MaterialTheme.typography.titleSmall)
+                            }
+                            Text(if (guideExpanded) "⌃" else "⌄", style = MaterialTheme.typography.titleMedium)
+                        }
+                        if (guideExpanded) {
+                            Text(
+                                "غزل، قصیده، دوبیتی، رباعی، قطعه و مثنوی: هر بیت دو مصراع مستقل دارد و در نمایش کتاب بدون کادر و با تراز حرفه‌ای دیده می‌شود.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Text(
+                                "نمونه: «بهار آمد / و دل دوباره جوان شد» — روی هر مصراع می‌توان جداگانه تمرکز کرد.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Text(
+                                "شعر سپید و نثر شاعرانه آزادتر و مانند صفحهٔ شعر نمایش داده می‌شوند.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                     }
                 }
             }
@@ -347,7 +371,7 @@ private fun PoetryViewer(
                         } else {
                             Text(
                                 lines[page],
-                                modifier = Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 150.dp, bottom = 32.dp),
+                                modifier = Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 0.dp, bottom = 32.dp),
                                 textAlign = notebookTextAlignFromWire(poem.alignment),
                                 color = Color(0xFF18384F),
                                 fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),

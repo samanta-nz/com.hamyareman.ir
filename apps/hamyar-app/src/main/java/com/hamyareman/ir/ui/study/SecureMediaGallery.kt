@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -243,6 +244,7 @@ private fun SecureMediaViewer(
 ) {
     val context = LocalContext.current
     var revision by remember(item.path) { mutableIntStateOf(0) }
+    var confirmDelete by remember(item.path) { mutableStateOf(false) }
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(Modifier.fillMaxSize().background(Color(0xFF07111F))) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -267,10 +269,26 @@ private fun SecureMediaViewer(
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         IconButton(onClick = { shareSecureMedia(context, item) }) { Icon(Icons.Default.IosShare, contentDescription = "اشتراک") }
                         IconButton(onClick = onExport) { Icon(Icons.Default.Download, contentDescription = "خروجی") }
-                        IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "حذف") }
+                        IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = "حذف") }
                     }
                 }
             }
+        }
+        if (confirmDelete) {
+            AlertDialog(
+                onDismissRequest = { confirmDelete = false },
+                title = { Text("حذف این رسانه؟") },
+                text = { Text("این فایل از پوشهٔ خصوصی برنامه حذف می‌شود و برگشت‌پذیر نیست.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        confirmDelete = false
+                        onDelete()
+                    }) { Text("حذف") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmDelete = false }) { Text("انصراف") }
+                },
+            )
         }
     }
 }

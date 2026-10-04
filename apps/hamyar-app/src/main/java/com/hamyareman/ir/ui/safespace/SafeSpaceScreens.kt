@@ -204,6 +204,7 @@ fun SafeSpaceScreen(nav: NavController) {
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            SafeSpaceBackupCard()
             sections.forEach { section ->
                 Card(Modifier.fillMaxWidth().clickable { nav.layerTo(section.route) }) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -212,7 +213,6 @@ fun SafeSpaceScreen(nav: NavController) {
                     }
                 }
             }
-            SafeSpaceBackupCard()
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
                     Row(

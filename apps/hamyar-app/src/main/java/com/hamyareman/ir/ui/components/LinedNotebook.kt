@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -126,29 +127,62 @@ fun NotebookPaper(
         modifier
             .fillMaxWidth()
             .aspectRatio(PAGE_ASPECT)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(Color(0xFFFFFCF2)),
     ) {
         val density = LocalDensity.current
         val lineHeightPx = with(density) { LINE_HEIGHT_SP.dp.toPx() }
         val side = with(density) { SIDE_GUTTER_DP.dp.toPx() }
         val bottom = with(density) { BOTTOM_GUTTER_DP.dp.toPx() }
+        val rightMargin = with(density) { (SIDE_GUTTER_DP - 2).dp.toPx() }
         Canvas(Modifier.fillMaxSize()) {
+            drawRect(Color(0xFFFFFCF2))
             var y = 0f
             while (y <= size.height - bottom) {
                 drawLine(
                     color = Color(0xFFB9CEE5),
-                    start = Offset(side, y),
-                    end = Offset(size.width - side, y),
-                    strokeWidth = 1.2f,
+                    start = Offset(side * 0.55f, y),
+                    end = Offset(size.width - side * 0.25f, y),
+                    strokeWidth = 1.05f,
                 )
                 y += lineHeightPx
             }
+
             if (showVerticalGuides) {
-                drawLine(Color(0xFF7EA5C9), Offset(side, 0f), Offset(side, size.height - bottom), 2.2f)
-                drawLine(Color(0xFF7EA5C9), Offset(size.width - side, 0f), Offset(size.width - side, size.height - bottom), 2.2f)
+                drawLine(
+                    color = Color(0xFF9FB5C8),
+                    start = Offset(size.width - rightMargin, 0f),
+                    end = Offset(size.width - rightMargin, size.height - bottom),
+                    strokeWidth = 1.7f,
+                )
+                drawLine(
+                    color = Color(0xFF9FB5C8),
+                    start = Offset(
+                        size.width - rightMargin + with(density) { 6.dp.toPx() },
+                        0f,
+                    ),
+                    end = Offset(
+                        size.width - rightMargin + with(density) { 6.dp.toPx() },
+                        size.height - bottom,
+                    ),
+                    strokeWidth = 1.2f,
+                )
             }
+
+            drawLine(
+                color = Color(0x40FFFFFF),
+                start = Offset(1f, 2f),
+                end = Offset(1f, size.height - 2f),
+                strokeWidth = 1.8f,
+            )
+            drawLine(
+                color = Color(0x18000000),
+                start = Offset(size.width - 1.2f, 2f),
+                end = Offset(size.width - 1.2f, size.height - 2f),
+                strokeWidth = 1.2f,
+            )
         }
+
         if (header.isNotBlank()) {
             Text(
                 text = header,
@@ -181,35 +215,71 @@ fun NotebookBookPage(
     content: @Composable () -> Unit,
 ) {
     val pageModifier = if (fullScreen) {
-        modifier.fillMaxHeight().aspectRatio(PAGE_ASPECT).padding(2.dp)
+        modifier.fillMaxHeight().aspectRatio(PAGE_ASPECT).padding(1.dp)
     } else {
-        modifier.fillMaxWidth().aspectRatio(PAGE_ASPECT).padding(8.dp)
+        modifier.fillMaxWidth().aspectRatio(PAGE_ASPECT).padding(6.dp)
     }
     Box(pageModifier) {
-        val stack = stackPages.coerceIn(0, 7)
+        val stack = stackPages.coerceIn(0, 8)
         repeat(stack) { index ->
             Box(
                 Modifier
                     .matchParentSize()
-                    .padding(start = ((index + 1) * 2).dp, top = ((index + 1) * 1.2f).dp)
-                    .shadow(2.dp, RoundedCornerShape(15.dp))
-                    .background(Color(0xFFFFFDF7), RoundedCornerShape(15.dp))
-                    .border(1.dp, Color(0xFFD5D0C3), RoundedCornerShape(15.dp)),
+                    .padding(
+                        start = ((index + 1) * 2.1f).dp,
+                        top = ((index + 1) * 1.15f).dp,
+                    )
+                    .shadow(1.8.dp, RoundedCornerShape(4.dp))
+                    .background(Color(0xFFF5F0E5), RoundedCornerShape(4.dp)),
             )
         }
+
         Box(
             Modifier
                 .matchParentSize()
-                .shadow(10.dp, RoundedCornerShape(15.dp))
-                .background(Color(0xFFFFFCF2), RoundedCornerShape(15.dp)),
+                .shadow(16.dp, RoundedCornerShape(4.dp))
+                .background(Color(0xFFFFFCF2), RoundedCornerShape(4.dp)),
         ) {
+            Box(
+                Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(8.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color(0x14000000),
+                                Color(0x26000000),
+                            ),
+                        ),
+                    ),
+            )
             content()
+
+            Canvas(Modifier.matchParentSize()) {
+                drawLine(
+                    color = Color(0x28FFFFFF),
+                    start = Offset(2f, 2f),
+                    end = Offset(size.width - 2f, 2f),
+                    strokeWidth = 1.6f,
+                )
+                drawLine(
+                    color = Color(0x22000000),
+                    start = Offset(size.width - 1.2f, 5f),
+                    end = Offset(size.width - 1.2f, size.height - 5f),
+                    strokeWidth = 1.1f,
+                )
+            }
+
             Text(
-                text = "${pageNumber.coerceAtLeast(1)} / ${pageCount.coerceAtLeast(1)}",
+                text = "\${pageNumber.coerceAtLeast(1)} / \${pageCount.coerceAtLeast(1)}",
                 color = Color(0xFF58718A),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 7.dp),
             )
         }
     }
@@ -317,16 +387,42 @@ fun NotebookAlignmentPicker(
     onValueChange: (TextAlign) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-        Text("چینش", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(end = 4.dp))
-        IconButton(onClick = { onValueChange(TextAlign.Right) }) {
-            Icon(Icons.Default.FormatAlignRight, contentDescription = "راست‌چین", tint = if (value == TextAlign.Right) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+    Row(
+        modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            onClick = { onValueChange(TextAlign.Right) },
+            modifier = Modifier.size(44.dp),
+        ) {
+            Icon(
+                Icons.Default.FormatAlignRight,
+                contentDescription = "راست‌چین",
+                tint = if (value == TextAlign.Right) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
-        IconButton(onClick = { onValueChange(TextAlign.Center) }) {
-            Icon(Icons.Default.FormatAlignCenter, contentDescription = "وسط‌چین", tint = if (value == TextAlign.Center) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(
+            onClick = { onValueChange(TextAlign.Center) },
+            modifier = Modifier.size(44.dp),
+        ) {
+            Icon(
+                Icons.Default.FormatAlignCenter,
+                contentDescription = "وسط‌چین",
+                tint = if (value == TextAlign.Center) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
-        IconButton(onClick = { onValueChange(TextAlign.Left) }) {
-            Icon(Icons.Default.FormatAlignLeft, contentDescription = "چپ‌چین", tint = if (value == TextAlign.Left) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(
+            onClick = { onValueChange(TextAlign.Left) },
+            modifier = Modifier.size(44.dp),
+        ) {
+            Icon(
+                Icons.Default.FormatAlignLeft,
+                contentDescription = "چپ‌چین",
+                tint = if (value == TextAlign.Left) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

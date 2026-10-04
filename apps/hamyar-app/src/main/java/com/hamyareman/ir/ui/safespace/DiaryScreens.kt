@@ -956,7 +956,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                     page,
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(start = 74.dp, end = 74.dp, top = 150.dp, bottom = 28.dp),
+                                        .padding(start = 74.dp, end = 74.dp, top = 0.dp, bottom = 28.dp),
                                     fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                                     fontSize = 18.sp,
                                     lineHeight = 24.sp,
