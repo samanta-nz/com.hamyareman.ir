@@ -132,19 +132,22 @@ fun PatternLockGrid(
             )
             .pointerInput(enabled, pattern) {
                 if (!enabled) return@pointerInput
+                var current = pattern
                 detectDragGestures(
                     onDragStart = { start ->
-                        onPatternChange("")
+                        current = ""
                         hit(start, size.width, size.height)?.let { idx ->
-                            onPatternChange(appendNode("", idx))
+                            current = appendNode(current, idx)
+                            onPatternChange(current)
                             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                        }
+                        } ?: onPatternChange("")
                     },
                     onDrag = { change, _ ->
                         hit(change.position, size.width, size.height)?.let { idx ->
-                            val next = appendNode(pattern, idx)
-                            if (next != pattern) {
-                                onPatternChange(next)
+                            val next = appendNode(current, idx)
+                            if (next != current) {
+                                current = next
+                                onPatternChange(current)
                                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             }
                         }
