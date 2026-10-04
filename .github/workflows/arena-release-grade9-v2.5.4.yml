@@ -1,6 +1,6 @@
 name: Release grade 9 v2.5.4 (forced)
 
-# ساخت و انتشار نسخهٔ ۲٫۵٫۳ پایهٔ نهم با آپدیت اجباری روی هر دو سرور — انتشار نهایی تأییدشده با fallback امن کلید HTML.
+# ساخت و انتشار نسخهٔ ۲٫۵٫۴ پایهٔ نهم با آپدیت اجباری روی هر دو سرور — انتشار نهایی تأییدشده با fallback امن کلید HTML.
 #
 # ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
 # ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. بنابراین حتی
@@ -21,8 +21,8 @@ concurrency:
 
 env:
   VERSION_NAME: '2.5.4'
-  VERSION_CODE: '253'
-  MIN_CODE: '253'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
+  VERSION_CODE: '254'
+  MIN_CODE: '254'          # برابرِ نسخهٔ تازه یعنی آپدیت برای همه اجباری است
   ROLLOUT: '100'
   GRADE_ID: grade9
   PACKAGE: com.hamyareman.p09
@@ -78,7 +78,7 @@ jobs:
             echo "::warning::RELEASES_TOKEN/RELEASES_REPO نیست — externalUrl از همین مخزنِ عمومی برداشته می‌شود."
           fi
 
-      - name: ۱) تست و ساخت APK نهم ۲٫۵٫۳
+      - name: ۱) تست و ساخت APK نهم ۲٫۵٫۴
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
