@@ -51,6 +51,11 @@ import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
 import com.hamyareman.ir.ui.components.NotebookTitlePicker
+import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.nextRegisteredTitle
+import com.hamyareman.ir.ui.components.notebookAlignmentWire
+import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
+import com.hamyareman.ir.ui.components.oppositeTextAlign
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -64,6 +69,7 @@ private data class Poem(
     val title: String,
     val type: String,
     val cipher: String,
+    val alignment: String = "right",
 )
 
 private val poemTypes = listOf(
@@ -92,7 +98,8 @@ private fun writePoems(container: com.hamyareman.ir.di.AppContainer, poems: List
                 .put("createdAt", poem.createdAt)
                 .put("title", poem.title)
                 .put("type", poem.type)
-                .put("cipher", poem.cipher),
+                .put("cipher", poem.cipher)
+                .put("alignment", poem.alignment),
         )
     }
     container.store.putString(POEMS_KEY, arr.toString())
@@ -108,12 +115,14 @@ fun PoetryBookScreen(onBack: () -> Unit) {
     var editingId by remember { mutableStateOf<String?>(null) }
     var viewer by remember { mutableStateOf<Poem?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
+    var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
 
     fun reset() {
         editingId = null
         title = "شعر من"
         type = poemTypes.first()
         text = ""
+        alignment = androidx.compose.ui.text.style.TextAlign.Right
         notice = null
     }
 
@@ -122,6 +131,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
         title = poem.title.ifBlank { "شعر من" }
         type = poem.type.ifBlank { poemTypes.first() }
         text = container.encryptor.decrypt(poem.cipher).orEmpty()
+        alignment = notebookTextAlignFromWire(poem.alignment)
         notice = "این شعر برای ویرایش باز شد."
     }
 
@@ -133,9 +143,10 @@ fun PoetryBookScreen(onBack: () -> Unit) {
         val changed = Poem(
             id = editingId ?: UUID.randomUUID().toString(),
             createdAt = editingId?.let { id -> poems.firstOrNull { it.id == id }?.createdAt } ?: System.currentTimeMillis(),
-            title = title.ifBlank { "شعر من" },
+            title = if (editingId == null) nextRegisteredTitle(title.ifBlank { type }, poems.map { it.title }) else title.ifBlank { type },
             type = type,
             cipher = container.encryptor.encrypt(text),
+            alignment = notebookAlignmentWire(alignment),
         )
         poems = (listOf(changed) + poems.filterNot { it.id == changed.id }).sortedByDescending { it.createdAt }
         writePoems(container, poems)
@@ -163,7 +174,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                             poemTypes.forEach { option ->
                                 FilterChip(
                                     selected = type == option,
-                                    onClick = { type = option },
+                                    onClick = { type = option; if (editingId == null && (title.isBlank() || title in poemTypes || title == "شعر من")) title = option },
                                     label = { Text(option) },
                                 )
                             }
@@ -175,7 +186,14 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                             onValueChange = { title = it },
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        LinedNotebookInput(text) { text = it }
+                        NotebookAlignmentPicker(alignment, { alignment = it })
+                        LinedNotebookInput(
+                            text,
+                            { text = it },
+                            header = if (title.isBlank()) type else title,
+                            textAlign = alignment,
+                            showVerticalGuides = false,
+                        )
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = ::save, modifier = Modifier.weight(2f)) {
                                 Icon(Icons.Default.MenuBook, contentDescription = null)
@@ -282,12 +300,16 @@ private fun PoetryViewer(
                     pageCount = lines.size.coerceAtLeast(1),
                     stackPages = lines.size - page - 1,
                 ) {
-                    NotebookPaper {
+                    NotebookPaper(
+                        header = if (page == 0) poem.title else "",
+                        headerAlign = oppositeTextAlign(notebookTextAlignFromWire(poem.alignment)),
+                        showVerticalGuides = false,
+                    ) {
                         if (twoHemistich(poem.type)) {
                             val all = lines[page].split('\n').filter { it.isNotBlank() }
                             val pairs = all.chunked(2)
                             Column(
-                                Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 150.dp, bottom = 32.dp),
+                                Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 0.dp, bottom = 32.dp),
                                 verticalArrangement = Arrangement.spacedBy(14.dp),
                             ) {
                                 pairs.forEachIndexed { index, pair ->
@@ -325,7 +347,7 @@ private fun PoetryViewer(
                             Text(
                                 lines[page],
                                 modifier = Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 150.dp, bottom = 32.dp),
-                                textAlign = TextAlign.Right,
+                                textAlign = notebookTextAlignFromWire(poem.alignment),
                                 color = Color(0xFF18384F),
                                 fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                                 fontSize = 18.sp,
