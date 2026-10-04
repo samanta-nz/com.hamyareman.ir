@@ -116,10 +116,11 @@ fun NotebookPaper(
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFFFFFCF2)),
     ) {
-        val lineHeightPx = 24.dp.toPx()
-        val side = SIDE_GUTTER_DP.dp.toPx()
+        val density = LocalDensity.current
+        val lineHeightPx = with(density) { 24.dp.toPx() }
+        val side = with(density) { SIDE_GUTTER_DP.dp.toPx() }
         val top = TOP_SKIP_LINES * lineHeightPx
-        val bottom = BOTTOM_GUTTER_DP.dp.toPx()
+        val bottom = with(density) { BOTTOM_GUTTER_DP.dp.toPx() }
         Canvas(Modifier.fillMaxSize()) {
             var y = top
             while (y <= size.height - bottom) {
