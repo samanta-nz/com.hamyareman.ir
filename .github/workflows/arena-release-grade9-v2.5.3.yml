@@ -59,6 +59,7 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+          HTML_MEDIA_KEY_B64: ${{ secrets.HTML_MEDIA_KEY_B64 }}
           RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           RELEASES_REPO: ${{ vars.RELEASES_REPO }}
         run: |
