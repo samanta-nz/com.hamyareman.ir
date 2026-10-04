@@ -133,6 +133,10 @@ jobs:
           cp Bucket/Html-files/background-music.html /tmp/music-html/
           cp Bucket/Html-files/background-music-full.html /tmp/music-html/
           cp Bucket/Html-files/background-music-tile.html /tmp/music-html/
+          if [ -z "${HTML_MEDIA_KEY_B64:-}" ]; then
+            echo "::warning::کلید HTML در Appwrite و secret CI موجود نیست؛ انتشار APK مستقل ادامه می‌یابد و همگام‌سازی سه HTML در این انتشار رد می‌شود."
+            exit 0
+          fi
           python3 scripts/upload_encoded_to_parspack.py \
             --source /tmp/music-html \
             --prefix Bucket/Html-files \
