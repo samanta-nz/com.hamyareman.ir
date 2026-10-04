@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.consume
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -37,6 +43,82 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+
+@Composable
+private fun PatternLockGrid(
+    pattern: String,
+    onPatternChange: (String) -> Unit,
+    enabled: Boolean = true,
+) {
+    val latestPattern by androidx.compose.runtime.rememberUpdatedState(pattern)
+    val latestChange by androidx.compose.runtime.rememberUpdatedState(onPatternChange)
+    val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surfaceVariant
+    val dot = MaterialTheme.colorScheme.onSurfaceVariant
+    val background = MaterialTheme.colorScheme.background
+    val points = remember {
+        listOf(
+            Offset(0f, 0f), Offset(.5f, 0f), Offset(1f, 0f),
+            Offset(0f, .5f), Offset(.5f, .5f), Offset(1f, .5f),
+            Offset(0f, 1f), Offset(.5f, 1f), Offset(1f, 1f),
+        )
+    }
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp)
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(24.dp))
+            .background(surface.copy(alpha = .18f))
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                fun hit(offset: Offset): Int? {
+                    var best: Int? = null
+                    var bestDistance = Float.MAX_VALUE
+                    points.forEachIndexed { i, p ->
+                        val center = Offset(p.x * size.width, p.y * size.height)
+                        val dx = offset.x - center.x
+                        val dy = offset.y - center.y
+                        val d2 = dx * dx + dy * dy
+                        val radius = size.minDimension * .20f
+                        if (d2 < bestDistance && d2 <= radius * radius) {
+                            best = i
+                            bestDistance = d2
+                        }
+                    }
+                    return best
+                }
+                detectDragGestures(
+                    onDragStart = { pos ->
+                        hit(pos)?.let { idx ->
+                            val digit = (idx + 1).toString()
+                            if (!latestPattern.contains(digit)) latestChange(digit)
+                        }
+                    },
+                    onDrag = { change, _ ->
+                        change.consume()
+                        hit(change.position)?.let { idx ->
+                            val digit = (idx + 1).toString()
+                            if (!latestPattern.contains(digit)) latestChange(latestPattern + digit)
+                        }
+                    },
+                )
+            },
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val selected = latestPattern.mapNotNull { it.digitToIntOrNull()?.minus(1) }
+            selected.zipWithNext().forEach { (a, b) ->
+                drawLine(primary, Offset(points[a].x * size.width, points[a].y * size.height), Offset(points[b].x * size.width, points[b].y * size.height), 8f)
+            }
+            points.forEachIndexed { i, p ->
+                val center = Offset(p.x * size.width, p.y * size.height)
+                val chosen = selected.contains(i)
+                drawCircle(if (chosen) primary else dot, if (chosen) 15f else 11f, center)
+                if (chosen) drawCircle(background, 5f, center)
+            }
+        }
+    }
+}
 
 /**
  * دروازه‌ی قفل PIN — یک کامپوننت خالص که منطق رمز در آن نیست.
