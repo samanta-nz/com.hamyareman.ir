@@ -28,20 +28,35 @@ MAGIC = b"HMK1"
 
 def fetch_key() -> bytes:
     endpoint = os.environ.get("APPWRITE_ENDPOINT", "https://sgp.cloud.appwrite.io/v1").rstrip("/")
-    project = os.environ["APPWRITE_PROJECT_ID"]
-    database = os.environ["APPWRITE_DATABASE_ID"]
-    headers = {"X-Appwrite-Project": project, "X-Appwrite-Key": os.environ["APPWRITE_API_KEY"]}
-    for path in (
-        f"/tablesdb/{database}/tables/app_state/rows/html_media_key",
-        f"/databases/{database}/collections/app_state/documents/html_media_key",
-    ):
-        r = requests.get(endpoint + path, headers=headers, timeout=(20, 60))
-        if r.status_code != 200:
-            continue
-        raw = base64.b64decode(json.loads(r.json().get("payload") or "{}").get("b", ""))
+    project = os.environ.get("APPWRITE_PROJECT_ID", "")
+    database = os.environ.get("APPWRITE_DATABASE_ID", "")
+    api_key = os.environ.get("APPWRITE_API_KEY", "")
+    if project and database and api_key:
+        headers = {"X-Appwrite-Project": project, "X-Appwrite-Key": api_key}
+        for path in (
+            f"/tablesdb/{database}/tables/app_state/rows/html_media_key",
+            f"/databases/{database}/collections/app_state/documents/html_media_key",
+        ):
+            try:
+                r = requests.get(endpoint + path, headers=headers, timeout=(20, 60))
+                if r.status_code != 200:
+                    continue
+                payload = r.json().get("payload") or "{}"
+                encoded = (json.loads(payload) if isinstance(payload, str) else payload).get("b", "")
+                raw = base64.b64decode(encoded)
+                if len(raw) == 32:
+                    return raw
+            except Exception:
+                continue
+    fallback = os.environ.get("HTML_MEDIA_KEY_B64", "").strip()
+    if fallback:
+        try:
+            raw = base64.b64decode(fallback)
+        except Exception:
+            raw = b""
         if len(raw) == 32:
             return raw
-    raise SystemExit("❌ کلید ۳۲ بایتی از Appwrite خوانده نشد.")
+    raise SystemExit("❌ کلید ۳۲ بایتی پیدا نشد (نه Appwrite، نه HTML_MEDIA_KEY_B64).")
 
 
 def main() -> int:
