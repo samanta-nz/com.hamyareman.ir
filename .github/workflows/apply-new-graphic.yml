@@ -25,10 +25,12 @@ jobs:
       - name: Apply New graphic specification
         run: python3 scripts/apply_new_graphic.py
 
-      - name: Commit final implementation
+      - name: Commit source implementation
         shell: bash
         run: |
           set -euo pipefail
+          rm -f .github/workflows/arena-release-grade9-v2.5.4.yml
+          git restore --source=HEAD -- scripts/apply_new_graphic.py .github/workflows/apply-new-graphic.yml
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add -A
@@ -36,5 +38,5 @@ jobs:
             echo 'No changes to commit.'
             exit 0
           fi
-          git commit -m 'Release grade 9 v2.5.4 — New graphic'
+          git commit -m 'Apply New graphic implementation'
           git push origin HEAD:New-graphic
