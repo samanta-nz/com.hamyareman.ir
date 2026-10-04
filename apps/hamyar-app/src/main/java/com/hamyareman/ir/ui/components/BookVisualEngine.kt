@@ -192,6 +192,7 @@ fun RealisticBookPager(
     initialPage: Int = 0,
     modifier: Modifier = Modifier,
     viewerGesture: Boolean = true,
+    onPageChanged: ((Int) -> Unit)? = null,
     pageContent: @Composable (page: Int, offset: Float) -> Unit,
 ) {
     val count = pageCount.coerceAtLeast(1)
@@ -201,6 +202,10 @@ fun RealisticBookPager(
     )
     val scope = rememberCoroutineScope()
     val settle = animateFloatAsState(1f, animationSpec = spring(dampingRatio = .82f), label = "book-settle")
+
+    LaunchedEffect(pager.currentPage) {
+        onPageChanged?.invoke(pager.currentPage)
+    }
 
     Box(modifier.fillMaxSize()) {
         HorizontalPager(
