@@ -109,7 +109,7 @@ private fun writePoems(container: com.hamyareman.ir.di.AppContainer, poems: List
 fun PoetryBookScreen(onBack: () -> Unit) {
     val container = LocalAppContainer.current
     var poems by remember { mutableStateOf(readPoems(container)) }
-    var title by remember { mutableStateOf("شعر من") }
+    var title by remember { mutableStateOf(poemTypes.first()) }
     var type by remember { mutableStateOf(poemTypes.first()) }
     var text by remember { mutableStateOf("") }
     var editingId by remember { mutableStateOf<String?>(null) }
@@ -119,7 +119,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
 
     fun reset() {
         editingId = null
-        title = "شعر من"
+        title = poemTypes.first()
         type = poemTypes.first()
         text = ""
         alignment = androidx.compose.ui.text.style.TextAlign.Right
@@ -128,7 +128,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
 
     fun edit(poem: Poem) {
         editingId = poem.id
-        title = poem.title.ifBlank { "شعر من" }
+        title = poem.title.ifBlank { poem.type.ifBlank { poemTypes.first() } }
         type = poem.type.ifBlank { poemTypes.first() }
         text = container.encryptor.decrypt(poem.cipher).orEmpty()
         alignment = notebookTextAlignFromWire(poem.alignment)
