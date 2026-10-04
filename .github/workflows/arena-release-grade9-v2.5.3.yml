@@ -1,6 +1,6 @@
 name: Release grade 9 v2.5.3 (forced)
 
-# ساخت و انتشار نسخهٔ ۲٫۴٫۹ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
+# ساخت و انتشار نسخهٔ ۲٫۵٫۳ پایهٔ نهم با آپدیت اجباری روی هر دو سرور.
 #
 # ترتیب عمداً «اول فایل، آخر اعلام» است: تا وقتی APK روی هر دو مقصد ننشسته و
 # ناشناس دانلودپذیر نشده، ردیف app_release_grade9 دست نمی‌خورد. بنابراین حتی
@@ -77,7 +77,7 @@ jobs:
             echo "::warning::RELEASES_TOKEN/RELEASES_REPO نیست — externalUrl از همین مخزنِ عمومی برداشته می‌شود."
           fi
 
-      - name: ۱) تست و ساخت APK نهم ۲٫۴٫۹
+      - name: ۱) تست و ساخت APK نهم ۲٫۵٫۳
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
