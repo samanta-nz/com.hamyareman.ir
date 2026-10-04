@@ -69,6 +69,7 @@ import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
 import com.hamyareman.ir.ui.components.NotebookTitlePicker
+import com.hamyareman.ir.ui.components.oppositeTextAlign
 import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
 import com.hamyareman.ir.ui.components.nextRegisteredTitle
 import com.hamyareman.ir.ui.components.notebookAlignmentWire
@@ -669,7 +670,7 @@ private fun DiaryBookViewer(
 
 @Composable
 private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
-    NotebookPaper(header = header, headerAlign = TextAlign.Center, showVerticalGuides = true) {
+    NotebookPaper(header = header, headerAlign = oppositeTextAlign(notebookTextAlignFromWire(page.alignment)), showVerticalGuides = true) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val area = Modifier.fillMaxSize().padding(start = 78.dp, end = 78.dp, top = 0.dp, bottom = 28.dp)
             when {
