@@ -28,7 +28,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
@@ -202,63 +204,58 @@ private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f), shape)
             .clickable(role = Role.Button, onClick = tile.onClick),
     ) {
-            if (cover != null) {
-                Image(
-                    bitmap = cover,
-                    contentDescription = tile.title,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
-                    // تصاویر حرکات با نسبت واقعی خود نمایش داده می‌شوند؛ crop فقط نقش
-                    // محافظ را برای کاورهای مربعی دارد و بدن/حرکت را قطع نمی‌کند.
-                    contentScale = ContentScale.Fit,
-                )
-            } else {
+        if (cover != null) {
+            Image(
+                bitmap = cover,
+                contentDescription = tile.title,
+                modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                contentScale = ContentScale.Fit,
+            )
+        } else {
+            Box(
+                Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                contentAlignment = Alignment.Center,
+            ) {
                 Box(
-                    Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                    Modifier.size(58.dp).background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        CircleShape,
+                    ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Box(
-                        Modifier.size(58.dp).background(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            CircleShape,
-                        ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            Icons.Outlined.AutoAwesome,
-                            contentDescription = tile.title,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(30.dp),
-                        )
-                    }
-                }
-            }
-            // ارتفاع متن ثابت: یک سطر عنوان + دو سطر توضیح. فونت فقط کوچک می‌شود
-            // و برای متن کوتاه هرگز از اندازهٔ طراحی بزرگ‌تر نمی‌شود.
-            Column(
-                Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 7.dp, vertical = 5.dp),
-                verticalArrangement = Arrangement.spacedBy(1.dp),
-            ) {
-                AutoShrinkTileText(
-                    text = tile.title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontFamily = AppTypography.cardTitle.family,
-                        fontWeight = AppTypography.cardTitle.weight,
-                        fontSize = AppTypography.cardTitle.size,
-                    ),
-                    maxLines = 1,
-                )
-                if (tile.subtitle.isNotBlank()) {
-                    AutoShrinkTileText(
-                        text = tile.subtitle,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontFamily = AppTypography.cardSub.family,
-                            fontWeight = AppTypography.cardSub.weight,
-                            fontSize = AppTypography.cardSub.size,
-                        ),
-                        maxLines = 2,
+                    Icon(
+                        Icons.Outlined.AutoAwesome,
+                        contentDescription = tile.title,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp),
                     )
                 }
+            }
+        }
+        Column(
+            Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 7.dp, vertical = 5.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
+        ) {
+            AutoShrinkTileText(
+                text = tile.title,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = AppTypography.cardTitle.family,
+                    fontWeight = AppTypography.cardTitle.weight,
+                    fontSize = AppTypography.cardTitle.size,
+                ),
+                maxLines = 1,
+            )
+            if (tile.subtitle.isNotBlank()) {
+                AutoShrinkTileText(
+                    text = tile.subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = AppTypography.cardSub.family,
+                        fontWeight = AppTypography.cardSub.weight,
+                        fontSize = AppTypography.cardSub.size,
+                    ),
+                    maxLines = 2,
+                )
             }
         }
     }
@@ -290,10 +287,6 @@ internal fun loadPracticeCover(ctx: android.content.Context, id: String) = runCa
 
 /** گروه تاشوی منوی هاب — دسته‌بندی در تو در تو (مشترک بین مدرسه/آموزشگاه/سلامتی). */
 @Composable
-/**
- * گروه منوی هاب — نسخه‌ی مستقل (حافظه‌دارِ خودش) یا کنترل‌شده برای آکاردئون:
- * اگر open/onToggle داده شود، وضعیتش را والد نگه می‌دارد («یکی باز شد، اونیکی بسته»).
- */
 fun HubMenuGroup(
     title: String,
     subtitle: String,
@@ -318,16 +311,38 @@ fun HubMenuGroup(
             )
             .padding(12.dp),
     ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.weight(1f)) {
-                    Text(title, style = MaterialTheme.typography.titleMedium, fontFamily = AppTypography.accordionTitle.family, fontWeight = AppTypography.accordionTitle.weight, fontSize = AppTypography.accordionTitle.size)
-                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = AppTypography.accordionSub.family, fontWeight = AppTypography.accordionSub.weight, fontSize = AppTypography.accordionSub.size)
-                }
-                Icon(if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, contentDescription = if (isOpen) "بستن" else "بازکردن")
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = AppTypography.accordionTitle.family,
+                    fontWeight = AppTypography.accordionTitle.weight,
+                    fontSize = AppTypography.accordionTitle.size,
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = AppTypography.accordionSub.family,
+                    fontWeight = AppTypography.accordionSub.weight,
+                    fontSize = AppTypography.accordionSub.size,
+                )
             }
-            AnimatedVisibility(visible = isOpen) {
-                Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
-            }
+            Icon(
+                if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                contentDescription = if (isOpen) "بستن" else "بازکردن",
+            )
+        }
+        AnimatedVisibility(visible = isOpen) {
+            Column(
+                Modifier.padding(top = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) { content() }
         }
     }
 }
+
