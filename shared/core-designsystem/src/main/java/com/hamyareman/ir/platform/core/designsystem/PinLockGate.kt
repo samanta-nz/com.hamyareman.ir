@@ -57,7 +57,9 @@ fun PatternLockGrid(
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surfaceVariant
     val dot = MaterialTheme.colorScheme.onSurfaceVariant
+    val view = LocalView.current
     val background = MaterialTheme.colorScheme.background
+    var pointer by remember { mutableStateOf<Offset?>(null) }
     val points = remember {
         listOf(
             Offset(0f, 0f), Offset(.5f, 0f), Offset(1f, 0f),
@@ -92,17 +94,27 @@ fun PatternLockGrid(
                 }
                 detectDragGestures(
                     onDragStart = { pos ->
+                        pointer = pos
                         hit(pos)?.let { idx ->
                             val digit = (idx + 1).toString()
-                            if (!latestPattern.contains(digit)) latestChange(digit)
+                            if (!latestPattern.contains(digit)) {
+                                latestChange(digit)
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            }
                         }
                     },
                     onDrag = { change, _ ->
+                        pointer = change.position
                         hit(change.position)?.let { idx ->
                             val digit = (idx + 1).toString()
-                            if (!latestPattern.contains(digit)) latestChange(latestPattern + digit)
+                            if (!latestPattern.contains(digit)) {
+                                latestChange(latestPattern + digit)
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            }
                         }
                     },
+                    onDragEnd = { pointer = null },
+                    onDragCancel = { pointer = null },
                 )
             },
     ) {
@@ -110,6 +122,15 @@ fun PatternLockGrid(
             val selected = latestPattern.mapNotNull { it.digitToIntOrNull()?.minus(1) }
             selected.zipWithNext().forEach { (a, b) ->
                 drawLine(primary, Offset(points[a].x * size.width, points[a].y * size.height), Offset(points[b].x * size.width, points[b].y * size.height), 8f)
+            }
+            if (pointer != null && selected.isNotEmpty()) {
+                val last = selected.last()
+                drawLine(
+                    primary.copy(alpha = .55f),
+                    Offset(points[last].x * size.width, points[last].y * size.height),
+                    pointer!!,
+                    6f,
+                )
             }
             points.forEachIndexed { i, p ->
                 val center = Offset(p.x * size.width, p.y * size.height)
