@@ -720,3 +720,204 @@ private fun DiaryImageBlock(
         }
     }
 }
+
+
+@Composable
+fun NotebooksScreen(onBack: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val container = LocalAppContainer.current
+    val store = remember { LocalStore(context, DIARY_STORE) }
+    var notebooks by remember { mutableStateOf(readNotebooks(store)) }
+    var selectedId by remember { mutableStateOf<String?>(null) }
+    var title by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf("") }
+    var notice by remember { mutableStateOf<String?>(null) }
+    val selected = notebooks.firstOrNull { it.id == selectedId }
+
+    fun rowId(id: String): String =
+        "notebook_" + container.auth.cachedUserId().orEmpty().take(32) + "_" + id.take(32)
+
+    fun queue(notebook: Notebook) {
+        val uid = container.auth.cachedUserId().orEmpty()
+        if (uid.isNotBlank()) {
+            container.sync.enqueue(
+                TableIds.APP_STATE,
+                rowId(notebook.id),
+                mapOf(
+                    "userId" to uid,
+                    "key" to "private_notebook",
+                    "notebookId" to notebook.id,
+                    "title" to notebook.title,
+                    "createdAt" to notebook.createdAt,
+                    "cipher" to notebook.cipher,
+                    "updatedAt" to System.currentTimeMillis(),
+                ),
+            )
+        }
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        AppTopBar(
+            if (selected == null) "دفترچه‌های یادداشت" else selected.title,
+            if (selected == null) onBack else ({ selectedId = null; text = ""; notice = null }),
+        )
+        LazyColumn(
+            Modifier.fillMaxSize().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (selected == null) {
+                item {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("دفترچهٔ تازه", style = MaterialTheme.typography.titleMedium)
+                            NotebookTitlePicker(
+                                value = title,
+                                defaultTitle = "یادداشت‌های روزانه",
+                                suggestions = listOf("درس", "ایده‌ها", "برنامه‌ریزی", "کارهای مهم"),
+                                onValueChange = { title = it },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Button(
+                                onClick = {
+                                    val finalTitle = title.trim().ifBlank { "یادداشت‌های روزانه" }
+                                    val item = Notebook(
+                                        id = UUID.randomUUID().toString(),
+                                        title = finalTitle,
+                                        createdAt = System.currentTimeMillis(),
+                                        cipher = container.encryptor.encrypt(""),
+                                    )
+                                    notebooks = listOf(item) + notebooks
+                                    writeNotebooks(store, notebooks)
+                                    queue(item)
+                                    selectedId = item.id
+                                    title = ""
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("ساخت دفترچه") }
+                        }
+                    }
+                }
+                if (notebooks.isEmpty()) {
+                    item { Text("هنوز دفترچه‌ای نساخته‌ای.") }
+                }
+                items(notebooks, key = { it.id }) { notebookItem ->
+                    val body = remember(notebookItem.cipher) {
+                        container.encryptor.decrypt(notebookItem.cipher).orEmpty()
+                    }
+                    Card(Modifier.fillMaxWidth()) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(
+                                Modifier.weight(1f).clickable { selectedId = notebookItem.id },
+                            ) {
+                                Text(
+                                    notebookItem.title.ifBlank { "یادداشت‌های روزانه" },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontSize = 15.sp,
+                                )
+                            }
+                            Text(
+                                JalaliDate.stampFa(notebookItem.createdAt),
+                                maxLines = 1,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                paginate(body).size.toString(),
+                                maxLines = 1,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 5.dp),
+                            )
+                            IconButton(onClick = { selectedId = notebookItem.id }) {
+                                Icon(Icons.Default.Edit, contentDescription = "ویرایش دفترچه")
+                            }
+                            IconButton(onClick = {
+                                notebooks = notebooks.filterNot { it.id == notebookItem.id }
+                                writeNotebooks(store, notebooks)
+                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    runCatching {
+                                        container.tables.delete(TableIds.APP_STATE, rowId(notebookItem.id))
+                                    }
+                                }
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = "حذف دفترچه")
+                            }
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                "نوشتن در " + selected.title,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Text(
+                                "شش سطر بالای کاغذ خالی می‌ماند؛ وقتی آخرین سطر پر شود، متن خودکار به برگ بعد می‌رود.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            LinedNotebookInput(text) { text = it }
+                            Button(
+                                onClick = {
+                                    if (text.isBlank()) {
+                                        notice = "اول چیزی بنویس."
+                                    } else {
+                                        val old = container.encryptor.decrypt(selected.cipher).orEmpty()
+                                        val joined = listOf(old, text.trim()).filter { it.isNotBlank() }.joinToString("\n\n")
+                                        val changed = selected.copy(
+                                            cipher = container.encryptor.encrypt(joined),
+                                        )
+                                        notebooks = notebooks.map { if (it.id == changed.id) changed else it }
+                                        writeNotebooks(store, notebooks)
+                                        queue(changed)
+                                        text = ""
+                                        selectedId = null
+                                        notice = "ذخیره شد و به فهرست دفترچه‌ها برگشتی."
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Icon(Icons.Default.MenuBook, contentDescription = null)
+                                Text(" ذخیره و برگشت")
+                            }
+                            notice?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+                        }
+                    }
+                }
+                val fullText = container.encryptor.decrypt(selected.cipher).orEmpty()
+                val pages = fullText.split(NOTEBOOK_PAGE_SEPARATOR).map { it.trim() }.filter { it.isNotBlank() }
+                pages.forEachIndexed { index, page ->
+                    item(key = "notebook-page-" + selected.id + "-" + index) {
+                        NotebookBookPage(
+                            pageNumber = index + 1,
+                            pageCount = pages.size.coerceAtLeast(1),
+                            stackPages = (pages.size - index - 1).coerceIn(0, 7),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            NotebookPaper {
+                                Text(
+                                    page,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(start = 74.dp, end = 74.dp, top = 150.dp, bottom = 28.dp),
+                                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                                    fontSize = 18.sp,
+                                    lineHeight = 24.sp,
+                                    textAlign = TextAlign.Right,
+                                    color = Color(0xFF19364B),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
