@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.ui.input.pointer.consume
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -81,7 +80,7 @@ fun PatternLockGrid(
                         val dx = offset.x - center.x
                         val dy = offset.y - center.y
                         val d2 = dx * dx + dy * dy
-                        val radius = size.minDimension * .20f
+                        val radius = minOf(size.width, size.height) * .20f
                         if (d2 < bestDistance && d2 <= radius * radius) {
                             best = i
                             bestDistance = d2
@@ -97,7 +96,6 @@ fun PatternLockGrid(
                         }
                     },
                     onDrag = { change, _ ->
-                        change.consume()
                         hit(change.position)?.let { idx ->
                             val digit = (idx + 1).toString()
                             if (!latestPattern.contains(digit)) latestChange(latestPattern + digit)
