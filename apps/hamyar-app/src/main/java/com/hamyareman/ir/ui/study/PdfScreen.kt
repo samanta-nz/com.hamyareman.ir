@@ -1038,6 +1038,7 @@ private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
     )
 }
 
+@Composable
 private fun NotesAccordion(
     notes: List<LessonNote>,
     expanded: Boolean,
