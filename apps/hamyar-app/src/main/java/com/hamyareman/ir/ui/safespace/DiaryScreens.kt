@@ -5,6 +5,10 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.graphicsLayer
 import com.hamyareman.ir.ui.components.RemoteDesignImage
 import com.hamyareman.ir.ui.components.RealisticBookPager
