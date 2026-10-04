@@ -3,6 +3,7 @@ package com.hamyareman.ir.ui.safespace
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
