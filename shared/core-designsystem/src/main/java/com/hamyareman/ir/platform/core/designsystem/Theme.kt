@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.LayoutDirection
 
 /**
  * تم‌های قابل‌انتخاب اپ «همیار من»:
- * - DollStage: تم عروسکی اصلی (پیش‌فرض)
+ * - HamyarNavy: تم یکدست گرافیک جدید (پیش‌فرض همهٔ کاربران)
+ * - DollStage: تم عروسکی اصلی
  * - Stitch: جزیره‌ای/فضایی (آبی الکتریکی + صورتی مرجانی)
  * - MoonNight: بنفش شبانه با طلایی
  * - Mint: سبز نعنایی تازه
@@ -26,6 +27,9 @@ enum class BrandTheme(
     val label: String,
     val visibleInAppearance: Boolean = true,
 ) {
+    // تم یکدست گرافیک جدید؛ پیش‌فرض برای همه.
+    HamyarNavy("همیار (سرمه‌ای)"),
+
     // مجموعهٔ تازهٔ کاربری: سه تم دخترانه و سه تم پسرانه، با نام‌های کوتاه و مدرن.
     PetalBloom("شکوفه"),
     LilacAir("یاسی هوا"),
