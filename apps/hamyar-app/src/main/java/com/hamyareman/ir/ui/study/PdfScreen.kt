@@ -1038,7 +1038,7 @@ private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
     )
 }
 
-$nmark
+private fun NotesAccordion(
     notes: List<LessonNote>,
     expanded: Boolean,
     onToggle: () -> Unit,
