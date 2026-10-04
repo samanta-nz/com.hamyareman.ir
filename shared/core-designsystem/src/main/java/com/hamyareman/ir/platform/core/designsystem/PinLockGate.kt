@@ -89,24 +89,38 @@ fun PinLockGate(
         Spacer(Modifier.height(20.dp))
         if (patternEnabled && onPatternVerify != null) {
             Text("الگوی اختصاصی همیار من", style = MaterialTheme.typography.titleMedium)
-            Text("چهار نقطه یا بیشتر را به ترتیب انتخاب کن؛ این الگو مستقل از قفل خود گوشی است.", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "الگو را با کشیدن انگشت بین نقطه‌ها رسم کن؛ این قفل کاملاً مستقل از قفل گوشی است.",
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(Modifier.height(10.dp))
-            Column(Modifier.width(240.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                listOf(0, 1, 2).forEach { row ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        listOf(0, 1, 2).forEach { col ->
-                            val n = row * 3 + col + 1
-                            val chosen = pattern.contains(n.toString())
-                            Box(Modifier.weight(1f).size(66.dp).clip(CircleShape).background(if (chosen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant).clickable(enabled = !lockedOut && !chosen) { pattern += n.toString(); error = null }, contentAlignment = Alignment.Center) {
-                                Text(if (chosen) "✓" else n.toString(), style = MaterialTheme.typography.titleLarge)
+            PatternLockGrid(pattern = pattern, onPatternChange = { pattern = it }, enabled = !lockedOut)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { pattern = ""; error = null }, modifier = Modifier.weight(1f)) {
+                    Text("پاک‌کردن")
+                }
+                PrimaryButton(
+                    text = if (lockedOut) "قفل موقت" else "بازکردن با الگو",
+                    onClick = {
+                        if (pattern.length < 4) {
+                            error = "الگو باید حداقل ۴ نقطهٔ متفاوت داشته باشد."
+                        } else if (onPatternVerify(pattern)) {
+                            pattern = ""
+                            onUnlocked()
+                        } else {
+                            attempts += 1
+                            pattern = ""
+                            error = if (attempts >= maxAttempts) {
+                                "چند بار الگو اشتباه شد؛ قفل موقت فعال است."
+                            } else {
+                                "الگو درست نیست. (" + attempts + " تلاش از " + maxAttempts + ")"
                             }
                         }
-                    }
-                }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { pattern = ""; error = null }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
-                PrimaryButton(text = if (lockedOut) "قفل موقت" else "بازکردن با الگو", onClick = { if (pattern.length < 4) error = "الگو باید حداقل ۴ نقطه داشته باشد." else if (onPatternVerify(pattern)) { pattern = ""; onUnlocked() } else { attempts += 1; pattern = ""; error = "الگو درست نیست." } }, modifier = Modifier.weight(2f))
+                    },
+                    modifier = Modifier.weight(2f),
+                )
             }
             Spacer(Modifier.height(12.dp))
             Text("یا PIN را وارد کن", style = MaterialTheme.typography.labelLarge)
