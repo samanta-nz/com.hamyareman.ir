@@ -102,9 +102,9 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
     val store = remember { LocalStore(context, "hamyar_secure_media") }
     val diaryStore = remember { LocalStore(context, "hamyar_private_diary") }
     val diaryCover = when (diaryStore.getString("cover", "celestial")) {
-        "botanical" -> "file:///android_asset/diary/cover-botanical.jpg"
-        "geometric" -> "file:///android_asset/diary/cover-geometric.jpg"
-        else -> "file:///android_asset/diary/cover-celestial.jpg"
+        "botanical" -> com.hamyareman.ir.ui.components.DesignAsset.COVER_BOTANICAL
+        "geometric" -> com.hamyareman.ir.ui.components.DesignAsset.COVER_GEOMETRIC
+        else -> com.hamyareman.ir.ui.components.DesignAsset.COVER_CELESTIAL
     }
     var media by remember { mutableStateOf(readSecureMedia(store).filter { File(it.path).exists() }) }
     var selected by remember { mutableStateOf<SecureMediaItem?>(null) }
@@ -169,8 +169,8 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
                 item(key = "private-diary-book") {
                     Card(Modifier.fillMaxWidth().clickable(onClick = onOpenDiary)) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            AsyncImage(
-                                model = diaryCover,
+                            com.hamyareman.ir.ui.components.RemoteDesignImage(
+                                key = diaryCover,
                                 contentDescription = "دفتر خاطرات",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
@@ -319,162 +319,24 @@ private fun ZoomableSecureImage(path: String, revision: Int) {
 }
 
 @Composable
-private fun SecureMedia3Player(item: SecureMediaItem, playlist: List<SecureMediaItem>, video: Boolean) {
-    val context = LocalContext.current
-    val queue = remember(item.id, playlist) { playlist.ifEmpty { listOf(item) } }
-    val startIndex = remember(item.id, queue) { queue.indexOfFirst { it.id == item.id }.coerceAtLeast(0) }
-    val playback = remember(item.id) {
-        com.hamyareman.ir.platform.feature.playback.PlaybackController(context)
-    }
-    val state by playback.state.collectAsState()
-    var position by remember { mutableLongStateOf(0L) }
-    var scrub by remember { mutableLongStateOf(-1L) }
-    var sleepEndsAt by remember { mutableLongStateOf(0L) }
-    var sleepRemaining by remember { mutableLongStateOf(0L) }
-    var phase by remember { mutableFloatStateOf(0f) }
-
-    LaunchedEffect(item.id, queue) {
-        if (playback.connect()) {
-            val mediaItems = queue.map { row ->
-                MediaItem.Builder()
-                    .setMediaId(row.id)
-                    .setUri(Uri.fromFile(File(row.path)))
-                    .setMediaMetadata(MediaMetadata.Builder().setTitle(row.name).setDisplayTitle(row.name).build())
-                    .build()
-            }
-            playback.setMediaItems(mediaItems, startIndex)
-        }
-    }
-    LaunchedEffect(state.connected, state.playing) {
-        if (!state.connected) return@LaunchedEffect
-        while (true) {
-            position = playback.positionMs
-            if (state.playing) phase += 0.12f
-            delay(if (state.playing) 120L else 500L)
-        }
-    }
-    LaunchedEffect(sleepEndsAt) {
-        if (sleepEndsAt <= 0L) return@LaunchedEffect
-        while (sleepEndsAt > System.currentTimeMillis()) {
-            sleepRemaining = (sleepEndsAt - System.currentTimeMillis()).coerceAtLeast(0L)
-            delay(1_000L)
-        }
-        playback.pause()
-        sleepEndsAt = 0L
-        sleepRemaining = 0L
-    }
-    DisposableEffect(playback) {
-        // همان Media3 مشترک برای آلبوم و کتاب صوتی؛ رسانهٔ خصوصی با بستن نمایشگر قطع می‌شود.
-        com.hamyareman.ir.platform.feature.playback.TeachGate.enter()
-        onDispose {
-            runCatching { playback.stop() }
-            playback.release()
-            com.hamyareman.ir.platform.feature.playback.TeachGate.exit()
-        }
-    }
-
-    val current = queue.getOrNull(state.currentIndex) ?: item
-    val duration = state.durationMs.coerceAtLeast(0L)
-    val shown = if (scrub >= 0L) scrub else position.coerceAtLeast(0L)
-    val sliderMax = maxOf(duration, shown, 1L)
-
-    Column(
-        Modifier.fillMaxSize().padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        if (video) {
-            AndroidView(
-                factory = { ctx ->
-                    androidx.media3.ui.PlayerView(ctx).apply {
-                        useController = true
-                        player = playback.asPlayer()
-                    }
-                },
-                update = { it.player = playback.asPlayer() },
-                modifier = Modifier.fillMaxWidth().weight(1f),
-                onRelease = { it.player = null },
-            )
-        } else {
-            AlbumArtEqualizer(current.path, state.playing, phase)
-        }
-        Text(state.title.ifBlank { current.name }, color = Color.White, style = MaterialTheme.typography.titleMedium)
-        Slider(
-            value = shown.coerceIn(0L, sliderMax).toFloat(),
-            onValueChange = { scrub = it.toLong() },
-            onValueChangeFinished = {
-                playback.seekTo(if (scrub >= 0L) scrub else position)
-                position = if (scrub >= 0L) scrub else position
-                scrub = -1L
-            },
-            valueRange = 0f..sliderMax.toFloat(),
-            modifier = Modifier.fillMaxWidth(),
+private fun SecureMedia3Player(
+    item: SecureMediaItem,
+    playlist: List<SecureMediaItem>,
+    video: Boolean,
+) {
+    val queue = (playlist.ifEmpty { listOf(item) }).map {
+        PremiumMediaQueueItem(
+            id = it.id,
+            title = it.name,
+            uri = Uri.fromFile(File(it.path)),
         )
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(mediaTime(shown), color = Color.White, style = MaterialTheme.typography.labelSmall)
-            Text("−${mediaTime((duration - shown).coerceAtLeast(0L))}", color = Color.White, style = MaterialTheme.typography.labelSmall)
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf(0.75f, 1f, 1.25f, 1.5f, 2f).forEach { value ->
-                FilterChip(selected = state.speed == value, onClick = { playback.setSpeed(value) }, label = { Text(value.toString() + "x") })
-            }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            OutlinedButton(onClick = { playback.seekBy(-10_000L) }, modifier = Modifier.weight(1f)) { Text("۱۰−") }
-            OutlinedButton(onClick = { playback.seekBy(10_000L) }, modifier = Modifier.weight(1f)) { Text("۱۰+") }
-            OutlinedButton(onClick = {
-                val p = playback.asPlayer()
-                if (p != null) p.repeatMode = if (p.repeatMode == androidx.media3.common.Player.REPEAT_MODE_ONE) androidx.media3.common.Player.REPEAT_MODE_OFF else androidx.media3.common.Player.REPEAT_MODE_ONE
-            }, modifier = Modifier.weight(1f)) { Text("تکرار") }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            OutlinedButton(
-                onClick = { playback.setShuffle(!state.shuffleEnabled) },
-                modifier = Modifier.weight(1f),
-            ) { Text(if (state.shuffleEnabled) "تصادفی ✓" else "تصادفی") }
-            OutlinedButton(
-                onClick = { playback.seekToPrevious() },
-                enabled = state.mediaCount > 1,
-                modifier = Modifier.weight(1f),
-            ) { Text("قبلی") }
-            OutlinedButton(
-                onClick = {
-                    com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
-                    if (state.playing) playback.pause() else playback.play()
-                },
-                modifier = Modifier.weight(1f),
-            ) { Text(if (state.playing) "مکث" else "پخش") }
-            OutlinedButton(
-                onClick = { playback.seekToNext() },
-                enabled = state.mediaCount > 1,
-                modifier = Modifier.weight(1f),
-            ) { Text("بعدی") }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            if (sleepEndsAt > 0L) {
-                TextButton(onClick = { sleepEndsAt = 0L; sleepRemaining = 0L }, modifier = Modifier.weight(1f)) {
-                    Text("لغو تایمر ${mediaTime(sleepRemaining)}")
-                }
-            } else {
-                listOf(15, 30, 45).forEach { minutes ->
-                    TextButton(
-                        onClick = {
-                            sleepEndsAt = System.currentTimeMillis() + minutes * 60_000L
-                            sleepRemaining = minutes * 60_000L
-                        },
-                        modifier = Modifier.weight(1f),
-                    ) { Text("خواب $minutes د") }
-                }
-            }
-        }
-        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
-}
-
-private fun mediaTime(ms: Long): String {
-    val seconds = ms.coerceAtLeast(0L) / 1_000L
-    return com.hamyareman.ir.platform.core.common.toPersianDigits(
-        "%d:%02d".format(java.util.Locale.US, seconds / 60L, seconds % 60L),
+    PremiumMediaPlayer(
+        items = queue,
+        initialIndex = queue.indexOfFirst { it.id == item.id }.coerceAtLeast(0),
+        video = video,
+        modifier = Modifier.fillMaxSize(),
+        autoPlay = true,
     )
 }
 
