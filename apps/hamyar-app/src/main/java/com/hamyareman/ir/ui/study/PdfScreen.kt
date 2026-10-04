@@ -1030,7 +1030,15 @@ private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun NotesAccordion(
+private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
+    LinedNotebookInput(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+$nmark
     notes: List<LessonNote>,
     expanded: Boolean,
     onToggle: () -> Unit,
