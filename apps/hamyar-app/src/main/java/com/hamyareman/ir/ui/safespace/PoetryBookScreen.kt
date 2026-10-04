@@ -299,6 +299,7 @@ private fun PoetryViewer(
                     pageNumber = page + 1,
                     pageCount = lines.size.coerceAtLeast(1),
                     stackPages = lines.size - page - 1,
+                    fullScreen = true,
                 ) {
                     NotebookPaper(
                         header = if (page == 0) poem.title else "",
