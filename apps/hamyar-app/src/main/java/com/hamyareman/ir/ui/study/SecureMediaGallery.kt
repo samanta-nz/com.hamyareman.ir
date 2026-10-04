@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -240,6 +241,7 @@ private fun SecureMediaViewer(
     onChanged: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val context = LocalContext.current
     var revision by remember(item.path) { mutableIntStateOf(0) }
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(Modifier.fillMaxSize().background(Color(0xFF07111F))) {
@@ -263,7 +265,7 @@ private fun SecureMediaViewer(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = onClose) { Text("بستن") }
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        IconButton(onClick = { shareSecureMedia(LocalContext.current, item) }) { Icon(Icons.Default.IosShare, contentDescription = "اشتراک") }
+                        IconButton(onClick = { shareSecureMedia(context, item) }) { Icon(Icons.Default.IosShare, contentDescription = "اشتراک") }
                         IconButton(onClick = onExport) { Icon(Icons.Default.Download, contentDescription = "خروجی") }
                         IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "حذف") }
                     }

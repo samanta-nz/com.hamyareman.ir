@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
+import kotlinx.coroutines.launch
 
 internal const val NOTEBOOK_PAGE_SEPARATOR = '\u000c'
 
@@ -190,6 +192,14 @@ fun NotebookBookPage(
             )
         }
     }
+}
+
+@Composable
+fun LinedNotebookInput(
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    LinedNotebookInput(value = value, onValueChange = onValueChange, modifier = Modifier)
 }
 
 @Composable
