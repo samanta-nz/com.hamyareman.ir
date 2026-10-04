@@ -56,6 +56,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -784,7 +786,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                                     },
                                 )
                             }
-                            repeat(span - row.size) { Spacer(Modifier.weight(1f)) }
+                            for (i in row.size until span) { Spacer(Modifier.weight(1f)) }
                         }
                     }
                 }
