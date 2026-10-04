@@ -109,6 +109,9 @@ private fun encodePages(pages: List<String>): String =
 @Composable
 fun NotebookPaper(
     modifier: Modifier = Modifier,
+    header: String = "",
+    headerAlign: TextAlign = TextAlign.Right,
+    showVerticalGuides: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     BoxWithConstraints(
@@ -119,35 +122,44 @@ fun NotebookPaper(
             .background(Color(0xFFFFFCF2)),
     ) {
         val density = LocalDensity.current
-        val lineHeightPx = with(density) { 24.dp.toPx() }
+        val lineHeightPx = with(density) { LINE_HEIGHT_SP.dp.toPx() }
         val side = with(density) { SIDE_GUTTER_DP.dp.toPx() }
-        val top = TOP_SKIP_LINES * lineHeightPx
         val bottom = with(density) { BOTTOM_GUTTER_DP.dp.toPx() }
         Canvas(Modifier.fillMaxSize()) {
-            var y = top
+            var y = 0f
             while (y <= size.height - bottom) {
                 drawLine(
                     color = Color(0xFFB9CEE5),
-                    start = androidx.compose.ui.geometry.Offset(side, y),
-                    end = androidx.compose.ui.geometry.Offset(size.width - side, y),
+                    start = Offset(side, y),
+                    end = Offset(size.width - side, y),
                     strokeWidth = 1.2f,
                 )
                 y += lineHeightPx
             }
-            drawLine(
-                color = Color(0xFF7EA5C9),
-                start = androidx.compose.ui.geometry.Offset(side, top - lineHeightPx),
-                end = androidx.compose.ui.geometry.Offset(side, size.height - bottom),
-                strokeWidth = 2.2f,
-            )
-            drawLine(
-                color = Color(0xFF7EA5C9),
-                start = androidx.compose.ui.geometry.Offset(size.width - side, top - lineHeightPx),
-                end = androidx.compose.ui.geometry.Offset(size.width - side, size.height - bottom),
-                strokeWidth = 2.2f,
-            )
+            if (showVerticalGuides) {
+                drawLine(Color(0xFF7EA5C9), Offset(side, 0f), Offset(side, size.height - bottom), 2.2f)
+                drawLine(Color(0xFF7EA5C9), Offset(size.width - side, 0f), Offset(size.width - side, size.height - bottom), 2.2f)
+            }
         }
-        content()
+        if (header.isNotBlank()) {
+            Text(
+                text = header,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = SIDE_GUTTER_DP.dp, end = SIDE_GUTTER_DP.dp, top = 1.dp),
+                textAlign = headerAlign,
+                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                fontSize = 17.sp,
+                lineHeight = LINE_HEIGHT_SP.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1B3448),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Box(Modifier.fillMaxSize().padding(top = (LINE_HEIGHT_SP * 2).dp)) { content() }
+        } else {
+            content()
+        }
     }
 }
 
@@ -198,29 +210,26 @@ fun NotebookBookPage(
 fun LinedNotebookInput(
     value: String,
     onValueChange: (String) -> Unit,
-) {
-    LinedNotebookInput(value = value, onValueChange = onValueChange, modifier = Modifier)
-}
-
-@Composable
-fun LinedNotebookInput(
-    value: String,
-    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    header: String = "",
+    textAlign: TextAlign = TextAlign.Right,
+    showVerticalGuides: Boolean = true,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val layout = remember(maxWidth) {
+        val baseLayout = remember(maxWidth) {
             metrics(maxWidth.value, (maxWidth.value / PAGE_ASPECT).coerceAtLeast(400f))
         }
-        var pages by remember(value) { mutableStateOf(decodePages(value, layout.pageCapacity)) }
+        val pageCapacity = remember(baseLayout.pageCapacity, header) {
+            if (header.isBlank()) baseLayout.pageCapacity
+            else ((baseLayout.visibleLines - 2).coerceAtLeast(6) * baseLayout.charsPerLine * 0.9f).toInt().coerceAtLeast(120)
+        }
+        var pages by remember(value) { mutableStateOf(decodePages(value, pageCapacity)) }
         val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
         val scope = rememberCoroutineScope()
 
-        LaunchedEffect(value, layout.pageCapacity) {
+        LaunchedEffect(value, pageCapacity) {
             val normalized = encodePages(pages)
-            if (value.isNotBlank() && normalized != value) {
-                pages = decodePages(value, layout.pageCapacity)
-            }
+            if (value.isNotBlank() && normalized != value) pages = decodePages(value, pageCapacity)
         }
 
         HorizontalPager(
@@ -229,21 +238,21 @@ fun LinedNotebookInput(
             reverseLayout = true,
             beyondViewportPageCount = 1,
         ) { pageIndex ->
-            NotebookPaper {
+            NotebookPaper(
+                header = if (pageIndex == 0) header else "",
+                headerAlign = oppositeTextAlign(textAlign),
+                showVerticalGuides = showVerticalGuides,
+            ) {
                 BasicTextField(
                     value = pages.getOrElse(pageIndex) { "" },
                     onValueChange = { changed ->
-                        val split = cutText(changed, layout.pageCapacity)
+                        val split = cutText(changed, pageCapacity)
                         val next = pages.toMutableList()
                         next[pageIndex] = split.firstOrNull().orEmpty()
-                        if (split.size > 1) {
-                            next.addAll(pageIndex + 1, split.drop(1))
-                        }
+                        if (split.size > 1) next.addAll(pageIndex + 1, split.drop(1))
                         pages = next
                         onValueChange(encodePages(next))
-                        if (split.size > 1) {
-                            scope.launch { pager.animateScrollToPage(pageIndex + split.lastIndex) }
-                        }
+                        if (split.size > 1) scope.launch { pager.animateScrollToPage(pageIndex + split.lastIndex) }
                     },
                     textStyle = TextStyle(
                         fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
@@ -251,7 +260,7 @@ fun LinedNotebookInput(
                         fontWeight = FontWeight.Normal,
                         lineHeight = LINE_HEIGHT_SP.sp,
                         color = Color(0xFF1B3448),
-                        textAlign = TextAlign.Right,
+                        textAlign = textAlign,
                         platformStyle = PlatformTextStyle(includeFontPadding = false),
                         lineHeightStyle = LineHeightStyle(
                             alignment = LineHeightStyle.Alignment.Bottom,
@@ -259,15 +268,133 @@ fun LinedNotebookInput(
                         ),
                     ),
                     cursorBrush = SolidColor(Color(0xFF1B3448)),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = SIDE_GUTTER_DP.dp,
-                            end = SIDE_GUTTER_DP.dp,
-                            top = (TOP_SKIP_LINES * LINE_HEIGHT_SP).dp,
-                            bottom = BOTTOM_GUTTER_DP.dp,
-                        ),
+                    modifier = Modifier.fillMaxSize().padding(
+                        start = SIDE_GUTTER_DP.dp,
+                        end = SIDE_GUTTER_DP.dp,
+                        bottom = BOTTOM_GUTTER_DP.dp,
+                    ),
                 )
+            }
+        }
+    }
+}
+
+fun oppositeTextAlign(value: TextAlign): TextAlign = if (value == TextAlign.Center) TextAlign.Right else TextAlign.Center
+
+fun notebookAlignmentWire(value: TextAlign): String = when (value) {
+    TextAlign.Center -> "center"
+    TextAlign.Left -> "left"
+    else -> "right"
+}
+
+fun notebookTextAlignFromWire(value: String): TextAlign = when (value) {
+    "center" -> TextAlign.Center
+    "left" -> TextAlign.Left
+    else -> TextAlign.Right
+}
+
+internal fun nextRegisteredTitle(baseTitle: String, existingTitles: List<String>): String {
+    val base = baseTitle.trim().replace(Regex("\\s+شماره\\s+\\d+$"), "").trim().ifBlank { "دفترچه" }
+    val pattern = Regex("^" + Regex.escape(base) + "\\s+شماره\\s+(\\d+)$")
+    val maxNumber = existingTitles.mapNotNull {
+        pattern.matchEntire(it.trim())?.groupValues?.getOrNull(1)?.toIntOrNull()
+    }.maxOrNull() ?: 0
+    return base + " شماره " + (maxNumber + 1)
+}
+
+@Composable
+fun NotebookAlignmentPicker(
+    value: TextAlign,
+    onValueChange: (TextAlign) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+        Text("چینش", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(end = 4.dp))
+        IconButton(onClick = { onValueChange(TextAlign.Right) }) {
+            Icon(Icons.Default.FormatAlignRight, contentDescription = "راست‌چین", tint = if (value == TextAlign.Right) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        IconButton(onClick = { onValueChange(TextAlign.Center) }) {
+            Icon(Icons.Default.FormatAlignCenter, contentDescription = "وسط‌چین", tint = if (value == TextAlign.Center) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        IconButton(onClick = { onValueChange(TextAlign.Left) }) {
+            Icon(Icons.Default.FormatAlignLeft, contentDescription = "چپ‌چین", tint = if (value == TextAlign.Left) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun PatternLockGrid(
+    pattern: String,
+    onPatternChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val latestPattern by androidx.compose.runtime.rememberUpdatedState(pattern)
+    val latestChange by androidx.compose.runtime.rememberUpdatedState(onPatternChange)
+    val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surfaceVariant
+    val dot = MaterialTheme.colorScheme.onSurfaceVariant
+    val background = MaterialTheme.colorScheme.background
+    val points = remember {
+        listOf(
+            Offset(0f, 0f), Offset(.5f, 0f), Offset(1f, 0f),
+            Offset(0f, .5f), Offset(.5f, .5f), Offset(1f, .5f),
+            Offset(0f, 1f), Offset(.5f, 1f), Offset(1f, 1f),
+        )
+    }
+    Box(
+        modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp)
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(24.dp))
+            .background(surface.copy(alpha = .18f))
+            .padding(28.dp)
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                fun hit(offset: Offset): Int? {
+                    var best: Int? = null
+                    var bestDistance = Float.MAX_VALUE
+                    points.forEachIndexed { i, p ->
+                        val center = Offset(p.x * size.width, p.y * size.height)
+                        val dx = offset.x - center.x
+                        val dy = offset.y - center.y
+                        val d2 = dx * dx + dy * dy
+                        val radius = size.minDimension * .20f
+                        if (d2 < bestDistance && d2 <= radius * radius) {
+                            best = i
+                            bestDistance = d2
+                        }
+                    }
+                    return best
+                }
+                detectDragGestures(
+                    onDragStart = { pos ->
+                        hit(pos)?.let { idx ->
+                            val digit = (idx + 1).toString()
+                            if (!latestPattern.contains(digit)) latestChange(digit)
+                        }
+                    },
+                    onDrag = { change, _ ->
+                        change.consume()
+                        hit(change.position)?.let { idx ->
+                            val digit = (idx + 1).toString()
+                            if (!latestPattern.contains(digit)) latestChange(latestPattern + digit)
+                        }
+                    },
+                )
+            },
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val selected = latestPattern.mapNotNull { it.digitToIntOrNull()?.minus(1) }
+            selected.zipWithNext().forEach { (a, b) ->
+                drawLine(primary, Offset(points[a].x * size.width, points[a].y * size.height), Offset(points[b].x * size.width, points[b].y * size.height), 8f)
+            }
+            points.forEachIndexed { i, p ->
+                val center = Offset(p.x * size.width, p.y * size.height)
+                val chosen = selected.contains(i)
+                drawCircle(if (chosen) primary else dot, if (chosen) 15f else 11f, center)
+                if (chosen) drawCircle(background, 5f, center)
             }
         }
     }
