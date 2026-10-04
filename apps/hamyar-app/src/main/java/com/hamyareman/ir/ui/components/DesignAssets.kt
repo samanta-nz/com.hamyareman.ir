@@ -16,7 +16,24 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 
+/**
+ * کلیدِ هر تصویر همان مسیر روی باکت است: https://c539776.parspack.net/ + کلید.
+ * نسخهٔ محلیِ داخل APK (در صورت وجود) زیر `src/main/assets/` و بدون پیشوند `assets/` است.
+ */
 internal object DesignAsset {
+    // قفل‌ها (۱۰۸۰×۲۳۴۰) — اگر روی باکت نباشند، صحنهٔ رسم‌شده با کد دیده می‌شود.
+    const val LOCK_APP = "assets/lock/app-lock-bg.jpg"
+    const val LOCK_SAFE = "assets/lock/safespace-lock-bg.jpg"
+
+    // دفتر خاطرات / شعر / آلبوم و گالری جزوه‌ها
+    const val DIARY_DESK = "assets/diary/desk-bg.jpg"
+    const val POETRY_BG = "assets/poetry/poetry-bg.jpg"
+    const val ALBUM_BG = "assets/album/album-bg.jpg"
+    const val PAPER_CREAM = "assets/diary/paper-cream.jpg"
+
+    // جلدها (۹۰۰×۱۲۰۰)
+    const val COVER_NAVY_FLORAL = "assets/diary/cover-navy-floral.jpg"
+    const val COVER_LEATHER = "assets/diary/cover-leather-brown.jpg"
     const val COVER_CELESTIAL = "assets/diary/cover-celestial.jpg"
     const val COVER_BOTANICAL = "assets/diary/cover-botanical.jpg"
     const val COVER_GEOMETRIC = "assets/diary/cover-geometric.jpg"
@@ -28,8 +45,9 @@ internal object DesignAsset {
                 URLEncoder.encode(it, "UTF-8").replace("+", "%20")
             }
 
+    /** فایل‌های داخل APK زیر assets/diary/... هستند، نه assets/assets/diary/... */
     fun localUri(key: String): String =
-        "file:///android_asset/" + key
+        "file:///android_asset/" + key.removePrefix("assets/")
 }
 
 private suspend fun readable(url: String): Boolean = withContext(Dispatchers.IO) {
