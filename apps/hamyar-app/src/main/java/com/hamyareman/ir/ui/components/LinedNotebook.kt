@@ -184,7 +184,7 @@ fun NotebookBookPage(
         ) {
             content()
             Text(
-                text = "\${pageNumber.coerceAtLeast(1)} / \${pageCount.coerceAtLeast(1)}",
+                text = "${pageNumber.coerceAtLeast(1)} / ${pageCount.coerceAtLeast(1)}",
                 color = Color(0xFF58718A),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
