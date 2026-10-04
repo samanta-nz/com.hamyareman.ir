@@ -38,8 +38,9 @@ private suspend fun readable(url: String): Boolean = withContext(Dispatchers.IO)
         c.connectTimeout = 4_000
         c.readTimeout = 4_000
         c.instanceFollowRedirects = true
-        c.requestMethod = "HEAD"
-        val ok = c.responseCode in 200..299
+        c.requestMethod = "GET"
+        c.setRequestProperty("Range", "bytes=0-1")
+        val ok = c.responseCode == 200 || c.responseCode == 206
         c.disconnect()
         ok
     }.getOrDefault(false)
