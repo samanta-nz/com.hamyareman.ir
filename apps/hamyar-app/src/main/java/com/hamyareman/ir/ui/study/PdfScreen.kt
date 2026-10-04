@@ -9,6 +9,9 @@ import android.webkit.WebViewClient
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandLess
@@ -30,6 +33,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -354,7 +358,6 @@ fun PdfUploadScreen(onBack: () -> Unit) {
     var askDeleteNote by remember { mutableStateOf<LessonNote?>(null) }
     var pdfView by remember { mutableStateOf<NoteFile?>(null) }
     var editTarget by remember { mutableStateOf<NoteFile?>(null) }
-    var gallerySpan by remember { mutableIntStateOf(3) }
     var exportTarget by remember { mutableStateOf<NoteFile?>(null) }
 
     fun openExternal(item: NoteFile) {
@@ -746,13 +749,6 @@ fun PdfUploadScreen(onBack: () -> Unit) {
 
             if (items.isEmpty()) {
                 Text("گالری خالی است.", style = MaterialTheme.typography.bodySmall)
-            } else {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("تعداد ستون:", style = MaterialTheme.typography.labelMedium)
-                    (2..4).forEach { span ->
-                        TextButton(onClick = { gallerySpan = span }) { Text(if (span == gallerySpan) "● $span" else span.toString()) }
-                    }
-                }
             }
             GalleryGroups.forEach { group ->
                 val groupItems = items.filter { fileGroup(it) == group }
@@ -763,34 +759,36 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Right)
-                groupItems.chunked(gallerySpan).forEach { row ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        row.forEach { item ->
-                            GalleryTile(
-                                item = item,
-                                modifier = Modifier.weight(1f),
-                                onOpen = {
-                                    if (canOpenInternal(item)) openInternal(item) else openExternal(item)
-                                },
-                                onExternal = { openExternal(item) },
-                                onExport = {
-                                    exportTarget = item
-                                    exportCreate.launch(item.title + "." + item.ext)
-                                },
-                                onDelete = {
-                                    scope.launch {
-                                        withContext(Dispatchers.IO) { runCatching { File(item.localPath).delete() } }
-                                        items = items.filterNot { it.id == item.id }
-                                        writeNoteFiles(store, items)
-                                        notice = "از گالری حذف شد."
-                                    }
-                                })
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    val span = when {
+                        maxWidth.value >= 900f -> 4
+                        maxWidth.value >= 610f -> 3
+                        else -> 2
+                    }
+                    groupItems.chunked(span).forEach { row ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            row.forEach { item ->
+                                GalleryTile(
+                                    item = item,
+                                    modifier = Modifier.weight(1f),
+                                    onOpen = { if (canOpenInternal(item)) openInternal(item) else openExternal(item) },
+                                    onExternal = { openExternal(item) },
+                                    onExport = { exportTarget = item; exportCreate.launch(item.title + "." + item.ext) },
+                                    onDelete = {
+                                        scope.launch {
+                                            withContext(Dispatchers.IO) { runCatching { File(item.localPath).delete() } }
+                                            items = items.filterNot { it.id == item.id }
+                                            writeNoteFiles(store, items)
+                                            notice = "از گالری حذف شد."
+                                        }
+                                    },
+                                )
+                            }
+                            repeat(span - row.size) { Spacer(Modifier.weight(1f)) }
                         }
-                        repeat(gallerySpan - row.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
-            }
-            Spacer(Modifier.height(12.dp))
+            }            Spacer(Modifier.height(12.dp))
         }
     }
 
@@ -842,6 +840,8 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     notice = "از گالری حذف شد."
                 }
             },
+            onExternal = { target -> openExternal(target) },
+            onExport = { target -> exportTarget = target; exportCreate.launch(target.title + "." + target.ext) },
             onEdit = { target ->
                 // ویرایش با همان اسکریپتِ کات و چرخش؛ خروجی جایگزینِ همان فایل می‌شود.
                 imageAlbum = null
@@ -1012,26 +1012,30 @@ fun PdfUploadScreen(onBack: () -> Unit) {
  */
 @Composable
 private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
-    Box(modifier.background(Color.Black), contentAlignment = Alignment.Center) {
-        AndroidView(
-            factory = { context ->
-                android.widget.VideoView(context).apply {
-                    val controls = android.widget.MediaController(context)
-                    controls.setAnchorView(this)
-                    setMediaController(controls)
-                    setVideoPath(item.localPath)
-                    setOnPreparedListener {
-                        seekTo(1)
-                        controls.show(0)
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-            onRelease = { it.stopPlayback() },
-        )
-        if (isAudioItem(item)) {
-            Text("🎧  برای پخش، کنترل پایین صفحه را لمس کن", color = Color.White)
+    val context = LocalContext.current
+    val playback = remember(item.id) { com.hamyareman.ir.platform.feature.playback.PlaybackController(context) }
+    val state by playback.state.collectAsState()
+    LaunchedEffect(item.id) {
+        if (playback.connect()) {
+            val media = androidx.media3.common.MediaItem.Builder()
+                .setMediaId(item.id)
+                .setUri(android.net.Uri.fromFile(File(item.localPath)))
+                .setMediaMetadata(androidx.media3.common.MediaMetadata.Builder().setTitle(item.title).build())
+                .build()
+            playback.setMediaItems(listOf(media), 0)
         }
+    }
+    DisposableEffect(playback) {
+        onDispose { runCatching { playback.stop() }; playback.release() }
+    }
+    Column(modifier.fillMaxSize().background(Color.Black), horizontalAlignment = Alignment.CenterHorizontally) {
+        AndroidView(
+            factory = { ctx -> androidx.media3.ui.PlayerView(ctx).apply { useController = true; player = playback.asPlayer() } },
+            update = { it.player = playback.asPlayer() },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            onRelease = { it.player = null },
+        )
+        Text(if (state.playing) "در حال پخش" else "مکث", color = Color.White, style = MaterialTheme.typography.labelSmall)
     }
 }
 
@@ -1136,7 +1140,9 @@ private fun ImageGalleryPager(
     start: Int,
     onClose: () -> Unit,
     onDelete: (NoteFile) -> Unit,
-    onEdit: (NoteFile) -> Unit) {
+    onEdit: (NoteFile) -> Unit,
+    onExternal: (NoteFile) -> Unit,
+    onExport: (NoteFile) -> Unit) {
     val pager = rememberPagerState(
         initialPage = start.coerceIn(0, (album.size - 1).coerceAtLeast(0)),
         pageCount = { album.size.coerceAtLeast(1) })
@@ -1180,14 +1186,14 @@ private fun ImageGalleryPager(
                     "دو انگشت برای زوم؛ لمس برای برگشت",
                     color = Color.White.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.labelSmall)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = onClose, modifier = Modifier.weight(1f)) { Text("بستن") }
-                    OutlinedButton(
-                        onClick = { cur?.let(onEdit) },
-                        modifier = Modifier.weight(1f)) { Text("ویرایش") }
-                    OutlinedButton(
-                        onClick = { cur?.let(onDelete) },
-                        modifier = Modifier.weight(1f)) { Text("حذف") }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = onClose) { Text("بستن") }
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        IconButton(onClick = { cur?.let(onExternal) }) { Icon(Icons.Default.OpenInNew, contentDescription = "با برنامهٔ دیگر") }
+                        IconButton(onClick = { cur?.let(onExport) }) { Icon(Icons.Default.Download, contentDescription = "خروجی") }
+                        IconButton(onClick = { cur?.let(onEdit) }) { Icon(Icons.Outlined.Edit, contentDescription = "ویرایش") }
+                        IconButton(onClick = { cur?.let(onDelete) }) { Icon(Icons.Outlined.Delete, contentDescription = "حذف") }
+                    }
                 }
             }
         }
@@ -1225,11 +1231,13 @@ private fun GalleryTile(
             maxLines = 1,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Right)
-        if (canOpenInternal(item)) {
-            TextButton(onClick = onExternal, modifier = Modifier.fillMaxWidth()) { Text("با برنامهٔ دیگر") }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            if (canOpenInternal(item)) {
+                IconButton(onClick = onExternal) { Icon(Icons.Default.OpenInNew, contentDescription = "با برنامهٔ دیگر") }
+            }
+            IconButton(onClick = onExport) { Icon(Icons.Default.Download, contentDescription = "خروجی به حافظه") }
+            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "حذف") }
         }
-        TextButton(onClick = onExport, modifier = Modifier.fillMaxWidth()) { Text("خروجی به حافظه") }
-        TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("حذف") }
     }
 }
 
