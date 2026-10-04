@@ -47,6 +47,7 @@ import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
 import com.hamyareman.ir.ui.components.LinedNotebookInput
 import com.hamyareman.ir.ui.hub.layerTo
+import com.hamyareman.ir.ui.hub.HubCard
 import com.hamyareman.ir.ui.navigation.Screen
 import org.json.JSONArray
 import org.json.JSONObject
@@ -206,12 +207,12 @@ fun SafeSpaceScreen(nav: NavController) {
         ) {
             SafeSpaceBackupCard()
             sections.forEach { section ->
-                Card(Modifier.fillMaxWidth().clickable { nav.layerTo(section.route) }) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        Text("${section.emoji}  ${section.title}", style = MaterialTheme.typography.titleMedium)
-                        Text(section.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
+                HubCard(
+                    emoji = section.emoji,
+                    title = section.title,
+                    subtitle = section.subtitle,
+                    slotId = "hub.safe.item.${section.route}",
+                ) { nav.layerTo(section.route) }
             }
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
