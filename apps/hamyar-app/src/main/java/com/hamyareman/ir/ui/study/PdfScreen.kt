@@ -1014,42 +1014,21 @@ fun PdfUploadScreen(onBack: () -> Unit) {
  */
 @Composable
 private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val playback = remember(item.id) { com.hamyareman.ir.platform.feature.playback.PlaybackController(context) }
-    val state by playback.state.collectAsState()
-    LaunchedEffect(item.id) {
-        if (playback.connect()) {
-            val media = androidx.media3.common.MediaItem.Builder()
-                .setMediaId(item.id)
-                .setUri(android.net.Uri.fromFile(File(item.localPath)))
-                .setMediaMetadata(androidx.media3.common.MediaMetadata.Builder().setTitle(item.title).build())
-                .build()
-            playback.setMediaItems(listOf(media), 0)
-        }
-    }
-    DisposableEffect(playback) {
-        onDispose { runCatching { playback.stop() }; playback.release() }
-    }
-    Column(modifier.fillMaxSize().background(Color.Black), horizontalAlignment = Alignment.CenterHorizontally) {
-        AndroidView(
-            factory = { ctx -> androidx.media3.ui.PlayerView(ctx).apply { useController = true; player = playback.asPlayer() } },
-            update = { it.player = playback.asPlayer() },
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            onRelease = { it.player = null },
-        )
-        Text(if (state.playing) "در حال پخش" else "مکث", color = Color.White, style = MaterialTheme.typography.labelSmall)
-    }
+    PremiumMediaPlayer(
+        items = listOf(
+            PremiumMediaQueueItem(
+                id = item.id,
+                title = item.title,
+                uri = android.net.Uri.fromFile(File(item.localPath)),
+            ),
+        ),
+        initialIndex = 0,
+        video = isVideoItem(item),
+        modifier = modifier.fillMaxSize(),
+        autoPlay = true,
+    )
 }
 
-@Composable
-private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
-    LinedNotebookInput(value = value, onValueChange = onValueChange)
-}
-
-/**
- * آکاردیونِ نکات — پیش‌فرض بسته؛ نکته‌ها بر حسب عنوان دسته‌بندی می‌شوند.
- * لمسِ هر نکته آن را در همان دفترِ بالا بار می‌کند.
- */
 @Composable
 private fun NotesAccordion(
     notes: List<LessonNote>,
