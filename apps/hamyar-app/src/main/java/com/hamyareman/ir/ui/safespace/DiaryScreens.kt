@@ -628,6 +628,7 @@ private fun DiaryBookViewer(
                         pageNumber = 1,
                         pageCount = pages.size + 1,
                         stackPages = pages.size.coerceIn(0, 7),
+                        fullScreen = true,
                     ) {
                         AsyncImage(
                             model = cover.asset,
