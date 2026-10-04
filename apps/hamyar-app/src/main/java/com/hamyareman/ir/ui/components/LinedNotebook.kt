@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -71,8 +72,8 @@ data class NotebookLayoutMetrics(
 
 private const val TOP_SKIP_LINES = 0
 private const val LINE_HEIGHT_SP = 24
-private const val SIDE_GUTTER_DP = 74
-private const val BOTTOM_GUTTER_DP = 24
+private const val SIDE_GUTTER_DP = 60
+private const val BOTTOM_GUTTER_DP = 26
 private const val PAGE_ASPECT = 0.707f
 
 private fun metrics(widthDp: Float, heightDp: Float): NotebookLayoutMetrics {
@@ -125,87 +126,98 @@ fun NotebookPaper(
     showVerticalGuides: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    val contentTop = if (header.isBlank()) 0.dp else (LINE_HEIGHT_SP * 2).dp
     BoxWithConstraints(
         modifier
             .fillMaxWidth()
             .aspectRatio(PAGE_ASPECT)
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFFFFCF2)),
+            .clip(RoundedCornerShape(3.dp)),
     ) {
         val density = LocalDensity.current
-        val lineHeightPx = with(density) { LINE_HEIGHT_SP.dp.toPx() }
+        val line = with(density) { LINE_HEIGHT_SP.sp.toPx() }
+        val first = with(density) { 18.dp.toPx() }
         val side = with(density) { SIDE_GUTTER_DP.dp.toPx() }
         val bottom = with(density) { BOTTOM_GUTTER_DP.dp.toPx() }
-        val rightMargin = with(density) { (SIDE_GUTTER_DP - 2).dp.toPx() }
-        Canvas(Modifier.fillMaxSize()) {
-            drawRect(Color(0xFFFFFCF2))
-            var y = 0f
-            while (y <= size.height - bottom) {
+        Box(Modifier.fillMaxSize()) {
+            RemoteDesignImage(
+                key = DesignAsset.PAGE_LINED,
+                modifier = Modifier.fillMaxSize(),
+                contentDescription = "کاغذ خط‌دار دفتر",
+                contentScale = androidx.compose.ui.layout.ContentScale.FillBounds,
+            )
+            Canvas(Modifier.fillMaxSize()) {
+                var y = first
+                while (y < size.height - bottom) {
+                    drawLine(
+                        color = Color(0x2A5E83A5),
+                        start = Offset(side * .88f, y),
+                        end = Offset(size.width - side * .42f, y),
+                        strokeWidth = 0.72f,
+                    )
+                    y += line
+                }
+                if (showVerticalGuides) {
+                    val right = size.width - side * .70f
+                    drawLine(
+                        Color(0x6590AABD),
+                        Offset(right, 0f),
+                        Offset(right, size.height - bottom),
+                        1.25f,
+                    )
+                    drawLine(
+                        Color(0x3A90AABD),
+                        Offset(right + with(density) { 7.dp.toPx() }, 0f),
+                        Offset(right + with(density) { 7.dp.toPx() }, size.height - bottom),
+                        0.9f,
+                    )
+                }
                 drawLine(
-                    color = Color(0xFFB9CEE5),
-                    start = Offset(side * 0.55f, y),
-                    end = Offset(size.width - side * 0.25f, y),
-                    strokeWidth = 1.05f,
+                    Color(0x32FFFFFF),
+                    Offset(1.5f, 2f),
+                    Offset(1.5f, size.height - 2f),
+                    1.5f,
                 )
-                y += lineHeightPx
+                drawLine(
+                    Color(0x30000000),
+                    Offset(size.width - 1.5f, 3f),
+                    Offset(size.width - 1.5f, size.height - 3f),
+                    1.2f,
+                )
             }
 
-            if (showVerticalGuides) {
-                drawLine(
-                    color = Color(0xFF9FB5C8),
-                    start = Offset(size.width - rightMargin, 0f),
-                    end = Offset(size.width - rightMargin, size.height - bottom),
-                    strokeWidth = 1.7f,
-                )
-                drawLine(
-                    color = Color(0xFF9FB5C8),
-                    start = Offset(
-                        size.width - rightMargin + with(density) { 6.dp.toPx() },
-                        0f,
-                    ),
-                    end = Offset(
-                        size.width - rightMargin + with(density) { 6.dp.toPx() },
-                        size.height - bottom,
-                    ),
-                    strokeWidth = 1.2f,
+            if (header.isNotBlank()) {
+                Text(
+                    text = header,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = SIDE_GUTTER_DP.dp, end = SIDE_GUTTER_DP.dp),
+                    textAlign = headerAlign,
+                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                    fontSize = 17.sp,
+                    lineHeight = LINE_HEIGHT_SP.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PaperInk,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
-            drawLine(
-                color = Color(0x40FFFFFF),
-                start = Offset(1f, 2f),
-                end = Offset(1f, size.height - 2f),
-                strokeWidth = 1.8f,
-            )
-            drawLine(
-                color = Color(0x18000000),
-                start = Offset(size.width - 1.2f, 2f),
-                end = Offset(size.width - 1.2f, size.height - 2f),
-                strokeWidth = 1.2f,
-            )
-        }
-
-        if (header.isNotBlank()) {
-            Text(
-                text = header,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = SIDE_GUTTER_DP.dp, end = SIDE_GUTTER_DP.dp, top = 1.dp),
-                textAlign = headerAlign,
-                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                fontSize = 17.sp,
-                lineHeight = LINE_HEIGHT_SP.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1B3448),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Box(Modifier.fillMaxSize().padding(top = (LINE_HEIGHT_SP * 2).dp)) { content() }
-        } else {
-            content()
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = SIDE_GUTTER_DP.dp,
+                        end = SIDE_GUTTER_DP.dp,
+                        top = contentTop,
+                        bottom = BOTTOM_GUTTER_DP.dp,
+                    ),
+            ) {
+                content()
+            }
         }
     }
 }
+
 
 @Composable
 fun NotebookBookPage(
@@ -216,76 +228,26 @@ fun NotebookBookPage(
     fullScreen: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val pageModifier = if (fullScreen) {
-        modifier.fillMaxHeight().aspectRatio(PAGE_ASPECT).padding(1.dp)
-    } else {
-        modifier.fillMaxWidth().aspectRatio(PAGE_ASPECT).padding(6.dp)
-    }
-    Box(pageModifier) {
-        val stack = stackPages.coerceIn(0, 8)
-        repeat(stack) { index ->
-            Box(
-                Modifier
-                    .matchParentSize()
-                    .padding(
-                        start = ((index + 1) * 2.1f).dp,
-                        top = ((index + 1) * 1.15f).dp,
-                    )
-                    .shadow(1.8.dp, RoundedCornerShape(4.dp))
-                    .background(Color(0xFFF5F0E5), RoundedCornerShape(4.dp)),
-            )
-        }
-
-        Box(
-            Modifier
-                .matchParentSize()
-                .shadow(16.dp, RoundedCornerShape(4.dp))
-                .background(Color(0xFFFFFCF2), RoundedCornerShape(4.dp)),
-        ) {
-            Box(
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .width(8.dp)
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color.Transparent,
-                                Color(0x14000000),
-                                Color(0x26000000),
-                            ),
-                        ),
-                    ),
-            )
-            content()
-
-            Canvas(Modifier.matchParentSize()) {
-                drawLine(
-                    color = Color(0x28FFFFFF),
-                    start = Offset(2f, 2f),
-                    end = Offset(size.width - 2f, 2f),
-                    strokeWidth = 1.6f,
-                )
-                drawLine(
-                    color = Color(0x22000000),
-                    start = Offset(size.width - 1.2f, 5f),
-                    end = Offset(size.width - 1.2f, size.height - 5f),
-                    strokeWidth = 1.1f,
-                )
-            }
-
-            Text(
-                text = "${pageNumber.coerceAtLeast(1)} / ${pageCount.coerceAtLeast(1)}",
-                color = Color(0xFF58718A),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 7.dp),
-            )
-        }
+    RealisticBookPage(
+        modifier = modifier.then(
+            if (fullScreen) Modifier.fillMaxHeight().aspectRatio(PAGE_ASPECT)
+            else Modifier.fillMaxWidth().aspectRatio(PAGE_ASPECT)
+        ),
+        pageOffset = 0f,
+        stackDepth = stackPages,
+        isCover = pageNumber == 1,
+    ) {
+        content()
+        Text(
+            text = "${pageNumber.coerceAtLeast(1)} / ${pageCount.coerceAtLeast(1)}",
+            color = Color(0xFF5E7180),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
+        )
     }
 }
+
 
 @Composable
 fun LinedNotebookInput(
@@ -297,27 +259,31 @@ fun LinedNotebookInput(
     showVerticalGuides: Boolean = true,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val baseLayout = remember(maxWidth) {
-            metrics(maxWidth.value, (maxWidth.value / PAGE_ASPECT).coerceAtLeast(400f))
+        val layout = remember(maxWidth) {
+            metrics(
+                widthDp = maxWidth.value,
+                heightDp = (maxWidth.value / PAGE_ASPECT).coerceAtLeast(430f),
+            )
         }
-        val pageCapacity = remember(baseLayout.pageCapacity, header) {
-            if (header.isBlank()) baseLayout.pageCapacity
-            else ((baseLayout.visibleLines - 2).coerceAtLeast(6) * baseLayout.charsPerLine * 0.9f).toInt().coerceAtLeast(120)
+        val pageCapacity = remember(layout, header) {
+            val reserved = if (header.isBlank()) 0 else 2
+            ((layout.visibleLines - reserved).coerceAtLeast(8) * layout.charsPerLine * .93f)
+                .toInt()
+                .coerceAtLeast(140)
         }
         var pages by remember(value) { mutableStateOf(decodePages(value, pageCapacity)) }
         val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(value, pageCapacity) {
-            val normalized = encodePages(pages)
-            if (value.isNotBlank() && normalized != value) pages = decodePages(value, pageCapacity)
+            pages = decodePages(value, pageCapacity)
         }
 
         HorizontalPager(
             state = pager,
             modifier = Modifier.fillMaxWidth(),
             reverseLayout = true,
-            beyondViewportPageCount = 1,
+            beyondViewportPageCount = 2,
         ) { pageIndex ->
             NotebookPaper(
                 header = if (pageIndex == 0) header else "",
@@ -327,61 +293,41 @@ fun LinedNotebookInput(
                 BasicTextField(
                     value = pages.getOrElse(pageIndex) { "" },
                     onValueChange = { changed ->
-                        val split = cutText(changed, pageCapacity)
+                        val chunks = cutText(changed, pageCapacity)
                         val next = pages.toMutableList()
-                        next[pageIndex] = split.firstOrNull().orEmpty()
-                        if (split.size > 1) next.addAll(pageIndex + 1, split.drop(1))
+                        next[pageIndex] = chunks.firstOrNull().orEmpty()
+                        if (chunks.size > 1) next.addAll(pageIndex + 1, chunks.drop(1))
                         pages = next
                         onValueChange(encodePages(next))
-                        if (split.size > 1) scope.launch { pager.animateScrollToPage(pageIndex + split.lastIndex) }
+                        if (chunks.size > 1) {
+                            scope.launch {
+                                pager.animateScrollToPage(
+                                    (pageIndex + chunks.lastIndex).coerceAtMost(next.lastIndex),
+                                )
+                            }
+                        }
                     },
                     textStyle = TextStyle(
                         fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
                         lineHeight = LINE_HEIGHT_SP.sp,
-                        color = Color(0xFF1B3448),
+                        color = PaperInk,
                         textAlign = textAlign,
                         platformStyle = PlatformTextStyle(includeFontPadding = false),
                         lineHeightStyle = LineHeightStyle(
-                            alignment = LineHeightStyle.Alignment.Bottom,
+                            alignment = LineHeightStyle.Alignment.Center,
                             trim = LineHeightStyle.Trim.None,
                         ),
                     ),
-                    cursorBrush = SolidColor(Color(0xFF1B3448)),
-                    modifier = Modifier.fillMaxSize().padding(
-                        start = SIDE_GUTTER_DP.dp,
-                        end = SIDE_GUTTER_DP.dp,
-                        bottom = BOTTOM_GUTTER_DP.dp,
-                    ),
+                    cursorBrush = SolidColor(Color(0xFF27485C)),
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
     }
 }
 
-fun oppositeTextAlign(value: TextAlign): TextAlign = if (value == TextAlign.Center) TextAlign.Right else TextAlign.Center
-
-fun notebookAlignmentWire(value: TextAlign): String = when (value) {
-    TextAlign.Center -> "center"
-    TextAlign.Left -> "left"
-    else -> "right"
-}
-
-fun notebookTextAlignFromWire(value: String): TextAlign = when (value) {
-    "center" -> TextAlign.Center
-    "left" -> TextAlign.Left
-    else -> TextAlign.Right
-}
-
-internal fun nextRegisteredTitle(baseTitle: String, existingTitles: List<String>): String {
-    val base = baseTitle.trim().replace(Regex("\\s+شماره\\s+\\d+$"), "").trim().ifBlank { "دفترچه" }
-    val pattern = Regex("^" + Regex.escape(base) + "\\s+شماره\\s+(\\d+)$")
-    val maxNumber = existingTitles.mapNotNull {
-        pattern.matchEntire(it.trim())?.groupValues?.getOrNull(1)?.toIntOrNull()
-    }.maxOrNull() ?: 0
-    return base + " شماره " + (maxNumber + 1)
-}
 
 @Composable
 fun NotebookAlignmentPicker(
