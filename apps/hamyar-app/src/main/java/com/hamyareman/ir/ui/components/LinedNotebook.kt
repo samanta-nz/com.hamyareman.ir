@@ -22,6 +22,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FormatAlignCenter
+import androidx.compose.material.icons.filled.FormatAlignLeft
+import androidx.compose.material.icons.filled.FormatAlignRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -318,84 +325,6 @@ fun NotebookAlignmentPicker(
         }
         IconButton(onClick = { onValueChange(TextAlign.Left) }) {
             Icon(Icons.Default.FormatAlignLeft, contentDescription = "چپ‌چین", tint = if (value == TextAlign.Left) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-fun PatternLockGrid(
-    pattern: String,
-    onPatternChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-) {
-    val latestPattern by androidx.compose.runtime.rememberUpdatedState(pattern)
-    val latestChange by androidx.compose.runtime.rememberUpdatedState(onPatternChange)
-    val primary = MaterialTheme.colorScheme.primary
-    val surface = MaterialTheme.colorScheme.surfaceVariant
-    val dot = MaterialTheme.colorScheme.onSurfaceVariant
-    val background = MaterialTheme.colorScheme.background
-    val points = remember {
-        listOf(
-            Offset(0f, 0f), Offset(.5f, 0f), Offset(1f, 0f),
-            Offset(0f, .5f), Offset(.5f, .5f), Offset(1f, .5f),
-            Offset(0f, 1f), Offset(.5f, 1f), Offset(1f, 1f),
-        )
-    }
-    Box(
-        modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp)
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(24.dp))
-            .background(surface.copy(alpha = .18f))
-            .padding(28.dp)
-            .pointerInput(enabled) {
-                if (!enabled) return@pointerInput
-                fun hit(offset: Offset): Int? {
-                    var best: Int? = null
-                    var bestDistance = Float.MAX_VALUE
-                    points.forEachIndexed { i, p ->
-                        val center = Offset(p.x * size.width, p.y * size.height)
-                        val dx = offset.x - center.x
-                        val dy = offset.y - center.y
-                        val d2 = dx * dx + dy * dy
-                        val radius = size.minDimension * .20f
-                        if (d2 < bestDistance && d2 <= radius * radius) {
-                            best = i
-                            bestDistance = d2
-                        }
-                    }
-                    return best
-                }
-                detectDragGestures(
-                    onDragStart = { pos ->
-                        hit(pos)?.let { idx ->
-                            val digit = (idx + 1).toString()
-                            if (!latestPattern.contains(digit)) latestChange(digit)
-                        }
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        hit(change.position)?.let { idx ->
-                            val digit = (idx + 1).toString()
-                            if (!latestPattern.contains(digit)) latestChange(latestPattern + digit)
-                        }
-                    },
-                )
-            },
-    ) {
-        Canvas(Modifier.fillMaxSize()) {
-            val selected = latestPattern.mapNotNull { it.digitToIntOrNull()?.minus(1) }
-            selected.zipWithNext().forEach { (a, b) ->
-                drawLine(primary, Offset(points[a].x * size.width, points[a].y * size.height), Offset(points[b].x * size.width, points[b].y * size.height), 8f)
-            }
-            points.forEachIndexed { i, p ->
-                val center = Offset(p.x * size.width, p.y * size.height)
-                val chosen = selected.contains(i)
-                drawCircle(if (chosen) primary else dot, if (chosen) 15f else 11f, center)
-                if (chosen) drawCircle(background, 5f, center)
-            }
         }
     }
 }
