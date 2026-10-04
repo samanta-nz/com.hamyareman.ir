@@ -457,8 +457,8 @@ fun DiaryScreen(onBack: () -> Unit) {
                                     store.putString(DIARY_COVER, cover.id)
                                 }) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        AsyncImage(
-                                            model = cover.asset,
+                                        RemoteDesignImage(
+                                            key = cover.asset,
                                             contentDescription = cover.title,
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
