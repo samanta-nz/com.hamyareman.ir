@@ -53,91 +53,177 @@ fun PatternLockGrid(
     onPatternChange: (String) -> Unit,
     enabled: Boolean = true,
 ) {
-    val latestPattern by androidx.compose.runtime.rememberUpdatedState(pattern)
-    val latestChange by androidx.compose.runtime.rememberUpdatedState(onPatternChange)
-    val primary = MaterialTheme.colorScheme.primary
-    val surface = MaterialTheme.colorScheme.surfaceVariant
-    val dot = MaterialTheme.colorScheme.onSurfaceVariant
     val view = LocalView.current
-    val background = MaterialTheme.colorScheme.background
-    var pointer by remember { mutableStateOf<Offset?>(null) }
-    val points = remember {
-        listOf(
-            Offset(0f, 0f), Offset(.5f, 0f), Offset(1f, 0f),
-            Offset(0f, .5f), Offset(.5f, .5f), Offset(1f, .5f),
-            Offset(0f, 1f), Offset(.5f, 1f), Offset(1f, 1f),
-        )
+    val primary = MaterialTheme.colorScheme.primary
+    val background = Color(0xFF081321)
+    val gridDot = Color(0x3379A8CA)
+    val nodeOuter = Color(0x5585B9D8)
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "pattern-pulse")
+    val pulse by transition.animateFloat(
+        initialValue = .7f,
+        targetValue = 1.18f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(1500),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse,
+        ),
+        label = "pattern-pulse-value",
+    )
+    val selected = remember(pattern) {
+        pattern.mapNotNull { it.digitToIntOrNull()?.minus(1) }
     }
+    val points = remember {
+        List(9) { index ->
+            Offset((index % 3) / 2f, (index / 3) / 2f)
+        }
+    }
+
+    fun hit(position: Offset, width: Float, height: Float): Int? {
+        var best: Int? = null
+        var bestDistance = Float.MAX_VALUE
+        val radius = minOf(width, height) * .12f
+        points.forEachIndexed { index, normalized ->
+            val center = Offset(normalized.x * width, normalized.y * height)
+            val dx = position.x - center.x
+            val dy = position.y - center.y
+            val d2 = dx * dx + dy * dy
+            if (d2 <= radius * radius && d2 < bestDistance) {
+                best = index
+                bestDistance = d2
+            }
+        }
+        return best
+    }
+
+    fun appendNode(base: String, idx: Int): String {
+        val digit = (idx + 1).toString()
+        if (base.contains(digit)) return base
+        val last = base.lastOrNull()?.digitToIntOrNull()?.minus(1)
+        if (last != null) {
+            val middle = when {
+                (last == 0 && idx == 2) || (last == 2 && idx == 0) -> 1
+                (last == 3 && idx == 5) || (last == 5 && idx == 3) -> 4
+                (last == 6 && idx == 8) || (last == 8 && idx == 6) -> 7
+                (last == 0 && idx == 6) || (last == 6 && idx == 0) -> 3
+                (last == 2 && idx == 8) || (last == 8 && idx == 2) -> 5
+                (last == 0 && idx == 8) || (last == 8 && idx == 0) -> 4
+                (last == 2 && idx == 6) || (last == 6 && idx == 2) -> 4
+                else -> -1
+            }
+            if (middle >= 0) {
+                val middleDigit = (middle + 1).toString()
+                if (!base.contains(middleDigit)) return base + middleDigit + digit
+            }
+        }
+        return base + digit
+    }
+
     Box(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp)
+            .padding(horizontal = 10.dp)
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(24.dp))
-            .background(surface.copy(alpha = .18f))
-            .pointerInput(enabled) {
+            .clip(RoundedCornerShape(30.dp))
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xFF17314A), Color(0xFF0D1B2C), background),
+                    radius = 760f,
+                ),
+            )
+            .pointerInput(enabled, pattern) {
                 if (!enabled) return@pointerInput
-                fun hit(offset: Offset): Int? {
-                    var best: Int? = null
-                    var bestDistance = Float.MAX_VALUE
-                    points.forEachIndexed { i, p ->
-                        val center = Offset(p.x * size.width, p.y * size.height)
-                        val dx = offset.x - center.x
-                        val dy = offset.y - center.y
-                        val d2 = dx * dx + dy * dy
-                        val radius = minOf(size.width, size.height) * .20f
-                        if (d2 < bestDistance && d2 <= radius * radius) {
-                            best = i
-                            bestDistance = d2
-                        }
-                    }
-                    return best
-                }
                 detectDragGestures(
-                    onDragStart = { pos ->
-                        pointer = pos
-                        hit(pos)?.let { idx ->
-                            val digit = (idx + 1).toString()
-                            if (!latestPattern.contains(digit)) {
-                                latestChange(digit)
-                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            }
+                    onDragStart = { start ->
+                        onPatternChange("")
+                        hit(start, size.width, size.height)?.let { idx ->
+                            onPatternChange(appendNode("", idx))
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                         }
                     },
                     onDrag = { change, _ ->
-                        pointer = change.position
-                        hit(change.position)?.let { idx ->
-                            val digit = (idx + 1).toString()
-                            if (!latestPattern.contains(digit)) {
-                                latestChange(latestPattern + digit)
+                        hit(change.position, size.width, size.height)?.let { idx ->
+                            val next = appendNode(pattern, idx)
+                            if (next != pattern) {
+                                onPatternChange(next)
                                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             }
                         }
                     },
-                    onDragEnd = { pointer = null },
-                    onDragCancel = { pointer = null },
+                    onDragEnd = {},
+                    onDragCancel = {},
                 )
             },
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val selected = latestPattern.mapNotNull { it.digitToIntOrNull()?.minus(1) }
-            selected.zipWithNext().forEach { (a, b) ->
-                drawLine(primary, Offset(points[a].x * size.width, points[a].y * size.height), Offset(points[b].x * size.width, points[b].y * size.height), 8f)
+            val glow = minOf(size.width, size.height) * .26f
+            drawCircle(
+                Brush.radialGradient(
+                    colors = listOf(Color(0x304C96C6), Color.Transparent),
+                    radius = glow,
+                ),
+                radius = glow,
+                center = Offset(size.width * .5f, size.height * .5f),
+            )
+
+            val spacing = size.minDimension / 12f
+            for (x in 1..11) {
+                for (y in 1..11) {
+                    val alpha = if ((x + y) % 2 == 0) .16f else .08f
+                    drawCircle(
+                        color = gridDot.copy(alpha = alpha),
+                        radius = if ((x + y) % 3 == 0) 1.9f else 1.25f,
+                        center = Offset(x * spacing, y * spacing),
+                    )
+                }
             }
-            if (pointer != null && selected.isNotEmpty()) {
-                val last = selected.last()
+
+            selected.zipWithNext().forEach { (a, b) ->
+                val start = Offset(points[a].x * size.width, points[a].y * size.height)
+                val end = Offset(points[b].x * size.width, points[b].y * size.height)
                 drawLine(
-                    primary.copy(alpha = .55f),
-                    Offset(points[last].x * size.width, points[last].y * size.height),
-                    pointer!!,
-                    6f,
+                    brush = Brush.linearGradient(
+                        listOf(Color(0x006FC7FF), primary, Color(0x00FFFFFF)),
+                        start = start,
+                        end = end,
+                    ),
+                    start = start,
+                    end = end,
+                    strokeWidth = 18f,
+                    cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                )
+                drawLine(
+                    color = primary.copy(alpha = .92f),
+                    start = start,
+                    end = end,
+                    strokeWidth = 7f,
+                    cap = androidx.compose.ui.graphics.StrokeCap.Round,
                 )
             }
-            points.forEachIndexed { i, p ->
-                val center = Offset(p.x * size.width, p.y * size.height)
-                val chosen = selected.contains(i)
-                drawCircle(if (chosen) primary else dot, if (chosen) 15f else 11f, center)
-                if (chosen) drawCircle(background, 5f, center)
+
+            points.forEachIndexed { index, normalized ->
+                val center = Offset(normalized.x * size.width, normalized.y * size.height)
+                val isSelected = selected.contains(index)
+                if (isSelected) {
+                    drawCircle(
+                        color = primary.copy(alpha = .11f * pulse),
+                        radius = 34f * pulse,
+                        center = center,
+                    )
+                    drawCircle(
+                        color = primary.copy(alpha = .34f),
+                        radius = 23f,
+                        center = center,
+                    )
+                } else {
+                    drawCircle(nodeOuter, 21f, center)
+                }
+                drawCircle(
+                    color = if (isSelected) primary else Color(0xFFC7D9E7),
+                    radius = if (isSelected) 11.5f else 8.5f,
+                    center = center,
+                )
+                if (isSelected) {
+                    drawCircle(background, 4.2f, center)
+                }
             }
         }
     }
@@ -181,22 +267,24 @@ fun PinLockGate(
             .fillMaxSize()
             .background(
                 Brush.radialGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = .16f),
-                        MaterialTheme.colorScheme.surface,
-                        MaterialTheme.colorScheme.background,
+                    colors = listOf(
+                        Color(0xFF203A53),
+                        Color(0xFF0B1725),
+                        Color(0xFF07111E),
                     ),
+                    radius = 1400f,
                 ),
             )
             .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(title, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+        Text(title, color = Color.White, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
         Text(
             subtitle,
             style = MaterialTheme.typography.bodyMedium,
+            color = Color(0xFFD0DCE7),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
