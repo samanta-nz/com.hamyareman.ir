@@ -60,6 +60,7 @@ import coil.compose.AsyncImage
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
+import com.hamyareman.ir.platform.core.common.TableIds
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
 import com.hamyareman.ir.ui.components.LinedNotebookInput
 import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
@@ -74,6 +75,32 @@ import java.io.File
 import java.util.UUID
 
 private const val DIARY_STORE = "hamyar_private_diary"
+private const val NOTEBOOKS = "notebooks"
+
+private data class Notebook(
+    val id: String,
+    val title: String,
+    val createdAt: Long,
+    val cipher: String,
+)
+
+private fun readNotebooks(store: LocalStore): List<Notebook> = runCatching {
+    val array = JSONArray(store.getString(NOTEBOOKS, "[]"))
+    buildList {
+        for (i in 0 until array.length()) {
+            val o = array.getJSONObject(i)
+            add(Notebook(o.getString("id"), o.getString("title"), o.getLong("createdAt"), o.getString("cipher")))
+        }
+    }.sortedByDescending { it.createdAt }
+}.getOrDefault(emptyList())
+
+private fun writeNotebooks(store: LocalStore, notebooks: List<Notebook>) {
+    val array = JSONArray()
+    notebooks.forEach { n ->
+        array.put(JSONObject().put("id", n.id).put("title", n.title).put("createdAt", n.createdAt).put("cipher", n.cipher))
+    }
+    store.putString(NOTEBOOKS, array.toString())
+}
 private const val DIARY_ENTRIES = "entries"
 private const val DIARY_COVER = "cover"
 private const val DIARY_MEDIA_DIR = "diary-media"
