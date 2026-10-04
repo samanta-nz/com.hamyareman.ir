@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -176,14 +177,15 @@ fun NotebookBookPage(
     pageCount: Int,
     stackPages: Int,
     modifier: Modifier = Modifier,
+    fullScreen: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    Box(
-        modifier
-            .fillMaxWidth()
-            .aspectRatio(PAGE_ASPECT)
-            .padding(8.dp),
-    ) {
+    val pageModifier = if (fullScreen) {
+        modifier.fillMaxHeight().aspectRatio(PAGE_ASPECT).padding(2.dp)
+    } else {
+        modifier.fillMaxWidth().aspectRatio(PAGE_ASPECT).padding(8.dp)
+    }
+    Box(pageModifier) {
         val stack = stackPages.coerceIn(0, 7)
         repeat(stack) { index ->
             Box(
