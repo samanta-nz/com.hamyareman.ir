@@ -58,7 +58,7 @@ data class NotebookLayoutMetrics(
     val lineHeightSp: Int,
 )
 
-private const val TOP_SKIP_LINES = 6
+private const val TOP_SKIP_LINES = 0
 private const val LINE_HEIGHT_SP = 24
 private const val SIDE_GUTTER_DP = 74
 private const val BOTTOM_GUTTER_DP = 24
