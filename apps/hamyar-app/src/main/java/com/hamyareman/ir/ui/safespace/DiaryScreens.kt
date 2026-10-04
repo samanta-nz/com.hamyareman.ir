@@ -69,6 +69,10 @@ import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
 import com.hamyareman.ir.ui.components.NotebookTitlePicker
+import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.nextRegisteredTitle
+import com.hamyareman.ir.ui.components.notebookAlignmentWire
+import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
 import com.hamyareman.ir.ui.study.SecureWebEffect
 import kotlinx.coroutines.launch
 import org.json.JSONArray
@@ -84,6 +88,7 @@ private data class Notebook(
     val title: String,
     val createdAt: Long,
     val cipher: String,
+    val alignment: String = "right",
 )
 
 private fun readNotebooks(store: LocalStore): List<Notebook> = runCatching {
@@ -91,7 +96,7 @@ private fun readNotebooks(store: LocalStore): List<Notebook> = runCatching {
     buildList {
         for (i in 0 until array.length()) {
             val o = array.getJSONObject(i)
-            add(Notebook(o.getString("id"), o.getString("title"), o.getLong("createdAt"), o.getString("cipher")))
+            add(Notebook(o.getString("id"), o.getString("title"), o.getLong("createdAt"), o.getString("cipher"), o.optString("alignment", "right")))
         }
     }.sortedByDescending { it.createdAt }
 }.getOrDefault(emptyList())
@@ -99,7 +104,7 @@ private fun readNotebooks(store: LocalStore): List<Notebook> = runCatching {
 private fun writeNotebooks(store: LocalStore, notebooks: List<Notebook>) {
     val array = JSONArray()
     notebooks.forEach { n ->
-        array.put(JSONObject().put("id", n.id).put("title", n.title).put("createdAt", n.createdAt).put("cipher", n.cipher))
+        array.put(JSONObject().put("id", n.id).put("title", n.title).put("createdAt", n.createdAt).put("cipher", n.cipher).put("alignment", n.alignment))
     }
     store.putString(NOTEBOOKS, array.toString())
 }
@@ -120,6 +125,7 @@ private data class DiaryPageModel(
     val imageWidth: Float = 0.56f,
     val imageOffsetY: Float = 0f,
     val wrap: ImageWrap = ImageWrap.NONE,
+    val alignment: String = "right",
 )
 
 private data class DiaryPayload(val pages: List<DiaryPageModel>)
@@ -193,7 +199,8 @@ private fun encodePayload(pages: List<DiaryPageModel>): String {
                 .put("caption", page.caption)
                 .put("imageWidth", page.imageWidth)
                 .put("imageOffsetY", page.imageOffsetY)
-                .put("wrap", page.wrap.wire),
+                .put("wrap", page.wrap.wire)
+                .put("alignment", page.alignment),
         )
     }
     return JSONObject().put("version", 3).put("pages", arr).toString()
@@ -215,6 +222,7 @@ private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPay
                         imageWidth = o.optDouble("imageWidth", 0.56).toFloat().coerceIn(0.25f, 0.82f),
                         imageOffsetY = o.optDouble("imageOffsetY", 0.0).toFloat().coerceIn(-0.25f, 0.25f),
                         wrap = ImageWrap.entries.firstOrNull { it.wire == o.optString("wrap") } ?: ImageWrap.NONE,
+                        alignment = o.optString("alignment", "right"),
                     ),
                 )
             }
@@ -264,6 +272,7 @@ fun DiaryScreen(onBack: () -> Unit) {
     var imageWidth by remember { mutableStateOf(0.56f) }
     var imageOffsetY by remember { mutableStateOf(0f) }
     var wrap by remember { mutableStateOf(ImageWrap.NONE) }
+    var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
     var viewerStart by remember { mutableStateOf<Int?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
 
@@ -290,6 +299,7 @@ fun DiaryScreen(onBack: () -> Unit) {
         imageWidth = 0.56f
         imageOffsetY = 0f
         wrap = ImageWrap.NONE
+        alignment = androidx.compose.ui.text.style.TextAlign.Right
         notice = null
     }
 
@@ -305,6 +315,7 @@ fun DiaryScreen(onBack: () -> Unit) {
         imageWidth = page.imageWidth
         imageOffsetY = page.imageOffsetY
         wrap = page.wrap
+        alignment = notebookTextAlignFromWire(page.alignment)
         notice = "صفحهٔ " + (pageIndex + 1) + " برای ویرایش باز شد."
     }
 
@@ -315,7 +326,7 @@ fun DiaryScreen(onBack: () -> Unit) {
         }
         val currentEntry = editingEntryId?.let { id -> entries.firstOrNull { it.id == id } }
         val pageTexts = text.split(NOTEBOOK_PAGE_SEPARATOR).map { it.trim() }.ifEmpty { listOf("") }
-        val heading = titleOrDefault(title, "خاطرات امروز")
+        val heading = if (currentEntry == null) nextRegisteredTitle(titleOrDefault(title, "خاطرات امروز"), entries.map { it.title }) else titleOrDefault(title, "خاطرات امروز")
         val pageBase = DiaryPageModel(
             text = pageTexts.firstOrNull().orEmpty(),
             imagePath = imagePath,
@@ -323,11 +334,12 @@ fun DiaryScreen(onBack: () -> Unit) {
             imageWidth = imageWidth,
             imageOffsetY = imageOffsetY,
             wrap = wrap,
+            alignment = notebookAlignmentWire(alignment),
         )
 
         if (currentEntry == null) {
             val pages = pageTexts.mapIndexed { index, value ->
-                if (index == 0) pageBase else DiaryPageModel(value)
+                if (index == 0) pageBase else DiaryPageModel(value, alignment = notebookAlignmentWire(alignment))
             }
             val entry = DiaryEntry(
                 id = UUID.randomUUID().toString(),
@@ -339,7 +351,11 @@ fun DiaryScreen(onBack: () -> Unit) {
         } else {
             val pages = decodePayload(currentEntry.cipher) { container.encryptor.decrypt(it).orEmpty() }.pages.toMutableList()
             while (pages.size <= editingPageIndex) pages += DiaryPageModel("")
-            pages[editingPageIndex] = pageBase
+            val replacement = pageTexts.mapIndexed { index, value ->
+                if (index == 0) pageBase else DiaryPageModel(value, alignment = notebookAlignmentWire(alignment))
+            }
+            pages.removeAt(editingPageIndex)
+            pages.addAll(editingPageIndex, replacement)
             val changed = currentEntry.copy(
                 title = heading,
                 cipher = container.encryptor.encrypt(encodePayload(pages)),
@@ -449,7 +465,8 @@ fun DiaryScreen(onBack: () -> Unit) {
                             onValueChange = { title = it },
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        LinedNotebookInput(text) { text = it }
+                        NotebookAlignmentPicker(alignment, { alignment = it })
+                        LinedNotebookInput(text, { text = it }, header = titleOrDefault(title, "خاطرات امروز"), textAlign = alignment)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(
                                 onClick = { imagePicker.launch(arrayOf("image/*")) },
@@ -625,7 +642,7 @@ private fun DiaryBookViewer(
                         pageCount = pages.size + 1,
                         stackPages = (pages.size - index).coerceIn(0, 7),
                     ) {
-                        DiaryRenderedPage(page.page)
+                        DiaryRenderedPage(page.page, header = if (page.pageIndex == 0) page.entry.title else "")
                     }
                 }
             }
@@ -651,10 +668,10 @@ private fun DiaryBookViewer(
 }
 
 @Composable
-private fun DiaryRenderedPage(page: DiaryPageModel) {
-    NotebookPaper {
+private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
+    NotebookPaper(header = header, headerAlign = TextAlign.Center, showVerticalGuides = true) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val area = Modifier.fillMaxSize().padding(start = 78.dp, end = 78.dp, top = 150.dp, bottom = 28.dp)
+            val area = Modifier.fillMaxSize().padding(start = 78.dp, end = 78.dp, top = 0.dp, bottom = 28.dp)
             when {
                 page.imagePath.isBlank() -> {
                     Text(
@@ -664,7 +681,7 @@ private fun DiaryRenderedPage(page: DiaryPageModel) {
                         fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                         fontSize = 18.sp,
                         lineHeight = 24.sp,
-                        textAlign = TextAlign.Right,
+                        textAlign = notebookTextAlignFromWire(page.alignment),
                     )
                 }
                 page.wrap == ImageWrap.TOP -> {
@@ -760,8 +777,15 @@ fun NotebooksScreen(onBack: () -> Unit) {
     var selectedId by remember { mutableStateOf<String?>(null) }
     var title by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
+    var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
     var notice by remember { mutableStateOf<String?>(null) }
     val selected = notebooks.firstOrNull { it.id == selectedId }
+    LaunchedEffect(selected?.id) {
+        selected?.let {
+            text = container.encryptor.decrypt(it.cipher).orEmpty()
+            alignment = notebookTextAlignFromWire(it.alignment)
+        }
+    }
 
     fun rowId(id: String): String =
         "notebook_" + container.auth.cachedUserId().orEmpty().take(32) + "_" + id.take(32)
@@ -808,12 +832,13 @@ fun NotebooksScreen(onBack: () -> Unit) {
                             )
                             Button(
                                 onClick = {
-                                    val finalTitle = title.trim().ifBlank { "یادداشت‌های روزانه" }
+                                    val finalTitle = nextRegisteredTitle(title.trim().ifBlank { "یادداشت‌های روزانه" }, notebooks.map { it.title })
                                     val item = Notebook(
                                         id = UUID.randomUUID().toString(),
                                         title = finalTitle,
                                         createdAt = System.currentTimeMillis(),
                                         cipher = container.encryptor.encrypt(""),
+                                        alignment = "right",
                                     )
                                     notebooks = listOf(item) + notebooks
                                     writeNotebooks(store, notebooks)
@@ -855,16 +880,6 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                             )
-                            Text(
-                                paginate(body).size.toString(),
-                                maxLines = 1,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 5.dp),
-                            )
-                            IconButton(onClick = { selectedId = notebookItem.id }) {
-                                Icon(Icons.Default.Edit, contentDescription = "ویرایش دفترچه")
-                            }
                             IconButton(onClick = {
                                 notebooks = notebooks.filterNot { it.id == notebookItem.id }
                                 writeNotebooks(store, notebooks)
@@ -888,20 +903,20 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Text(
-                                "شش سطر بالای کاغذ خالی می‌ماند؛ وقتی آخرین سطر پر شود، متن خودکار به برگ بعد می‌رود.",
+                                "عنوانِ شماره‌دار در سطر اول می‌آید؛ یک سطر فاصله دارد و سپس نوشتن شروع می‌شود.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                            LinedNotebookInput(text) { text = it }
+                            NotebookAlignmentPicker(alignment, { alignment = it })
+                            LinedNotebookInput(text, { text = it }, header = selected.title, textAlign = alignment)
                             Button(
                                 onClick = {
                                     if (text.isBlank()) {
                                         notice = "اول چیزی بنویس."
                                     } else {
-                                        val old = container.encryptor.decrypt(selected.cipher).orEmpty()
-                                        val joined = listOf(old, text.trim()).filter { it.isNotBlank() }.joinToString("\n\n")
                                         val changed = selected.copy(
-                                            cipher = container.encryptor.encrypt(joined),
+                                            cipher = container.encryptor.encrypt(text.trim()),
+                                            alignment = notebookAlignmentWire(alignment),
                                         )
                                         notebooks = notebooks.map { if (it.id == changed.id) changed else it }
                                         writeNotebooks(store, notebooks)
@@ -930,7 +945,11 @@ fun NotebooksScreen(onBack: () -> Unit) {
                             stackPages = (pages.size - index - 1).coerceIn(0, 7),
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            NotebookPaper {
+                            NotebookPaper(
+                                header = if (index == 0) selected.title else "",
+                                headerAlign = oppositeTextAlign(notebookTextAlignFromWire(selected.alignment)),
+                                showVerticalGuides = true,
+                            ) {
                                 Text(
                                     page,
                                     modifier = Modifier
@@ -939,7 +958,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                     fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                                     fontSize = 18.sp,
                                     lineHeight = 24.sp,
-                                    textAlign = TextAlign.Right,
+                                    textAlign = notebookTextAlignFromWire(selected.alignment),
                                     color = Color(0xFF19364B),
                                 )
                             }
