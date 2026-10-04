@@ -69,6 +69,7 @@ import com.hamyareman.ir.ui.routine.RoutineScreen
 import com.hamyareman.ir.ui.safespace.DiaryScreen
 import com.hamyareman.ir.ui.safespace.HelplinesScreen
 import com.hamyareman.ir.ui.safespace.NotebooksScreen
+import com.hamyareman.ir.ui.safespace.PoetryBookScreen
 import com.hamyareman.ir.ui.safespace.SafeContentGuard
 import com.hamyareman.ir.ui.safespace.SafeSpaceScreen
 import com.hamyareman.ir.ui.safespace.SafeFreeWritingScreen
@@ -304,6 +305,11 @@ fun ZahraNavHost() {
                 SafeContentGuard(onLocked = {
                     nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Notebooks.route) { inclusive = true } }
                 }) { NotebooksScreen { nav.popBackStack() } }
+            }
+            composable(Screen.Poetry.route) {
+                SafeContentGuard(onLocked = {
+                    nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Poetry.route) { inclusive = true } }
+                }) { PoetryBookScreen { nav.popBackStack() } }
             }
             composable(Screen.SafeFreeWriting.route) {
                 SafeContentGuard(onLocked = {

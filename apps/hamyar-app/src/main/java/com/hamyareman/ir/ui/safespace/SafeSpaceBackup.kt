@@ -107,9 +107,25 @@ fun SafeSpaceBackupCard() {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("بکاپ فضای امن", style = MaterialTheme.typography.titleMedium)
             Text(
-                "دل‌نوشت، نوشتهٔ آزاد، شکرگزاری، دفتر خاطرات با جلد، پاسخ‌های خودآگاهی و همهٔ رسانه‌های آلبوم یک‌جا ذخیره می‌شوند.",
+                "بکاپ رمزگذاری‌شده برای نگهداری امن و انتقال بین نصب‌های همیار من پیشنهاد می‌شود.",
                 style = MaterialTheme.typography.bodySmall,
             )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    enabled = !busy,
+                    onClick = {
+                        val stamp = JalaliDate.todayIso()
+                        create.launch("hamyar-safe-" + stamp + "." + kind.extension)
+                    },
+                    modifier = Modifier.weight(1f),
+                ) { Text(if (busy) "در حال آماده‌سازی…" else "ساخت بکاپ") }
+                OutlinedButton(
+                    enabled = !busy,
+                    onClick = { restore.launch(arrayOf("application/octet-stream", "application/zip", "application/json", "*/*")) },
+                    modifier = Modifier.weight(1f),
+                ) { Text("بازیابی") }
+            }
+            Text("قالب بکاپ", style = MaterialTheme.typography.labelMedium)
             BackupKind.entries.forEach { option ->
                 FilterChip(
                     selected = kind == option,
@@ -129,21 +145,6 @@ fun SafeSpaceBackupCard() {
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodySmall,
                 )
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    enabled = !busy,
-                    onClick = {
-                        val stamp = JalaliDate.todayIso()
-                        create.launch("hamyar-safe-$stamp.${kind.extension}")
-                    },
-                    modifier = Modifier.weight(1f),
-                ) { Text(if (busy) "کمی صبر…" else "ساخت بکاپ") }
-                OutlinedButton(
-                    enabled = !busy,
-                    onClick = { restore.launch(arrayOf("application/octet-stream", "application/zip", "application/json", "*/*")) },
-                    modifier = Modifier.weight(1f),
-                ) { Text("بازیابی") }
             }
             notice?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
         }

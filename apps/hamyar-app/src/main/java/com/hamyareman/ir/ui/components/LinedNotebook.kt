@@ -1,94 +1,333 @@
 package com.hamyareman.ir.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import androidx.compose.ui.window.PopupProperties
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
-import kotlinx.coroutines.launch
 
-/**
- * فرم ورودی مشترک همهٔ دفترچه‌ها: کاغذ ثابت است و فقط متنِ نامحدود روی خطوط
- * اسکرول می‌شود. با رسیدن به سطر آخر، سطر تازه نمایان و سطر نخست زیر قاب می‌رود.
- */
+internal const val NOTEBOOK_PAGE_SEPARATOR = '\u000c'
+
+data class NotebookLayoutMetrics(
+    val visibleLines: Int,
+    val charsPerLine: Int,
+    val pageCapacity: Int,
+    val topSkipLines: Int,
+    val lineHeightSp: Int,
+)
+
+private const val TOP_SKIP_LINES = 6
+private const val LINE_HEIGHT_SP = 24
+private const val SIDE_GUTTER_DP = 74
+private const val BOTTOM_GUTTER_DP = 24
+private const val PAGE_ASPECT = 0.707f
+
+private fun metrics(widthDp: Float, heightDp: Float): NotebookLayoutMetrics {
+    val usableWidth = (widthDp - SIDE_GUTTER_DP * 2).coerceAtLeast(140f)
+    val charsPerLine = (usableWidth / 10.7f).toInt().coerceIn(14, 42)
+    val usableHeight = (heightDp - BOTTOM_GUTTER_DP - TOP_SKIP_LINES * LINE_HEIGHT_SP).coerceAtLeast(120f)
+    val visibleLines = (usableHeight / LINE_HEIGHT_SP).toInt().coerceIn(8, 26)
+    return NotebookLayoutMetrics(
+        visibleLines = visibleLines,
+        charsPerLine = charsPerLine,
+        pageCapacity = (visibleLines * charsPerLine * 0.9f).toInt().coerceAtLeast(180),
+        topSkipLines = TOP_SKIP_LINES,
+        lineHeightSp = LINE_HEIGHT_SP,
+    )
+}
+
+private fun cutText(text: String, capacity: Int): List<String> {
+    val normalized = text.replace("\r", "").trim()
+    if (normalized.isBlank()) return listOf("")
+    if (normalized.length <= capacity) return listOf(normalized)
+    val out = mutableListOf<String>()
+    var rest = normalized
+    while (rest.length > capacity) {
+        val floor = (capacity * 0.72f).toInt()
+        val cut = rest.lastIndexOfAny(charArrayOf('\n', ' ', '،', '.', '؛', '؟'), capacity)
+            .takeIf { it >= floor } ?: capacity
+        out += rest.substring(0, cut).trim()
+        rest = rest.substring(cut).trimStart()
+    }
+    if (rest.isNotBlank()) out += rest
+    return out.ifEmpty { listOf("") }
+}
+
+private fun decodePages(value: String, capacity: Int): List<String> {
+    val normalized = value.replace("\r", "")
+    if (normalized.contains(NOTEBOOK_PAGE_SEPARATOR)) {
+        return normalized.split(NOTEBOOK_PAGE_SEPARATOR).map { it.trim() }.ifEmpty { listOf("") }
+    }
+    return cutText(normalized, capacity)
+}
+
+private fun encodePages(pages: List<String>): String =
+    pages.joinToString(NOTEBOOK_PAGE_SEPARATOR.toString()) { it.trim() }
+
+@Composable
+fun NotebookPaper(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    BoxWithConstraints(
+        modifier
+            .fillMaxWidth()
+            .aspectRatio(PAGE_ASPECT)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFFFFCF2)),
+    ) {
+        val lineHeightPx = 24.dp.toPx()
+        val side = SIDE_GUTTER_DP.dp.toPx()
+        val top = TOP_SKIP_LINES * lineHeightPx
+        val bottom = BOTTOM_GUTTER_DP.dp.toPx()
+        Canvas(Modifier.fillMaxSize()) {
+            var y = top
+            while (y <= size.height - bottom) {
+                drawLine(
+                    color = Color(0xFFB9CEE5),
+                    start = androidx.compose.ui.geometry.Offset(side, y),
+                    end = androidx.compose.ui.geometry.Offset(size.width - side, y),
+                    strokeWidth = 1.2f,
+                )
+                y += lineHeightPx
+            }
+            drawLine(
+                color = Color(0xFF7EA5C9),
+                start = androidx.compose.ui.geometry.Offset(side, top - lineHeightPx),
+                end = androidx.compose.ui.geometry.Offset(side, size.height - bottom),
+                strokeWidth = 2.2f,
+            )
+            drawLine(
+                color = Color(0xFF7EA5C9),
+                start = androidx.compose.ui.geometry.Offset(size.width - side, top - lineHeightPx),
+                end = androidx.compose.ui.geometry.Offset(size.width - side, size.height - bottom),
+                strokeWidth = 2.2f,
+            )
+        }
+        content()
+    }
+}
+
+@Composable
+fun NotebookBookPage(
+    pageNumber: Int,
+    pageCount: Int,
+    stackPages: Int,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .aspectRatio(PAGE_ASPECT)
+            .padding(8.dp),
+    ) {
+        val stack = stackPages.coerceIn(0, 7)
+        repeat(stack) { index ->
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .padding(start = ((index + 1) * 2).dp, top = ((index + 1) * 1.2f).dp)
+                    .shadow(2.dp, RoundedCornerShape(15.dp))
+                    .background(Color(0xFFFFFDF7), RoundedCornerShape(15.dp))
+                    .border(1.dp, Color(0xFFD5D0C3), RoundedCornerShape(15.dp)),
+            )
+        }
+        Box(
+            Modifier
+                .matchParentSize()
+                .shadow(10.dp, RoundedCornerShape(15.dp))
+                .background(Color(0xFFFFFCF2), RoundedCornerShape(15.dp)),
+        ) {
+            content()
+            Text(
+                text = "\${pageNumber.coerceAtLeast(1)} / \${pageCount.coerceAtLeast(1)}",
+                color = Color(0xFF58718A),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
+            )
+        }
+    }
+}
+
 @Composable
 fun LinedNotebookInput(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current
-    val lineSp = with(density) { 24.dp.toSp() }
-    val scroll = rememberScrollState()
-    val scope = rememberCoroutineScope()
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+        val layout = remember(maxWidth) {
+            metrics(maxWidth.value, (maxWidth.value / PAGE_ASPECT).coerceAtLeast(400f))
+        }
+        var pages by remember(value) { mutableStateOf(decodePages(value, layout.pageCapacity)) }
+        val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
+        val scope = rememberCoroutineScope()
 
-    LaunchedEffect(value.length, scroll.maxValue) {
-        if (scroll.maxValue > 0) scroll.animateScrollTo(scroll.maxValue)
+        LaunchedEffect(value, layout.pageCapacity) {
+            val normalized = encodePages(pages)
+            if (value.isNotBlank() && normalized != value) {
+                pages = decodePages(value, layout.pageCapacity)
+            }
+        }
+
+        HorizontalPager(
+            state = pager,
+            modifier = Modifier.fillMaxWidth(),
+            reverseLayout = true,
+            beyondViewportPageCount = 1,
+        ) { pageIndex ->
+            NotebookPaper {
+                BasicTextField(
+                    value = pages.getOrElse(pageIndex) { "" },
+                    onValueChange = { changed ->
+                        val split = cutText(changed, layout.pageCapacity)
+                        val next = pages.toMutableList()
+                        next[pageIndex] = split.firstOrNull().orEmpty()
+                        if (split.size > 1) {
+                            next.addAll(pageIndex + 1, split.drop(1))
+                        }
+                        pages = next
+                        onValueChange(encodePages(next))
+                        if (split.size > 1) {
+                            scope.launch { pager.animateScrollToPage(pageIndex + split.lastIndex) }
+                        }
+                    },
+                    textStyle = TextStyle(
+                        fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = LINE_HEIGHT_SP.sp,
+                        color = Color(0xFF1B3448),
+                        textAlign = TextAlign.Right,
+                        platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        lineHeightStyle = LineHeightStyle(
+                            alignment = LineHeightStyle.Alignment.Bottom,
+                            trim = LineHeightStyle.Trim.None,
+                        ),
+                    ),
+                    cursorBrush = SolidColor(Color(0xFF1B3448)),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = SIDE_GUTTER_DP.dp,
+                            end = SIDE_GUTTER_DP.dp,
+                            top = (TOP_SKIP_LINES * LINE_HEIGHT_SP).dp,
+                            bottom = BOTTOM_GUTTER_DP.dp,
+                        ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun NotebookTitlePicker(
+    value: String,
+    defaultTitle: String,
+    suggestions: List<String>,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val presets = buildList {
+        add(defaultTitle)
+        add("عنوان جدید")
+        suggestions.forEach { if (it != defaultTitle && it != "عنوان جدید") add(it) }
+    }.distinct()
+    var expanded by remember(value) { mutableStateOf(false) }
+    var customRequested by remember(value) {
+        mutableStateOf(value.isNotBlank() && value !in presets)
+    }
+    val shown = when {
+        customRequested -> if (value.isBlank()) "عنوان جدید" else value
+        value.isBlank() -> defaultTitle
+        else -> value
     }
 
-    Box(
-        modifier
-            .fillMaxWidth()
-            .aspectRatio(0.707f)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
-            .border(2.dp, Color(0xFFF59E0B), RoundedCornerShape(16.dp)),
-    ) {
-        AsyncImage(
-            model = "file:///android_asset/diary/page-lined.jpg",
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds,
+    Box(modifier) {
+        OutlinedTextField(
+            value = shown,
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            maxLines = 1,
+            label = { Text("عنوان") },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
-        BasicTextField(
-            value = value,
-            onValueChange = {
-                onValueChange(it.replace("\r", ""))
-                scope.launch { if (scroll.maxValue > 0) scroll.animateScrollTo(scroll.maxValue) }
-            },
-            textStyle = TextStyle(
-                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Normal,
-                lineHeight = 24.sp,
-                color = Color(0xFF1E3A5F),
-                textAlign = TextAlign.Right,
-                platformStyle = PlatformTextStyle(includeFontPadding = false),
-                lineHeightStyle = LineHeightStyle(
-                    alignment = LineHeightStyle.Alignment.Bottom,
-                    trim = LineHeightStyle.Trim.None,
-                ),
-            ),
-            cursorBrush = SolidColor(Color(0xFF1E3A5F)),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 24.dp, end = 48.dp, top = 10.dp, bottom = 8.dp)
-                .verticalScroll(scroll),
-        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            properties = PopupProperties(focusable = true),
+        ) {
+            presets.forEachIndexed { index, option ->
+                DropdownMenuItem(
+                    text = { Text(option, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    onClick = {
+                        expanded = false
+                        if (index == 1) {
+                            customRequested = true
+                            onValueChange("")
+                        } else {
+                            customRequested = false
+                            onValueChange(option)
+                        }
+                    },
+                )
+            }
+        }
+        if (customRequested) {
+            Column(Modifier.fillMaxWidth().padding(top = 72.dp)) {
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = { onValueChange(it.take(90)) },
+                    label = { Text("عنوان جدید") },
+                    singleLine = true,
+                    maxLines = 1,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
     }
 }

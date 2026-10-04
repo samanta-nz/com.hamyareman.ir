@@ -158,11 +158,13 @@ fun SafeSpaceScreen(nav: NavController) {
         SafeSection("💌", "دل‌نوشت", "یادداشت‌های خصوصی خط‌دار با عنوان و ویرایش", Screen.Journal.route),
         SafeSection("📕", "دفتر خاطرات", "جلد دلخواه، تاریخ شمسی و تورق راست‌به‌چپ", Screen.Diary.route),
         SafeSection("✍️", "نوشته‌های آزاد", "نوشته‌های خصوصی با عنوان و امکان ویرایش", Screen.SafeFreeWriting.route),
+        SafeSection("🪶", "دفتر شعر", "غزل، قصیده، دوبیتی و شعر آزاد با تورق راست‌به‌چپ", Screen.Poetry.route),
         SafeSection("🔐", "آلبوم شخصی", "عکس، ویدیو، صوت و دفتر خاطرات در نمای کتاب", Screen.SecureGallery.route),
     )
     var policy by remember { mutableStateOf(SafeSpaceSession.policy(context)) }
     var biometricEnabled by remember { mutableStateOf(safeBiometric.isEnabled()) }
     var showHelp by remember { mutableStateOf(false) }
+    var securityExpanded by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxWidth()) {
             AppTopBar("فضای امن", { nav.popBackStack() })
@@ -175,64 +177,6 @@ fun SafeSpaceScreen(nav: NavController) {
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            // تنظیمات امنیتی بلافاصله زیر عنوان می‌آید.
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("تنظیمات امنیتی مستقل", style = MaterialTheme.typography.titleMedium)
-                    SafeExitPolicy.entries.forEach { option ->
-                        FilterChip(
-                            selected = policy == option,
-                            onClick = {
-                                policy = option
-                                SafeSpaceSession.setPolicy(context, option)
-                            },
-                            label = { Text(option.titleFa) },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text("ورود با اثر انگشت/چهره")
-                        Switch(
-                            checked = biometricEnabled,
-                            onCheckedChange = { enabled ->
-                                if (!enabled) {
-                                    safeBiometric.setEnabled(false, context)
-                                    biometricEnabled = false
-                                    error = null
-                                } else if (activity == null) {
-                                    error = "بیومتریک روی این صفحه در دسترس نیست."
-                                } else {
-                                    // فعال‌سازی فقط پس از تأیید واقعی سیستم‌عامل انجام می‌شود.
-                                    BiometricPromptRunner.show(
-                                        activity = activity,
-                                        title = "فعال‌کردن ورود بیومتریک فضای امن",
-                                        subtitle = "اثر انگشت یا چهره‌ات را برای تأیید ثبت کن.",
-                                        negativeText = "بی‌خیال",
-                                        onSuccess = {
-                                            biometricEnabled = safeBiometric.setEnabled(true, context)
-                                            error = if (biometricEnabled) null else "بیومتریک دستگاه آماده نیست."
-                                        },
-                                        onError = { error = it },
-                                    )
-                                }
-                            },
-                        )
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            SafeSpaceSession.forceLock()
-                            unlocked = false
-                            pin = ""
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("خروج و قفل فوری فضای امن") }
-                    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                }
-            }
             sections.forEach { section ->
                 Card(Modifier.fillMaxWidth().clickable { nav.layerTo(section.route) }) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -242,6 +186,55 @@ fun SafeSpaceScreen(nav: NavController) {
                 }
             }
             SafeSpaceBackupCard()
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth()) {
+                    Row(
+                        Modifier.fillMaxWidth().clickable { securityExpanded = !securityExpanded }.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("امنیت مستقل فضای امن", style = MaterialTheme.typography.titleMedium)
+                            Text("تنظیمات امنیتی این بخش جدا از قفل اصلی برنامه‌اند.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(if (securityExpanded) "⌃" else "⌄", style = MaterialTheme.typography.titleLarge)
+                    }
+                    if (securityExpanded) {
+                        Column(Modifier.padding(horizontal = 14.dp, vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SafeExitPolicy.entries.forEach { option ->
+                                FilterChip(
+                                    selected = policy == option,
+                                    onClick = { policy = option; SafeSpaceSession.setPolicy(context, option) },
+                                    label = { Text(option.titleFa) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("ورود با اثر انگشت/چهره")
+                                Switch(
+                                    checked = biometricEnabled,
+                                    onCheckedChange = { enabled ->
+                                        if (!enabled) { safeBiometric.setEnabled(false, context); biometricEnabled = false }
+                                        else if (activity != null) BiometricPromptRunner.show(
+                                            activity = activity,
+                                            title = "فعال‌کردن ورود بیومتریک فضای امن",
+                                            subtitle = "اثر انگشت یا چهره‌ات را برای تأیید ثبت کن.",
+                                            negativeText = "بی‌خیال",
+                                            onSuccess = { biometricEnabled = safeBiometric.setEnabled(true, context) },
+                                            onError = { error = it },
+                                        )
+                                    },
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = { SafeSpaceSession.forceLock(); unlocked = false; pin = "" },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) { Text("خروج و قفل فوری فضای امن") }
+                            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                        }
+                    }
+                }
+            }
         }
     }
 

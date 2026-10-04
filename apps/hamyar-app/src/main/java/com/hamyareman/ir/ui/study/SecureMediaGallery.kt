@@ -1,5 +1,7 @@
 package com.hamyareman.ir.ui.study
 
+import android.content.Intent
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -27,6 +29,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -61,6 +66,11 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import coil.compose.AsyncImage
+import androidx.core.content.FileProvider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.IosShare
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
@@ -97,7 +107,6 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
     var media by remember { mutableStateOf(readSecureMedia(store).filter { File(it.path).exists() }) }
     var selected by remember { mutableStateOf<SecureMediaItem?>(null) }
     var exporting by remember { mutableStateOf<SecureMediaItem?>(null) }
-    var columns by remember { mutableIntStateOf(3) }
     var notice by remember { mutableStateOf<String?>(null) }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     SecureWebEffect("Screenshots are disabled in the private album.")
@@ -140,18 +149,16 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
         AppTopBar("آلبوم شخصی", onBack)
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("عکس، ویدیو و صوت؛ فایل‌ها در پوشهٔ خصوصی برنامه می‌مانند.", style = MaterialTheme.typography.bodySmall)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
                     onClick = { importMedia.launch(arrayOf("image/*", "video/*", "audio/*")) },
                     modifier = Modifier.weight(1f),
                 ) { Text("افزودن رسانه") }
-                (2..4).forEach { span ->
-                    TextButton(onClick = { columns = span }) { Text(if (span == columns) "● $span" else span.toString()) }
-                }
+                Text("چیدمان تطبیقی", style = MaterialTheme.typography.labelMedium)
             }
             notice?.let { Text(it, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall) }
             LazyVerticalGrid(
-                columns = GridCells.Fixed(columns),
+                columns = GridCells.Adaptive(minSize = 118.dp),
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -164,7 +171,7 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
                                 model = diaryCover,
                                 contentDescription = "دفتر خاطرات",
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxWidth().size((310 / columns).dp),
+                                modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
                             )
                             Text("دفتر خاطرات", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(5.dp))
                         }
@@ -173,7 +180,7 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
                 items(media, key = { it.id }) { item ->
                     Card(Modifier.fillMaxWidth().clickable { selected = item }) {
                         Box(
-                            Modifier.fillMaxWidth().size((310 / columns).dp).background(MaterialTheme.colorScheme.surfaceVariant),
+                            Modifier.fillMaxWidth().aspectRatio(1f).background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center,
                         ) {
                             if (item.mime.startsWith("image/")) {
@@ -189,7 +196,7 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
                 }
                 if (media.isEmpty()) {
                     item(key = "empty-media") {
-                        Box(Modifier.fillMaxWidth().size((310 / columns).dp), contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
                             Text("هنوز رسانه‌ای اضافه نشده است.", style = MaterialTheme.typography.bodySmall)
                         }
                     }
@@ -247,24 +254,19 @@ private fun SecureMediaViewer(
                 Text(item.name, color = Color.White, style = MaterialTheme.typography.titleMedium)
                 if (item.mime.startsWith("image/")) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        OutlinedButton(onClick = {
-                            transformSecureImage(item.path, rotate = -90f, crop = false)
-                            revision++; onChanged()
-                        }, modifier = Modifier.weight(1f)) { Text("چرخش چپ") }
-                        OutlinedButton(onClick = {
-                            transformSecureImage(item.path, rotate = 90f, crop = false)
-                            revision++; onChanged()
-                        }, modifier = Modifier.weight(1f)) { Text("چرخش راست") }
-                        OutlinedButton(onClick = {
-                            transformSecureImage(item.path, rotate = 0f, crop = true)
-                            revision++; onChanged()
-                        }, modifier = Modifier.weight(1f)) { Text("برش مربع") }
+                        OutlinedButton(onClick = { transformSecureImage(item.path, rotate = -90f, crop = false); revision++; onChanged() }, modifier = Modifier.weight(1f)) { Text("↶") }
+                        OutlinedButton(onClick = { transformSecureImage(item.path, rotate = 90f, crop = false); revision++; onChanged() }, modifier = Modifier.weight(1f)) { Text("↷") }
+                        OutlinedButton(onClick = { transformSecureImage(item.path, rotate = 0f, crop = true); revision++; onChanged() }, modifier = Modifier.weight(1f)) { Text("□") }
+                        OutlinedButton(onClick = { transformSecureImage(item.path, rotate = 0f, crop = false, mirrorX = true); revision++; onChanged() }, modifier = Modifier.weight(1f)) { Text("⇋") }
                     }
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OutlinedButton(onClick = onClose, modifier = Modifier.weight(1f)) { Text("بستن") }
-                    OutlinedButton(onClick = onExport, modifier = Modifier.weight(1f)) { Text("خروجی") }
-                    OutlinedButton(onClick = onDelete, modifier = Modifier.weight(1f)) { Text("حذف") }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = onClose) { Text("بستن") }
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        IconButton(onClick = { shareSecureMedia(LocalContext.current, item) }) { Icon(Icons.Default.IosShare, contentDescription = "اشتراک") }
+                        IconButton(onClick = onExport) { Icon(Icons.Default.Download, contentDescription = "خروجی") }
+                        IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "حذف") }
+                    }
                 }
             }
         }
@@ -392,6 +394,19 @@ private fun SecureMedia3Player(item: SecureMediaItem, playlist: List<SecureMedia
             Text(mediaTime(shown), color = Color.White, style = MaterialTheme.typography.labelSmall)
             Text("−${mediaTime((duration - shown).coerceAtLeast(0L))}", color = Color.White, style = MaterialTheme.typography.labelSmall)
         }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            listOf(0.75f, 1f, 1.25f, 1.5f, 2f).forEach { value ->
+                FilterChip(selected = state.speed == value, onClick = { playback.setSpeed(value) }, label = { Text(value.toString() + "x") })
+            }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            OutlinedButton(onClick = { playback.seekBy(-10_000L) }, modifier = Modifier.weight(1f)) { Text("۱۰−") }
+            OutlinedButton(onClick = { playback.seekBy(10_000L) }, modifier = Modifier.weight(1f)) { Text("۱۰+") }
+            OutlinedButton(onClick = {
+                val p = playback.asPlayer()
+                if (p != null) p.repeatMode = if (p.repeatMode == androidx.media3.common.Player.REPEAT_MODE_ONE) androidx.media3.common.Player.REPEAT_MODE_OFF else androidx.media3.common.Player.REPEAT_MODE_ONE
+            }, modifier = Modifier.weight(1f)) { Text("تکرار") }
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             OutlinedButton(
                 onClick = { playback.setShuffle(!state.shuffleEnabled) },
@@ -501,17 +516,33 @@ private fun copySecureMedia(context: android.content.Context, uri: Uri): SecureM
     SecureMediaItem(id, "رسانه-${JalaliDate.todayIso()}.$ext", mime, file.absolutePath, System.currentTimeMillis())
 }.getOrNull()
 
-private fun transformSecureImage(path: String, rotate: Float, crop: Boolean) {
+private fun transformSecureImage(path: String, rotate: Float, crop: Boolean, mirrorX: Boolean = false) {
     runCatching {
         var bitmap = BitmapFactory.decodeFile(path) ?: return
-        if (rotate != 0f) {
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, Matrix().apply { postRotate(rotate) }, true)
+        if (rotate != 0f || mirrorX) {
+            bitmap = Bitmap.createBitmap(
+                bitmap, 0, 0, bitmap.width, bitmap.height,
+                Matrix().apply { postRotate(rotate); if (mirrorX) postScale(-1f, 1f) },
+                true,
+            )
         }
         if (crop) {
             val side = minOf(bitmap.width, bitmap.height)
             bitmap = Bitmap.createBitmap(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side)
         }
         File(path).outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 92, it) }
+    }
+}
+
+private fun shareSecureMedia(context: android.content.Context, item: SecureMediaItem) {
+    runCatching {
+        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", File(item.path))
+        val share = Intent(Intent.ACTION_SEND).apply {
+            type = item.mime
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(share, "اشتراک رسانه"))
     }
 }
 

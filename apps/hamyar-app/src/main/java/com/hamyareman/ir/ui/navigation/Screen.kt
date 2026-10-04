@@ -40,6 +40,7 @@ sealed class Screen(val route: String) {
     data object SafeSpace : Screen("safespace")
     data object Diary : Screen("diary")
     data object Notebooks : Screen("notebooks")
+    data object Poetry : Screen("poetry")
     data object SafeFreeWriting : Screen("safe-free-writing")
     data object SecureGallery : Screen("secure-gallery")
     data object Album : Screen("album")
