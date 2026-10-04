@@ -122,7 +122,7 @@ jobs:
       - name: ۲٫۵) انتشار امن سه قاب HTML موسیقی روی سرور داخلی
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025322005' }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
           APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID || '6abb238d000d05730d10' }}
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
@@ -215,7 +215,7 @@ jobs:
       - name: ۶) اعلام نسخه و اعلام آپدیت اجباری
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025322005' }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
         run: |
           set -euo pipefail
           mkdir -p ci-report
