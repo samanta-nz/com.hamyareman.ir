@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -75,7 +76,18 @@ fun SafeSpaceScreen(nav: NavController) {
         Column(Modifier.fillMaxSize()) {
             AppTopBar("فضای امن", { nav.popBackStack() })
             Column(
-                Modifier.fillMaxWidth().padding(20.dp),
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = .14f),
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.background,
+                            ),
+                        ),
+                    )
+                    .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
