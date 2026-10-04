@@ -5,6 +5,15 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.graphicsLayer
+import com.hamyareman.ir.ui.components.RemoteDesignImage
+import com.hamyareman.ir.ui.components.RealisticBookPager
+import com.hamyareman.ir.ui.components.DesignAsset
+import com.hamyareman.ir.ui.components.BookStage
+import com.hamyareman.ir.ui.components.BookOpening
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +45,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -125,6 +133,9 @@ private data class DiaryPageModel(
     val caption: String = "",
     val imageWidth: Float = 0.56f,
     val imageOffsetY: Float = 0f,
+    val imageOffsetX: Float = 0f,
+    val imageScale: Float = 1f,
+    val imageRotation: Float = 0f,
     val wrap: ImageWrap = ImageWrap.NONE,
     val alignment: String = "right",
 )
@@ -154,9 +165,9 @@ private data class DiaryViewerPage(
 private data class DiaryCover(val id: String, val title: String, val asset: String)
 
 private val diaryCovers = listOf(
-    DiaryCover("celestial", "آسمان خیال", "file:///android_asset/diary/cover-celestial.jpg"),
-    DiaryCover("botanical", "باغ خیال", "file:///android_asset/diary/cover-botanical.jpg"),
-    DiaryCover("geometric", "هندسهٔ رؤیا", "file:///android_asset/diary/cover-geometric.jpg"),
+    DiaryCover("celestial", "آسمان خیال", DesignAsset.COVER_CELESTIAL),
+    DiaryCover("botanical", "باغ خیال", DesignAsset.COVER_BOTANICAL),
+    DiaryCover("geometric", "هندسهٔ رؤیا", DesignAsset.COVER_GEOMETRIC),
 )
 
 private fun readDiary(store: LocalStore): List<DiaryEntry> = runCatching {
@@ -200,11 +211,14 @@ private fun encodePayload(pages: List<DiaryPageModel>): String {
                 .put("caption", page.caption)
                 .put("imageWidth", page.imageWidth)
                 .put("imageOffsetY", page.imageOffsetY)
+                .put("imageOffsetX", page.imageOffsetX)
+                .put("imageScale", page.imageScale)
+                .put("imageRotation", page.imageRotation)
                 .put("wrap", page.wrap.wire)
                 .put("alignment", page.alignment),
         )
     }
-    return JSONObject().put("version", 3).put("pages", arr).toString()
+    return JSONObject().put("version", 4).put("pages", arr).toString()
 }
 
 private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPayload {
@@ -220,8 +234,11 @@ private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPay
                         text = o.optString("text"),
                         imagePath = o.optString("imagePath"),
                         caption = o.optString("caption"),
-                        imageWidth = o.optDouble("imageWidth", 0.56).toFloat().coerceIn(0.25f, 0.82f),
-                        imageOffsetY = o.optDouble("imageOffsetY", 0.0).toFloat().coerceIn(-0.25f, 0.25f),
+                        imageWidth = o.optDouble("imageWidth", 0.56).toFloat().coerceIn(0.25f, 0.78f),
+                        imageOffsetY = o.optDouble("imageOffsetY", 0.0).toFloat().coerceIn(-0.30f, 0.30f),
+                        imageOffsetX = o.optDouble("imageOffsetX", 0.0).toFloat().coerceIn(-0.35f, 0.35f),
+                        imageScale = o.optDouble("imageScale", 1.0).toFloat().coerceIn(0.45f, 1.60f),
+                        imageRotation = o.optDouble("imageRotation", 0.0).toFloat().coerceIn(-10f, 10f),
                         wrap = ImageWrap.entries.firstOrNull { it.wire == o.optString("wrap") } ?: ImageWrap.NONE,
                         alignment = o.optString("alignment", "right"),
                     ),
@@ -272,6 +289,10 @@ fun DiaryScreen(onBack: () -> Unit) {
     var imageCaption by remember { mutableStateOf("") }
     var imageWidth by remember { mutableStateOf(0.56f) }
     var imageOffsetY by remember { mutableStateOf(0f) }
+    var imageOffsetX by remember { mutableStateOf(0f) }
+    var imageScale by remember { mutableStateOf(1f) }
+    var imageRotation by remember { mutableStateOf(0f) }
+    var placementMode by remember { mutableStateOf(false) }
     var wrap by remember { mutableStateOf(ImageWrap.NONE) }
     var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
     var viewerStart by remember { mutableStateOf<Int?>(null) }
@@ -284,7 +305,13 @@ fun DiaryScreen(onBack: () -> Unit) {
             deleteDiaryImage(imagePath)
             imagePath = copied
             imageCaption = imageCaption.ifBlank { "عکس دفتر خاطرات" }
-            notice = "عکس داخل فضای خصوصی دفتر قرار گرفت."
+            imageWidth = 0.56f
+            imageOffsetY = 0f
+            imageOffsetX = 0f
+            imageScale = 1f
+            imageRotation = 0f
+            placementMode = true
+            notice = "تصویر انتخاب شد؛ با یک انگشت جابه‌جا و با دو انگشت بزرگ‌نمایی/چرخش کن."
         } else {
             notice = "عکس قابل ذخیره‌سازی نبود."
         }
@@ -299,6 +326,10 @@ fun DiaryScreen(onBack: () -> Unit) {
         imageCaption = ""
         imageWidth = 0.56f
         imageOffsetY = 0f
+        imageOffsetX = 0f
+        imageScale = 1f
+        imageRotation = 0f
+        placementMode = false
         wrap = ImageWrap.NONE
         alignment = androidx.compose.ui.text.style.TextAlign.Right
         notice = null
@@ -315,6 +346,10 @@ fun DiaryScreen(onBack: () -> Unit) {
         imageCaption = page.caption
         imageWidth = page.imageWidth
         imageOffsetY = page.imageOffsetY
+        imageOffsetX = page.imageOffsetX
+        imageScale = page.imageScale
+        imageRotation = page.imageRotation
+        placementMode = page.imagePath.isNotBlank()
         wrap = page.wrap
         alignment = notebookTextAlignFromWire(page.alignment)
         notice = "صفحهٔ " + (pageIndex + 1) + " برای ویرایش باز شد."
@@ -334,6 +369,9 @@ fun DiaryScreen(onBack: () -> Unit) {
             caption = imageCaption.trim(),
             imageWidth = imageWidth,
             imageOffsetY = imageOffsetY,
+            imageOffsetX = imageOffsetX,
+            imageScale = imageScale,
+            imageRotation = imageRotation,
             wrap = wrap,
             alignment = notebookAlignmentWire(alignment),
         )
@@ -369,6 +407,7 @@ fun DiaryScreen(onBack: () -> Unit) {
         imageCaption = ""
         editingEntryId = null
         editingPageIndex = 0
+        placementMode = false
         notice = "صفحه ذخیره شد و فهرست دفتر آماده است."
     }
 
@@ -481,43 +520,82 @@ fun DiaryScreen(onBack: () -> Unit) {
                             }
                         }
                         if (imagePath.isNotBlank()) {
-                            Card(Modifier.fillMaxWidth()) {
-                                Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    AsyncImage(
-                                        model = File(imagePath),
-                                        contentDescription = "پیش‌نمایش عکس",
-                                        contentScale = ContentScale.Fit,
-                                        modifier = Modifier.fillMaxWidth().height(150.dp).clip(RoundedCornerShape(10.dp)),
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(240.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFF0C1824)),
+                            ) {
+                                RemoteDesignImage(
+                                    key = DesignAsset.PAGE_LINED,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentDescription = "صفحهٔ دفتر",
+                                    contentScale = ContentScale.FillBounds,
+                                )
+                                DiaryTouchPlacement(
+                                    path = imagePath,
+                                    widthFraction = imageWidth,
+                                    offsetX = imageOffsetX,
+                                    offsetY = imageOffsetY,
+                                    scale = imageScale,
+                                    rotation = imageRotation,
+                                    active = placementMode,
+                                    onTransform = { panX, panY, zoom, turn, w, h ->
+                                        imageOffsetX = (imageOffsetX + panX / w).coerceIn(-.35f, .35f)
+                                        imageOffsetY = (imageOffsetY + panY / h).coerceIn(-.30f, .30f)
+                                        imageScale = (imageScale * zoom).coerceIn(.45f, 1.60f)
+                                        imageRotation = (imageRotation + turn).coerceIn(-10f, 10f)
+                                    },
+                                )
+                                Row(
+                                    Modifier
+                                        .align(Alignment.TopCenter)
+                                        .padding(7.dp)
+                                        .clip(RoundedCornerShape(22.dp))
+                                        .background(Color(0xD90A1420))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                ) {
+                                    Text(
+                                        if (placementMode) "جاگذاری مستقیم با لمس" else "جایگذاری ثبت شده",
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.labelMedium,
                                     )
-                                    OutlinedTextField(
-                                        value = imageCaption,
-                                        onValueChange = { imageCaption = it.take(140) },
-                                        label = { Text("عنوان عکس / پانویس") },
-                                        singleLine = true,
-                                        maxLines = 1,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                    Text("اندازهٔ عکس", style = MaterialTheme.typography.labelMedium)
-                                    Slider(value = imageWidth, onValueChange = { imageWidth = it }, valueRange = 0.30f..0.78f)
-                                    Text("جایگاه عمودی", style = MaterialTheme.typography.labelMedium)
-                                    Slider(value = imageOffsetY, onValueChange = { imageOffsetY = it }, valueRange = -0.20f..0.20f)
-                                    Text("پیچش متن", style = MaterialTheme.typography.labelMedium)
-                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        ImageWrap.entries.forEach { option ->
-                                            FilterChip(
-                                                selected = wrap == option,
-                                                onClick = { wrap = option },
-                                                label = { Text(option.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                            )
-                                        }
+                                    TextButton(onClick = { placementMode = !placementMode }) {
+                                        Text(if (placementMode) "تأیید" else "تنظیم دوباره", color = Color.White)
                                     }
-                                    TextButton(onClick = {
-                                        deleteDiaryImage(imagePath)
-                                        imagePath = ""
-                                        imageCaption = ""
-                                    }) { Text("برداشتن عکس") }
                                 }
                             }
+                            OutlinedTextField(
+                                value = imageCaption,
+                                onValueChange = { imageCaption = it.take(140) },
+                                label = { Text("عنوان عکس / پانویس") },
+                                singleLine = true,
+                                maxLines = 1,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                ImageWrap.entries.forEach { option ->
+                                    FilterChip(
+                                        selected = wrap == option,
+                                        onClick = { wrap = option },
+                                        label = { Text(option.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                                    )
+                                }
+                            }
+                            Text(
+                                "عکس دیگر با لغزنده جابه‌جا نمی‌شود: لمس مستقیم، کشیدن با یک انگشت، و pinch/rotate با دو انگشت ذخیره می‌شوند.",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            TextButton(onClick = {
+                                deleteDiaryImage(imagePath)
+                                imagePath = ""
+                                imageCaption = ""
+                                placementMode = false
+                            }) { Text("برداشتن عکس") }
                         }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = ::savePage, modifier = Modifier.weight(2f)) {
@@ -608,62 +686,121 @@ private fun DiaryBookViewer(
     onEdit: (DiaryViewerPage) -> Unit,
     onClose: () -> Unit,
 ) {
-    val pager = rememberPagerState(pageCount = { pages.size + 1 })
-    LaunchedEffect(startPage) {
-        pager.scrollToPage((startPage + 1).coerceIn(0, pages.size))
-    }
     Dialog(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Box(Modifier.fillMaxSize().background(Color(0xFF070C16))) {
-            HorizontalPager(
-                state = pager,
-                modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 28.dp),
-                reverseLayout = true,
-                beyondViewportPageCount = 1,
-            ) { index ->
-                if (index == 0) {
-                    NotebookBookPage(
-                        pageNumber = 1,
+        BookStage {
+            Box(Modifier.fillMaxSize()) {
+                BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
+                    RealisticBookPager(
                         pageCount = pages.size + 1,
-                        stackPages = pages.size.coerceIn(0, 7),
-                        fullScreen = true,
-                    ) {
-                        AsyncImage(
-                            model = cover.asset,
-                            contentDescription = cover.title,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(15.dp)),
-                        )
+                        initialPage = (startPage + 1).coerceIn(0, pages.size),
+                        viewerGesture = true,
+                        modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = 12.dp),
+                    ) { index, _ ->
+                        if (index == 0) {
+                            Box(
+                                Modifier.fillMaxSize().clip(RoundedCornerShape(6.dp)),
+                            ) {
+                                RemoteDesignImage(
+                                    key = cover.asset,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentDescription = cover.title,
+                                    contentScale = ContentScale.Crop,
+                                )
+                                Box(
+                                    Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .fillMaxWidth()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                listOf(Color.Transparent, Color(0xE6000000)),
+                                            ),
+                                        )
+                                        .padding(18.dp),
+                                ) {
+                                    Text(cover.title, color = Color.White, style = MaterialTheme.typography.headlineSmall)
+                                }
+                            }
+                        } else {
+                            val item = pages[index - 1]
+                            DiaryRenderedPage(
+                                item.page,
+                                header = if (item.pageIndex == 0) item.entry.title else "",
+                            )
+                        }
                     }
-                } else {
-                    val page = pages[index - 1]
-                    NotebookBookPage(
-                        pageNumber = index + 1,
-                        pageCount = pages.size + 1,
-                        stackPages = (pages.size - index).coerceIn(0, 7),
-                    ) {
-                        DiaryRenderedPage(page.page, header = if (page.pageIndex == 0) page.entry.title else "")
-                    }
+                }
+                Row(
+                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(7.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
+                    Text("کتاب خاطرات", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                    TextButton(
+                        onClick = {
+                            val index = startPage.coerceAtLeast(0)
+                            pages.getOrNull(index)?.let(onEdit)
+                        },
+                        enabled = pages.isNotEmpty(),
+                    ) { Text("ویرایش", color = Color.White) }
                 }
             }
-            Row(
-                Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
-                Text("کتاب خاطرات", color = Color.White, style = MaterialTheme.typography.titleMedium)
-                IconButton(
-                    onClick = {
-                        val index = pager.currentPage - 1
-                        pages.getOrNull(index)?.let(onEdit)
-                    },
-                    enabled = pager.currentPage > 0,
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = "ویرایش این صفحه", tint = Color.White)
+        }
+    }
+}
+
+@Composable
+private fun DiaryTouchPlacement(
+    path: String,
+    widthFraction: Float,
+    offsetX: Float,
+    offsetY: Float,
+    scale: Float,
+    rotation: Float,
+    active: Boolean,
+    onTransform: (panX: Float, panY: Float, zoom: Float, rotation: Float, width: Float, height: Float) -> Unit,
+) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val w = constraints.maxWidth.toFloat().coerceAtLeast(1f)
+        val h = constraints.maxHeight.toFloat().coerceAtLeast(1f)
+        Box(
+            Modifier
+                .fillMaxWidth(widthFraction.coerceIn(.25f, .78f))
+                .aspectRatio(.92f)
+                .align(Alignment.Center)
+                .graphicsLayer {
+                    translationX = offsetX * w
+                    translationY = offsetY * h
+                    scaleX = scale
+                    scaleY = scale
+                    rotationZ = rotation
+                    alpha = if (active) .98f else .94f
                 }
+                .shadow(20.dp, RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp))
+                .border(1.dp, if (active) Color.White else Color(0x50FFFFFF), RoundedCornerShape(4.dp))
+                .pointerInput(active, path) {
+                    if (!active) return@pointerInput
+                    detectTransformGestures { _, pan, zoom, rotationDelta ->
+                        onTransform(pan.x, pan.y, zoom, rotationDelta, w, h)
+                    }
+                },
+        ) {
+            coil.compose.AsyncImage(
+                model = File(path),
+                contentDescription = "عکس دفتر خاطرات",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(
+                    Brush.verticalGradient(
+                        listOf(Color(0x18FFFFFF), Color.Transparent, Color(0x21000000)),
+                    ),
+                )
             }
         }
     }
@@ -671,104 +808,84 @@ private fun DiaryBookViewer(
 
 @Composable
 private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
-    NotebookPaper(header = header, headerAlign = oppositeTextAlign(notebookTextAlignFromWire(page.alignment)), showVerticalGuides = true) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
-            val area = Modifier.fillMaxSize().padding(start = 78.dp, end = 78.dp, top = 0.dp, bottom = 28.dp)
-            when {
-                page.imagePath.isBlank() -> {
-                    Text(
-                        page.text,
-                        modifier = area,
-                        color = Color(0xFF19364B),
-                        fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                        fontSize = 18.sp,
-                        lineHeight = 24.sp,
-                        textAlign = notebookTextAlignFromWire(page.alignment),
-                    )
-                }
-                page.wrap == ImageWrap.TOP -> {
-                    Column(area, horizontalAlignment = Alignment.CenterHorizontally) {
-                        DiaryImageBlock(page)
-                        Text(
-                            page.text,
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                            color = Color(0xFF19364B),
-                            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                            fontSize = 18.sp,
-                            lineHeight = 24.sp,
-                            textAlign = TextAlign.Right,
-                        )
-                    }
-                }
-                page.wrap == ImageWrap.BOTTOM -> {
-                    Column(area, horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            page.text,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color(0xFF19364B),
-                            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                            fontSize = 18.sp,
-                            lineHeight = 24.sp,
-                            textAlign = TextAlign.Right,
-                        )
-                        DiaryImageBlock(page, paddingTop = 8.dp)
-                    }
-                }
-                else -> {
-                    Box(area) {
-                        Text(
-                            page.text,
-                            modifier = Modifier.fillMaxSize(),
-                            color = Color(0xFF19364B),
-                            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                            fontSize = 18.sp,
-                            lineHeight = 24.sp,
-                            textAlign = TextAlign.Right,
-                        )
-                        Box(
-                            Modifier
-                                .align(Alignment.TopCenter)
-                                .fillMaxWidth(page.imageWidth)
-                                .padding(top = (page.imageOffsetY * 520f).dp),
-                        ) {
-                            DiaryImageBlock(page)
-                        }
-                    }
-                }
+    NotebookPaper(
+        header = header,
+        headerAlign = oppositeTextAlign(notebookTextAlignFromWire(page.alignment)),
+        showVerticalGuides = true,
+    ) {
+        val style = androidx.compose.ui.text.TextStyle(
+            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+            fontSize = 18.sp,
+            lineHeight = 24.sp,
+            color = Color(0xFF19364B),
+            textAlign = notebookTextAlignFromWire(page.alignment),
+            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+            lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
+                alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,
+                trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
+            ),
+        )
+        if (page.imagePath.isBlank()) {
+            Text(page.text, Modifier.fillMaxSize(), style = style)
+        } else {
+            Column(Modifier.fillMaxSize()) {
+                DiaryPlacedImage(
+                    page,
+                    Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                )
+                Text(
+                    page.text,
+                    Modifier.fillMaxWidth().padding(top = 8.dp),
+                    style = style,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun DiaryImageBlock(
-    page: DiaryPageModel,
-    paddingTop: androidx.compose.ui.unit.Dp = 0.dp,
-) {
-    Column(
-        Modifier.padding(top = paddingTop),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        AsyncImage(
-            model = File(page.imagePath),
-            contentDescription = page.caption.ifBlank { "عکس" },
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)),
-        )
+private fun DiaryPlacedImage(page: DiaryPageModel, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier
+                .fillMaxWidth(page.imageWidth.coerceIn(.25f, .78f))
+                .graphicsLayer {
+                    scaleX = page.imageScale
+                    scaleY = page.imageScale
+                    rotationZ = page.imageRotation
+                    translationX = page.imageOffsetX * 240f
+                    translationY = page.imageOffsetY * 180f
+                }
+                .shadow(12.dp, RoundedCornerShape(2.dp))
+                .clip(RoundedCornerShape(2.dp)),
+        ) {
+            coil.compose.AsyncImage(
+                model = File(page.imagePath),
+                contentDescription = page.caption.ifBlank { "عکس" },
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().aspectRatio(.92f),
+            )
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(
+                    Brush.verticalGradient(
+                        listOf(Color.Transparent, Color(0x22000000)),
+                    ),
+                )
+            }
+        }
         if (page.caption.isNotBlank()) {
             Text(
                 page.caption,
                 style = MaterialTheme.typography.labelSmall,
+                color = Color(0xFF526B80),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                color = Color(0xFF526B80),
-                modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             )
         }
     }
 }
-
 
 @Composable
 fun NotebooksScreen(onBack: () -> Unit) {
