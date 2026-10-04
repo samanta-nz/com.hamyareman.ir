@@ -237,14 +237,16 @@ fun NotebookBookPage(
         stackDepth = stackPages,
         isCover = pageNumber == 1,
     ) {
-        content()
-        Text(
-            text = "${pageNumber.coerceAtLeast(1)} / ${pageCount.coerceAtLeast(1)}",
-            color = Color(0xFF5E7180),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
-        )
+        Box(Modifier.fillMaxSize()) {
+            content()
+            Text(
+                text = "${pageNumber.coerceAtLeast(1)} / ${pageCount.coerceAtLeast(1)}",
+                color = Color(0xFF5E7180),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
+            )
+        }
     }
 }
 
