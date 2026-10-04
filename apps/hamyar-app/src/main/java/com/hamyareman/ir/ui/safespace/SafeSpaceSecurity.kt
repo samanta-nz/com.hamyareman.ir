@@ -112,7 +112,7 @@ object SafeSpaceSession {
     fun isSafeRoute(route: String?): Boolean {
         val value = route?.substringBefore('?') ?: return false
         return value in setOf(
-            "safespace", "safe-free-writing", "secure-gallery", "journal", "writing", "diary", "notebooks",
+            "safespace", "safe-free-writing", "secure-gallery", "journal", "writing", "diary", "notebooks", "poetry",
         )
     }
 }
