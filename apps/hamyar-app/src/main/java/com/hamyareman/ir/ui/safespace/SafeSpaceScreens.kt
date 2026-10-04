@@ -41,6 +41,7 @@ import com.hamyareman.ir.platform.core.common.Helplines
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
+import com.hamyareman.ir.platform.core.designsystem.PatternLockGrid
 import com.hamyareman.ir.platform.core.designsystem.SectionCard
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
@@ -64,24 +65,49 @@ fun SafeSpaceScreen(nav: NavController) {
     var unlocked by remember { mutableStateOf(SafeSpaceSession.isUnlocked(context)) }
     var pin by remember { mutableStateOf("") }
     var confirmation by remember { mutableStateOf("") }
+    var pattern by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     val needsSetup = !safeLock.hasPin()
 
     if (!unlocked || !SafeSpaceSession.isUnlocked(context)) {
+        val hasPattern = safeLock.hasPattern()
         Column(Modifier.fillMaxSize()) {
             AppTopBar("فضای امن", { nav.popBackStack() })
             Column(
                 Modifier.fillMaxWidth().padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     if (needsSetup) {
                         "برای فضای امن یک PIN مستقل بساز؛ این PIN با قفل خودِ برنامه فرق دارد."
+                    } else if (hasPattern) {
+                        "الگوی خط‌ونقطهٔ فضای امن را رسم کن؛ این الگو از قفل اصلی برنامه مستقل است."
                     } else {
                         "برای دیدن بخش‌های خصوصی، قفل مستقل فضای امن را باز کن."
                     },
                     style = MaterialTheme.typography.titleMedium,
                 )
+                if (!needsSetup && hasPattern) {
+                    PatternLockGrid(pattern = pattern, onPatternChange = { pattern = it }, enabled = true)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { pattern = ""; error = null }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
+                        PrimaryButton("بازکردن با الگو", Modifier.weight(2f)) {
+                            if (pattern.length < 4) {
+                                error = "الگو باید حداقل ۴ نقطهٔ متفاوت داشته باشد."
+                            } else if (safeLock.verifyPattern(pattern)) {
+                                pattern = ""
+                                SafeSpaceSession.markUnlocked()
+                                unlocked = true
+                                error = null
+                            } else {
+                                pattern = ""
+                                error = "الگوی فضای امن درست نیست."
+                            }
+                        }
+                    }
+                    Text("یا با PIN مستقل فضای امن وارد شو.", style = MaterialTheme.typography.bodySmall)
+                }
                 OutlinedTextField(
                     value = pin,
                     onValueChange = { pin = it.filter(Char::isDigit).take(8); error = null },
@@ -102,7 +128,7 @@ fun SafeSpaceScreen(nav: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                PrimaryButton(if (needsSetup) "ساخت PIN و ورود" else "بازکردن فضای امن") {
+                PrimaryButton(if (needsSetup) "ساخت PIN و ورود" else "ورود با PIN") {
                     if (needsSetup) {
                         error = when {
                             pin != confirmation -> "تکرار PIN یکسان نیست."
@@ -125,6 +151,7 @@ fun SafeSpaceScreen(nav: NavController) {
                     } else if (safeLock.verify(pin)) {
                         SafeSpaceSession.markUnlocked()
                         unlocked = true
+                        error = null
                     } else {
                         error = "PIN فضای امن درست نیست."
                     }
@@ -201,6 +228,20 @@ fun SafeSpaceScreen(nav: NavController) {
                     }
                     if (securityExpanded) {
                         Column(Modifier.padding(horizontal = 14.dp, vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("الگوی خط‌ونقطهٔ مستقل", style = MaterialTheme.typography.labelLarge)
+                        PatternLockGrid(pattern = pattern, onPatternChange = { pattern = it }, enabled = true)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { pattern = "" }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
+                            PrimaryButton("ذخیرهٔ الگو", Modifier.weight(2f)) {
+                                if (safeLock.validatePattern(pattern)) {
+                                    safeLock.setPattern(pattern)
+                                    pattern = ""
+                                    error = null
+                                } else {
+                                    error = "حداقل ۴ نقطهٔ متفاوت رسم کن."
+                                }
+                            }
+                        }
                             SafeExitPolicy.entries.forEach { option ->
                                 FilterChip(
                                     selected = policy == option,
