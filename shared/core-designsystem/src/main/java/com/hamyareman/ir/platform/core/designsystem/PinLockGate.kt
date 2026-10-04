@@ -45,7 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-private fun PatternLockGrid(
+fun PatternLockGrid(
     pattern: String,
     onPatternChange: (String) -> Unit,
     enabled: Boolean = true,
