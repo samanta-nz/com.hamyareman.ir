@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.text.KeyboardOptions
@@ -178,7 +179,16 @@ fun PinLockGate(
     Column(
         Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .background(
+                Brush.radialGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = .16f),
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.background,
+                    ),
+                ),
+            )
+            .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
