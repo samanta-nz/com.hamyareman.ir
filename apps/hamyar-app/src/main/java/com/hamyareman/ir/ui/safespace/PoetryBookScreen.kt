@@ -47,6 +47,9 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.RealisticBookPager
+import com.hamyareman.ir.ui.components.BookStage
+import com.hamyareman.ir.ui.components.BookOpening
 import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
@@ -307,93 +310,119 @@ private fun PoetryViewer(
     onEdit: () -> Unit,
     onClose: () -> Unit,
 ) {
-    val lines = text.split(NOTEBOOK_PAGE_SEPARATOR)
-    val pager = rememberPagerState(pageCount = { lines.size.coerceAtLeast(1) })
-    var selectedPair by remember(poem.id) { mutableStateOf<Int?>(null) }
+    val lines = text.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf("") }
+    var activePage by remember(poem.id, lines.size) { mutableStateOf(0) }
+    var selectedPair by remember(poem.id) { mutableStateOf<String?>(null) }
 
-    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Box(Modifier.fillMaxSize().background(Color(0xFF070B13))) {
-            HorizontalPager(
-                state = pager,
-                modifier = Modifier.fillMaxSize().padding(vertical = 34.dp),
-                reverseLayout = true,
-                beyondViewportPageCount = 1,
-            ) { page ->
-                NotebookBookPage(
-                    pageNumber = page + 1,
-                    pageCount = lines.size.coerceAtLeast(1),
-                    stackPages = lines.size - page - 1,
-                    fullScreen = true,
-                ) {
-                    NotebookPaper(
-                        header = if (page == 0) poem.title else "",
-                        headerAlign = oppositeTextAlign(notebookTextAlignFromWire(poem.alignment)),
-                        showVerticalGuides = false,
-                    ) {
-                        if (twoHemistich(poem.type)) {
-                            val all = lines[page].split('\n').filter { it.isNotBlank() }
-                            val pairs = all.chunked(2)
-                            Column(
-                                Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 0.dp, bottom = 32.dp),
-                                verticalArrangement = Arrangement.spacedBy(14.dp),
-                            ) {
-                                pairs.forEachIndexed { index, pair ->
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .clickable { selectedPair = if (selectedPair == index) null else index }
-                                            .background(if (selectedPair == index) Color(0x143B82F6) else Color.Transparent)
-                                            .padding(vertical = 5.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    ) {
-                                        Text(
-                                            pair.getOrNull(0).orEmpty(),
-                                            modifier = Modifier.weight(1f),
-                                            textAlign = TextAlign.Justify,
-                                            color = Color(0xFF18384F),
-                                            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                            fontSize = 18.sp,
-                                            lineHeight = 24.sp,
-                                        )
-                                        Text(
-                                            pair.getOrNull(1).orEmpty(),
-                                            modifier = Modifier.weight(1f),
-                                            textAlign = TextAlign.Justify,
-                                            color = Color(0xFF18384F),
-                                            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                            fontSize = 18.sp,
-                                            lineHeight = 24.sp,
-                                        )
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        BookStage {
+            Box(Modifier.fillMaxSize()) {
+                BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
+                    RealisticBookPager(
+                        pageCount = lines.size.coerceAtLeast(1),
+                        initialPage = 0,
+                        viewerGesture = true,
+                        onPageChanged = { activePage = it },
+                        modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = 10.dp),
+                    ) { page, _ ->
+                        NotebookPaper(
+                            header = if (page == 0) poem.title.ifBlank { poem.type } else "",
+                            headerAlign = oppositeTextAlign(notebookTextAlignFromWire(poem.alignment)),
+                            showVerticalGuides = false,
+                        ) {
+                            if (twoHemistich(poem.type)) {
+                                val all = lines.getOrElse(page) { "" }
+                                    .split('\n')
+                                    .filter { it.isNotBlank() }
+                                val pairs = all.chunked(2)
+                                Column(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(start = 62.dp, end = 62.dp, top = 4.dp, bottom = 30.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    pairs.forEachIndexed { idx, pair ->
+                                        val pairKey = page.toString() + ":" + idx
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(5.dp))
+                                                .background(
+                                                    if (selectedPair == pairKey) Color(0x183B82F6)
+                                                    else Color.Transparent,
+                                                )
+                                                .clickable {
+                                                    selectedPair = if (selectedPair == pairKey) null else pairKey
+                                                }
+                                                .padding(vertical = 5.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(18.dp),
+                                        ) {
+                                            Text(
+                                                pair.getOrNull(0).orEmpty(),
+                                                Modifier.weight(1f),
+                                                textAlign = TextAlign.Right,
+                                                color = Color(0xFF18384F),
+                                                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                                                fontSize = 18.sp,
+                                                lineHeight = 24.sp,
+                                            )
+                                            Text(
+                                                pair.getOrNull(1).orEmpty(),
+                                                Modifier.weight(1f),
+                                                textAlign = TextAlign.Right,
+                                                color = Color(0xFF18384F),
+                                                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                                                fontSize = 18.sp,
+                                                lineHeight = 24.sp,
+                                            )
+                                        }
                                     }
                                 }
+                            } else {
+                                Text(
+                                    lines.getOrElse(page) { "" },
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(start = 62.dp, end = 62.dp, top = 4.dp, bottom = 30.dp),
+                                    textAlign = notebookTextAlignFromWire(poem.alignment),
+                                    color = Color(0xFF18384F),
+                                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                                    fontSize = 18.sp,
+                                    lineHeight = 24.sp,
+                                )
                             }
-                        } else {
-                            Text(
-                                lines[page],
-                                modifier = Modifier.fillMaxSize().padding(start = 76.dp, end = 76.dp, top = 0.dp, bottom = 32.dp),
-                                textAlign = notebookTextAlignFromWire(poem.alignment),
-                                color = Color(0xFF18384F),
-                                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                fontSize = 18.sp,
-                                lineHeight = 24.sp,
-                            )
                         }
                     }
                 }
-            }
-            Row(
-                Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(poem.title.ifBlank { "شعر من" }, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(poem.type, color = Color(0xFFB8C6D8), style = MaterialTheme.typography.labelSmall)
-                }
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "ویرایش شعر", tint = Color.White)
+
+                Row(
+                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(7.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            poem.title.ifBlank { "شعر من" },
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(poem.type, color = Color(0xFFB8C6D8), style = MaterialTheme.typography.labelSmall)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            if (lines.size > 1) (activePage + 1).toString() + "/" + lines.size.toString() else "",
+                            color = Color(0xFFB8C6D8),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                        IconButton(onClick = onEdit) {
+                            Icon(Icons.Default.Edit, contentDescription = "ویرایش شعر", tint = Color.White)
+                        }
+                    }
                 }
             }
         }
