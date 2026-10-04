@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.align
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -328,6 +329,30 @@ fun LinedNotebookInput(
     }
 }
 
+
+fun oppositeTextAlign(value: TextAlign): TextAlign =
+    if (value == TextAlign.Center) TextAlign.Right else TextAlign.Center
+
+fun notebookAlignmentWire(value: TextAlign): String = when (value) {
+    TextAlign.Center -> "center"
+    TextAlign.Left -> "left"
+    else -> "right"
+}
+
+fun notebookTextAlignFromWire(value: String): TextAlign = when (value) {
+    "center" -> TextAlign.Center
+    "left" -> TextAlign.Left
+    else -> TextAlign.Right
+}
+
+internal fun nextRegisteredTitle(baseTitle: String, existingTitles: List<String>): String {
+    val base = baseTitle.trim().replace(Regex("\\s+شماره\\s+\\d+$"), "").trim().ifBlank { "دفترچه" }
+    val pattern = Regex("^" + Regex.escape(base) + "\\s+شماره\\s+(\\d+)$")
+    val maxNumber = existingTitles.mapNotNull {
+        pattern.matchEntire(it.trim())?.groupValues?.getOrNull(1)?.toIntOrNull()
+    }.maxOrNull() ?: 0
+    return base + " شماره " + (maxNumber + 1)
+}
 
 @Composable
 fun NotebookAlignmentPicker(
