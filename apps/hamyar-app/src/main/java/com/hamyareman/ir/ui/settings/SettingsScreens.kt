@@ -40,6 +40,7 @@ import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import java.util.UUID
 import com.hamyareman.ir.platform.core.designsystem.InlineButton
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
+import com.hamyareman.ir.platform.core.designsystem.PatternLockGrid
 import com.hamyareman.ir.platform.core.designsystem.SectionCard
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
@@ -267,16 +268,15 @@ fun AppLockScreen(onBack: () -> Unit) {
                     Text("الگوی اختصاصی قفل برنامه", style = MaterialTheme.typography.titleSmall)
                     Text("این الگو متعلق به خود اپ است و هیچ ارتباطی با Pattern/PIN قفل صفحهٔ اندروید ندارد.", style = MaterialTheme.typography.bodySmall)
                     Text(if (lock.hasPattern()) "الگو ثبت شده است." else "هنوز الگویی ثبت نشده.", color = MaterialTheme.colorScheme.primary)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        (1..3).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
-                    }
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        (4..6).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
-                    }
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        (7..9).forEach { n -> InlineButton(n.toString(), Modifier.weight(1f)) { if (!pattern.contains(n.toString())) pattern += n } }
-                    }
-                    Text(if (pattern.isBlank()) "الگو را با حداقل ۴ نقطه انتخاب کن." else "الگوی انتخاب‌شده: " + pattern.replace(Regex("."), "•"))
+                    PatternLockGrid(
+                        pattern = pattern,
+                        onPatternChange = { pattern = it },
+                        enabled = true,
+                    )
+                    Text(
+                        if (pattern.isBlank()) "الگو را با کشیدن انگشت روی حداقل ۴ نقطه رسم کن."
+                        else "نقاط ثبت‌شده: " + pattern.replace(Regex("."), "•"),
+                    )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { pattern = "" }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
                         PrimaryButton("ثبت الگو", Modifier.weight(2f)) {
