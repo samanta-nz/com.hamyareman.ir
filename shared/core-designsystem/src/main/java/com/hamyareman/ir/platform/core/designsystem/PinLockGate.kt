@@ -1,6 +1,7 @@
 package com.hamyareman.ir.platform.core.designsystem
 
 import android.view.HapticFeedbackConstants
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
@@ -136,14 +137,14 @@ fun PatternLockGrid(
                 detectDragGestures(
                     onDragStart = { start ->
                         current = ""
-                        hit(start, size.width, size.height)?.let { idx ->
+                        hit(start, size.width.toFloat(), size.height.toFloat())?.let { idx ->
                             current = appendNode(current, idx)
                             onPatternChange(current)
                             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                         } ?: onPatternChange("")
                     },
                     onDrag = { change, _ ->
-                        hit(change.position, size.width, size.height)?.let { idx ->
+                        hit(change.position, size.width.toFloat(), size.height.toFloat())?.let { idx ->
                             val next = appendNode(current, idx)
                             if (next != current) {
                                 current = next
@@ -290,7 +291,6 @@ fun PinLockGate(
             style = MaterialTheme.typography.bodyMedium,
             color = Color(0xFFD0DCE7),
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(20.dp))
         if (patternEnabled && onPatternVerify != null) {
