@@ -1,0 +1,40 @@
+name: Apply New graphic transformation
+
+on:
+  push:
+    branches: ['New-graphic']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'Release grade 9 v2.5.4')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: New-graphic
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply New graphic specification
+        run: python3 scripts/apply_new_graphic.py
+
+      - name: Commit final implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Release grade 9 v2.5.4 — New graphic'
+          git push origin HEAD:New-graphic
