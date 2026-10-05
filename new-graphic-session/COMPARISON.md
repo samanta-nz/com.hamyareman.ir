@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T17:09:49.555800+00:00
+- Generated: 2026-10-05T17:19:32.936847+00:00
 - Branch: New-graphic
-- HEAD: a24f0163c71dc6e4c6f6b67369aba0ac9c2df4ff
+- HEAD: e51a78feb4c770c23198a123c4227786b2dca680
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	242
+- rev-list main...HEAD: 2	260
 
 ## Summary
 
@@ -42,21 +42,21 @@
 - `.github/workflows/arena-release-grade9-v2.2.yml`
 - `.github/workflows/arena-release-grade9-v2.3.yml`
 - `.github/workflows/arena-release-grade9-v2.4.1.yml`
+- `.github/workflows/arena-release-grade9-v2.4.2.yml`
+- `.github/workflows/arena-release-grade9-v2.4.3.yml`
 - `.github/workflows/arena-release-grade9-v2.4.4.yml`
 - `.github/workflows/arena-release-grade9-v2.4.yml`
-- `.github/workflows/arena-release-grade9-v2.5.4.yml`
-- `.github/workflows/arena-release-grade9-v2.5.5.yml`
-- `.github/workflows/arena-release-grade9-v2.5.6.yml`
+- `.github/workflows/arena-release-grade9-v2.5.3.yml`
 - `.github/workflows/finalize-grade9-v2.yml`
 - `.github/workflows/grade9-release-v2.5.7.yml`
 - `.github/workflows/new-graphic-compare.yml`
 - `.github/workflows/new-graphic-parspack-sync.yml`
 - `.github/workflows/new-graphic-validate.yml`
 - `.github/workflows/publish-update.yml`
-- `.github/workflows/release-grade9-forced.yml`
 - `.github/workflows/release-grade9-v2.yml`
 - `.github/workflows/ship-ci-apk.yml`
 - `.github/workflows/upload-apk-arvan.yml`
+- `.release-trigger/grade9-v2.5.7`
 - `RELEASES.md`
 - `apps/hamyar-app/build.gradle.kts`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
