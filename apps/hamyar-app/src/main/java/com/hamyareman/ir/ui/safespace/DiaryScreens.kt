@@ -283,7 +283,7 @@ private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPay
         }.ifEmpty { listOf(DiaryPageModel("")) }.let { DiaryPayload(it) }
     }.getOrElse {
         DiaryPayload(
-            plain.split(NOTEBOOK_PAGE_SEPARATOR).map { DiaryPageModel(it.trim()) }.ifEmpty { listOf(DiaryPageModel(plain.trim())) },
+            plain.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf(plain).map { DiaryPageModel(it) } },
         )
     }
 }
