@@ -410,7 +410,10 @@ object ClassPlanStore {
 
     fun isSchoolHoliday(snap: Snapshot, date: LocalDate, ctx: Context? = null): Boolean {
         val idx = SchoolShift.dayIndex(date)
-        if (idx >= 6) return true // پنجشنبه و جمعه
+        if (idx >= 6) return true
+        // تعطیلات نوروز مدرسه: از ۱ تا ۱۳ فروردین.
+        val j = JalaliDate.toJalali(date.toString())
+        if (j != null && j.month == 1 && j.day in 1..13) return true // پنجشنبه و جمعه
         if (ctx != null && CalendarOccasions.isOfficialHoliday(ctx, date, snap.lunarOffset)) return true
         val j = JalaliDate.toJalali(date.toString()) ?: return false
         if (IranOfficialHolidays.occasion(j) != null) return true
@@ -444,6 +447,8 @@ object ClassPlanStore {
     }
 
     fun holidayRoutine(date: LocalDate): String {
+        val j = JalaliDate.toJalali(date.toString())
+        if (j != null && j.month == 1 && j.day in 1..13) return "تعطیلات نوروز مدرسه"
         return when (SchoolShift.dayIndex(date)) {
             6 -> "امروز پنجشنبه است؛ مرور سبک درس‌ها و کمی استراحت."
             7 -> "امروز جمعه است؛ خانواده، بازی و خواب کافی."
