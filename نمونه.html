@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>درس اول جامع: معرفی مجموعه — ریاضی نهم</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #eef2ff 0%, #fdf2f8 50%, #ecfeff 100%);
+  color: #1e293b; line-height: 1.95; padding: 20px; font-size: 16px;
+}
+
+.container {
+  max-width: 1150px; margin: 0 auto;
+  background: #ffffff; border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(30, 41, 59, 0.15);
+  overflow: hidden;
+}
+
+header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%);
+  color: #fff; padding: 42px 30px; text-align: center; position: relative;
+}
+header::after {
+  content: ""; position: absolute; bottom: -20px; left: 0; right: 0;
+  height: 40px; background: #fff;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+header h1 { font-size: 2rem; font-weight: 900; margin-bottom: 10px;
+  text-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+header p { font-size: 1rem; opacity: 0.95; }
+
+main { padding: 40px 30px 60px; }
+
+.intro-box {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border-right: 6px solid #f59e0b;
+  padding: 22px 26px; border-radius: 16px;
+  margin-bottom: 30px; font-size: 1.02rem;
+}
+.intro-box strong { color: #92400e; }
+
+/* فهرست مطالب */
+.toc {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  border: 2px solid #6366f1; border-radius: 18px;
+  padding: 22px 26px; margin-bottom: 35px;
+}
+.toc h3 { color: #3730a3; font-size: 1.15rem; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px; }
+.toc h3::before { content: "📋"; }
+.toc ol { padding-right: 22px; margin: 0; }
+.toc li { padding: 4px 0; color: #3730a3; font-weight: 600;
+  font-size: 0.95rem; }
+.toc a { color: #3730a3; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+.section-title {
+  font-size: 1.3rem; font-weight: 800; color: #6d28d9;
+  margin: 40px 0 16px; padding-right: 12px;
+  border-right: 5px solid #7c3aed;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::before {
+  content: "◆"; color: #a855f7; font-size: 0.9rem;
+}
+.subsection-title {
+  font-size: 1.1rem; font-weight: 800; color: #1e40af;
+  margin: 26px 0 12px; padding-right: 10px;
+  border-right: 4px solid #3b82f6;
+  display: flex; align-items: center; gap: 6px;
+}
+.subsection-title::before {
+  content: "▸"; color: #60a5fa; font-size: 0.85rem;
+}
+
+.dialog { display: flex; gap: 14px; margin: 16px 0;
+  align-items: flex-start; animation: fadeIn 0.4s ease; }
+.avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; color: #fff; font-size: 0.9rem;
+  flex-shrink: 0; box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+.avatar.sarvnaz { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+.avatar.farsam  { background: linear-gradient(135deg, #0ea5e9, #3b82f6); }
+
+.bubble { flex: 1; padding: 14px 18px; border-radius: 18px;
+  font-size: 1rem; }
+.bubble.sarvnaz {
+  background: #fce7f3; border-top-right-radius: 4px;
+  color: #831843; border: 1px solid #fbcfe8;
+}
+.bubble.farsam {
+  background: #dbeafe; border-top-right-radius: 4px;
+  color: #1e3a8a; border: 1px solid #bfdbfe;
+}
+.speaker { font-weight: 800; display: block; margin-bottom: 4px;
+  font-size: 0.9rem; }
+.speaker.sarvnaz { color: #be185d; }
+.speaker.farsam  { color: #1d4ed8; }
+
+.formula-box {
+  background: #fff7ed; border: 2px solid #fb923c;
+  border-radius: 14px; padding: 16px 22px;
+  margin: 16px 0; text-align: center;
+  font-size: 1.15rem; font-weight: 700; color: #9a3412;
+  direction: ltr; font-family: 'KaTeX_Main', 'Cambria Math', serif;
+}
+
+.note-box {
+  background: #ecfdf5; border-right: 5px solid #10b981;
+  padding: 14px 20px; border-radius: 12px;
+  margin: 16px 0; color: #065f46; font-size: 0.98rem;
+}
+.warning-box {
+  background: #fef2f2; border-right: 5px solid #ef4444;
+  padding: 14px 20px; border-radius: 12px;
+  margin: 16px 0; color: #991b1b; font-size: 0.98rem;
+}
+.def-box {
+  background: #e0e7ff; border: 2px solid #4f46e5;
+  border-radius: 16px; padding: 18px 22px; margin: 18px 0;
+}
+.def-box::before {
+  content: "تعریف رسمی";
+  display: inline-block; background: #4f46e5; color: #fff;
+  padding: 2px 12px; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 700; margin-bottom: 10px;
+}
+
+.highlight {
+  background: linear-gradient(120deg, #f4ff5b 0%, #fde047 100%);
+  padding: 2px 6px; border-radius: 6px;
+  font-weight: 700; color: #713f12;
+}
+
+.example-box {
+  background: #f5f3ff; border: 2px solid #a78bfa;
+  border-radius: 16px; padding: 20px 24px; margin: 20px 0;
+}
+.example-box h4 {
+  color: #6d28d9; font-size: 1.05rem; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.example-box h4::before { content: "📌"; font-size: 1.15rem; }
+
+.step {
+  background: #ffffff; border-radius: 10px;
+  padding: 10px 14px; margin: 8px 0;
+  border-right: 4px solid #7c3aed; font-size: 0.98rem;
+}
+.step b { color: #6d28d9; }
+
+.exercise {
+  background: #ffffff; border: 2px dashed #7c3aed;
+  border-radius: 16px; padding: 22px 26px; margin: 24px 0;
+}
+.exercise-title {
+  font-weight: 800; color: #6d28d9; font-size: 1.05rem;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.exercise-title .num {
+  display: inline-flex; width: 30px; height: 30px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  color: #fff; border-radius: 50%;
+  align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 900;
+}
+.result-box {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 2px solid #10b981; border-radius: 12px;
+  padding: 14px 18px; margin-top: 12px;
+  text-align: center; font-weight: 700; color: #065f46;
+}
+
+.svg-wrapper {
+  background: #ffffff; border-radius: 16px; padding: 20px;
+  margin: 22px 0; text-align: center;
+  border: 2px solid #e0e7ff;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.08);
+}
+.svg-wrapper svg { max-width: 100%; height: auto; }
+.svg-caption {
+  font-size: 0.9rem; color: #64748b; margin-top: 10px;
+  font-style: italic;
+}
+
+.summary-table {
+  width: 100%; border-collapse: collapse; margin: 20px 0;
+  background: #fff; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+.summary-table th {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff; padding: 12px; font-size: 0.95rem;
+}
+.summary-table td {
+  padding: 10px 14px; border-bottom: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+}
+.summary-table tr:nth-child(even) td { background: #f8fafc; }
+.summary-table tr:last-child td { border-bottom: none; }
+
+.big-quote {
+  background: linear-gradient(135deg, #fef9c3, #fde68a);
+  border: 2px dashed #eab308; border-radius: 16px;
+  padding: 18px 22px; margin: 20px 0; text-align: center;
+  font-weight: 700; color: #713f12; font-size: 1.05rem;
+}
+
+footer {
+  text-align: center; padding: 30px 20px;
+  background: #1e293b; color: #cbd5e1; font-size: 0.9rem;
+}
+footer strong { color: #a855f7; }
+
+.math, .katex { direction: ltr !important; unicode-bidi: isolate !important; }
+.math-inline { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 640px) {
+  body { padding: 8px; font-size: 15px; }
+  main { padding: 20px 14px 40px; }
+  header h1 { font-size: 1.4rem; }
+  .avatar { width: 42px; height: 42px; font-size: 0.78rem; }
+  .bubble { padding: 12px 14px; font-size: 0.95rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📘 درس اول جامع: معرفی مجموعه</h1>
+    <p>فصل اول ریاضی نهم — آموزش کامل پیش‌نیازها تا خود مجموعه</p>
+  </header>
+
+  <main>
+
+    <div class="intro-box">
+      <strong>سلام دانش‌آموز عزیز! 🌟</strong><br>
+      این درس، <strong>پایه‌ی کل فصل اول</strong> است. برای اینکه مبحث مجموعه را عمیق بفهمی،
+      اول باید با چند اصطلاح پیش‌نیاز کاملاً آشنا شوی: <strong>شمارنده</strong>،
+      <strong>عدد اول</strong>، <strong>عدد مرکب</strong>، <strong>عدد طبیعی</strong>،
+      <strong>عدد حسابی</strong>، <strong>عدد صحیح</strong> و <strong>متمایز بودن</strong>.
+      پس با هم از صفر شروع می‌کنیم و آقای فرسام و خانم سروناز همه چیز را با مثال ملموس توضیح می‌دهند.
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- فهرست مطالب -->
+    <!-- ============================================================= -->
+    <div class="toc">
+      <h3>فهرست مطالب</h3>
+      <ol>
+        <li><a href="#sec1">پیش‌نیاز ۱: شمارنده چیست؟</a></li>
+        <li><a href="#sec2">پیش‌نیاز ۲: عدد اول و عدد مرکب</a></li>
+        <li><a href="#sec3">پیش‌نیاز ۳: انواع اعداد (طبیعی، حسابی، صحیح)</a></li>
+        <li><a href="#sec4">پیش‌نیاز ۴: «متمایز بودن» یعنی چه؟</a></li>
+        <li><a href="#sec5">درس اصلی ۱: تعریف مجموعه + مثال روزمره</a></li>
+        <li><a href="#sec6">درس اصلی ۲: عضویت و نمادهای آن</a></li>
+        <li><a href="#sec7">درس اصلی ۳: تعریف رسمی و اشتباهات رایج</a></li>
+        <li><a href="#sec8">درس اصلی ۴: نمایش با نمودار ون و با فرمول</a></li>
+        <li><a href="#sec9">تمرین‌های جامع با حل گام‌به‌گام</a></li>
+        <li><a href="#sec10">جدول خلاصه و نکات امتحانی</a></li>
+      </ol>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۱: شمارنده -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec1">پیش‌نیاز ۱: شمارنده چیست؟</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        سلام سروناز جان. قبل از این‌که برویم سراغ مجموعه، باید یک کلمه‌ی مهم را کامل یاد بگیریم:
+        <span class="highlight">شمارنده</span>.
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        شمارنده؟ فکر کنم یعنی عددهایی که یک عدد را می‌شمارند؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        نزدیک شدی، ولی بگذار دقیق بگویم. <br><br>
+        شمارنده‌ی یک عدد، <span class="highlight">هر عددی است که وقتی عدد اصلی را به آن تقسیم می‌کنیم، باقی‌مانده صفر می‌شود</span>.
+      </div>
+    </div>
+
+    <div class="def-box">
+      <b>شمارنده (مقسوم‌علیه):</b> عدد طبیعی <span class="math-inline">a</span> شمارنده‌ی عدد طبیعی
+      <span class="math-inline">b</span> است اگر <span class="math-inline">b</span> بر
+      <span class="math-inline">a</span> بخش‌پذیر باشد (یعنی باقی‌مانده‌ی تقسیم، صفر باشد).
+    </div>
+
+    <div class="subsection-title">مثال ۱: شمارنده‌های عدد ۱۲ را پیدا کنیم.</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        بیا با هم چک کنیم. کدام اعداد، ۱۲ را بدون باقی‌مانده تقسیم می‌کنند؟
+      </div>
+    </div>
+
+    <div class="example-box">
+      <h4>شمارنده‌های ۱۲</h4>
+      <div class="step"><b>۱۲ ÷ ۱ = ۱۲</b> ← باقی‌مانده صفر ✅ پس ۱ شمارنده است.</div>
+      <div class="step"><b>۱۲ ÷ ۲ = ۶</b> ← باقی‌مانده صفر ✅ پس ۲ شمارنده است.</div>
+      <div class="step"><b>۱۲ ÷ ۳ = ۴</b> ← باقی‌مانده صفر ✅ پس ۳ شمارنده است.</div>
+      <div class="step"><b>۱۲ ÷ ۴ = ۳</b> ← باقی‌مانده صفر ✅ پس ۴ شمارنده است.</div>
+      <div class="step"><b>۱۲ ÷ ۵ = ۲ و باقی‌مانده ۲</b> ← باقی‌مانده صفر نیست ❌ پس ۵ شمارنده نیست.</div>
+      <div class="step"><b>۱۲ ÷ ۶ = ۲</b> ← باقی‌مانده صفر ✅ پس ۶ شمارنده است.</div>
+      <div class="step"><b>۱۲ ÷ ۱۲ = ۱</b> ← باقی‌مانده صفر ✅ پس ۱۲ شمارنده است.</div>
+      <div class="result-box">
+        شمارنده‌های ۱۲: {1, 2, 3, 4, 6, 12}
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 نکته:</strong> هر عدد طبیعی حداقل <b>دو شمارنده</b> دارد: ۱ و خودش.
+      چون <span class="math-inline">a ÷ 1 = a</span> و <span class="math-inline">a ÷ a = 1</span>.
+    </div>
+
+    <div class="subsection-title">مثال ۲: شمارنده‌های عدد ۷ را پیدا کنیم.</div>
+
+    <div class="example-box">
+      <h4>شمارنده‌های ۷</h4>
+      <div class="step"><b>۷ ÷ ۱ = ۷</b> ✅</div>
+      <div class="step"><b>۷ ÷ ۲ = ۳ و باقی‌مانده ۱</b> ❌</div>
+      <div class="step"><b>۷ ÷ ۳ = ۲ و باقی‌مانده ۱</b> ❌</div>
+      <div class="step"><b>۷ ÷ ۴ = ۱ و باقی‌مانده ۳</b> ❌</div>
+      <div class="step"><b>۷ ÷ ۵ = ۱ و باقی‌مانده ۲</b> ❌</div>
+      <div class="step"><b>۷ ÷ ۶ = ۱ و باقی‌مانده ۱</b> ❌</div>
+      <div class="step"><b>۷ ÷ ۷ = ۱</b> ✅</div>
+      <div class="result-box">
+        شمارنده‌های ۷: {1, 7} — فقط دو شمارنده!
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        آها! پس عدد ۷ فقط دو شمارنده دارد: ۱ و خودش. حالا فهمیدم «عدد اول» چیست!
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۲: عدد اول و مرکب -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec2">پیش‌نیاز ۲: عدد اول و عدد مرکب</div>
+
+    <div class="def-box">
+      <b>عدد اول:</b> عددی طبیعی که <span class="highlight">دقیقاً دو شمارنده</span> دارد: ۱ و خودش.
+      <br><br>
+      <b>عدد مرکب:</b> عددی طبیعی که <span class="highlight">بیشتر از دو شمارنده</span> دارد.
+      <br><br>
+      <b>نکته‌ی مهم:</b> عدد ۱ نه اول است و نه مرکب، چون فقط یک شمارنده دارد.
+    </div>
+
+    <div class="example-box">
+      <h4>مثال‌های عدد اول</h4>
+      <div class="step"><b>۲:</b> شمارنده‌ها {۱، ۲} → دو شمارنده → <b>اول</b> ✅</div>
+      <div class="step"><b>۳:</b> شمارنده‌ها {۱، ۳} → دو شمارنده → <b>اول</b> ✅</div>
+      <div class="step"><b>۵:</b> شمارنده‌ها {۱، ۵} → دو شمارنده → <b>اول</b> ✅</div>
+      <div class="step"><b>۷:</b> شمارنده‌ها {۱، ۷} → دو شمارنده → <b>اول</b> ✅</div>
+      <div class="step"><b>۱۱:</b> شمارنده‌ها {۱، ۱۱} → دو شمارنده → <b>اول</b> ✅</div>
+    </div>
+
+    <div class="example-box">
+      <h4>مثال‌های عدد مرکب</h4>
+      <div class="step"><b>۴:</b> شمارنده‌ها {۱، ۲، ۴} → سه شمارنده → <b>مرکب</b> ✅</div>
+      <div class="step"><b>۶:</b> شمارنده‌ها {۱، ۲، ۳، ۶} → چهار شمارنده → <b>مرکب</b> ✅</div>
+      <div class="step"><b>۱۲:</b> شمارنده‌ها {۱، ۲، ۳، ۴، ۶، ۱۲} → شش شمارنده → <b>مرکب</b> ✅</div>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ اشتباه رایج:</strong> خیلی از دانش‌آموزان فکر می‌کنند عدد ۱ اول است.
+      اشتباه است! عدد ۱ فقط <b>یک</b> شمارنده دارد (خودش)، پس نه اول است و نه مرکب.
+    </div>
+
+    <div class="note-box">
+      <strong>💡 نکته:</strong> تمام عددهای اول کوچک‌تر از ۳۰ را با هم ببینیم:
+      <br>
+      <span class="math-inline">2, 3, 5, 7, 11, 13, 17, 19, 23, 29</span>
+      <br>
+      این لیست را حتماً حفظ کن. در حل بسیاری از مسائل به کارت می‌آید.
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۳: انواع اعداد -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec3">پیش‌نیاز ۳: انواع اعداد (طبیعی، حسابی، صحیح)</div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        فرسام جان، وقتی می‌گوییم «عدد طبیعی» دقیقاً یعنی چه؟ با «عدد صحیح» چه فرقی دارد؟
+      </div>
+    </div>
+
+    <div class="subsection-title">۱) عددهای طبیعی (N)</div>
+    <div class="def-box">
+      عددهای طبیعی اعدادی هستند که برای <b>شمردن</b> از آن‌ها استفاده می‌کنیم:
+      <div class="formula-box">N = {1, 2, 3, 4, 5, ...}</div>
+      عدد صفر جزء اعداد طبیعی نیست.
+    </div>
+
+    <div class="subsection-title">۲) عددهای حسابی (W)</div>
+    <div class="def-box">
+      اگر <b>صفر</b> را به عددهای طبیعی اضافه کنیم، عددهای حسابی به دست می‌آیند:
+      <div class="formula-box">W = {0, 1, 2, 3, 4, 5, ...}</div>
+      پس عددهای طبیعی زیرمجموعه‌ی عددهای حسابی هستند.
+    </div>
+
+    <div class="subsection-title">۳) عددهای صحیح (Z)</div>
+    <div class="def-box">
+      عددهای صحیح شامل عددهای مثبت، منفی و صفر هستند:
+      <div class="formula-box">Z = {..., -3, -2, -1, 0, 1, 2, 3, ...}</div>
+      پس عددهای طبیعی و حسابی، هر دو زیرمجموعه‌ی عددهای صحیح هستند.
+    </div>
+
+    <div class="svg-wrapper">
+      <svg viewBox="0 0 620 320" xmlns="http://www.w3.org/2000/svg">
+        <rect width="620" height="320" fill="#f8fafc" rx="18"/>
+        <text x="310" y="32" text-anchor="middle" font-size="16"
+          font-weight="900" fill="#1e293b" font-family="Vazirmatn, sans-serif">
+          رابطه‌ی بین انواع اعداد
+        </text>
+        <ellipse cx="310" cy="185" rx="270" ry="105"
+          fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/>
+        <text x="535" y="115" font-size="17" font-weight="900"
+          fill="#991b1b" font-family="Vazirmatn, sans-serif">Z (صحیح)</text>
+        <ellipse cx="290" cy="190" rx="175" ry="75"
+          fill="#fef3c7" stroke="#ea580c" stroke-width="2.5"/>
+        <text x="420" y="145" font-size="15" font-weight="900"
+          fill="#9a3412" font-family="Vazirmatn, sans-serif">W (حسابی)</text>
+        <ellipse cx="280" cy="195" rx="90" ry="50"
+          fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+        <text x="280" y="200" text-anchor="middle" font-size="14"
+          font-weight="900" fill="#1e3a8a" font-family="Vazirmatn, sans-serif">N (طبیعی)</text>
+        <text x="310" y="310" text-anchor="middle" font-size="12"
+          fill="#475569" font-family="Vazirmatn, sans-serif">
+          N ⊂ W ⊂ Z
+        </text>
+      </svg>
+      <div class="svg-caption">شکل ۱: هر عدد طبیعی، حسابی است؛ هر عدد حسابی، صحیح است.</div>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 مثال سریع:</strong>
+      <ul style="margin-top:8px; padding-right:20px;">
+        <li><b>۳</b> طبیعی، حسابی و صحیح است ✅</li>
+        <li><b>۰</b> حسابی و صحیح است؛ ولی طبیعی <b>نیست</b></li>
+        <li><b>−۵</b> فقط صحیح است؛ طبیعی و حسابی <b>نیست</b></li>
+        <li><b>۱/۲</b> هیچ‌کدام نیست؛ این یک عدد کسری است</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۴: متمایز بودن -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec4">پیش‌نیاز ۴: «متمایز بودن» یعنی چه؟</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        سروناز جان، در تعریف مجموعه می‌گوییم اعضا باید «متمایز» باشند. حالا به نظرت «متمایز» یعنی چه؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        یعنی متفاوت بودن؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        دقیقاً! یعنی هیچ عضوی تکرار نشود. بگذار با یک مثال زندگی روزمره نشانت بدهم. <br><br>
+        فرض کن یک سبد میوه داری که داخل آن این‌ها هستند: <br>
+        «سیب، سیب، موز، پرتقال، موز».
+        <br><br>
+        آیا این سبد، «سیب و موز تکراری» دارد؟ بله. حالا اگر از تو بپرسند «چه میوه‌هایی در این سبد هست؟»
+        چه جوابی می‌دهی؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        می‌گویم: سیب، موز، پرتقال. سیب و موز را یک بار می‌گویم.
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        دقیقاً همین! در ریاضی هم همین کار را می‌کنیم:
+        <div class="formula-box">{سیب، سیب، موز، پرتقال، موز} = {سیب، موز، پرتقال}</div>
+        این یعنی اعضای مجموعه <span class="highlight">متمایز</span> شده‌اند.
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 نکته:</strong> مثال عددی:
+      <div class="formula-box">{2, 2, 5, 5, 5, 7} = {2, 5, 7}</div>
+      تعداد اعضا: ۳ (نه ۶).
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۵: درس اصلی — تعریف مجموعه -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec5">درس اصلی ۱: تعریف مجموعه + مثال روزمره</div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        خب فرسام جان، حالا که پیش‌نیازها را یاد گرفتیم، برویم سراغ اصل مطلب. مجموعه چیست؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        بگذار اول با یک مثال از زندگی روزمره شروع کنم. <br><br>
+        فرض کن کیف مدرسه‌ات را باز می‌کنی. داخلش چه چیزهایی داری؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        سه تا کتاب، دو تا دفتر، یک جامدادی، پنج تا خودکار.
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        آفرین. حالا اگر بگویم «وسایل داخل کیف سروناز»، آیا دقیقاً می‌دانیم چه چیزهایی داخلش هست؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        بله، چون همه‌شان مشخصند.
+      </div>
+    </div>
+
+    <div class="def-box">
+      <b>مجموعه</b> یعنی یک دسته از اشیاء که دو ویژگی مهم دارند:
+      <ul style="margin-top:10px; padding-right:20px;">
+        <li><b>۱) مشخص باشند:</b> بدانیم دقیقاً چه چیزهایی توش هستند.</li>
+        <li><b>۲) متمایز باشند:</b> هیچ عضوی تکراری نباشد.</li>
+      </ul>
+    </div>
+
+    <div class="subsection-title">مثال عددی: مجموعه‌ی شمارنده‌های ۱۲</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        حالا برویم سراغ یک مثال عددی. شمارنده‌های ۱۲ را یادت هست؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        بله: ۱، ۲، ۳، ۴، ۶، ۱۲.
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        عالی! حالا این عددها را داخل دو تا آکولاد می‌گذاریم و به آن یک اسم می‌دهیم، مثلاً «آ»:
+        <div class="formula-box">A = {1, 2, 3, 4, 6, 12}</div>
+        این یک مجموعه است. به هر کدام از این عددها می‌گوییم <span class="highlight">عضو</span> مجموعه‌ی آ.
+      </div>
+    </div>
+
+    <div class="subsection-title">مثال: مجموعه‌ی شمارنده‌های اول ۱۲</div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        فرسام جان، می‌شود یک مجموعه‌ی دیگر از همین ۱۲ بسازیم؟ مثلاً شمارنده‌هایی که اول هستند؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        سؤال خوبی! بله. شمارنده‌های ۱۲ که «اول» هستند:
+        <div class="formula-box">B = {2, 3}</div>
+        بررسی کنیم: ۲ اول است ✅، ۳ اول است ✅، ۴ اول نیست ❌، ۶ اول نیست ❌، ۱۲ اول نیست ❌.
+      </div>
+    </div>
+
+    <div class="subsection-title">مثال: مجموعه‌ی شمارنده‌های مرکب ۱۲</div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        آفرین. حالا بیا شمارنده‌های مرکب ۱۲ را بنویسیم:
+        <div class="formula-box">C = {4, 6, 12}</div>
+        چون ۴ مرکب است، ۶ مرکب است، ۱۲ مرکب است.
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 نکته‌ی کلیدی:</strong> عدد ۱ نه اول است و نه مرکب.
+      پس در هیچ‌کدام از دو مجموعه‌ی بالا قرار نمی‌گیرد.
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۶: عضویت و نمادها -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec6">درس اصلی ۲: عضویت و نمادهای آن</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        حالا که فهمیدیم «عضو» یعنی چه، باید با نمادهای آن آشنا شویم.
+      </div>
+    </div>
+
+    <div class="def-box">
+      <b>نماد عضویت:</b> اگر عدد یا چیزی عضو مجموعه باشد، از نماد
+      <span class="math-inline">∈</span> استفاده می‌کنیم. <br>
+      <b>نماد عدم عضویت:</b> اگر عضو نباشد، از <span class="math-inline">∉</span> استفاده می‌کنیم.
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        با مجموعه‌ی <span class="math-inline">A = {1, 2, 3, 4, 6, 12}</span> چند مثال می‌زنم:
+        <ul style="margin-top:10px; padding-right:20px;">
+          <li><span class="math-inline">3 ∈ A</span> ← «۳ عضو آ است» ✅</li>
+          <li><span class="math-inline">6 ∈ A</span> ← «۶ عضو آ است» ✅</li>
+          <li><span class="math-inline">5 ∉ A</span> ← «۵ عضو آ نیست» ✅</li>
+          <li><span class="math-inline">10 ∉ A</span> ← «۱۰ عضو آ نیست» ✅</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ ترتیب مهم است!</strong><br>
+      همیشه <b>عضو در سمت چپ</b> و <b>مجموعه در سمت راست</b> نوشته می‌شود.
+      یعنی می‌نویسیم <span class="math-inline">3 ∈ A</span>، نه <span class="math-inline">A ∈ 3</span>.
+    </div>
+
+    <div class="subsection-title">نماد تعداد اعضا: n(A)</div>
+
+    <div class="def-box">
+      تعداد اعضای مجموعه‌ی آ را با <span class="math-inline">n(A)</span> نشان می‌دهیم.
+      <br>
+      مثلاً در مجموعه‌ی <span class="math-inline">A = {1, 2, 3, 4, 6, 12}</span>، داریم:
+      <div class="formula-box">n(A) = 6</div>
+    </div>
+
+    <div class="svg-wrapper">
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="300" fill="#f8fafc" rx="18"/>
+        <text x="360" y="32" text-anchor="middle" font-size="16"
+          font-weight="900" fill="#0c4a6e" font-family="Vazirmatn, sans-serif">
+          سه نماد مهم که باید بشناسی
+        </text>
+        <!-- Card 1 -->
+        <rect x="30" y="60" width="200" height="220"
+          fill="#dbeafe" stroke="#2563eb" stroke-width="2.5" rx="14"/>
+        <text x="130" y="140" text-anchor="middle" font-size="48"
+          font-weight="900" fill="#1d4ed8" font-family="serif">∈</text>
+        <text x="130" y="180" text-anchor="middle" font-size="14"
+          font-weight="900" fill="#1e3a8a" font-family="Vazirmatn, sans-serif">
+          عضو است
+        </text>
+        <text x="130" y="215" text-anchor="middle" font-size="13"
+          fill="#1e3a8a" font-family="monospace">3 ∈ A</text>
+        <text x="130" y="250" text-anchor="middle" font-size="11"
+          fill="#1e3a8a" font-family="Vazirmatn, sans-serif">
+          ۳ عضو A است
+        </text>
+        <!-- Card 2 -->
+        <rect x="260" y="60" width="200" height="220"
+          fill="#fee2e2" stroke="#dc2626" stroke-width="2.5" rx="14"/>
+        <text x="360" y="140" text-anchor="middle" font-size="48"
+          font-weight="900" fill="#b91c1c" font-family="serif">∉</text>
+        <text x="360" y="180" text-anchor="middle" font-size="14"
+          font-weight="900" fill="#7f1d1d" font-family="Vazirmatn, sans-serif">
+          عضو نیست
+        </text>
+        <text x="360" y="215" text-anchor="middle" font-size="13"
+          fill="#7f1d1d" font-family="monospace">5 ∉ A</text>
+        <text x="360" y="250" text-anchor="middle" font-size="11"
+          fill="#7f1d1d" font-family="Vazirmatn, sans-serif">
+          ۵ عضو A نیست
+        </text>
+        <!-- Card 3 -->
+        <rect x="490" y="60" width="200" height="220"
+          fill="#fef3c7" stroke="#ea580c" stroke-width="2.5" rx="14"/>
+        <text x="590" y="140" text-anchor="middle" font-size="36"
+          font-weight="900" fill="#ea580c" font-family="serif">n(A)</text>
+        <text x="590" y="180" text-anchor="middle" font-size="14"
+          font-weight="900" fill="#9a3412" font-family="Vazirmatn, sans-serif">
+          تعداد اعضا
+        </text>
+        <text x="590" y="215" text-anchor="middle" font-size="13"
+          fill="#9a3412" font-family="monospace">n(A) = 6</text>
+        <text x="590" y="250" text-anchor="middle" font-size="11"
+          fill="#9a3412" font-family="Vazirmatn, sans-serif">
+          ۶ عضو دارد
+        </text>
+      </svg>
+      <div class="svg-caption">شکل ۲: سه نماد اصلی درس اول</div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۷: تعریف رسمی و اشتباهات -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec7">درس اصلی ۳: تعریف رسمی و اشتباهات رایج</div>
+
+    <div class="subsection-title">اشتباه رایج ۱: هر آکولادی، مجموعه نیست</div>
+
+    <div class="dialog">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        فرسام جان، پس هر چیزی که داخل آکولاد بنویسیم، مجموعه است؟
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        نه! اگر <b>مبهم</b> باشد، اصلاً مجموعه نیست.
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ این عبارت‌ها مجموعه نیستند:</strong>
+      <ul style="margin-top:8px; padding-right:20px;">
+        <li>«چهار شاعر معروف ایرانی» → کدام چهار تا؟ معلوم نیست.</li>
+        <li>«سه عدد بزرگ» → «بزرگ» نسبی است، برای هر کس متفاوت است.</li>
+        <li>«کتاب‌های خوب ریاضی» → «خوب» نسبی است.</li>
+        <li>«افراد قدبلند شهر» → «قدبلند» نسبی است.</li>
+      </ul>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 معیار تشخیص:</strong> از خودت بپرس: «اگر دو نفر بخواهند این مجموعه را بنویسند، آیا دقیقاً یک جواب می‌دهند؟»
+      اگر بله، مجموعه است. اگر خیر، مجموعه نیست.
+    </div>
+
+    <div class="subsection-title">اشتباه رایج ۲: ترتیب و تکرار</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        دو نکته‌ی مهم که خیلی از دانش‌آموزان اشتباه می‌کنند:
+        <ul style="margin-top:10px; padding-right:20px;">
+          <li><b>ترتیب مهم نیست:</b> {۱، ۲، ۳} = {۳، ۱، ۲} = {۲، ۳، ۱}</li>
+          <li><b>تکرار حذف می‌شود:</b> {۱، ۱، ۲، ۲، ۳} = {۱، ۲، ۳}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="subsection-title">مثال کامل: مجموعه‌ی حروف کلمه‌ی «هخامنشیان»</div>
+
+    <div class="example-box">
+      <h4>چه تعداد عضو دارد؟</h4>
+      <div class="step"><b>گام ۱:</b> حروف این کلمه را می‌نویسیم: ه، خ، ا، م، ن، ش، ی، ا، ن.</div>
+      <div class="step"><b>گام ۲:</b> حروف تکراری را پیدا می‌کنیم: «ا» دو بار، «ن» دو بار.</div>
+      <div class="step"><b>گام ۳:</b> تکراری‌ها را حذف می‌کنیم: ه، خ، ا، م، ن، ش، ی.</div>
+      <div class="step"><b>گام ۴:</b> مجموعه‌ی نهایی: <span class="math-inline">{ه، خ، ا، م، ن، ش، ی}</span>.</div>
+      <div class="result-box">
+        تعداد اعضا: <b>۷</b> — با اینکه کلمه ۹ حرف دارد!
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۸: نمایش مجموعه -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec8">درس اصلی ۴: نمایش با نمودار ون و با فرمول</div>
+
+    <div class="subsection-title">۱) نمایش با عضوها (فهرست کردن)</div>
+
+    <div class="def-box">
+      ساده‌ترین راه: عضوها را داخل آکولاد می‌نویسیم.
+      <div class="formula-box">A = {1, 3, 5, 7}</div>
+    </div>
+
+    <div class="subsection-title">۲) نمایش با نمودار ون</div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        راه دیگر: یک منحنی بسته می‌کشیم و عضوها را داخلش می‌نویسیم.
+        به این می‌گوییم <span class="highlight">نمودار ون</span>.
+      </div>
+    </div>
+
+    <div class="svg-wrapper">
+      <svg viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg">
+        <rect width="500" height="280" fill="#faf5ff" rx="18"/>
+        <text x="250" y="32" text-anchor="middle" font-size="16"
+          font-weight="900" fill="#4c1d95" font-family="Vazirmatn, sans-serif">
+          نمایش مجموعه‌ی A = {1, 3, 5, 7} با نمودار ون
+        </text>
+        <ellipse cx="250" cy="160" rx="180" ry="95"
+          fill="#f2f7fd" stroke="#1565c0" stroke-width="2.5"/>
+        <text x="250" y="80" text-anchor="middle" font-size="20"
+          font-weight="900" fill="#0d47a1" font-family="Vazirmatn, sans-serif">A</text>
+        <text x="170" y="140" text-anchor="middle" font-size="18"
+          fill="#1e293b" font-family="Vazirmatn, sans-serif">1</text>
+        <text x="330" y="140" text-anchor="middle" font-size="18"
+          fill="#1e293b" font-family="Vazirmatn, sans-serif">3</text>
+        <text x="170" y="200" text-anchor="middle" font-size="18"
+          fill="#1e293b" font-family="Vazirmatn, sans-serif">5</text>
+        <text x="330" y="200" text-anchor="middle" font-size="18"
+          fill="#1e293b" font-family="Vazirmatn, sans-serif">7</text>
+      </svg>
+      <div class="svg-caption">شکل ۳: هر عضو، داخل منحنی بسته‌ی مجموعه نوشته می‌شود.</div>
+    </div>
+
+    <div class="subsection-title">۳) نمایش با فرمول ریاضی</div>
+
+    <div class="def-box">
+      اگر عضوها زیاد باشند، نمی‌توان همه را نوشت. پس از <b>شرط</b> استفاده می‌کنیم:
+      <div class="formula-box">A = {x | x عدد طبیعی و x کوچک‌تر از ۵}</div>
+      این را می‌خوانیم: «آ برابر است با مجموعه‌ی عددهایی مانند x، به شرطی که x عدد طبیعی باشد و x کوچک‌تر از ۵ باشد.»
+      <br>
+      پس <span class="math-inline">A = {1, 2, 3, 4}</span>.
+    </div>
+
+    <div class="note-box">
+      <strong>💡 نکته:</strong> علامت <span class="math-inline">|</span> در این نوشتار، «به شرطی که» خوانده می‌شود.
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۹: تمرین‌های جامع -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec9">تمرین‌های جامع با حل گام‌به‌گام</div>
+
+    <!-- تمرین ۱ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۱</span>
+        کدام‌یک از عبارت‌های زیر، یک مجموعه را مشخص می‌کند؟ (با ذکر دلیل)
+      </div>
+      <p>الف) عددهای طبیعی یک‌رقمی</p>
+      <p>ب) چهار شاعر معروف ایرانی</p>
+      <p>ج) عددهای اول کوچک‌تر از ۱۰</p>
+      <p>د) سه عدد بزرگ</p>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ گام‌به‌گام
+        </summary>
+        <div class="step"><b>گام ۱ — بررسی الف:</b> عددهای طبیعی یک‌رقمی کاملاً مشخص هستند: ۱ تا ۹.
+          پس مجموعه است. <br> <span class="math-inline">{1, 2, 3, 4, 5, 6, 7, 8, 9}</span></div>
+        <div class="step"><b>گام ۲ — بررسی ب:</b> «چهار شاعر معروف» مبهم است. کدام چهار نفر؟ پس مجموعه نیست.</div>
+        <div class="step"><b>گام ۳ — بررسی ج:</b> عددهای اول کوچک‌تر از ۱۰ مشخص هستند: ۲، ۳، ۵، ۷. پس مجموعه است.</div>
+        <div class="step"><b>گام ۴ — بررسی د:</b> «سه عدد بزرگ» مبهم است. بزرگ برای هر کس متفاوت است. پس مجموعه نیست.</div>
+        <div class="result-box">
+          پاسخ: الف و ج مجموعه‌اند. ب و د مجموعه نیستند.
+        </div>
+      </details>
+    </div>
+
+    <!-- تمرین ۲ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۲</span>
+        مجموعه‌ی زیر را ساده کنید (تکراری‌ها را حذف کنید) و تعداد اعضایش را بنویسید.
+      </div>
+      <div class="formula-box">B = {2, 2, 5, 5, 5, 7, 7}</div>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ
+        </summary>
+        <div class="step"><b>گام ۱:</b> عدد ۲ دو بار آمده.</div>
+        <div class="step"><b>گام ۲:</b> عدد ۵ سه بار آمده.</div>
+        <div class="step"><b>گام ۳:</b> عدد ۷ دو بار آمده.</div>
+        <div class="step"><b>گام ۴:</b> تکراری‌ها را حذف می‌کنیم.</div>
+        <div class="result-box">
+          B = {2, 5, 7} &nbsp;|&nbsp; n(B) = 3
+        </div>
+      </details>
+    </div>
+
+    <!-- تمرین ۳ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۳</span>
+        مجموعه‌ی شمارنده‌های عدد ۱۸ را بنویسید و اعداد اول و مرکب آن را در دو مجموعه‌ی جدا نشان دهید.
+      </div>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ گام‌به‌گام
+        </summary>
+        <div class="step"><b>گام ۱ — پیدا کردن شمارنده‌ها:</b>
+          ۱۸ ÷ ۱ = ۱۸ ✅، ۱۸ ÷ ۲ = ۹ ✅، ۱۸ ÷ ۳ = ۶ ✅،
+          ۱۸ ÷ ۶ = ۳ ✅، ۱۸ ÷ ۹ = ۲ ✅، ۱۸ ÷ ۱۸ = ۱ ✅
+          <br>
+          اعداد ۴، ۵، ۷، ۸ و... شمارنده نیستند.
+        </div>
+        <div class="step"><b>گام ۲ — مجموعه‌ی شمارنده‌ها:</b>
+          <span class="math-inline">C = {1, 2, 3, 6, 9, 18}</span>
+        </div>
+        <div class="step"><b>گام ۳ — جداکردن اعداد اول:</b>
+          از بین این‌ها، ۲ و ۳ اول هستند. پس:
+          <br>
+          <span class="math-inline">D = {2, 3}</span>
+        </div>
+        <div class="step"><b>گام ۴ — جداکردن اعداد مرکب:</b>
+          از بین این‌ها، ۶، ۹ و ۱۸ مرکب هستند. عدد ۱ هم نه اول است و نه مرکب.
+          پس:
+          <br>
+          <span class="math-inline">E = {6, 9, 18}</span>
+        </div>
+        <div class="result-box">
+          شمارنده‌های ۱۸ = {1, 2, 3, 6, 9, 18} &nbsp;|&nbsp;
+          اول‌ها = {2, 3} &nbsp;|&nbsp; مرکب‌ها = {6, 9, 18}
+        </div>
+      </details>
+    </div>
+
+    <!-- تمرین ۴ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۴</span>
+        با مجموعه‌ی <span class="math-inline">A = {3, 5, 7, 9, 11}</span>
+        درستی یا نادرستی هر عبارت را مشخص کنید.
+      </div>
+      <p>الف) <span class="math-inline">5 ∈ A</span></p>
+      <p>ب) <span class="math-inline">4 ∈ A</span></p>
+      <p>پ) <span class="math-inline">11 ∉ A</span></p>
+      <p>ت) <span class="math-inline">n(A) = 4</span></p>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ
+        </summary>
+        <div class="step"><b>الف) درست ✅</b> — چون ۵ یکی از اعضای A است.</div>
+        <div class="step"><b>ب) نادرست ❌</b> — چون ۴ در A نیست.</div>
+        <div class="step"><b>پ) نادرست ❌</b> — چون ۱۱ در A هست، پس نمی‌توانیم بگوییم «عضو نیست».</div>
+        <div class="step"><b>ت) نادرست ❌</b> — A دقیقاً ۵ عضو دارد: ۳، ۵، ۷، ۹، ۱۱.
+          پس <span class="math-inline">n(A) = 5</span>.</div>
+      </details>
+    </div>
+
+    <!-- تمرین ۵ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۵</span>
+        با چه شرطی می‌توانیم مجموعه‌ی زیر را به‌صورت یک مجموعه‌ی تهی بنویسیم؟
+      </div>
+      <div class="formula-box">A = {x | x عدد طبیعی است و x + 5 = 2}</div>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ
+        </summary>
+        <div class="step"><b>گام ۱ — حل معادله:</b>
+          <span class="math-inline">x + 5 = 2 → x = 2 − 5 = −3</span>.</div>
+        <div class="step"><b>گام ۲ — بررسی شرط:</b>
+          آیا −۳ یک عدد طبیعی است؟ <b>خیر!</b> عددهای طبیعی شامل ۱، ۲، ۳ و... هستند و
+          عدد منفی جزء آن‌ها نیست.</div>
+        <div class="step"><b>گام ۳ — نتیجه:</b>
+          هیچ عدد طبیعی وجود ندارد که در این معادله صدق کند.</div>
+        <div class="result-box">
+          A = ∅ &nbsp;(مجموعه‌ی تهی)
+        </div>
+      </details>
+    </div>
+
+    <!-- تمرین ۶ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۶</span>
+        حروف کلمه‌ی «تهران» را به‌صورت یک مجموعه بنویسید و تعداد اعضای آن را مشخص کنید.
+      </div>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ
+        </summary>
+        <div class="step"><b>گام ۱:</b> حروف: ت، ه، ر، ا، ن.</div>
+        <div class="step"><b>گام ۲:</b> آیا حرفی تکراری است؟ خیر.</div>
+        <div class="step"><b>گام ۳:</b> مجموعه = {ت، ه، ر، ا، ن}.</div>
+        <div class="result-box">n = 5</div>
+      </details>
+    </div>
+
+    <!-- تمرین ۷ -->
+    <div class="exercise">
+      <div class="exercise-title">
+        <span class="num">۷</span>
+        کدام‌یک از موارد زیر درست و کدام نادرست است؟
+      </div>
+      <p>الف) {1, 2, 3} = {3, 2, 1}</p>
+      <p>ب) {2, 2, 4} = {2, 4}</p>
+      <p>پ) {1, 2} = {1, 2, 3}</p>
+      <p>ت) {a, b} = {b, a}</p>
+
+      <details>
+        <summary style="cursor:pointer;color:#6d28d9;font-weight:700;padding:8px 0;">
+          نمایش پاسخ
+        </summary>
+        <div class="step"><b>الف) درست ✅</b> — ترتیب مهم نیست، هر دو یک مجموعه‌اند.</div>
+        <div class="step"><b>ب) درست ✅</b> — تکرار حذف می‌شود.</div>
+        <div class="step"><b>پ) نادرست ❌</b> — اولی ۲ عضو دارد، دومی ۳ عضو.</div>
+        <div class="step"><b>ت) درست ✅</b> — ترتیب مهم نیست.</div>
+      </details>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- بخش ۱۰: جدول و نکات امتحانی -->
+    <!-- ============================================================= -->
+    <div class="section-title" id="sec10">جدول خلاصه و نکات امتحانی</div>
+
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>مفهوم</th>
+          <th>تعریف / نماد</th>
+          <th>مثال</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>شمارنده</td>
+          <td>عددی که باقی‌مانده‌ی تقسیم را صفر می‌کند</td>
+          <td>شمارنده‌های ۶: {1, 2, 3, 6}</td>
+        </tr>
+        <tr>
+          <td>عدد اول</td>
+          <td>فقط دو شمارنده دارد (۱ و خودش)</td>
+          <td>2, 3, 5, 7, 11, ...</td>
+        </tr>
+        <tr>
+          <td>عدد مرکب</td>
+          <td>بیشتر از دو شمارنده دارد</td>
+          <td>4, 6, 8, 9, 10, ...</td>
+        </tr>
+        <tr>
+          <td>عدد ۱</td>
+          <td>نه اول، نه مرکب</td>
+          <td>۱</td>
+        </tr>
+        <tr>
+          <td>عددهای طبیعی</td>
+          <td>N = {1, 2, 3, 4, ...}</td>
+          <td>۱، ۲، ۳، ...</td>
+        </tr>
+        <tr>
+          <td>عددهای حسابی</td>
+          <td>W = {0, 1, 2, 3, ...}</td>
+          <td>۰، ۱، ۲، ۳، ...</td>
+        </tr>
+        <tr>
+          <td>عددهای صحیح</td>
+          <td>Z = {..., −2, −1, 0, 1, 2, ...}</td>
+          <td>−۵، ۰، ۳، ...</td>
+        </tr>
+        <tr>
+          <td>مجموعه</td>
+          <td>دسته‌ای از اشیاء مشخص و متمایز</td>
+          <td>{1, 2, 3}</td>
+        </tr>
+        <tr>
+          <td>عضویت</td>
+          <td class="math-inline">x ∈ A</td>
+          <td class="math-inline">3 ∈ {1,2,3}</td>
+        </tr>
+        <tr>
+          <td>عدم عضویت</td>
+          <td class="math-inline">x ∉ A</td>
+          <td class="math-inline">5 ∉ {1,2,3}</td>
+        </tr>
+        <tr>
+          <td>تعداد اعضا</td>
+          <td class="math-inline">n(A)</td>
+          <td class="math-inline">n({1,2,3}) = 3</td>
+        </tr>
+        <tr>
+          <td>نمودار ون</td>
+          <td>منحنی بسته‌ای که اعضا را داخلش می‌نویسیم</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>نکته‌ی طلایی</td>
+          <td>ترتیب مهم نیست، تکرار حذف می‌شود</td>
+          <td>{1,2} = {2,1}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="big-quote">
+      «ریاضی با تمرین یاد گرفته می‌شود، نه با فقط نگاه کردن.»
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ شش اشتباه رایج که باید از آن‌ها دوری کنی:</strong>
+      <ol style="margin-top:10px; padding-right:20px;">
+        <li>فکر کنی عدد ۱ اول است. (اشتباه! نه اول، نه مرکب)</li>
+        <li>فکر کنی «کتاب‌های خوب» مجموعه است. (مبهم است، مجموعه نیست)</li>
+        <li>فکر کنی ترتیب اعضا مهم است. (مهم نیست)</li>
+        <li>اعضای تکراری را دوباره بشمری. (یک بار شمرده می‌شوند)</li>
+        <li>نماد <span class="math-inline">∈</span> را برعکس بنویسی: <span class="math-inline">A ∈ 3</span>
+          اشتباه است.</li>
+        <li>در شمارنده‌ها، خود عدد و ۱ را فراموش کنی. (همیشه شمارنده هستند)</li>
+      </ol>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 یادآوری نهایی قبل از امتحان:</strong>
+      <ul style="margin-top:8px; padding-right:20px;">
+        <li>قبل از هر چیز، مطمئن شو شمارنده، عدد اول و مرکب را کامل بلدی.</li>
+        <li>عددهای اول زیر ۳۰ را حفظ کن.</li>
+        <li>تفاوت N، W، Z را بلد باش.</li>
+        <li>در هر سؤال، اول مشخص کن چه چیزی خواسته شده: نوشتن مجموعه، یا شمردن اعضا.</li>
+        <li>همیشه از خودت بپرس: «آیا این عبارت، مشخص و متمایز است؟»</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- جمع‌بندی نهایی -->
+    <!-- ============================================================= -->
+    <div class="dialog" style="margin-top:30px;">
+      <div class="avatar sarvnaz">سروناز</div>
+      <div class="bubble sarvnaz">
+        <span class="speaker sarvnaz">خانم سروناز:</span>
+        خب فرسام جان، امروز کلی چیز یاد گرفتیم:
+        <ul style="margin-top:8px; padding-right:20px;">
+          <li><b>شمارنده</b> چیست و چطور پیدایش کنیم.</li>
+          <li><b>عدد اول</b> و <b>عدد مرکب</b> چه تفاوتی دارند.</li>
+          <li>تفاوت <b>عددهای طبیعی، حسابی و صحیح</b>.</li>
+          <li>معنی <b>متمایز بودن</b> در مجموعه.</li>
+          <li>خود <b>مجموعه</b>، <b>عضویت</b>، <b>نمادها</b>، <b>نمودار ون</b> و <b>نمایش با فرمول</b>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dialog">
+      <div class="avatar farsam">فرسام</div>
+      <div class="bubble farsam">
+        <span class="speaker farsam">آقای فرسام:</span>
+        آفرین! حالا تمرین‌های کتاب درسی را حل کن و اگر جایی گیر کردی،
+        به همین صفحه برگرد و مثال‌ها را دوباره بخوان.
+        <br><br>
+        <strong>موفق باشی! 🌟</strong>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <strong>📘 آموزش جامع ریاضی نهم — فصل اول، درس اول (کامل)</strong><br>
+    تهیه‌شده با ❤️ برای دانش‌آموزان عزیز | مدرسان: خانم سروناز و آقای فرسام<br>
+    <strong>اپلیکیشن همیار من (فراتر از آموزش)</strong><br>
+    موفق باشی! ✨
+  </footer>
+</div>
+</body>
+</html>
