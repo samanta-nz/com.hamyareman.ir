@@ -98,7 +98,7 @@ private data class SecureMediaItem(
 
 /** آلبوم داخلیِ فضای امن؛ فقط عکس، ویدیو و صوت را می‌پذیرد. */
 @Composable
-fun SecureMediaGalleryScreen(onBack: () -> Unit) {
+fun SecureMediaGalleryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     val context = LocalContext.current
     val container = LocalAppContainer.current
     val store = remember { LocalStore(context, "hamyar_secure_media") }
