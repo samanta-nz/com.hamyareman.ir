@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T17:01:02.856495+00:00
+- Generated: 2026-10-05T17:02:09.372103+00:00
 - Branch: New-graphic
-- HEAD: 5e4f7f0505c072e119da8a58ead259c86af7e9a0
+- HEAD: 022c45eed67d2e944bf103b21441062a563e5adf
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	221
+- rev-list main...HEAD: 2	223
 
 ## Summary
 
@@ -44,6 +44,7 @@
 - `.github/workflows/new-graphic-compare.yml`
 - `.github/workflows/new-graphic-parspack-sync.yml`
 - `.github/workflows/new-graphic-validate.yml`
+- `.github/workflows/release-grade9-forced.yml`
 - `RELEASES.md`
 - `apps/hamyar-app/build.gradle.kts`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
