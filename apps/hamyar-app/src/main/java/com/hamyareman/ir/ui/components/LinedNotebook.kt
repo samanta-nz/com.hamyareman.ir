@@ -131,7 +131,8 @@ fun NotebookPaper(
 ) {
     val contentTop = if (header.isBlank()) 0.dp else
         if (headerOnFirstLine) (LINE_HEIGHT_SP * 2).dp else (LINE_HEIGHT_SP * 2).dp
-    BoxWithConstraints(
+    // این کادر از ابعاد محدودیت استفاده نمی‌کند؛ Box ساده کافی است (لینت: UnusedBoxWithConstraintsScope).
+    Box(
         (if (realistic) {
             modifier
                 .shadow(10.dp, RoundedCornerShape(3.dp), clip = false)
