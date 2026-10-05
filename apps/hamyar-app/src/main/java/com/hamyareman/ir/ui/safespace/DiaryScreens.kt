@@ -5,18 +5,18 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.shadow
-import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.graphicsLayer
 import com.hamyareman.ir.ui.components.RemoteDesignImage
 import com.hamyareman.ir.ui.components.RealisticDeskFrame
-import com.hamyareman.ir.ui.components.RealisticCoverTile
 import com.hamyareman.ir.ui.components.RealisticBookPager
 import com.hamyareman.ir.ui.components.DesignAsset
 import com.hamyareman.ir.ui.components.BookStage
 import com.hamyareman.ir.ui.components.BookOpening
+import com.hamyareman.ir.ui.components.BookSkin
+import com.hamyareman.ir.ui.components.BookSkinCover
+import com.hamyareman.ir.ui.components.BookSkinSpread
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.border
@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,8 +35,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
@@ -65,8 +64,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -170,10 +171,11 @@ private data class DiaryViewerPage(
 
 private data class DiaryCover(val id: String, val title: String, val asset: String)
 
+/** جلد، کتاب باز و ورق دفتر خاطرات: PNG دوربری‌شدهٔ سرمه‌ای گل‌دوزی (بوم مشترک ۱۰۵۹×۱۴۸۶). */
+private val diarySkin = BookSkin.NavyFloral
+
 private val diaryCovers = listOf(
-    DiaryCover("celestial", "آسمان خیال", DesignAsset.COVER_CELESTIAL),
-    DiaryCover("botanical", "باغ خیال", DesignAsset.COVER_BOTANICAL),
-    DiaryCover("geometric", "هندسهٔ رؤیا", DesignAsset.COVER_GEOMETRIC),
+    DiaryCover("navy", "خاطرات من", DesignAsset.COVER_NAVY_FLORAL),
 )
 
 private fun readDiary(store: LocalStore): List<DiaryEntry> = runCatching {
@@ -461,18 +463,25 @@ fun DiaryScreen(onBack: () -> Unit) {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("کتاب خاطرات", style = MaterialTheme.typography.titleMedium)
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             diaryCovers.forEach { cover ->
-                                RealisticCoverTile(
-                                    key = cover.asset,
-                                    title = cover.title,
-                                    selected = cover.id == coverId,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        coverId = cover.id
-                                        store.putString(DIARY_COVER, cover.id)
-                                    },
-                                )
+                                Column(
+                                    Modifier
+                                        .width(150.dp)
+                                        .clickable {
+                                            coverId = cover.id
+                                            store.putString(DIARY_COVER, cover.id)
+                                        },
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    BookSkinCover(diarySkin, Modifier.fillMaxWidth(), cover.title)
+                                    Text(
+                                        cover.title,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             }
                         }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -707,29 +716,13 @@ private fun DiaryBookViewer(
                         pageCount = pages.size + 1,
                         initialPage = activePage,
                         viewerGesture = true,
+                        skinned = true,
                         onPageChanged = { activePage = it },
                         modifier = Modifier.fillMaxSize().padding(top = 22.dp, bottom = 10.dp),
                     ) { index, _ ->
                         if (index == 0) {
-                            Box(Modifier.fillMaxSize().clip(RoundedCornerShape(6.dp))) {
-                                RemoteDesignImage(
-                                    key = cover.asset,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentDescription = cover.title,
-                                    contentScale = ContentScale.Crop,
-                                )
-                                Box(
-                                    Modifier.align(Alignment.BottomCenter)
-                                        .fillMaxWidth()
-                                        .background(
-                                            Brush.verticalGradient(
-                                                listOf(Color.Transparent, Color(0xE0000000)),
-                                            ),
-                                        )
-                                        .padding(18.dp),
-                                ) {
-                                    Text(cover.title, color = Color.White, style = MaterialTheme.typography.headlineSmall)
-                                }
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                BookSkinCover(diarySkin, Modifier.fillMaxWidth(), cover.title)
                             }
                         } else {
                             val item = pages[index - 1]
@@ -806,60 +799,46 @@ private fun DiaryTouchPlacement(
     }
 }
 
+/**
+ * صفحهٔ خاطرات روی ورق PNG: هر سطر دقیقاً روی خط‌های ورق می‌نشیند.
+ * سطر اول عنوان (تراز معکوس)، سطر دوم خالی، از سطر سوم متن. عکس ۷ سطر جا می‌گیرد و پانویسش
+ * یک سطر، پس متنِ بعد از آن هم روی خط می‌ماند. BOTTOM: متن اول و عکس بعد؛ بقیه: عکس اول.
+ */
 @Composable
 private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
-    NotebookPaper(
-        header = header,
-        headerAlign = oppositeTextAlign(notebookTextAlignFromWire(page.alignment)),
-        showVerticalGuides = true,
-    ) {
-        val style = androidx.compose.ui.text.TextStyle(
-            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-            fontSize = 18.sp,
-            lineHeight = 24.sp,
-            color = Color(0xFF19364B),
-            textAlign = notebookTextAlignFromWire(page.alignment),
-            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
-            lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
-                alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,
-                trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
-            ),
-        )
-
-        if (page.imagePath.isBlank()) {
-            Text(page.text, Modifier.fillMaxSize(), style = style)
-        } else {
-            // Wrap is persisted per page and is reflected in the actual document flow.
-            // NONE keeps a compact centered media block; TOP puts media before the text;
-            // BOTTOM keeps text first and media after it. No image is randomly overlaid.
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(7.dp),
-            ) {
-                when (page.wrap) {
-                    ImageWrap.BOTTOM -> {
-                        Text(
-                            page.text,
-                            Modifier.fillMaxWidth().weight(1f, fill = false),
-                            style = style,
-                        )
-                        DiaryPlacedImage(page, Modifier.fillMaxWidth())
-                    }
-                    ImageWrap.NONE -> {
-                        Box(
-                            Modifier.fillMaxWidth().weight(1f, fill = false),
-                            contentAlignment = Alignment.TopCenter,
-                        ) {
-                            DiaryPlacedImage(page, Modifier.fillMaxWidth())
-                        }
-                        Text(page.text, Modifier.fillMaxWidth(), style = style)
-                    }
-                    ImageWrap.TOP -> {
-                        DiaryPlacedImage(page, Modifier.fillMaxWidth())
-                        Text(page.text, Modifier.fillMaxWidth(), style = style)
-                    }
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        BookSkinSpread(diarySkin) { line, _ ->
+            val lh = with(LocalDensity.current) { line.toSp() }
+            val style = androidx.compose.ui.text.TextStyle(
+                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                fontSize = lh * 0.62f,
+                lineHeight = lh,
+                color = Color(0xFF19364B),
+                textAlign = notebookTextAlignFromWire(page.alignment),
+                platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+                lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
+                    alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Bottom,
+                    trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
+                ),
+            )
+            Column(Modifier.fillMaxSize()) {
+                if (header.isNotBlank()) {
+                    Text(
+                        header,
+                        Modifier.fillMaxWidth(),
+                        style = style.copy(textAlign = oppositeTextAlign(notebookTextAlignFromWire(page.alignment))),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.height(line))
+                }
+                val hasImage = page.imagePath.isNotBlank()
+                if (hasImage && page.wrap != ImageWrap.BOTTOM) {
+                    DiaryImageSlot(page, line, style)
+                }
+                Text(page.text, Modifier.fillMaxWidth(), style = style)
+                if (hasImage && page.wrap == ImageWrap.BOTTOM) {
+                    DiaryImageSlot(page, line, style)
                 }
             }
         }
@@ -867,11 +846,22 @@ private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
 }
 
 @Composable
-private fun DiaryPlacedImage(page: DiaryPageModel, modifier: Modifier = Modifier) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            Modifier
+private fun DiaryImageSlot(
+    page: DiaryPageModel,
+    line: Dp,
+    style: androidx.compose.ui.text.TextStyle,
+) {
+    Box(
+        Modifier.fillMaxWidth().height(line * 7),
+        contentAlignment = Alignment.Center,
+    ) {
+        AsyncImage(
+            model = File(page.imagePath),
+            contentDescription = page.caption.ifBlank { "عکس" },
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
                 .fillMaxWidth(page.imageWidth.coerceIn(.25f, .78f))
+                .fillMaxHeight()
                 .graphicsLayer {
                     scaleX = page.imageScale
                     scaleY = page.imageScale
@@ -879,30 +869,18 @@ private fun DiaryPlacedImage(page: DiaryPageModel, modifier: Modifier = Modifier
                     translationX = page.imageOffsetX * 240f
                     translationY = page.imageOffsetY * 180f
                 }
-                .shadow(12.dp, RoundedCornerShape(2.dp))
+                .shadow(8.dp, RoundedCornerShape(2.dp))
                 .clip(RoundedCornerShape(2.dp)),
-        ) {
-            AsyncImage(
-                model = File(page.imagePath),
-                contentDescription = page.caption.ifBlank { "عکس" },
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth().aspectRatio(.92f),
-            )
-            Canvas(Modifier.fillMaxSize()) {
-                drawRect(Brush.verticalGradient(listOf(Color.Transparent, Color(0x22000000))))
-            }
-        }
-        if (page.caption.isNotBlank()) {
-            Text(
-                page.caption,
-                style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF526B80),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-            )
-        }
+        )
+    }
+    if (page.caption.isNotBlank()) {
+        Text(
+            page.caption,
+            Modifier.fillMaxWidth(),
+            style = style.copy(color = Color(0xFF526B80), textAlign = TextAlign.Center),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
