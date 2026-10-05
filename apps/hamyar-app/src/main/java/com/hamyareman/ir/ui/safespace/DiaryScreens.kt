@@ -172,33 +172,6 @@ private data class DiaryViewerPage(
 
 private data class DiaryCover(val id: String, val title: String, val asset: String)
 
-@Composable
-private fun DiaryImageWrapPicker(
-    value: ImageWrap,
-    onValueChange: (ImageWrap) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Box(Modifier.fillMaxWidth()) {
-        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-            Text("جای عکس: "+value.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-        androidx.compose.material3.DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            ImageWrap.entries.forEach { option ->
-                androidx.compose.material3.DropdownMenuItem(
-                    text = { Text(option.title) },
-                    onClick = {
-                        expanded = false
-                        onValueChange(option)
-                    },
-                )
-            }
-        }
-    }
-}
-
 /** جلد، کتاب باز و ورق دفتر خاطرات: PNG دوربری‌شدهٔ سرمه‌ای گل‌دوزی (بوم مشترک ۱۰۵۹×۱۴۸۶). */
 private val diarySkin = BookSkin.NavyFloral
 
@@ -283,7 +256,7 @@ private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPay
         }.ifEmpty { listOf(DiaryPageModel("")) }.let { DiaryPayload(it) }
     }.getOrElse {
         DiaryPayload(
-            plain.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf(plain).map { DiaryPageModel(it) } },
+            plain.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf(DiaryPageModel(plain)) },
         )
     }
 }
@@ -309,6 +282,33 @@ private fun deleteDiaryImage(path: String) {
 
 private fun titleOrDefault(value: String, default: String): String =
     value.trim().ifBlank { default }
+
+@Composable
+private fun DiaryImageWrapPicker(
+    value: ImageWrap,
+    onValueChange: (ImageWrap) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("جای عکس: " + value.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        androidx.compose.material3.DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            ImageWrap.entries.forEach { option ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(option.title) },
+                    onClick = {
+                        expanded = false
+                        onValueChange(option)
+                    },
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
@@ -397,7 +397,7 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
             return
         }
         val currentEntry = editingEntryId?.let { id -> entries.firstOrNull { it.id == id } }
-        val pageTexts = text.split(NOTEBOOK_PAGE_SEPARATOR).map { it.trim() }.ifEmpty { listOf("") }
+        val pageTexts = text.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf("") }
         val heading = if (currentEntry == null) nextRegisteredTitle(titleOrDefault(title, "خاطرات امروز"), entries.map { it.title }) else titleOrDefault(title, "خاطرات امروز")
         val pageBase = DiaryPageModel(
             text = pageTexts.firstOrNull().orEmpty(),
@@ -482,7 +482,7 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
     ) {
         Column(Modifier.fillMaxSize()) {
-            AppTopBar("دفتر خاطرات", onBack)
+            AppTopBar("دفتر خاطرات", onBack, onHelp = onHelp)
         LazyColumn(
             Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -554,7 +554,7 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                             )
                             if (imagePath.isNotBlank()) {
                             Text(
-                                "برای جابه‌جایی، «تنظیم دوباره» را بزن و عکس را مستقیم روی همان کاغذ جابه‌جا یا بزرگ/کوچک کن.",
+                                "برای جابه‌جایی، «تنظیم دوباره» را بزن و عکس را مستقیم روی همان کاغذ بکش.",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -566,10 +566,7 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                                 maxLines = 1,
                                 modifier = Modifier.fillMaxWidth(),
                             )
-                            DiaryImageWrapPicker(
-                                value = wrap,
-                                onValueChange = { wrap = it },
-                            )
+                            DiaryImageWrapPicker(wrap) { wrap = it }
                             TextButton(onClick = {
                                 deleteDiaryImage(imagePath)
                                 imagePath = ""
