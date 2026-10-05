@@ -11,6 +11,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.graphicsLayer
 import com.hamyareman.ir.ui.components.RemoteDesignImage
+import com.hamyareman.ir.ui.components.RealisticDeskFrame
+import com.hamyareman.ir.ui.components.RealisticCoverTile
 import com.hamyareman.ir.ui.components.RealisticBookPager
 import com.hamyareman.ir.ui.components.DesignAsset
 import com.hamyareman.ir.ui.components.BookStage
@@ -444,8 +446,13 @@ fun DiaryScreen(onBack: () -> Unit) {
 
     SecureWebEffect("Screenshots are disabled in the private diary.")
 
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar("دفتر خاطرات", onBack)
+    RealisticDeskFrame(
+        backgroundKey = DesignAsset.DIARY_DESK,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            AppTopBar("دفتر خاطرات", onBack)
         LazyColumn(
             Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -456,25 +463,16 @@ fun DiaryScreen(onBack: () -> Unit) {
                         Text("کتاب خاطرات", style = MaterialTheme.typography.titleMedium)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             diaryCovers.forEach { cover ->
-                                Card(Modifier.weight(1f).clickable {
-                                    coverId = cover.id
-                                    store.putString(DIARY_COVER, cover.id)
-                                }) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        RemoteDesignImage(
-                                            key = cover.asset,
-                                            contentDescription = cover.title,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
-                                        )
-                                        Text(
-                                            if (cover.id == coverId) "✓ " + cover.title else cover.title,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                    }
-                                }
+                                RealisticCoverTile(
+                                    key = cover.asset,
+                                    title = cover.title,
+                                    selected = cover.id == coverId,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
+                                        coverId = cover.id
+                                        store.putString(DIARY_COVER, cover.id)
+                                    },
+                                )
                             }
                         }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -628,7 +626,9 @@ fun DiaryScreen(onBack: () -> Unit) {
             }
             items(listPages, key = { it.entry.id + "-" + it.index }) { item ->
                 Card(
-                    Modifier.fillMaxWidth().clickable {
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
                         val idx = viewerPages.indexOfFirst {
                             it.entry.id == item.entry.id && it.pageIndex == item.index
                         }
