@@ -31,9 +31,16 @@ internal object DesignAsset {
     const val ALBUM_BG = "assets/album/album-bg.jpg"
     const val PAPER_CREAM = "assets/diary/paper-cream.jpg"
 
-    // جلدها (۹۰۰×۱۲۰۰)
+    // کتاب‌های PNG دوربری‌شده (بوم مشترک ۱۰۵۹×۱۴۸۶، دقیقاً روی هم می‌نشینند):
+    // <name>.png جلد بسته، -inside کتاب باز، -sheet ورق تکی با خط‌های اندازه‌گیری‌شده.
     const val COVER_NAVY_FLORAL = "assets/diary/cover-navy-floral.png"
+    const val COVER_NAVY_FLORAL_INSIDE = "assets/diary/cover-navy-floral-inside.png"
+    const val COVER_NAVY_FLORAL_SHEET = "assets/diary/cover-navy-floral-sheet.png"
     const val COVER_LEATHER = "assets/diary/cover-leather-brown.png"
+    const val COVER_LEATHER_INSIDE = "assets/diary/cover-leather-brown-inside.png"
+    const val COVER_LEATHER_SHEET = "assets/diary/cover-leather-brown-sheet.png"
+
+    // جلدهای قدیمی (برای سازگاری)
     const val COVER_CELESTIAL = "assets/diary/cover-celestial.jpg"
     const val COVER_BOTANICAL = "assets/diary/cover-botanical.jpg"
     const val COVER_GEOMETRIC = "assets/diary/cover-geometric.jpg"
