@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T17:51:58.627589+00:00
+- Generated: 2026-10-05T17:58:32.277725+00:00
 - Branch: New-graphic
-- HEAD: 24a37030bddee722202fac195f1b0426ac0016b1
+- HEAD: 5028b94d89d9c5089a39977a061c4a764dd51b05
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	273
+- rev-list main...HEAD: 2	283
 
 ## Summary
 
@@ -86,6 +86,7 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SchoolAlarmStore.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/UpdatePlan.kt`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.4.md"`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.5.md"`
 - `info.md`
@@ -96,6 +97,7 @@
 - `new-graphic-session/parspack/graphic-assets.md`
 - `scripts/new_graphic_compare.py`
 - `scripts/new_graphic_generate_assets.py`
+- `scripts/publish_grade9_update.py`
 - `scripts/upload_graphic_assets.py`
 - `shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/Components.kt`
 - `shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/ExtraPalettes.kt`
