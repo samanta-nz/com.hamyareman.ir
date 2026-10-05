@@ -108,7 +108,10 @@ fun PremiumMediaPlayer(
         val start = initialIndex.coerceIn(0, mediaItems.lastIndex)
         val resume = store.getLong("resume_" + items[start].id, 0L)
         playback.setMediaItems(mediaItems, start, resume)
-        if (autoPlay) playback.play()
+        if (autoPlay) {
+            com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
+            playback.play()
+        }
     }
 
     LaunchedEffect(state.connected, state.playing, state.currentIndex) {
