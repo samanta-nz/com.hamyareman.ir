@@ -99,7 +99,7 @@ jobs:
           git fetch --no-tags --prune origin New-graphic
           git checkout -B report-base origin/New-graphic
           mkdir -p new-graphic-session
-          REPORT="new-graphic-session/REPORT-${GITHUB_SHA}.md"
+          REPORT="new-graphic-session/REPORT.md"
           {
             echo "# New-graphic validation report"
             echo
@@ -118,7 +118,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$REPORT"
-          git commit -m "[new-graphic-report] record validation ${GITHUB_SHA}" || true
+          git commit -m "[new-graphic-report] refresh validation report" || true
           git push origin HEAD:New-graphic || true
 
       - name: Fail after report
