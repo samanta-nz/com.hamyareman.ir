@@ -1,11 +1,11 @@
 # New-graphic validation report
 
-- Commit: `66262668fe1e6a1c08b66604c4e0460839c19636`
+- Commit: `bd81bbacc85b3fc6e14e64d59b1a17fcd9e32569`
 - Branch: `New-graphic`
 - Static acceptance: `success`
 - Compile + unit tests: `success`
 - Lint: `success`
-- Assemble release APK: `success`
+- Assemble release APK: `cancelled`
 
 ## Compile errors (first 60 matching lines)
 ```
@@ -21,4 +21,4 @@
 ```
 
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/HomeScreen.kt
+M	.github/workflows/arena-release-grade9-v2.5.4.yml
