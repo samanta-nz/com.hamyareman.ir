@@ -32,8 +32,8 @@ internal object DesignAsset {
     const val PAPER_CREAM = "assets/diary/paper-cream.jpg"
 
     // جلدها (۹۰۰×۱۲۰۰)
-    const val COVER_NAVY_FLORAL = "assets/diary/cover-navy-floral.jpg"
-    const val COVER_LEATHER = "assets/diary/cover-leather-brown.jpg"
+    const val COVER_NAVY_FLORAL = "assets/diary/cover-navy-floral.png"
+    const val COVER_LEATHER = "assets/diary/cover-leather-brown.png"
     const val COVER_CELESTIAL = "assets/diary/cover-celestial.jpg"
     const val COVER_BOTANICAL = "assets/diary/cover-botanical.jpg"
     const val COVER_GEOMETRIC = "assets/diary/cover-geometric.jpg"
