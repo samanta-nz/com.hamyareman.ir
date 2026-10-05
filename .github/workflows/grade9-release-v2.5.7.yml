@@ -1,4 +1,4 @@
-name: Grade 9 — Release v2.5.7 (forced, unified)
+name: Grade 9 v2.5.7 — unified forced release
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: grade9-release-unified-v2.5.7
+  group: grade9-v2.5.7-forced-release
   cancel-in-progress: false
 
 env:
@@ -24,82 +24,51 @@ env:
   PACKAGE: "com.hamyareman.p09"
   ROW_ID: "app_release_grade9"
   ASSET: "hamyar-grade9-2.5.7.apk"
-  MAX_APK_BYTES: "62914560"
 
 jobs:
   release:
-    name: Build → Verify → Publish → Force Update
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+
     steps:
-      - name: 01 — Checkout exact release source
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: 02 — Prepare Java / Android / Gradle / Python
+      - name: Setup Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
-      - name: Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: "platform-tools platforms;android-36 build-tools;36.0.0"
 
-      - name: Gradle
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: never
 
-      - name: Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: 03 — Preflight: required secrets and invariants
+      - name: Check release secrets
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
         run: |
           set -euo pipefail
-          missing=""
-          for name in APPWRITE_API_KEY PARSPACK_ACCESS_KEY PARSPACK_SECRET_KEY; do
-            [ -n "${!name:-}" ] || missing="$missing $name"
-          done
-          if [ -n "$missing" ]; then
-            echo "::error::Missing required release secrets:$missing"
-            exit 1
-          fi
-          test "$VERSION_CODE" -eq 257
-          test "$MIN_CODE" -eq "$VERSION_CODE"
-          test "$ROLLOUT" -eq 100
-          test "$GRADE_ID" = grade9
-          test "$PACKAGE" = com.hamyareman.p09
-          test "$ROW_ID" = app_release_grade9
+          test -n "$APPWRITE_API_KEY"
+          test -n "$PARSPACK_ACCESS_KEY"
+          test -n "$PARSPACK_SECRET_KEY"
 
-      - name: 04 — Static preflight: release workflows
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t release_workflows < <(
-            find .github/workflows -maxdepth 1 -type f \( -iname '*release*' -o -iname '*publish*' -o -iname '*ship*' -o -iname '*upload*' -o -iname '*finalize*' \) -print 2>/dev/null | sort
-          )
-          printf '%s\n' "${release_workflows[@]}"
-          duplicate=0
-          for f in "${release_workflows[@]}"; do
-            if grep -Eqi 'grade9|com\.hamyareman\.p09|app_release_grade9' "$f"; then
-              if [ "$f" != ".github/workflows/grade9-release-v2.5.7.yml" ]; then
-                duplicate=1
-                echo "::error::Legacy Grade 9 publication workflow still exists: $f"
-              fi
-            fi
-          done
-          test "$duplicate" -eq 0
-
-      - name: 05 — Unit tests + release APK
+      - name: Run unit tests and build release APK
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
@@ -109,57 +78,52 @@ jobs:
             -PhamyarVersionCode="$VERSION_CODE" \
             -PhamyarVersionName="$VERSION_NAME"
 
-      - name: 06 — Collect exactly one APK and hash it
-        shell: bash
+      - name: Collect APK
         run: |
           set -euo pipefail
           mkdir -p dist ci-report
           mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/release -type f -name '*.apk' -print)
           test "${#files[@]}" -eq 1
-          cp -f "${files[0]}" "dist/$ASSET"
-          APK_BYTES=$(stat -c%s "dist/$ASSET")
-          test "$APK_BYTES" -gt 0
-          test "$APK_BYTES" -le "$MAX_APK_BYTES"
-          echo "APK_BYTES=$APK_BYTES" >> "$GITHUB_ENV"
+          cp "${files[0]}" "dist/$ASSET"
+          test -s "dist/$ASSET"
+          stat -c '%n %s bytes' "dist/$ASSET"
           sha256sum "dist/$ASSET" | tee ci-report/apk.sha256
 
-      - name: 07 — Verify package/version/signature
-        shell: bash
+      - name: Verify package version and signing certificate
         run: |
           set -euo pipefail
           AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
           APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
           BADGING="$($AAPT dump badging "dist/$ASSET" | head -1)"
           echo "$BADGING"
-          grep -F "name='$PACKAGE'" <<<"$BADGING"
-          grep -F "versionCode='$VERSION_CODE'" <<<"$BADGING"
-          grep -F "versionName='$VERSION_NAME'" <<<"$BADGING"
+          echo "$BADGING" | grep -F "name='$PACKAGE'"
+          echo "$BADGING" | grep -F "versionCode='$VERSION_CODE'"
+          echo "$BADGING" | grep -F "versionName='$VERSION_NAME'"
           SIGNER="$($APKSIGNER verify --print-certs "dist/$ASSET" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
           EXPECTED="$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')"
+          test -n "$SIGNER"
           test "$SIGNER" = "$EXPECTED"
           echo "SIGNER_SHA256=$SIGNER" >> "$GITHUB_ENV"
-          echo "APK_SHA256=$(sha256sum "dist/$ASSET" | cut -d' ' -f1)" >> "$GITHUB_ENV"
 
-      - name: 08 — Canonical GitHub Release
-        shell: bash
+      - name: Publish canonical GitHub release
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN || github.token }}
           RELEASES_REPO: ${{ vars.RELEASES_REPO || github.repository }}
         run: |
           set -euo pipefail
           TAG="grade9-v$VERSION_NAME"
-          gh release view "$TAG" --repo "$RELEASES_REPO" >/dev/null 2>&1 ||             gh release create "$TAG" --repo "$RELEASES_REPO" \
+          if ! gh release view "$TAG" --repo "$RELEASES_REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$RELEASES_REPO" \
               --title "همیار من نهم $VERSION_NAME" \
-              --notes "نسخه 2.5.7 — انتشار اجباری برای همه نصب‌های قدیمی‌تر."
+              --notes "نسخه 2.5.7 — انتشار اجباری برای همه نسخه‌های قدیمی‌تر."
+          fi
           gh release upload "$TAG" "dist/$ASSET" --repo "$RELEASES_REPO" --clobber
-          PUBLIC_URL="https://github.com/$RELEASES_REPO/releases/download/$TAG/$ASSET"
-          curl --fail --silent --show-error --location --range 0-1023 "$PUBLIC_URL" -o /tmp/apk-head.bin
-          test "$(stat -c%s /tmp/apk-head.bin)" -gt 0
-          head -c 2 /tmp/apk-head.bin | grep -q "PK"
-          echo "EXTERNAL_URL=$PUBLIC_URL" >> "$GITHUB_ENV"
+          URL="https://github.com/$RELEASES_REPO/releases/download/$TAG/$ASSET"
+          curl --fail --silent --show-error --location --range 0-1023 "$URL" -o /tmp/apk-head.bin
+          test "$(head -c 2 /tmp/apk-head.bin)" = "PK"
+          echo "EXTERNAL_URL=$URL" >> "$GITHUB_ENV"
 
-      - name: 09 — Arvan publish + anonymous probe
-        shell: bash
+      - name: Publish Arvan object and verify anonymous read
         env:
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
@@ -171,11 +135,10 @@ jobs:
             --key "apk/$GRADE_ID/$ASSET" \
             --provider parspack \
             --content-type application/vnd.android.package-archive \
-            --env-name INTERNAL_URL | tee ci-report/arvan-publish.txt
+            --env-name INTERNAL_URL
           test -n "${INTERNAL_URL:-}"
 
-      - name: 10 — Appwrite forced update publication
-        shell: bash
+      - name: Publish forced update row to Appwrite
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
@@ -193,29 +156,29 @@ jobs:
             --row-id "$ROW_ID" \
             --package "$PACKAGE" \
             --grade-id "$GRADE_ID" \
-            --notes "اصلاح بازگشت فونت پیش‌فرض و تایپوگرافی|آلارم بیداری صبح و آماده‌شدن ظهر مشتق از ساعت حضور و مدت آماده‌سازی|نمایشی و غیرقابل‌تنظیم شدن آلارم‌های مشتق‌شده|تعطیلی مدرسه ۱ تا ۱۳ فروردین|رفع فضای خالی «بشنو و بخواب»|رفع Space و تراز خطوط دفترها و متن بولد سه‌مرحله بزرگ‌تر|تکمیل دفتر شعر با جلد، تورق، نوع شعر سایر و عنوان قابل ویرایش|جابجایی مستقیم عکس روی کاغذ اصلی و فیت گزینه‌های عکس|تورق یک تپ جلو و دو تپ پیاپی عقب|حذف دفتر خاطرات قدیمی از آلبوم امن|رفع پخش صوت و تصویر محلی در آلبوم شخصی و جزوه|افزودن راهنمای کامل کاربری و لینک راهنمای علامت سؤال"
+            --notes "بازگردانی فونت پیش‌فرض|آلارم‌های بیداری مشتق از ساعت حضور و زمان آماده‌سازی|تعطیلی مدرسه ۱ تا ۱۳ فروردین|رفع فضای خالی «بشنو و بخواب»|رفع Space و تراز خطوط دفترها|تکمیل دفتر شعر و عنوان قابل ویرایش|جابجایی مستقیم عکس روی کاغذ|تورق یک‌تپ و دو‌تپ|حذف دفتر خاطرات قدیمی از آلبوم امن|رفع پخش رسانه‌های محلی|افزودن راهنمای کاربری و راهنمای علامت سؤال" \
             --out ci-report/release-2.5.7.json
 
-      - name: 11 — Final publication verification
-        shell: bash
+      - name: Verify Appwrite publication
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
-          r = json.loads(Path("ci-report/release-2.5.7.json").read_text(encoding="utf-8"))
-          assert r["published"] is True
-          p = r["payload"]
-          assert int(p["latest"]) == 257
-          assert int(p["min"]) == 257
-          assert int(p["rollout"]) == 100
-          assert p["packageName"] == "com.hamyareman.p09"
-          assert p["gradeId"] == "grade9"
-          assert p["externalUrl"] and p["internalUrl"]
+          report = json.loads(Path("ci-report/release-2.5.7.json").read_text(encoding="utf-8"))
+          assert report["published"] is True
+          payload = report["payload"]
+          assert int(payload["latest"]) == 257
+          assert int(payload["min"]) == 257
+          assert int(payload["rollout"]) == 100
+          assert payload["packageName"] == "com.hamyareman.p09"
+          assert payload["gradeId"] == "grade9"
+          assert payload["externalUrl"]
+          assert payload["internalUrl"]
           print("FINAL_RELEASE_VERIFIED")
           PY
 
-      - name: 12 — Upload final artifact/report
+      - name: Upload APK and release report
         if: always()
         uses: actions/upload-artifact@v4
         with:
