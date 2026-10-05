@@ -94,6 +94,7 @@ fun RealisticPaperStage(
         animationSpec = spring(dampingRatio = 0.82f, stiffness = 520f),
         label = "book-open-progress",
     )
+    val themeTertiary = MaterialTheme.colorScheme.tertiary
     Box(
         modifier
             .fillMaxWidth()
@@ -138,7 +139,7 @@ fun RealisticPaperStage(
                     ),
                 )
                 drawLine(
-                    Gold.copy(alpha = 0.22f),
+                    themeTertiary.copy(alpha = 0.22f),
                     androidx.compose.ui.geometry.Offset(8f, 4f),
                     androidx.compose.ui.geometry.Offset(size.width - 8f, 4f),
                     1.1f,
@@ -157,6 +158,7 @@ fun RealisticCoverTile(
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(5.dp)
+    val themeTertiary = MaterialTheme.colorScheme.tertiary
     Box(
         modifier
             .clip(shape)
@@ -168,7 +170,7 @@ fun RealisticCoverTile(
             .shadow(if (selected) 14.dp else 8.dp, shape, clip = false)
             .border(
                 if (selected) 2.dp else 0.8.dp,
-                if (selected) Gold else Color(0x552F241D),
+                if (selected) themeTertiary else Color(0x552F241D),
                 shape,
             )
             .padding(if (selected) 3.dp else 1.dp)
@@ -187,7 +189,7 @@ fun RealisticCoverTile(
                         Brush.horizontalGradient(
                             listOf(
                                 Color.Transparent,
-                                Gold.copy(alpha = 0.05f),
+                                themeTertiary.copy(alpha = 0.05f),
                                 Color(0x55000000),
                             ),
                         ),
