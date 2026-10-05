@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Upload generated New-graphic visual assets to ParsPack and verify public reads.
+"""[new-graphic-upload] Upload generated New-graphic visual assets to ParsPack and verify public reads.
 
 Only the explicit six design assets are synchronized. The operation is resumable:
 objects whose stored sha256 already matches are skipped; changed/missing objects are
