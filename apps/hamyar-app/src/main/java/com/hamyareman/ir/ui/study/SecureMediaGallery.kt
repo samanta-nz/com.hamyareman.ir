@@ -391,6 +391,8 @@ internal fun AlbumArtEqualizer(path: String, playing: Boolean, phase: Float) {
     }
 }
 
+}
+
 private fun secureMediaDir(context: android.content.Context): File = File(context.filesDir, "secure-media").apply { mkdirs() }
 
 private fun copySecureMedia(context: android.content.Context, uri: Uri): SecureMediaItem? = runCatching {
