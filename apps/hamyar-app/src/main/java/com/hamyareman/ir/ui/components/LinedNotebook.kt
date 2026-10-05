@@ -102,11 +102,12 @@ private fun cutText(text: String, capacity: Int): List<String> {
         val floor = (capacity * 0.72f).toInt()
         val cut = rest.lastIndexOfAny(charArrayOf('\n', ' ', '،', '.', '؛', '؟'), capacity)
             .takeIf { it >= floor } ?: capacity
-        out += rest.substring(0, cut).trim()
-        rest = rest.substring(cut).trimStart()
+        out += rest.substring(0, cut)
+        val nextStart = if (cut < rest.length && rest[cut] == ' ') cut + 1 else cut
+        rest = rest.substring(nextStart)
     }
-    if (rest.isNotBlank()) out += rest
-    return out.ifEmpty { listOf("") }
+    out += rest
+    return out
 }
 
 private fun decodePages(value: String, capacity: Int): List<String> {
@@ -118,7 +119,7 @@ private fun decodePages(value: String, capacity: Int): List<String> {
 }
 
 private fun encodePages(pages: List<String>): String =
-    pages.joinToString(NOTEBOOK_PAGE_SEPARATOR.toString()) { it.trim() }
+    pages.joinToString(NOTEBOOK_PAGE_SEPARATOR.toString())
 
 @Composable
 fun NotebookPaper(
