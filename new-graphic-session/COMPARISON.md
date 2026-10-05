@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T16:44:10.159599+00:00
+- Generated: 2026-10-05T16:46:16.514389+00:00
 - Branch: New-graphic
-- HEAD: 9d04b1a110545b295fb9923363f18af07ae1648f
+- HEAD: 9515d8f0297c79096811714838d1b4bbc4b8b41c
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	186
+- rev-list main...HEAD: 2	189
 
 ## Summary
 
@@ -62,6 +62,7 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/SafeSpaceScreens.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/SafeSpaceSecurity.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanStore.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt`
