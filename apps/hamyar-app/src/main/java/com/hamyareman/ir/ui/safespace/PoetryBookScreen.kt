@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,7 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -198,15 +203,31 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
-                        LinedNotebookInput(
-                            text,
-                            { text = it },
-                            header = if (title.isBlank()) type else title,
-                            textAlign = alignment,
-                            showVerticalGuides = false,
-                            headerOnFirstLine = true,
-                            realistic = true,
-                        )
+                        if (twoHemistich(type)) {
+                            NotebookPaper(
+                                header = if (title.isBlank()) type else title,
+                                headerAlign = oppositeTextAlign(alignment),
+                                showVerticalGuides = false,
+                                headerOnFirstLine = true,
+                                realistic = true,
+                            ) {
+                                PoetryHemistichEditor(
+                                    value = text,
+                                    onValueChange = { text = it },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        } else {
+                            LinedNotebookInput(
+                                text,
+                                { text = it },
+                                header = if (title.isBlank()) type else title,
+                                textAlign = alignment,
+                                showVerticalGuides = false,
+                                headerOnFirstLine = true,
+                                realistic = true,
+                            )
+                        }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = ::save, modifier = Modifier.weight(2f)) {
                                 Icon(Icons.Default.MenuBook, contentDescription = null)
@@ -311,6 +332,118 @@ fun PoetryBookScreen(onBack: () -> Unit) {
             onClose = { viewer = null },
         )
     }
+}
+
+data class PoetryHemistichRow(
+    val right: String = "",
+    val left: String = "",
+)
+
+@Composable
+private fun PoetryHemistichEditor(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    BoxWithConstraints(modifier) {
+        val rowsPerPage = ((maxHeight.value - 18f) / 42f).toInt().coerceIn(6, 15)
+        val rows = remember(value) {
+            val lines = value.replace("\r", "").split('\n')
+            val paired = lines.chunked(2).map {
+                PoetryHemistichRow(
+                    right = it.getOrNull(0).orEmpty(),
+                    left = it.getOrNull(1).orEmpty(),
+                )
+            }
+            if (paired.isEmpty()) listOf(PoetryHemistichRow()) else paired
+        }
+        val pages = rows.chunked(rowsPerPage).ifEmpty { listOf(listOf(PoetryHemistichRow())) }
+        val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
+
+        HorizontalPager(
+            state = pager,
+            modifier = Modifier.fillMaxSize(),
+            reverseLayout = true,
+            beyondViewportPageCount = 1,
+        ) { pageIndex ->
+            Column(
+                Modifier.fillMaxSize().padding(start = 6.dp, end = 6.dp, bottom = 22.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                pages[pageIndex].forEachIndexed { rowIndex, row ->
+                    val absoluteRow = pageIndex * rowsPerPage + rowIndex
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(22.dp),
+                    ) {
+                        PoetryHemistichCell(
+                            value = row.right,
+                            label = "مصراع اول، ردیف ${absoluteRow + 1}",
+                            modifier = Modifier.weight(1f),
+                            onValueChange = { changed ->
+                                val next = rows.toMutableList()
+                                while (next.size <= absoluteRow) next += PoetryHemistichRow()
+                                next[absoluteRow] = next[absoluteRow].copy(right = changed)
+                                onValueChange(
+                                    next.joinToString("\n") { r -> r.right + "\n" + r.left }
+                                        .trimEnd('\n'),
+                                )
+                            },
+                        )
+                        PoetryHemistichCell(
+                            value = row.left,
+                            label = "مصراع دوم، ردیف ${absoluteRow + 1}",
+                            modifier = Modifier.weight(1f),
+                            onValueChange = { changed ->
+                                val next = rows.toMutableList()
+                                while (next.size <= absoluteRow) next += PoetryHemistichRow()
+                                next[absoluteRow] = next[absoluteRow].copy(left = changed)
+                                onValueChange(
+                                    next.joinToString("\n") { r -> r.right + "\n" + r.left }
+                                        .trimEnd('\n'),
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PoetryHemistichCell(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    onValueChange: (String) -> Unit,
+) {
+    var focused by remember(label) { mutableStateOf(false) }
+    BasicTextField(
+        value = value,
+        onValueChange = { onValueChange(it.take(180)) },
+        singleLine = true,
+        textStyle = TextStyle(
+            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+            fontSize = 18.sp,
+            lineHeight = 24.sp,
+            color = Color(0xFF18384F),
+            textAlign = TextAlign.Right,
+        ),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(7.dp))
+            .background(
+                if (focused) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f)
+                else Color.Transparent,
+            )
+            .onFocusChanged { focused = it.isFocused }
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        decorationBox = { innerTextField ->
+            Box(Modifier.fillMaxWidth()) { innerTextField() }
+        },
+    )
 }
 
 @Composable
