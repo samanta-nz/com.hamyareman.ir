@@ -47,6 +47,8 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.RealisticDeskFrame
+import com.hamyareman.ir.ui.components.DesignAsset
 import com.hamyareman.ir.ui.components.RealisticBookPager
 import com.hamyareman.ir.ui.components.BookStage
 import com.hamyareman.ir.ui.components.BookOpening
