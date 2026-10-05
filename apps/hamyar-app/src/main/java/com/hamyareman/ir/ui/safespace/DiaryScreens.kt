@@ -548,7 +548,31 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
-                        LinedNotebookInput(text, { text = it }, header = titleOrDefault(title, "خاطرات امروز"), textAlign = alignment)
+                        LinedNotebookInput(
+                            text,
+                            { text = it },
+                            header = titleOrDefault(title, "خاطرات امروز"),
+                            textAlign = alignment,
+                            overlay = { pageIndex ->
+                                if (pageIndex == 0 && imagePath.isNotBlank()) {
+                                    DiaryTouchPlacement(
+                                        path = imagePath,
+                                        widthFraction = imageWidth,
+                                        offsetX = imageOffsetX,
+                                        offsetY = imageOffsetY,
+                                        scale = imageScale,
+                                        rotation = imageRotation,
+                                        active = placementMode,
+                                        onTransform = { panX, panY, zoom, turn, w, h ->
+                                            imageOffsetX = (imageOffsetX + panX / w).coerceIn(-.35f, .35f)
+                                            imageOffsetY = (imageOffsetY + panY / h).coerceIn(-.30f, .30f)
+                                            imageScale = (imageScale * zoom).coerceIn(.45f, 1.60f)
+                                            imageRotation = (imageRotation + turn).coerceIn(-10f, 10f)
+                                        },
+                                    )
+                                }
+                            },
+                        )
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(
                                 onClick = { imagePicker.launch(arrayOf("image/*")) },
@@ -562,52 +586,19 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                             }
                         }
                         if (imagePath.isNotBlank()) {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(230.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF0B1724)),
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                RemoteDesignImage(
-                                    key = DesignAsset.PAGE_LINED,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentDescription = "صفحهٔ دفتر",
-                                    contentScale = ContentScale.FillBounds,
+                                Text(
+                                    if (placementMode) "عکس روی خود کاغذ فعال است؛ لمس و دو انگشت برای جابه‌جایی/اندازه." else "عکس روی کاغذ ثبت شده است.",
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                                DiaryTouchPlacement(
-                                    path = imagePath,
-                                    widthFraction = imageWidth,
-                                    offsetX = imageOffsetX,
-                                    offsetY = imageOffsetY,
-                                    scale = imageScale,
-                                    rotation = imageRotation,
-                                    active = placementMode,
-                                    onTransform = { panX, panY, zoom, turn, w, h ->
-                                        imageOffsetX = (imageOffsetX + panX / w).coerceIn(-.35f, .35f)
-                                        imageOffsetY = (imageOffsetY + panY / h).coerceIn(-.30f, .30f)
-                                        imageScale = (imageScale * zoom).coerceIn(.45f, 1.60f)
-                                        imageRotation = (imageRotation + turn).coerceIn(-10f, 10f)
-                                    },
-                                )
-                                Row(
-                                    Modifier
-                                        .align(Alignment.TopCenter)
-                                        .padding(7.dp)
-                                        .clip(RoundedCornerShape(22.dp))
-                                        .background(Color(0xD90A1420))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        if (placementMode) "جاگذاری مستقیم با لمس" else "جایگذاری ثبت شده",
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.labelMedium,
-                                    )
-                                    TextButton(onClick = { placementMode = !placementMode }) {
-                                        Text(if (placementMode) "تأیید" else "تنظیم دوباره", color = Color.White)
-                                    }
+                                TextButton(onClick = { placementMode = !placementMode }) {
+                                    Text(if (placementMode) "تأیید" else "تنظیم دوباره")
                                 }
                             }
                             OutlinedTextField(
@@ -621,11 +612,6 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                             DiaryImageWrapPicker(
                                 value = wrap,
                                 onValueChange = { wrap = it },
-                            )
-                            Text(
-                                "اندازه، جایگاه و چرخش تصویر با لمس مستقیم ذخیره می‌شود؛ دیگر هیچ لغزنده‌ای برای جاگذاری وجود ندارد.",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             TextButton(onClick = {
                                 deleteDiaryImage(imagePath)
