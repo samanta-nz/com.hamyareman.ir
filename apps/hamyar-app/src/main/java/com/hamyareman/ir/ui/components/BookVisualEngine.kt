@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -119,6 +120,8 @@ fun RealisticBookPage(
     val offset = pageOffset.coerceIn(-1.2f, 1.2f)
     val bend = abs(offset)
     val depth = stackDepth.coerceIn(0, 10)
+    val themePrimary = MaterialTheme.colorScheme.primary
+    val themeTertiary = MaterialTheme.colorScheme.tertiary
     val radius = if (isCover) 7.dp else 3.dp
     val warmEdge = Color(0xFFE4DAC9)
 
