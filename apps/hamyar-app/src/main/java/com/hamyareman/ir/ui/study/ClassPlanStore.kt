@@ -412,10 +412,9 @@ object ClassPlanStore {
         val idx = SchoolShift.dayIndex(date)
         if (idx >= 6) return true
         // تعطیلات نوروز مدرسه: از ۱ تا ۱۳ فروردین.
-        val j = JalaliDate.toJalali(date.toString())
-        if (j != null && j.month == 1 && j.day in 1..13) return true // پنجشنبه و جمعه
-        if (ctx != null && CalendarOccasions.isOfficialHoliday(ctx, date, snap.lunarOffset)) return true
         val j = JalaliDate.toJalali(date.toString()) ?: return false
+        if (j.month == 1 && j.day in 1..13) return true
+        if (ctx != null && CalendarOccasions.isOfficialHoliday(ctx, date, snap.lunarOffset)) return true
         if (IranOfficialHolidays.occasion(j) != null) return true
         return lunarOccasion(j, snap.lunarOffset) != null
     }
