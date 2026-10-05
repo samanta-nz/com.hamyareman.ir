@@ -1,15 +1,15 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T01:42:15.465660+00:00
+- Generated: 2026-10-05T01:55:07.520946+00:00
 - Branch: New-graphic
-- HEAD: 7514b10a6b24121a8c36c9c9d7a2c8eb9d6f6283
+- HEAD: f46229b71e2b86016f58b27844e27e3d48fda3c6
 - main: c9cbdc72670a3aac0fc1a35cad79bec540115bba
-- rev-list main...HEAD: 0	144
+- rev-list main...HEAD: 0	147
 
 ## Summary
 
-- PASS: **15**
-- PARTIAL: **1**
+- PASS: **16**
+- PARTIAL: **0**
 - MISSING: **0**
 
 ## Requirement audit
@@ -30,12 +30,11 @@
 | PASS | کامپوننت‌های گرافیکی از scheme فعال استفاده می‌کنند | RealisticUi.kt / BookVisualEngine.kt / SecureMediaGallery.kt |
 | PASS | remote + APK fallback برای graphic assets | DesignAssets.kt |
 | PASS | assets واقعی مورد اشاره در مشخصات موجودند | root assets present |
-| PARTIAL | DesignAssets دقیقاً به PNGهای مرجع وصل است | کلیدهای جلد اصلی در DesignAssets هنوز JPG هستند؛ PNGهای مرجع در root assets موجودند. |
+| PASS | DesignAssets دقیقاً به PNGهای مرجع وصل است | کلیدهای جلد اصلی در DesignAssets هنوز JPG هستند؛ PNGهای مرجع در root assets موجودند. |
 | PASS | داشبورد پویا + motion | HomeScreen.kt |
 
 ## Unmet / partial requirements requiring follow-up
 
-- **PARTIAL** — DesignAssets دقیقاً به PNGهای مرجع وصل است: کلیدهای جلد اصلی در DesignAssets هنوز JPG هستند؛ PNGهای مرجع در root assets موجودند.
 
 ## Changed paths in branch delta
 
