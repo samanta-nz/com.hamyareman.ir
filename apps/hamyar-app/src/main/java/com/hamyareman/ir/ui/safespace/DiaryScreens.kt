@@ -18,6 +18,7 @@ import com.hamyareman.ir.ui.components.BookSkin
 import com.hamyareman.ir.ui.components.BookSkinCover
 import com.hamyareman.ir.ui.components.BookSkinSpread
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -170,6 +171,33 @@ private data class DiaryViewerPage(
 )
 
 private data class DiaryCover(val id: String, val title: String, val asset: String)
+
+@Composable
+private fun DiaryImageWrapPicker(
+    value: ImageWrap,
+    onValueChange: (ImageWrap) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("جای عکس: "+value.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        androidx.compose.material3.DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            ImageWrap.entries.forEach { option ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(option.title) },
+                    onClick = {
+                        expanded = false
+                        onValueChange(option)
+                    },
+                )
+            }
+        }
+    }
+}
 
 /** جلد، کتاب باز و ورق دفتر خاطرات: PNG دوربری‌شدهٔ سرمه‌ای گل‌دوزی (بوم مشترک ۱۰۵۹×۱۴۸۶). */
 private val diarySkin = BookSkin.NavyFloral
@@ -517,7 +545,38 @@ fun DiaryScreen(onBack: () -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
-                        LinedNotebookInput(text, { text = it }, header = titleOrDefault(title, "خاطرات امروز"), textAlign = alignment)
+                        Box(Modifier.fillMaxWidth()) {
+                            LinedNotebookInput(
+                                text,
+                                { text = it },
+                                header = titleOrDefault(title, "خاطرات امروز"),
+                                textAlign = alignment,
+                            )
+                            if (imagePath.isNotBlank()) {
+                            Text(
+                                "برای جابه‌جایی، «تنظیم دوباره» را بزن و عکس را مستقیم روی همان کاغذ جابه‌جا یا بزرگ/کوچک کن.",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            OutlinedTextField(
+                                value = imageCaption,
+                                onValueChange = { imageCaption = it.take(140) },
+                                label = { Text("عنوان عکس / پانویس") },
+                                singleLine = true,
+                                maxLines = 1,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            DiaryImageWrapPicker(
+                                value = wrap,
+                                onValueChange = { wrap = it },
+                            )
+                            TextButton(onClick = {
+                                deleteDiaryImage(imagePath)
+                                imagePath = ""
+                                imageCaption = ""
+                                placementMode = false
+                            }) { Text("برداشتن عکس") }
+                        }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(
                                 onClick = { imagePicker.launch(arrayOf("image/*")) },
@@ -718,7 +777,21 @@ private fun DiaryBookViewer(
                         viewerGesture = true,
                         skinned = true,
                         onPageChanged = { activePage = it },
-                        modifier = Modifier.fillMaxSize().padding(top = 22.dp, bottom = 10.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 22.dp, bottom = 10.dp)
+                            .pointerInput(pages.size) {
+                                detectTapGestures(
+                                    onTap = {
+                                        val next = (activePage + 1).coerceAtMost(pages.size)
+                                        if (next != activePage) activePage = next
+                                    },
+                                    onDoubleTap = {
+                                        val previous = (activePage - 1).coerceAtLeast(0)
+                                        if (previous != activePage) activePage = previous
+                                    },
+                                )
+                            },
                     ) { index, _ ->
                         if (index == 0) {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -811,7 +884,8 @@ private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
             val lh = with(LocalDensity.current) { line.toSp() }
             val style = androidx.compose.ui.text.TextStyle(
                 fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                fontSize = lh * 0.62f,
+                fontSize = lh * 0.87f,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 lineHeight = lh,
                 color = Color(0xFF19364B),
                 textAlign = notebookTextAlignFromWire(page.alignment),
@@ -1031,7 +1105,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                         notice = "اول چیزی بنویس."
                                     } else {
                                         val changed = selected.copy(
-                                            cipher = container.encryptor.encrypt(text.trim()),
+                                            cipher = container.encryptor.encrypt(text),
                                             alignment = notebookAlignmentWire(alignment),
                                         )
                                         notebooks = notebooks.map { if (it.id == changed.id) changed else it }
@@ -1052,7 +1126,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                     }
                 }
                 val fullText = container.encryptor.decrypt(selected.cipher).orEmpty()
-                val pages = fullText.split(NOTEBOOK_PAGE_SEPARATOR).map { it.trim() }.filter { it.isNotBlank() }
+                val pages = fullText.split(NOTEBOOK_PAGE_SEPARATOR).filter { it.isNotBlank() }
                 pages.forEachIndexed { index, page ->
                     item(key = "notebook-page-" + selected.id + "-" + index) {
                         NotebookBookPage(
@@ -1072,7 +1146,8 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                         .fillMaxSize()
                                         .padding(start = 74.dp, end = 74.dp, top = 0.dp, bottom = 28.dp),
                                     fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                    fontSize = 18.sp,
+                                    fontSize = 21.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                     lineHeight = 24.sp,
                                     textAlign = notebookTextAlignFromWire(selected.alignment),
                                     color = Color(0xFF19364B),
