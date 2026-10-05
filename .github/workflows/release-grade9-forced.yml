@@ -1,0 +1,195 @@
+name: Release grade 9 2.5.7 (forced)
+
+on:
+  push:
+    branches:
+      - New-graphic
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: grade9-forced-release
+  cancel-in-progress: false
+
+env:
+  VERSION_NAME: "2.5.7"
+  VERSION_CODE: "257"
+  MIN_CODE: "257"
+  ROLLOUT: "100"
+  GRADE_ID: "grade9"
+  PACKAGE: "com.hamyareman.p09"
+  ROW_ID: "app_release_grade9"
+  ASSET: "hamyar-grade9-2.5.7.apk"
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Release grade 9 v2.5.7')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact release commit
+        uses: actions/checkout@v4
+        with:
+          ref: New-graphic
+          fetch-depth: 1
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-37 build-tools;36.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Preflight required secrets
+        env:
+          APPWRITE_API_KEY: \${{ secrets.APPWRITE_API_KEY }}
+          PARSPACK_ACCESS_KEY: \${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: \${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in APPWRITE_API_KEY PARSPACK_ACCESS_KEY PARSPACK_SECRET_KEY; do
+            [ -n "\${!name:-}" ] || missing="\$missing \$name"
+          done
+          if [ -n "\$missing" ]; then
+            echo "::error::Secretهای لازم موجود نیستند:\$missing"
+            exit 1
+          fi
+
+      - name: Unit tests and build release APK
+        run: |
+          set -euo pipefail
+          ./gradlew --console=plain --no-daemon --max-workers=2 --stacktrace \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:assembleP09Release \
+            -PhamyarVersionCode="\$VERSION_CODE" \
+            -PhamyarVersionName="\$VERSION_NAME"
+
+          mkdir -p dist
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/release -type f -name '*.apk' -print)
+          test "\${#files[@]}" -eq 1
+          cp -f "\${files[0]}" "dist/\$ASSET"
+          test -s "dist/\$ASSET"
+          echo "APK_SIZE=\$(stat -c%s "dist/\$ASSET")" >> "\$GITHUB_ENV"
+          echo "APK_SHA256=\$(sha256sum "dist/\$ASSET" | cut -d' ' -f1)" >> "\$GITHUB_ENV"
+
+      - name: Verify APK identity and signing
+        run: |
+          set -euo pipefail
+          AAPT="\$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="\$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          BADGING="\$("\$AAPT" dump badging "dist/\$ASSET" | head -1)"
+          grep -F "name='\$PACKAGE'" <<<"\$BADGING"
+          grep -F "versionCode='\$VERSION_CODE'" <<<"\$BADGING"
+          grep -F "versionName='\$VERSION_NAME'" <<<"\$BADGING"
+
+          SIGNER="\$("\$APKSIGNER" verify --print-certs "dist/\$ASSET" \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' \
+            | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED="\$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')"
+          test "\$SIGNER" = "\$EXPECTED"
+          echo "SIGNER_SHA256=\$SIGNER" >> "\$GITHUB_ENV"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="grade9-v\$VERSION_NAME"
+          if ! gh release view "\$TAG" >/dev/null 2>&1; then
+            gh release create "\$TAG" \
+              --title "همیار من نهم \$VERSION_NAME" \
+              --notes "نسخه \$VERSION_NAME — آپدیت اجباری"
+          fi
+          gh release upload "\$TAG" "dist/\$ASSET" --clobber
+          GOT=\$(gh api "/repos/\${GITHUB_REPOSITORY}/releases/tags/\$TAG" \
+            -q ".assets[] | select(.name == \\"\\$ASSET\\") | .size")
+          test "\$GOT" = "\$APK_SIZE"
+          echo "EXTERNAL_URL=https://github.com/\${GITHUB_REPOSITORY}/releases/download/\$TAG/\$ASSET" >> "\$GITHUB_ENV"
+
+      - name: Publish APK on Parspack
+        env:
+          PARSPACK_ACCESS_KEY: \${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: \${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet boto3 requests
+          mkdir -p ci-report
+          python3 scripts/put_public_object.py \
+            --file "dist/\$ASSET" \
+            --key "apk/\$GRADE_ID/\$ASSET" \
+            --provider parspack \
+            --content-type application/vnd.android.package-archive \
+            --env-name INTERNAL_URL \
+            2>&1 | tee ci-report/parspack-upload.log
+          test -n "\${INTERNAL_URL:-}"
+
+      - name: Publish forced update record
+        env:
+          APPWRITE_API_KEY: \${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: \${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          APPWRITE_DATABASE_ID: \${{ secrets.APPWRITE_DATABASE_ID || '6abb238d000d05730d10' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-report
+          python3 scripts/publish_grade9_update.py \
+            --apk "dist/\$ASSET" \
+            --version-code "\$VERSION_CODE" \
+            --version-name "\$VERSION_NAME" \
+            --min-code "\$MIN_CODE" \
+            --rollout "\$ROLLOUT" \
+            --external-url "\$EXTERNAL_URL" \
+            --internal-url "\$INTERNAL_URL" \
+            --signer-sha256 "\$SIGNER_SHA256" \
+            --row-id "\$ROW_ID" \
+            --package "\$PACKAGE" \
+            --grade-id "\$GRADE_ID" \
+            --notes "رفع مشکل بازنشانی فونت پیش‌فرض|زنجیرهٔ خودکار آلارم بیداری صبح و آماده‌شدن ظهر بر پایهٔ ساعت حضور و زمان آماده‌سازی|نمایشی و غیرقابل‌تنظیم شدن دو آلارم مشتق‌شده با راهنمای صفحه|افزوده شدن تعطیلی مدرسه از ۱ تا ۱۳ فروردین در تقویم|رفع صفحهٔ خالی پنل بشنو و بخواب و محدود شدن بازشدن پلیر|حفظ Space و هم‌خطی متن در دفترها و افزایش متن به ۲۱sp و Bold|تکمیل دفتر شعر با جلد، تورق، نوع شعر سایر و گزینه‌های شعر نو و عنوان قابل ویرایش|جابه‌جایی مستقیم عکس روی کاغذ و تبدیل تنظیم جای عکس به فهرست|افزوده شدن راهنمای کاربری جامع و راهنمای زمینه‌ای صفحات|حذف دفتر خاطرات قدیمی از آلبوم امن|رفع پخش خودکار صوت و ویدیو در آلبوم شخصی و محتوای آموزشی" \
+            --out ci-report/release-\$VERSION_NAME.json
+
+      - name: Release summary and artifacts
+        if: always()
+        run: |
+          set +e
+          {
+            echo "### Release \$VERSION_NAME"
+            echo "- versionCode: \$VERSION_CODE"
+            echo "- forced minCode: \$MIN_CODE"
+            echo "- APK size: \${APK_SIZE:-unknown}"
+            echo "- APK SHA-256: \${APK_SHA256:-unknown}"
+            echo "- signer SHA-256: \${SIGNER_SHA256:-unknown}"
+            for f in ci-report/*; do
+              [ -f "\$f" ] || continue
+              echo
+              echo "#### \$f"
+              cat "\$f"
+            done
+          } >> "\$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hamyar-grade9-2.5.7-release
+          path: |
+            dist/*.apk
+            ci-report/*
+          if-no-files-found: warn
+          retention-days: 30
