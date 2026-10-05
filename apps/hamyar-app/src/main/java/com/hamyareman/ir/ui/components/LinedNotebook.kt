@@ -275,6 +275,7 @@ fun LinedNotebookInput(
     showVerticalGuides: Boolean = true,
     headerOnFirstLine: Boolean = false,
     realistic: Boolean = false,
+    overlay: @Composable (pageIndex: Int) -> Unit = {},
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val layout = remember(maxWidth) {
@@ -310,7 +311,8 @@ fun LinedNotebookInput(
                 headerOnFirstLine = headerOnFirstLine,
                 realistic = realistic,
             ) {
-                BasicTextField(
+                Box(Modifier.fillMaxSize()) {
+                    BasicTextField(
                     value = pages.getOrElse(pageIndex) { "" },
                     onValueChange = { changed ->
                         val chunks = cutText(changed, pageCapacity)
@@ -341,8 +343,10 @@ fun LinedNotebookInput(
                         ),
                     ),
                     cursorBrush = SolidColor(Color(0xFF27485C)),
-                    modifier = Modifier.fillMaxSize(),
-                )
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                    overlay(pageIndex)
+                }
             }
         }
     }
