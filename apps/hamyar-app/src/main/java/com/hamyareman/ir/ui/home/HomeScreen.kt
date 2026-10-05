@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -303,7 +304,11 @@ fun HomeScreen(nav: NavController) {
                 modifier = Modifier.padding(horizontal = HomeSide),
             )
             HubCard("🌤", "روتین امروز", "بلوک‌های روزت را ببین", Modifier.padding(horizontal = HomeSide), slotId = "page.home.tile") { nav.navigate(Screen.Routine.route) }
-            HubCard("💧", "آب بنوش", "لیوان‌های امروزت را ثبت کن", Modifier.padding(horizontal = HomeSide), slotId = "page.home.tile") { nav.navigate(Screen.Water.route) }
+            // ردیاب آب: همان‌جا لیوان ثبت می‌شود؛ لمس کارت صفحهٔ کامل آب را باز می‌کند.
+            WaterQuickCard(
+                modifier = Modifier.padding(horizontal = HomeSide),
+                onOpen = { nav.navigate(Screen.Water.route) },
+            )
             Spacer(Modifier.height(8.dp))
         }
     }
@@ -317,6 +322,11 @@ private fun GreetingBanner(
     motionPhase: Float = 0f,
 ) {
     val shape = RoundedCornerShape(28.dp)
+    // رنگ‌ها از تم یکدست همیار می‌آیند (نه ثابت)؛ تیره‌شده تا متن سفید همیشه خوانا بماند.
+    val scheme = MaterialTheme.colorScheme
+    val c1 = lerp(scheme.primary, Color.Black, 0.45f)
+    val c2 = lerp(scheme.secondary, Color.Black, 0.5f)
+    val c3 = lerp(scheme.tertiary, Color.Black, 0.55f)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = shape,
@@ -329,7 +339,7 @@ private fun GreetingBanner(
                 .clip(shape)
                 .background(
                     Brush.linearGradient(
-                        listOf(Color(0xFF0F766E), Color(0xFF115E59), Color(0xFF1E3A8A)),
+                        listOf(c1, c2, c3),
                         start = Offset(-30f + motionPhase * 120f, 0f),
                         end = Offset(470f + motionPhase * 120f, 220f),
                     ),
@@ -338,9 +348,15 @@ private fun GreetingBanner(
                     val glowX = size.width * (0.18f + motionPhase * 0.56f)
                     val glowY = size.height * 0.18f
                     drawCircle(
-                        color = Color.White.copy(alpha = 0.065f),
+                        color = Color.White.copy(alpha = 0.085f),
                         radius = size.minDimension * 0.62f,
                         center = Offset(glowX, glowY),
+                    )
+                    // نور دومی که خلاف جهت اول حرکت می‌کند تا بنر زنده‌تر دیده شود.
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.05f),
+                        radius = size.minDimension * 0.42f,
+                        center = Offset(size.width * (0.86f - motionPhase * 0.5f), size.height * 0.85f),
                     )
                 }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
