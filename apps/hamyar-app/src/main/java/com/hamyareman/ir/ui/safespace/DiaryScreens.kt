@@ -825,12 +825,42 @@ private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
                 trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
             ),
         )
+
         if (page.imagePath.isBlank()) {
             Text(page.text, Modifier.fillMaxSize(), style = style)
         } else {
-            Column(Modifier.fillMaxSize()) {
-                DiaryPlacedImage(page, Modifier.fillMaxWidth().padding(horizontal = 10.dp))
-                Text(page.text, Modifier.fillMaxWidth().padding(top = 8.dp), style = style)
+            // Wrap is persisted per page and is reflected in the actual document flow.
+            // NONE keeps a compact centered media block; TOP puts media before the text;
+            // BOTTOM keeps text first and media after it. No image is randomly overlaid.
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                when (page.wrap) {
+                    ImageWrap.BOTTOM -> {
+                        Text(
+                            page.text,
+                            Modifier.fillMaxWidth().weight(1f, fill = false),
+                            style = style,
+                        )
+                        DiaryPlacedImage(page, Modifier.fillMaxWidth())
+                    }
+                    ImageWrap.NONE -> {
+                        Box(
+                            Modifier.fillMaxWidth().weight(1f, fill = false),
+                            contentAlignment = Alignment.TopCenter,
+                        ) {
+                            DiaryPlacedImage(page, Modifier.fillMaxWidth())
+                        }
+                        Text(page.text, Modifier.fillMaxWidth(), style = style)
+                    }
+                    ImageWrap.TOP -> {
+                        DiaryPlacedImage(page, Modifier.fillMaxWidth())
+                        Text(page.text, Modifier.fillMaxWidth(), style = style)
+                    }
+                }
             }
         }
     }
