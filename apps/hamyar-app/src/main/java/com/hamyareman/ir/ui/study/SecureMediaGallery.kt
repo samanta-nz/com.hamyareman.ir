@@ -214,6 +214,8 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
         }
     }
 
+    }
+
     selected?.let { item ->
         SecureMediaViewer(
             item = item,
