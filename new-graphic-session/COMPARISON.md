@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T07:14:08.257078+00:00
+- Generated: 2026-10-05T07:36:54.376977+00:00
 - Branch: New-graphic
-- HEAD: fc5783ce64cad8d63f1e994f3c125c66b7d4f273
+- HEAD: b49326593c7df4a558c03c32fb2c429a076812ce
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	163
+- rev-list main...HEAD: 2	170
 
 ## Summary
 
@@ -53,6 +53,7 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/RealisticUi.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/HomeScreen.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/WaterQuickCard.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/hub/HubComponents.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt`
