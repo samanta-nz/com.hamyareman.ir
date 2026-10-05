@@ -80,6 +80,7 @@ import com.hamyareman.ir.ui.settings.PrivacySettingsScreen
 import com.hamyareman.ir.ui.settings.RemindersScreen
 import com.hamyareman.ir.ui.settings.SettingsScreen
 import com.hamyareman.ir.ui.settings.SyncScreen
+import com.hamyareman.ir.ui.settings.UserGuideScreen
 import com.hamyareman.ir.ui.study.AcademyHubScreen
 import com.hamyareman.ir.ui.study.AcademySoonScreen
 import com.hamyareman.ir.ui.study.AudiobookScreen
@@ -425,6 +426,15 @@ fun ZahraNavHost() {
             }
             composable(Screen.Water.route) { WaterScreen() }
             composable(Screen.Settings.route) { SettingsScreen(nav) }
+            composable(
+                Screen.UserGuide.route,
+                listOf(navArgument("section") { type = NavType.StringType; defaultValue = "" }),
+            ) { entry ->
+                UserGuideScreen(
+                    onBack = { nav.popBackStack() },
+                    initialSection = entry.arguments?.getString("section").orEmpty(),
+                )
+            }
             composable(Screen.UserProfile.route) {
                 val container = LocalAppContainer.current
                 val ctx = androidx.compose.ui.platform.LocalContext.current
