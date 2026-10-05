@@ -45,6 +45,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,6 +73,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
@@ -256,7 +259,7 @@ private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPay
         }.ifEmpty { listOf(DiaryPageModel("")) }.let { DiaryPayload(it) }
     }.getOrElse {
         DiaryPayload(
-            plain.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf(DiaryPageModel(plain)) },
+            plain.split(NOTEBOOK_PAGE_SEPARATOR).map { DiaryPageModel(it.trim()) }.ifEmpty { listOf(DiaryPageModel(plain.trim())) },
         )
     }
 }
@@ -293,12 +296,12 @@ private fun DiaryImageWrapPicker(
         OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
             Text("جای عکس: " + value.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        androidx.compose.material3.DropdownMenu(
+        DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
             ImageWrap.entries.forEach { option ->
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text(option.title) },
                     onClick = {
                         expanded = false
@@ -881,7 +884,7 @@ private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
             val lh = with(LocalDensity.current) { line.toSp() }
             val style = androidx.compose.ui.text.TextStyle(
                 fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                fontSize = lh * 0.87f,
+                fontSize = lh * 0.72f,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 lineHeight = lh,
                 color = Color(0xFF19364B),
