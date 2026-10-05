@@ -85,10 +85,25 @@ private fun TimePickText(label: String, value: String, onPick: (String) -> Unit)
 
 
 @Composable
-fun ClassPlanScreen(onBack: () -> Unit, initialTab: Int = 0, onVirtualHours: (() -> Unit)? = null) {
+private fun DerivedAlarmTime(
+    label: String,
+    hour: Int,
+    minute: Int,
+    onHelp: () -> Unit,
+) {
+    OutlinedButton(onClick = onHelp, modifier = Modifier.fillMaxWidth()) {
+        Text(
+            "$label  ${toPersianDigits("%02d:%02d".format(hour, minute))}  ·  خودکار",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+@Composable
+fun ClassPlanScreen(onBack: () -> Unit, initialTab: Int = 0, onVirtualHours: (() -> Unit)? = null, onHelp: () -> Unit = {}) {
     var tab by remember { mutableIntStateOf(initialTab.coerceIn(0, 2)) }
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("برنامه کلاسی مدرسه", onBack)
+        AppTopBar("برنامه کلاسی مدرسه", onBack, onHelp = onHelp)
         ScrollableTabRow(selectedTabIndex = tab, edgePadding = 8.dp) {
             listOf("هفتگی", "تقویم", "شیفت مدرسه").forEachIndexed { i, label ->
                 Tab(selected = tab == i, onClick = { tab = i }, text = {
@@ -562,6 +577,7 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
     var shiftSettings by remember { mutableStateOf(false) }
     var ranges by remember { mutableStateOf(ClassPlanStore.virtualRanges(ctx)) }
     val current = ClassPlanStore.shiftOf(snap, today)
+    var derivedHelp by remember { mutableStateOf(false) }
 
     fun flushAlarm(next: SchoolAlarmStore.Prefs = alarm) {
         SchoolAlarmStore.save(ctx, next)
@@ -587,10 +603,20 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
             }
         }
         Text("شیفت صبح — سه کادر ساعت", fontWeight = FontWeight.Bold)
-        TimePick("آلارم بیداری", alarm.wakeMH, alarm.wakeMM) { h, m -> flushAlarm(alarm.copy(wakeMH = h, wakeMM = m)) }
+        DerivedAlarmTime(
+            label = "آلارم بیداری شیفت صبح",
+            hour = ClassPlanStore.wakeHourMinute(snap, Shift.MORNING).first,
+            minute = ClassPlanStore.wakeHourMinute(snap, Shift.MORNING).second,
+            onHelp = { derivedHelp = true },
+        )
         TimePick("حضور در سرویس", alarm.busMH, alarm.busMM) { h, m -> flushAlarm(alarm.copy(busMH = h, busMM = m)) }
         Text("شیفت ظهر — سه کادر ساعت", fontWeight = FontWeight.Bold)
-        TimePick("آماده شدن ظهر", alarm.wakeNH, alarm.wakeNM) { h, m -> flushAlarm(alarm.copy(wakeNH = h, wakeNM = m)) }
+        DerivedAlarmTime(
+            label = "آلارم آماده‌شدن شیفت ظهر",
+            hour = ClassPlanStore.wakeHourMinute(snap, Shift.EVENING).first,
+            minute = ClassPlanStore.wakeHourMinute(snap, Shift.EVENING).second,
+            onHelp = { derivedHelp = true },
+        )
         TimePick("حضور در سرویس", alarm.busNH, alarm.busNM) { h, m -> flushAlarm(alarm.copy(busNH = h, busNM = m)) }
         Text("خواب — دعوت به خواب آرام", fontWeight = FontWeight.Bold)
         TimePick("خواب شیفت صبح", alarm.sleepMH, alarm.sleepMM) { h, m -> flushAlarm(alarm.copy(sleepMH = h, sleepMM = m)) }
@@ -663,6 +689,21 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
         }
     }
 
+    if (derivedHelp) {
+        AlertDialog(
+            onDismissRequest = { derivedHelp = false },
+            title = { Text("زمان‌های محاسبه‌شده") },
+            text = {
+                Text(
+                    "این دو زمان قابل تنظیم مستقیم نیستند. ابتدا شیفت مدرسه و ساعت حضور همان شیفت تعیین می‌شود؛ سپس زمان آماده‌سازی پیش از حرکت از آن کم می‌شود. " +
+                        "تغییر ساعت حضور یا مدت آماده‌سازی، هر دو آلارم بیداری را خودکار دوباره محاسبه می‌کند."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { derivedHelp = false }) { Text("متوجه شدم") }
+            },
+        )
+    }
     if (shiftSettings) {
         AlertDialog(
             onDismissRequest = { shiftSettings = false },
