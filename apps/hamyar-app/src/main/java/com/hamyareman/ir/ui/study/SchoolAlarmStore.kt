@@ -81,6 +81,7 @@ object SchoolAlarmStore {
     fun sync(ctx: Context, reminders: ReminderScheduler, snap: ClassPlanStore.Snapshot, date: LocalDate) {
         ClassPlanStore.refreshOffCache(ctx)
         val p = load(ctx)
+        // زمان‌های بیداری از ClassPlanStore مشتق می‌شوند و هیچ ورودی مستقل قدیمی ندارند.
         val target = if (ClassPlanStore.isSchoolOff(ctx, snap, date)) {
             ClassPlanStore.firstSchoolDay(snap, date.plusDays(1), ctx)
         } else date
