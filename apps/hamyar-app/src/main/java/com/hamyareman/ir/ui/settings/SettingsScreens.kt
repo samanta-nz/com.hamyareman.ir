@@ -77,12 +77,16 @@ fun SettingsScreen(nav: NavController) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            AppTopBar("تنظیمات") { nav.popBackStack() }
+            AppTopBar("تنظیمات", onBack = { nav.popBackStack() }, onHelp = { nav.navigate(Screen.UserGuide.of("settings")) })
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionCard(
                     "تم برنامه",
                     "رنگ، حالت روشن یا تاریک و اندازهٔ نوشته.",
                 ) { nav.navigate(Screen.Appearance.route) }
+                SectionCard(
+                    "راهنمای کاربری برنامه",
+                    "راهنمای کامل استفاده از بخش‌های برنامه، مدرسه، دفترها، رسانه‌ها و تنظیمات.",
+                ) { nav.navigate(Screen.UserGuide.of()) }
                 SectionCard(
                     "قفل برنامه",
                     if (container.lock.isEnabled()) "فعال — ورود با PIN یا بیومتریک." else "غیرفعال — برای محافظت فعالش کن.",
