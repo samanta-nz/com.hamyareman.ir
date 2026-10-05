@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -124,11 +125,18 @@ fun NotebookPaper(
     header: String = "",
     headerAlign: TextAlign = TextAlign.Right,
     showVerticalGuides: Boolean = true,
+    headerOnFirstLine: Boolean = false,
+    realistic: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val contentTop = if (header.isBlank()) 0.dp else (LINE_HEIGHT_SP * 2).dp
+    val contentTop = if (header.isBlank()) 0.dp else
+        if (headerOnFirstLine) (LINE_HEIGHT_SP * 2).dp else (LINE_HEIGHT_SP * 2).dp
     BoxWithConstraints(
-        modifier
+        (if (realistic) {
+            modifier
+                .shadow(10.dp, RoundedCornerShape(3.dp), clip = false)
+                .border(0.7.dp, Color(0x335C4631), RoundedCornerShape(3.dp))
+        } else modifier)
             .fillMaxWidth()
             .aspectRatio(PAGE_ASPECT)
             .clip(RoundedCornerShape(3.dp)),
@@ -190,7 +198,11 @@ fun NotebookPaper(
                     text = header,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = SIDE_GUTTER_DP.dp, end = SIDE_GUTTER_DP.dp),
+                        .padding(
+                            start = SIDE_GUTTER_DP.dp,
+                            end = SIDE_GUTTER_DP.dp,
+                            top = if (headerOnFirstLine) 2.dp else 0.dp,
+                        ),
                     textAlign = headerAlign,
                     fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
                     fontSize = 17.sp,
@@ -259,6 +271,8 @@ fun LinedNotebookInput(
     header: String = "",
     textAlign: TextAlign = TextAlign.Right,
     showVerticalGuides: Boolean = true,
+    headerOnFirstLine: Boolean = false,
+    realistic: Boolean = false,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val layout = remember(maxWidth) {
@@ -268,7 +282,7 @@ fun LinedNotebookInput(
             )
         }
         val pageCapacity = remember(layout, header) {
-            val reserved = if (header.isBlank()) 0 else 2
+            val reserved = if (header.isBlank()) 0 else if (headerOnFirstLine) 3 else 2
             ((layout.visibleLines - reserved).coerceAtLeast(8) * layout.charsPerLine * .93f)
                 .toInt()
                 .coerceAtLeast(140)
@@ -291,6 +305,8 @@ fun LinedNotebookInput(
                 header = if (pageIndex == 0) header else "",
                 headerAlign = oppositeTextAlign(textAlign),
                 showVerticalGuides = showVerticalGuides,
+                headerOnFirstLine = headerOnFirstLine,
+                realistic = realistic,
             ) {
                 BasicTextField(
                     value = pages.getOrElse(pageIndex) { "" },
