@@ -322,7 +322,6 @@ fun ZahraNavHost() {
                 }) {
                     SecureMediaGalleryScreen(
                         onBack = { nav.popBackStack() },
-                        onOpenDiary = { nav.navigate(Screen.Diary.route) },
                     )
                 }
             }
