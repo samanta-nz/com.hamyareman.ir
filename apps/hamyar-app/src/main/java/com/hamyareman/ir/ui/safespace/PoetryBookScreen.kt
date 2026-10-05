@@ -126,7 +126,7 @@ private fun writePoems(container: com.hamyareman.ir.di.AppContainer, poems: List
 }
 
 @Composable
-fun PoetryBookScreen(onBack: () -> Unit) {
+fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     val container = LocalAppContainer.current
     var poems by remember { mutableStateOf(readPoems(container)) }
     var title by remember { mutableStateOf(poemTypes.first()) }
@@ -181,7 +181,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
     ) {
         Column(Modifier.fillMaxSize()) {
-            com.hamyareman.ir.platform.core.designsystem.AppTopBar("دفتر شعر", onBack, onHelp = { })
+            com.hamyareman.ir.platform.core.designsystem.AppTopBar("دفتر شعر", onBack, onHelp = onHelp)
         LazyColumn(
             Modifier.fillMaxSize().padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
