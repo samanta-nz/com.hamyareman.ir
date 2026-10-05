@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T17:08:33.763560+00:00
+- Generated: 2026-10-05T17:09:49.555800+00:00
 - Branch: New-graphic
-- HEAD: 45e8b216c29b848b9e13d89ae4e95858d2995cd4
+- HEAD: a24f0163c71dc6e4c6f6b67369aba0ac9c2df4ff
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	240
+- rev-list main...HEAD: 2	242
 
 ## Summary
 
@@ -48,6 +48,7 @@
 - `.github/workflows/arena-release-grade9-v2.5.5.yml`
 - `.github/workflows/arena-release-grade9-v2.5.6.yml`
 - `.github/workflows/finalize-grade9-v2.yml`
+- `.github/workflows/grade9-release-v2.5.7.yml`
 - `.github/workflows/new-graphic-compare.yml`
 - `.github/workflows/new-graphic-parspack-sync.yml`
 - `.github/workflows/new-graphic-validate.yml`
