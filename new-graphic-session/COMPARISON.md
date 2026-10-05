@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T16:46:16.514389+00:00
+- Generated: 2026-10-05T17:01:02.856495+00:00
 - Branch: New-graphic
-- HEAD: 9515d8f0297c79096811714838d1b4bbc4b8b41c
+- HEAD: 5e4f7f0505c072e119da8a58ead259c86af7e9a0
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	189
+- rev-list main...HEAD: 2	221
 
 ## Summary
 
@@ -49,6 +49,7 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookSkin.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookVisualEngine.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt`
@@ -58,10 +59,14 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/HomeScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/WaterQuickCard.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/hub/HubComponents.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/navigation/Screen.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/navigation/ZahraNavHost.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/SafeSpaceScreens.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/SafeSpaceSecurity.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/settings/SettingsScreens.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/settings/UserGuideScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanStore.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt`
