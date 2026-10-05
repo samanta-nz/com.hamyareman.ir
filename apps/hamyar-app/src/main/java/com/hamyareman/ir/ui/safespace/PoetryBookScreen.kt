@@ -301,6 +301,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
             }
         }
     }
+    }
 
     viewer?.let { poem ->
         PoetryViewer(
