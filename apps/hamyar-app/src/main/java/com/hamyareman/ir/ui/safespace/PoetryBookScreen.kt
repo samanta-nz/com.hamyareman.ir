@@ -158,8 +158,13 @@ fun PoetryBookScreen(onBack: () -> Unit) {
         notice = "شعر ذخیره شد."
     }
 
-    Column(Modifier.fillMaxSize()) {
-        com.hamyareman.ir.platform.core.designsystem.AppTopBar("دفتر شعر", onBack)
+    RealisticDeskFrame(
+        backgroundKey = DesignAsset.POETRY_BG,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            com.hamyareman.ir.platform.core.designsystem.AppTopBar("دفتر شعر", onBack)
         LazyColumn(
             Modifier.fillMaxSize().padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
