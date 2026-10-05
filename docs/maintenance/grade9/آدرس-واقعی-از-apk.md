@@ -12,28 +12,15 @@
 | endpoint خارجی | `https://sgp.cloud.appwrite.io/v1` |
 | باکت محتوا | `6abb564d00155cc56d65` |
 | باکت‌های دیگری که در باینری دیده شد | `wellness-media` |
-| شناسهٔ پروژهٔ خارجی | `6abb134a002025222005` |
-| شناسه‌های hex موجود در باینری | `6a9d59e3002751cc3ea8` → HTTP 401، `6aa1eaae00303400117b` → HTTP 404، `6abb134a002025222005` → HTTP 404، `6abb238d000d05730d10` → HTTP 404 |
+| شناسهٔ پروژهٔ خارجی | `—` |
+| شناسه‌های آزمایش‌شده | `6a9d59e3002751cc3ea8` → HTTP 401، `6aa1eaae00303400117b` → HTTP 404، `6abb134a002025222005` → HTTP 404، `6abb238d000d05730d10` → HTTP 404 |
 
 ### قالب نشانی، همان‌طور که در APK ساخته می‌شود
 
 ```
 داخلی : https://c539776.parspack.net/<کلید، هر بخش URL-encode شده>
-خارجی : https://sgp.cloud.appwrite.io/v1/storage/buckets/6abb564d00155cc56d65/files/<شناسهٔ فایل>/view?project=6abb134a002025222005
+خارجی : https://sgp.cloud.appwrite.io/v1/storage/buckets/6abb564d00155cc56d65/files/<شناسهٔ فایل>/view?project=
 ```
-
-### تفسیر نتیجهٔ probe سرور خارجی
-
-چهار شناسهٔ hex در باینری هست (میراث نسخه‌های قبل). با یک فایل واقعی هر چهار
-تا آزمایش شد:
-
-* `6abb134a002025222005` → **۴۰۴**: پروژه معتبر است، ولی خودِ فایل در باکت
-  Appwrite نیست. این همان پروژه‌ای است که `ServerResolver` استفاده می‌کند.
-* `6a9d59e3002751cc3ea8` → **۴۰۱**: پروژهٔ قدیمی، دسترسی ناشناس ندارد.
-* بقیه → ۴۰۴.
-
-نتیجهٔ عملی: **سرور خارجی امروز محتوا را ناشناس نمی‌دهد.** تنها مسیر واقعی
-دانلود، همان نشانی داخلی پارس‌پک است که هر ۲۶۰ فایل روی آن ۲۰۶ می‌دهند.
 
 ### کجا روی گوشی کش می‌شود
 
@@ -121,10 +108,10 @@
 
 | نوع | تعداد | حجم | سالم |
 |---|---:|---:|---:|
-| HTML | 168 | 191.0 MB | 168/168 |
-| JPG | 56 | 6.0 MB | 56/56 |
-| MP3 | 8 | 213.6 MB | 8/8 |
-| PDF | 28 | 8.4 MB | 28/28 |
+| HTML | 168 | 191.0 MB | 0/168 |
+| JPG | 56 | 6.0 MB | 0/56 |
+| MP3 | 8 | 213.6 MB | 0/8 |
+| PDF | 28 | 8.4 MB | 0/28 |
 
 ## ناسازگاری catalog.json با server-map.json
 
@@ -134,282 +121,323 @@
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `Amzshghh-01-speed-reading.html` | Amzshghh-01-speed-reading.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-01-speed-reading.html> | ✅ 206 |
-| 2 | `Amzshghh-02-handwriting.html` | Amzshghh-02-handwriting.html | 7 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-02-handwriting.html> | ✅ 206 |
-| 3 | `Amzshghh-03-touch-typing.html` | Amzshghh-03-touch-typing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-03-touch-typing.html> | ✅ 206 |
-| 4 | `Amzshghh-04-note-taking.html` | Amzshghh-04-note-taking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-04-note-taking.html> | ✅ 206 |
-| 5 | `Amzshghh-05-summarizing.html` | Amzshghh-05-summarizing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-05-summarizing.html> | ✅ 206 |
-| 6 | `Amzshghh-06-debate-principles.html` | Amzshghh-06-debate-principles.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-06-debate-principles.html> | ✅ 206 |
-| 7 | `Amzshghh-07-logical-fallacies.html` | Amzshghh-07-logical-fallacies.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-07-logical-fallacies.html> | ✅ 206 |
-| 8 | `Amzshghh-08-public-speaking.html` | Amzshghh-08-public-speaking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-08-public-speaking.html> | ✅ 206 |
-| 9 | `Amzshghh-09-speech-anxiety.html` | Amzshghh-09-speech-anxiety.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-09-speech-anxiety.html> | ✅ 206 |
-| 10 | `Amzshghh-10-formal-email.html` | Amzshghh-10-formal-email.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-10-formal-email.html> | ✅ 206 |
-| 11 | `Amzshghh-11-active-listening.html` | Amzshghh-11-active-listening.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-11-active-listening.html> | ✅ 206 |
-| 12 | `Amzshghh-12-mental-math.html` | Amzshghh-12-mental-math.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-12-mental-math.html> | ✅ 206 |
-| 13 | `Amzshghh-13-memory-boost.html` | Amzshghh-13-memory-boost.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-13-memory-boost.html> | ✅ 206 |
-| 14 | `Amzshghh-14-problem-solving.html` | Amzshghh-14-problem-solving.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-14-problem-solving.html> | ✅ 206 |
-| 15 | `Amzshghh-15-relationships.html` | Amzshghh-15-relationships.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-15-relationships.html> | ✅ 206 |
-| 16 | `Amzshghh-16-self-awareness.html` | Amzshghh-16-self-awareness.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-16-self-awareness.html> | ✅ 206 |
-| 17 | `Amzshghh-17-mental-traps.html` | Amzshghh-17-mental-traps.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-17-mental-traps.html> | ✅ 206 |
-| 18 | `Amzshghh-18-resilience.html` | Amzshghh-18-resilience.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-18-resilience.html> | ✅ 206 |
-| 19 | `Amzshghh-19-daily-planning.html` | Amzshghh-19-daily-planning.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-19-daily-planning.html> | ✅ 206 |
-| 20 | `Amzshghh-20-habit-building.html` | Amzshghh-20-habit-building.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-20-habit-building.html> | ✅ 206 |
-| 21 | `Amzshghh-21-study-space.html` | Amzshghh-21-study-space.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-21-study-space.html> | ✅ 206 |
-| 22 | `Amzshghh-22-windows-basics.html` | Amzshghh-22-windows-basics.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-22-windows-basics.html> | ✅ 206 |
-| 23 | `Amzshghh-23-ai-literacy.html` | Amzshghh-23-ai-literacy.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-23-ai-literacy.html> | ✅ 206 |
-| 24 | `Amzshghh-24-smart-search.html` | Amzshghh-24-smart-search.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-24-smart-search.html> | ✅ 206 |
-| 25 | `Amzshghh-25-online-safety.html` | Amzshghh-25-online-safety.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-25-online-safety.html> | ✅ 206 |
-| 26 | `Amzshghh-26-fake-news.html` | Amzshghh-26-fake-news.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-26-fake-news.html> | ✅ 206 |
-| 27 | `Amzshghh-27-teamwork.html` | Amzshghh-27-teamwork.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-27-teamwork.html> | ✅ 206 |
-| 28 | `Amzshghh-28-conflict-friends.html` | Amzshghh-28-conflict-friends.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-28-conflict-friends.html> | ✅ 206 |
-| 29 | `Amzshghh-29-saying-no.html` | Amzshghh-29-saying-no.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-29-saying-no.html> | ✅ 206 |
-| 30 | `Amzshghh-30-budgeting.html` | Amzshghh-30-budgeting.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-30-budgeting.html> | ✅ 206 |
-| 31 | `Amzshghh-31-needs-vs-wants.html` | Amzshghh-31-needs-vs-wants.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-31-needs-vs-wants.html> | ✅ 206 |
-| 32 | `Amzshghh-32-brainstorming.html` | Amzshghh-32-brainstorming.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-32-brainstorming.html> | ✅ 206 |
-| 33 | `Amzshghh-33-creative-thinking.html` | Amzshghh-33-creative-thinking.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-33-creative-thinking.html> | ✅ 206 |
-| 34 | `Amzshghh-34-music-theory.html` | Amzshghh-34-music-theory.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-34-music-theory.html> | ✅ 206 |
-| 35 | `Background-music.html` | Background-music.html | 8.2 MB | <https://c539776.parspack.net/common/mirror/Background-music.html> | ✅ 206 |
-| 36 | `br-01.html` | br-01.html | 801 KB | <https://c539776.parspack.net/common/mirror/br-01.html> | ✅ 206 |
-| 37 | `br-02.html` | br-02.html | 659 KB | <https://c539776.parspack.net/common/mirror/br-02.html> | ✅ 206 |
-| 38 | `br-03.html` | br-03.html | 901 KB | <https://c539776.parspack.net/common/mirror/br-03.html> | ✅ 206 |
-| 39 | `br-04.html` | br-04.html | 774 KB | <https://c539776.parspack.net/common/mirror/br-04.html> | ✅ 206 |
-| 40 | `br-05.html` | br-05.html | 781 KB | <https://c539776.parspack.net/common/mirror/br-05.html> | ✅ 206 |
-| 41 | `br-06.html` | br-06.html | 722 KB | <https://c539776.parspack.net/common/mirror/br-06.html> | ✅ 206 |
-| 42 | `br-07.html` | br-07.html | 732 KB | <https://c539776.parspack.net/common/mirror/br-07.html> | ✅ 206 |
-| 43 | `br-08.html` | br-08.html | 803 KB | <https://c539776.parspack.net/common/mirror/br-08.html> | ✅ 206 |
-| 44 | `ex-01.html` | ex-01.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-01.html> | ✅ 206 |
-| 45 | `ex-02.html` | ex-02.html | 1.6 MB | <https://c539776.parspack.net/common/mirror/ex-02.html> | ✅ 206 |
-| 46 | `ex-03.html` | ex-03.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-03.html> | ✅ 206 |
-| 47 | `ex-04.html` | ex-04.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/ex-04.html> | ✅ 206 |
-| 48 | `ex-05.html` | ex-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/ex-05.html> | ✅ 206 |
-| 49 | `ex-06.html` | ex-06.html | 1.9 MB | <https://c539776.parspack.net/common/mirror/ex-06.html> | ✅ 206 |
-| 50 | `ex-07.html` | ex-07.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-07.html> | ✅ 206 |
-| 51 | `ex-08.html` | ex-08.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-08.html> | ✅ 206 |
-| 52 | `ex-09.html` | ex-09.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-09.html> | ✅ 206 |
-| 53 | `ex-10.html` | ex-10.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-10.html> | ✅ 206 |
-| 54 | `ex-11.html` | ex-11.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-11.html> | ✅ 206 |
-| 55 | `ex-12.html` | ex-12.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-12.html> | ✅ 206 |
-| 56 | `ex-13.html` | ex-13.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-13.html> | ✅ 206 |
-| 57 | `ex-14.html` | ex-14.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-14.html> | ✅ 206 |
-| 58 | `ex-15.html` | ex-15.html | 1.5 MB | <https://c539776.parspack.net/common/mirror/ex-15.html> | ✅ 206 |
-| 59 | `yg-01.html` | yg-01.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/yg-01.html> | ✅ 206 |
-| 60 | `yg-02.html` | yg-02.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/yg-02.html> | ✅ 206 |
-| 61 | `yg-03.html` | yg-03.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-03.html> | ✅ 206 |
-| 62 | `yg-04.html` | yg-04.html | 2.5 MB | <https://c539776.parspack.net/common/mirror/yg-04.html> | ✅ 206 |
-| 63 | `yg-05.html` | yg-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-05.html> | ✅ 206 |
-| 64 | `yg-06.html` | yg-06.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-06.html> | ✅ 206 |
-| 65 | `yg-07.html` | yg-07.html | 2.3 MB | <https://c539776.parspack.net/common/mirror/yg-07.html> | ✅ 206 |
-| 66 | `yg-08.html` | yg-08.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/yg-08.html> | ✅ 206 |
-| 67 | `yg-09.html` | yg-09.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-09.html> | ✅ 206 |
-| 68 | `yg-10.html` | yg-10.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-10.html> | ✅ 206 |
-| 69 | `yg-11.html` | yg-11.html | 3.4 MB | <https://c539776.parspack.net/common/mirror/yg-11.html> | ✅ 206 |
-| 70 | `yg-12.html` | yg-12.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-12.html> | ✅ 206 |
-| 71 | `yg-13.html` | yg-13.html | 3.5 MB | <https://c539776.parspack.net/common/mirror/yg-13.html> | ✅ 206 |
-| 72 | `yg-14.html` | yg-14.html | 2.7 MB | <https://c539776.parspack.net/common/mirror/yg-14.html> | ✅ 206 |
-| 73 | `yg-15.html` | yg-15.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/yg-15.html> | ✅ 206 |
-| 74 | `ryazif01d01.html` | ryazif01d01.html | 58 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d01.html> | ✅ 206 |
-| 75 | `ryazif01d02.html` | ryazif01d02.html | 61 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d02.html> | ✅ 206 |
-| 76 | `ryazif01d03.html` | ryazif01d03.html | 72 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d03.html> | ✅ 206 |
-| 77 | `ryazif01d04.html` | ryazif01d04.html | 62 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d04.html> | ✅ 206 |
-| 78 | `ryazif01review.html` | ryazif01review.html | 56 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01review.html> | ✅ 206 |
-| 79 | `ryazif02d01.html` | ryazif02d01.html | 59 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d01.html> | ✅ 206 |
-| 80 | `ryazif02d02.html` | ryazif02d02.html | 50 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d02.html> | ✅ 206 |
-| 81 | `ryazif02d03.html` | ryazif02d03.html | 55 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d03.html> | ✅ 206 |
-| 82 | `ryazif02review.html` | ryazif02review.html | 48 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02review.html> | ✅ 206 |
-| 83 | `ryazif03d01.html` | ryazif03d01.html | 55 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d01.html> | ✅ 206 |
-| 84 | `ryazif03d02.html` | ryazif03d02.html | 67 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d02.html> | ✅ 206 |
-| 85 | `ryazif03d03.html` | ryazif03d03.html | 41 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d03.html> | ✅ 206 |
-| 86 | `ryazif03d04.html` | ryazif03d04.html | 32 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d04.html> | ✅ 206 |
-| 87 | `ryazif03d05.html` | ryazif03d05.html | 43 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d05.html> | ✅ 206 |
-| 88 | `ryazif03review.html` | ryazif03review.html | 52 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03review.html> | ✅ 206 |
-| 89 | `lab-09-biology.html` | Hamyar e Man - آزمایشگاه زیست پایه نهم | 457 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87/lab-09-biology.html> | ✅ 206 |
-| 90 | `lab-09-chemistry.html` | Hamyar e Man - آزمایشگاه شیمی پایه نهم | 252 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87/lab-09-chemistry.html> | ✅ 206 |
-| 91 | `lab-09-physics.html` | Hamyar e Man - آزمایشگاه فیزیک پایه نهم | 236 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87/lab-09-physics.html> | ✅ 206 |
-| 92 | `amz-01` | سرعت خواندن | 6.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/01-speed-reading.html> | ✅ 206 |
-| 93 | `amz-02` | خوشنویسی | 13.3 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/02-handwriting.html> | ✅ 206 |
-| 94 | `amz-03` | تایپ لمسی | 8.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/03-touch-typing.html> | ✅ 206 |
-| 95 | `amz-04` | یادداشت‌برداری | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/04-note-taking.html> | ✅ 206 |
-| 96 | `amz-05` | خلاصه‌نویسی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/05-summarizing.html> | ✅ 206 |
-| 97 | `amz-06` | اصول مناظره | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/06-debate-principles.html> | ✅ 206 |
-| 98 | `amz-07` | مغالطه‌های منطقی | 6 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/07-logical-fallacies.html> | ✅ 206 |
-| 99 | `amz-08` | فن بیان | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/08-public-speaking.html> | ✅ 206 |
-| 100 | `amz-09` | اضطراب سخنرانی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/09-public-speaking-anxiety.html> | ✅ 206 |
-| 101 | `amz-10` | ایمیل رسمی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/10-formal-email.html> | ✅ 206 |
-| 102 | `amz-11` | گوش دادن فعال | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/11-active-listening.html> | ✅ 206 |
-| 103 | `amz-12` | محاسبات ذهنی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/12-mental-math.html> | ✅ 206 |
-| 104 | `amz-13` | تقویت حافظه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/13-memory-boost.html> | ✅ 206 |
-| 105 | `amz-14` | حل مسئله | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/14-problem-solving.html> | ✅ 206 |
-| 106 | `amz-15` | مهارت روابط | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/15-relationships.html> | ✅ 206 |
-| 107 | `amz-16` | خودآگاهی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/16-self-awareness.html> | ✅ 206 |
-| 108 | `amz-17` | تله‌های ذهنی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/17-mental-traps.html> | ✅ 206 |
-| 109 | `amz-18` | انعطاف‌پذیری | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/18-resilience.html> | ✅ 206 |
-| 110 | `amz-19` | برنامه‌ریزی روزانه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/19-daily-planning.html> | ✅ 206 |
-| 111 | `amz-20` | ساخت عادت | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/20-habit-building.html> | ✅ 206 |
-| 112 | `amz-21` | فضای مطالعه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/21-study-space.html> | ✅ 206 |
-| 113 | `amz-22` | ویندوز (مبانی) | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/22-windows-basics.html> | ✅ 206 |
-| 114 | `amz-23` | سواد هوش مصنوعی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/23-ai-literacy.html> | ✅ 206 |
-| 115 | `amz-24` | جست‌وجوی هوشمند | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/24-smart-search.html> | ✅ 206 |
-| 116 | `amz-25` | ایمنی در فضای مجازی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/25-online-safety.html> | ✅ 206 |
-| 117 | `amz-26` | اخبار جعلی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html> | ✅ 206 |
-| 118 | `amz-27` | کار تیمی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/27-teamwork.html> | ✅ 206 |
-| 119 | `amz-28` | مدیریت اختلاف با دوستان | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/28-conflict-with-friends.html> | ✅ 206 |
-| 120 | `amz-29` | هنر نه گفتن | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/29-saying-no.html> | ✅ 206 |
-| 121 | `amz-30` | مدیریت بودجه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/30-budgeting.html> | ✅ 206 |
-| 122 | `amz-31` | نیاز در برابر خواسته | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/31-needs-vs-wants.html> | ✅ 206 |
-| 123 | `amz-32` | طوفان فکری | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/32-brainstorming.html> | ✅ 206 |
-| 124 | `amz-33` | تفکر خلاق | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/33-creative-thinking.html> | ✅ 206 |
-| 125 | `amz-34` | تئوری موسیقی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/34-music-theory.html> | ✅ 206 |
-| 126 | `bre-01` | تنفس آرام هنگام قاعدگی | 802 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A2%D8%B1%D8%A7%D9%85%20%D9%87%D9%86%DA%AF%D8%A7%D9%85%20%D9%82%D8%A7%D8%B9%D8%AF%DA%AF%DB%8C.html> | ✅ 206 |
-| 127 | `bre-02` | تنفس آرام پیش از خواب | 732 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A2%D8%B1%D8%A7%D9%85%20%D9%BE%DB%8C%D8%B4%20%D8%A7%D8%B2%20%D8%AE%D9%88%D8%A7%D8%A8.html> | ✅ 206 |
-| 128 | `bre-03` | تنفس بینی متناوب | 901 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A8%DB%8C%D9%86%DB%8C%20%D9%85%D8%AA%D9%86%D8%A7%D9%88%D8%A8.html> | ✅ 206 |
-| 129 | `bre-04` | تنفس راحت | 659 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B1%D8%A7%D8%AD%D8%AA.html> | ✅ 206 |
-| 130 | `bre-05` | تنفس شمارشی پیش از امتحان | 721 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B4%D9%85%D8%A7%D8%B1%D8%B4%DB%8C%20%D9%BE%DB%8C%D8%B4%20%D8%A7%D8%B2%20%D8%A7%D9%85%D8%AA%D8%AD%D8%A7%D9%86.html> | ✅ 206 |
-| 131 | `bre-06` | تنفس شکمی | 800 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B4%DA%A9%D9%85%DB%8C.html> | ✅ 206 |
-| 132 | `bre-07` | تنفس شیر ملایم | 774 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B4%DB%8C%D8%B1%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.html> | ✅ 206 |
-| 133 | `bre-08` | یک دقیقه توجه به نفس | 780 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%DB%8C%DA%A9%20%D8%AF%D9%82%DB%8C%D9%82%D9%87%20%D8%AA%D9%88%D8%AC%D9%87%20%D8%A8%D9%87%20%D9%86%D9%81%D8%B3.html> | ✅ 206 |
-| 134 | `tool-casio991.html` | CASIO fx-991CW ClassWiz | 51 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B1%DB%8C%D8%A7%D8%B6%DB%8C/tool-casio991.html> | ✅ 206 |
-| 135 | `tool-ti-nspire.html` | TI-Nspire CX II-T CAS | 64 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B1%DB%8C%D8%A7%D8%B6%DB%8C/tool-ti-nspire.html> | ✅ 206 |
-| 136 | `tool-calendar.html` | تقویم | 91 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B9%D9%85%D9%88%D9%85%DB%8C/tool-calendar.html> | ✅ 206 |
-| 137 | `tool-converter.html` | مبدل همه‌کاره مهندسی | 36 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B9%D9%85%D9%88%D9%85%DB%8C/tool-converter.html> | ✅ 206 |
-| 138 | `tool-dj120d.html` | DJ-120D Plus | 37 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B9%D9%85%D9%88%D9%85%DB%8C/tool-dj120d.html> | ✅ 206 |
-| 139 | `spo-01` | اسکوات آرام | 1.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A7%D8%B3%DA%A9%D9%88%D8%A7%D8%AA%20%D8%A2%D8%B1%D8%A7%D9%85.html> | ✅ 206 |
-| 140 | `spo-02` | بالا بردن پاشنه‌ها | 1.6 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A8%D8%A7%D9%84%D8%A7%20%D8%A8%D8%B1%D8%AF%D9%86%20%D9%BE%D8%A7%D8%B4%D9%86%D9%87%E2%80%8C%D9%87%D8%A7.html> | ✅ 206 |
-| 141 | `spo-03` | جامپینگ‌جک بدون پرش | 2.1 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%AC%D8%A7%D9%85%D9%BE%DB%8C%D9%86%DA%AF%E2%80%8C%D8%AC%DA%A9%20%D8%A8%D8%AF%D9%88%D9%86%20%D9%BE%D8%B1%D8%B4.html> | ✅ 206 |
-| 142 | `spo-04` | سوپرمنِ دست‌وپای مخالف | 2.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%B3%D9%88%D9%BE%D8%B1%D9%85%D9%86%D9%90%20%D8%AF%D8%B3%D8%AA%E2%80%8C%D9%88%D9%BE%D8%A7%DB%8C%20%D9%85%D8%AE%D8%A7%D9%84%D9%81.html> | ✅ 206 |
-| 143 | `spo-05` | لانگز آرام | 3.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%84%D8%A7%D9%86%DA%AF%D8%B2%20%D8%A2%D8%B1%D8%A7%D9%85.html> | ✅ 206 |
-| 144 | `spo-06` | پلانک روی زانو | 1.9 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%BE%D9%84%D8%A7%D9%86%DA%A9%20%D8%B1%D9%88%DB%8C%20%D8%B2%D8%A7%D9%86%D9%88.html> | ✅ 206 |
-| 145 | `spo-07` | چرخش مچ دست و پا | 3.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%D9%85%DA%86%20%D8%AF%D8%B3%D8%AA%20%D9%88%20%D9%BE%D8%A7.html> | ✅ 206 |
-| 146 | `spo-08` | چرخش کوچک تنه | 1.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%DA%A9%D9%88%DA%86%DA%A9%20%D8%AA%D9%86%D9%87.html> | ✅ 206 |
-| 147 | `spo-09` | کرانچ ملایم | 1.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B1%D8%A7%D9%86%DA%86%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.html> | ✅ 206 |
-| 148 | `spo-10` | کشش ساق به دیوار | 2.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B3%D8%A7%D9%82%20%D8%A8%D9%87%20%D8%AF%DB%8C%D9%88%D8%A7%D8%B1.html> | ✅ 206 |
-| 149 | `spo-11` | کشش شانهٔ ضربدری | 2.1 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B4%D8%A7%D9%86%D9%87%D9%94%20%D8%B6%D8%B1%D8%A8%D8%AF%D8%B1%DB%8C.html> | ✅ 206 |
-| 150 | `spo-12` | کشش ملایم گردن | 1.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%D9%84%D8%A7%DB%8C%D9%85%20%DA%AF%D8%B1%D8%AF%D9%86.html> | ✅ 206 |
-| 151 | `spo-13` | کشش مچ و ساعد | 3.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%DA%86%20%D9%88%20%D8%B3%D8%A7%D8%B9%D8%AF.html> | ✅ 206 |
-| 152 | `spo-14` | کشش همسترینگ نشسته | 2.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%87%D9%85%D8%B3%D8%AA%D8%B1%DB%8C%D9%86%DA%AF%20%D9%86%D8%B4%D8%B3%D8%AA%D9%87.html> | ✅ 206 |
-| 153 | `spo-15` | کشش پروانه | 1.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%BE%D8%B1%D9%88%D8%A7%D9%86%D9%87.html> | ✅ 206 |
-| 154 | `yga-01` | حالت کودک | 1.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/01%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9.html> | ✅ 206 |
-| 155 | `yga-02` | گربه–گاو | 2.1 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/02%20-%20%DA%AF%D8%B1%D8%A8%D9%87%E2%80%93%DA%AF%D8%A7%D9%88.html> | ✅ 206 |
-| 156 | `yga-03` | سگ سر پایین | 2.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/03%20-%20%D8%B3%DA%AF%20%D8%B3%D8%B1%20%D9%BE%D8%A7%DB%8C%DB%8C%D9%86.html> | ✅ 206 |
-| 157 | `yga-04` | کبرای ملایم | 2.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/04%20-%20%DA%A9%D8%A8%D8%B1%D8%A7%DB%8C%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.html> | ✅ 206 |
-| 158 | `yga-05` | جنگجوی یک | 3.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/05%20-%20%D8%AC%D9%86%DA%AF%D8%AC%D9%88%DB%8C%20%DB%8C%DA%A9.html> | ✅ 206 |
-| 159 | `yga-06` | جنگجوی دو | 3.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/06%20-%20%D8%AC%D9%86%DA%AF%D8%AC%D9%88%DB%8C%20%D8%AF%D9%88.html> | ✅ 206 |
-| 160 | `yga-07` | درخت | 2.3 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/07%20-%20%D8%AF%D8%B1%D8%AE%D8%AA.html> | ✅ 206 |
-| 161 | `yga-08` | پل | 1.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/08%20-%20%D9%BE%D9%84.html> | ✅ 206 |
-| 162 | `yga-09` | چرخش نشسته | 2.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/09%20-%20%DA%86%D8%B1%D8%AE%D8%B4%20%D9%86%D8%B4%D8%B3%D8%AA%D9%87.html> | ✅ 206 |
-| 163 | `yga-10` | حالت کودک با زانوهای باز | 2.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/10%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9%20%D8%A8%D8%A7%20%D8%B2%D8%A7%D9%86%D9%88%D9%87%D8%A7%DB%8C%20%D8%A8%D8%A7%D8%B2.html> | ✅ 206 |
-| 164 | `yga-11` | کبوتر حمایت‌شده | 3.4 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/11%20-%20%DA%A9%D8%A8%D9%88%D8%AA%D8%B1%20%D8%AD%D9%85%D8%A7%DB%8C%D8%AA%E2%80%8C%D8%B4%D8%AF%D9%87.html> | ✅ 206 |
-| 165 | `yga-12` | مثلث | 2.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/12%20-%20%D9%85%D8%AB%D9%84%D8%AB.html> | ✅ 206 |
-| 166 | `yga-13` | استراحت به پشت | 3.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/13%20-%20%D8%A7%D8%B3%D8%AA%D8%B1%D8%A7%D8%AD%D8%AA%20%D8%A8%D9%87%20%D9%BE%D8%B4%D8%AA.html> | ✅ 206 |
-| 167 | `yga-14` | نیم‌قایق با زانوهای خم | 2.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/14%20-%20%D9%86%DB%8C%D9%85%E2%80%8C%D9%82%D8%A7%DB%8C%D9%82%20%D8%A8%D8%A7%20%D8%B2%D8%A7%D9%86%D9%88%D9%87%D8%A7%DB%8C%20%D8%AE%D9%85.html> | ✅ 206 |
-| 168 | `yga-15` | خم‌شدن به جلو ایستاده | 2.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/15%20-%20%D8%AE%D9%85%E2%80%8C%D8%B4%D8%AF%D9%86%20%D8%A8%D9%87%20%D8%AC%D9%84%D9%88%20%D8%A7%DB%8C%D8%B3%D8%AA%D8%A7%D8%AF%D9%87.html> | ✅ 206 |
+| 1 | `Amzshghh-01-speed-reading.html` | Amzshghh-01-speed-reading.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-01-speed-reading.html> | ❌ 404 |
+| 2 | `Amzshghh-02-handwriting.html` | Amzshghh-02-handwriting.html | 7 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-02-handwriting.html> | ❌ 404 |
+| 3 | `Amzshghh-03-touch-typing.html` | Amzshghh-03-touch-typing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-03-touch-typing.html> | ❌ 404 |
+| 4 | `Amzshghh-04-note-taking.html` | Amzshghh-04-note-taking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-04-note-taking.html> | ❌ 404 |
+| 5 | `Amzshghh-05-summarizing.html` | Amzshghh-05-summarizing.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-05-summarizing.html> | ❌ 404 |
+| 6 | `Amzshghh-06-debate-principles.html` | Amzshghh-06-debate-principles.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-06-debate-principles.html> | ❌ 404 |
+| 7 | `Amzshghh-07-logical-fallacies.html` | Amzshghh-07-logical-fallacies.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-07-logical-fallacies.html> | ❌ 404 |
+| 8 | `Amzshghh-08-public-speaking.html` | Amzshghh-08-public-speaking.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-08-public-speaking.html> | ❌ 404 |
+| 9 | `Amzshghh-09-speech-anxiety.html` | Amzshghh-09-speech-anxiety.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-09-speech-anxiety.html> | ❌ 404 |
+| 10 | `Amzshghh-10-formal-email.html` | Amzshghh-10-formal-email.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-10-formal-email.html> | ❌ 404 |
+| 11 | `Amzshghh-11-active-listening.html` | Amzshghh-11-active-listening.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-11-active-listening.html> | ❌ 404 |
+| 12 | `Amzshghh-12-mental-math.html` | Amzshghh-12-mental-math.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-12-mental-math.html> | ❌ 404 |
+| 13 | `Amzshghh-13-memory-boost.html` | Amzshghh-13-memory-boost.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-13-memory-boost.html> | ❌ 404 |
+| 14 | `Amzshghh-14-problem-solving.html` | Amzshghh-14-problem-solving.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-14-problem-solving.html> | ❌ 404 |
+| 15 | `Amzshghh-15-relationships.html` | Amzshghh-15-relationships.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-15-relationships.html> | ❌ 404 |
+| 16 | `Amzshghh-16-self-awareness.html` | Amzshghh-16-self-awareness.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-16-self-awareness.html> | ❌ 404 |
+| 17 | `Amzshghh-17-mental-traps.html` | Amzshghh-17-mental-traps.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-17-mental-traps.html> | ❌ 404 |
+| 18 | `Amzshghh-18-resilience.html` | Amzshghh-18-resilience.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-18-resilience.html> | ❌ 404 |
+| 19 | `Amzshghh-19-daily-planning.html` | Amzshghh-19-daily-planning.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-19-daily-planning.html> | ❌ 404 |
+| 20 | `Amzshghh-20-habit-building.html` | Amzshghh-20-habit-building.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-20-habit-building.html> | ❌ 404 |
+| 21 | `Amzshghh-21-study-space.html` | Amzshghh-21-study-space.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-21-study-space.html> | ❌ 404 |
+| 22 | `Amzshghh-22-windows-basics.html` | Amzshghh-22-windows-basics.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-22-windows-basics.html> | ❌ 404 |
+| 23 | `Amzshghh-23-ai-literacy.html` | Amzshghh-23-ai-literacy.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-23-ai-literacy.html> | ❌ 404 |
+| 24 | `Amzshghh-24-smart-search.html` | Amzshghh-24-smart-search.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-24-smart-search.html> | ❌ 404 |
+| 25 | `Amzshghh-25-online-safety.html` | Amzshghh-25-online-safety.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-25-online-safety.html> | ❌ 404 |
+| 26 | `Amzshghh-26-fake-news.html` | Amzshghh-26-fake-news.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-26-fake-news.html> | ❌ 404 |
+| 27 | `Amzshghh-27-teamwork.html` | Amzshghh-27-teamwork.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-27-teamwork.html> | ❌ 404 |
+| 28 | `Amzshghh-28-conflict-friends.html` | Amzshghh-28-conflict-friends.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-28-conflict-friends.html> | ❌ 404 |
+| 29 | `Amzshghh-29-saying-no.html` | Amzshghh-29-saying-no.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-29-saying-no.html> | ❌ 404 |
+| 30 | `Amzshghh-30-budgeting.html` | Amzshghh-30-budgeting.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-30-budgeting.html> | ❌ 404 |
+| 31 | `Amzshghh-31-needs-vs-wants.html` | Amzshghh-31-needs-vs-wants.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-31-needs-vs-wants.html> | ❌ 404 |
+| 32 | `Amzshghh-32-brainstorming.html` | Amzshghh-32-brainstorming.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-32-brainstorming.html> | ❌ 404 |
+| 33 | `Amzshghh-33-creative-thinking.html` | Amzshghh-33-creative-thinking.html | 5 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-33-creative-thinking.html> | ❌ 404 |
+| 34 | `Amzshghh-34-music-theory.html` | Amzshghh-34-music-theory.html | 6 KB | <https://c539776.parspack.net/common/mirror/Amzshghh-34-music-theory.html> | ❌ 404 |
+| 35 | `Background-music.html` | Background-music.html | 8.2 MB | <https://c539776.parspack.net/common/mirror/Background-music.html> | ❌ 404 |
+| 36 | `br-01.html` | br-01.html | 801 KB | <https://c539776.parspack.net/common/mirror/br-01.html> | ❌ 404 |
+| 37 | `br-02.html` | br-02.html | 659 KB | <https://c539776.parspack.net/common/mirror/br-02.html> | ❌ 404 |
+| 38 | `br-03.html` | br-03.html | 901 KB | <https://c539776.parspack.net/common/mirror/br-03.html> | ❌ 404 |
+| 39 | `br-04.html` | br-04.html | 774 KB | <https://c539776.parspack.net/common/mirror/br-04.html> | ❌ 404 |
+| 40 | `br-05.html` | br-05.html | 781 KB | <https://c539776.parspack.net/common/mirror/br-05.html> | ❌ 404 |
+| 41 | `br-06.html` | br-06.html | 722 KB | <https://c539776.parspack.net/common/mirror/br-06.html> | ❌ 404 |
+| 42 | `br-07.html` | br-07.html | 732 KB | <https://c539776.parspack.net/common/mirror/br-07.html> | ❌ 404 |
+| 43 | `br-08.html` | br-08.html | 803 KB | <https://c539776.parspack.net/common/mirror/br-08.html> | ❌ 404 |
+| 44 | `ex-01.html` | ex-01.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-01.html> | ❌ 404 |
+| 45 | `ex-02.html` | ex-02.html | 1.6 MB | <https://c539776.parspack.net/common/mirror/ex-02.html> | ❌ 404 |
+| 46 | `ex-03.html` | ex-03.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-03.html> | ❌ 404 |
+| 47 | `ex-04.html` | ex-04.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/ex-04.html> | ❌ 404 |
+| 48 | `ex-05.html` | ex-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/ex-05.html> | ❌ 404 |
+| 49 | `ex-06.html` | ex-06.html | 1.9 MB | <https://c539776.parspack.net/common/mirror/ex-06.html> | ❌ 404 |
+| 50 | `ex-07.html` | ex-07.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-07.html> | ❌ 404 |
+| 51 | `ex-08.html` | ex-08.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-08.html> | ❌ 404 |
+| 52 | `ex-09.html` | ex-09.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/ex-09.html> | ❌ 404 |
+| 53 | `ex-10.html` | ex-10.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-10.html> | ❌ 404 |
+| 54 | `ex-11.html` | ex-11.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/ex-11.html> | ❌ 404 |
+| 55 | `ex-12.html` | ex-12.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/ex-12.html> | ❌ 404 |
+| 56 | `ex-13.html` | ex-13.html | 3.2 MB | <https://c539776.parspack.net/common/mirror/ex-13.html> | ❌ 404 |
+| 57 | `ex-14.html` | ex-14.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/ex-14.html> | ❌ 404 |
+| 58 | `ex-15.html` | ex-15.html | 1.5 MB | <https://c539776.parspack.net/common/mirror/ex-15.html> | ❌ 404 |
+| 59 | `yg-01.html` | yg-01.html | 1.7 MB | <https://c539776.parspack.net/common/mirror/yg-01.html> | ❌ 404 |
+| 60 | `yg-02.html` | yg-02.html | 2.1 MB | <https://c539776.parspack.net/common/mirror/yg-02.html> | ❌ 404 |
+| 61 | `yg-03.html` | yg-03.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-03.html> | ❌ 404 |
+| 62 | `yg-04.html` | yg-04.html | 2.5 MB | <https://c539776.parspack.net/common/mirror/yg-04.html> | ❌ 404 |
+| 63 | `yg-05.html` | yg-05.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-05.html> | ❌ 404 |
+| 64 | `yg-06.html` | yg-06.html | 3.0 MB | <https://c539776.parspack.net/common/mirror/yg-06.html> | ❌ 404 |
+| 65 | `yg-07.html` | yg-07.html | 2.3 MB | <https://c539776.parspack.net/common/mirror/yg-07.html> | ❌ 404 |
+| 66 | `yg-08.html` | yg-08.html | 1.8 MB | <https://c539776.parspack.net/common/mirror/yg-08.html> | ❌ 404 |
+| 67 | `yg-09.html` | yg-09.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-09.html> | ❌ 404 |
+| 68 | `yg-10.html` | yg-10.html | 2.0 MB | <https://c539776.parspack.net/common/mirror/yg-10.html> | ❌ 404 |
+| 69 | `yg-11.html` | yg-11.html | 3.4 MB | <https://c539776.parspack.net/common/mirror/yg-11.html> | ❌ 404 |
+| 70 | `yg-12.html` | yg-12.html | 2.8 MB | <https://c539776.parspack.net/common/mirror/yg-12.html> | ❌ 404 |
+| 71 | `yg-13.html` | yg-13.html | 3.5 MB | <https://c539776.parspack.net/common/mirror/yg-13.html> | ❌ 404 |
+| 72 | `yg-14.html` | yg-14.html | 2.7 MB | <https://c539776.parspack.net/common/mirror/yg-14.html> | ❌ 404 |
+| 73 | `yg-15.html` | yg-15.html | 2.2 MB | <https://c539776.parspack.net/common/mirror/yg-15.html> | ❌ 404 |
+| 74 | `ryazif01d01.html` | ryazif01d01.html | 58 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d01.html> | ❌ 404 |
+| 75 | `ryazif01d02.html` | ryazif01d02.html | 61 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d02.html> | ❌ 404 |
+| 76 | `ryazif01d03.html` | ryazif01d03.html | 72 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d03.html> | ❌ 404 |
+| 77 | `ryazif01d04.html` | ryazif01d04.html | 62 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d04.html> | ❌ 404 |
+| 78 | `ryazif01review.html` | ryazif01review.html | 56 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif01review.html> | ❌ 404 |
+| 79 | `ryazif02d01.html` | ryazif02d01.html | 59 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d01.html> | ❌ 404 |
+| 80 | `ryazif02d02.html` | ryazif02d02.html | 50 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d02.html> | ❌ 404 |
+| 81 | `ryazif02d03.html` | ryazif02d03.html | 55 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d03.html> | ❌ 404 |
+| 82 | `ryazif02review.html` | ryazif02review.html | 48 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif02review.html> | ❌ 404 |
+| 83 | `ryazif03d01.html` | ryazif03d01.html | 55 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d01.html> | ❌ 404 |
+| 84 | `ryazif03d02.html` | ryazif03d02.html | 67 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d02.html> | ❌ 404 |
+| 85 | `ryazif03d03.html` | ryazif03d03.html | 41 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d03.html> | ❌ 404 |
+| 86 | `ryazif03d04.html` | ryazif03d04.html | 32 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d04.html> | ❌ 404 |
+| 87 | `ryazif03d05.html` | ryazif03d05.html | 43 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03d05.html> | ❌ 404 |
+| 88 | `ryazif03review.html` | ryazif03review.html | 52 KB | <https://c539776.parspack.net/grades/grade9/study/ryazif03review.html> | ❌ 404 |
+| 89 | `lab-09-biology.html` | Hamyar e Man - آزمایشگاه زیست پایه نهم | 457 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87/lab-09-biology.html> | ❌ 404 |
+| 90 | `lab-09-chemistry.html` | Hamyar e Man - آزمایشگاه شیمی پایه نهم | 252 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87/lab-09-chemistry.html> | ❌ 404 |
+| 91 | `lab-09-physics.html` | Hamyar e Man - آزمایشگاه فیزیک پایه نهم | 236 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87/lab-09-physics.html> | ❌ 404 |
+| 92 | `amz-01` | سرعت خواندن | 6.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/01-speed-reading.html> | ❌ 404 |
+| 93 | `amz-02` | خوشنویسی | 13.3 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/02-handwriting.html> | ❌ 404 |
+| 94 | `amz-03` | تایپ لمسی | 8.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/03-touch-typing.html> | ❌ 404 |
+| 95 | `amz-04` | یادداشت‌برداری | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/04-note-taking.html> | ❌ 404 |
+| 96 | `amz-05` | خلاصه‌نویسی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/05-summarizing.html> | ❌ 404 |
+| 97 | `amz-06` | اصول مناظره | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/06-debate-principles.html> | ❌ 404 |
+| 98 | `amz-07` | مغالطه‌های منطقی | 6 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/07-logical-fallacies.html> | ❌ 404 |
+| 99 | `amz-08` | فن بیان | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/08-public-speaking.html> | ❌ 404 |
+| 100 | `amz-09` | اضطراب سخنرانی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/09-public-speaking-anxiety.html> | ❌ 404 |
+| 101 | `amz-10` | ایمیل رسمی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/10-formal-email.html> | ❌ 404 |
+| 102 | `amz-11` | گوش دادن فعال | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/11-active-listening.html> | ❌ 404 |
+| 103 | `amz-12` | محاسبات ذهنی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/12-mental-math.html> | ❌ 404 |
+| 104 | `amz-13` | تقویت حافظه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/13-memory-boost.html> | ❌ 404 |
+| 105 | `amz-14` | حل مسئله | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/14-problem-solving.html> | ❌ 404 |
+| 106 | `amz-15` | مهارت روابط | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/15-relationships.html> | ❌ 404 |
+| 107 | `amz-16` | خودآگاهی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/16-self-awareness.html> | ❌ 404 |
+| 108 | `amz-17` | تله‌های ذهنی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/17-mental-traps.html> | ❌ 404 |
+| 109 | `amz-18` | انعطاف‌پذیری | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/18-resilience.html> | ❌ 404 |
+| 110 | `amz-19` | برنامه‌ریزی روزانه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/19-daily-planning.html> | ❌ 404 |
+| 111 | `amz-20` | ساخت عادت | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/20-habit-building.html> | ❌ 404 |
+| 112 | `amz-21` | فضای مطالعه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/21-study-space.html> | ❌ 404 |
+| 113 | `amz-22` | ویندوز (مبانی) | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/22-windows-basics.html> | ❌ 404 |
+| 114 | `amz-23` | سواد هوش مصنوعی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/23-ai-literacy.html> | ❌ 404 |
+| 115 | `amz-24` | جست‌وجوی هوشمند | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/24-smart-search.html> | ❌ 404 |
+| 116 | `amz-25` | ایمنی در فضای مجازی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/25-online-safety.html> | ❌ 404 |
+| 117 | `amz-26` | اخبار جعلی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html> | ❌ 404 |
+| 118 | `amz-27` | کار تیمی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/27-teamwork.html> | ❌ 404 |
+| 119 | `amz-28` | مدیریت اختلاف با دوستان | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/28-conflict-with-friends.html> | ❌ 404 |
+| 120 | `amz-29` | هنر نه گفتن | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/29-saying-no.html> | ❌ 404 |
+| 121 | `amz-30` | مدیریت بودجه | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/30-budgeting.html> | ❌ 404 |
+| 122 | `amz-31` | نیاز در برابر خواسته | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/31-needs-vs-wants.html> | ❌ 404 |
+| 123 | `amz-32` | طوفان فکری | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/32-brainstorming.html> | ❌ 404 |
+| 124 | `amz-33` | تفکر خلاق | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/33-creative-thinking.html> | ❌ 404 |
+| 125 | `amz-34` | تئوری موسیقی | 5 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/34-music-theory.html> | ❌ 404 |
+| 126 | `bre-01` | تنفس آرام هنگام قاعدگی | 802 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A2%D8%B1%D8%A7%D9%85%20%D9%87%D9%86%DA%AF%D8%A7%D9%85%20%D9%82%D8%A7%D8%B9%D8%AF%DA%AF%DB%8C.html> | ❌ 404 |
+| 127 | `bre-02` | تنفس آرام پیش از خواب | 732 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A2%D8%B1%D8%A7%D9%85%20%D9%BE%DB%8C%D8%B4%20%D8%A7%D8%B2%20%D8%AE%D9%88%D8%A7%D8%A8.html> | ❌ 404 |
+| 128 | `bre-03` | تنفس بینی متناوب | 901 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A8%DB%8C%D9%86%DB%8C%20%D9%85%D8%AA%D9%86%D8%A7%D9%88%D8%A8.html> | ❌ 404 |
+| 129 | `bre-04` | تنفس راحت | 659 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B1%D8%A7%D8%AD%D8%AA.html> | ❌ 404 |
+| 130 | `bre-05` | تنفس شمارشی پیش از امتحان | 721 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B4%D9%85%D8%A7%D8%B1%D8%B4%DB%8C%20%D9%BE%DB%8C%D8%B4%20%D8%A7%D8%B2%20%D8%A7%D9%85%D8%AA%D8%AD%D8%A7%D9%86.html> | ❌ 404 |
+| 131 | `bre-06` | تنفس شکمی | 800 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B4%DA%A9%D9%85%DB%8C.html> | ❌ 404 |
+| 132 | `bre-07` | تنفس شیر ملایم | 774 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%B4%DB%8C%D8%B1%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.html> | ❌ 404 |
+| 133 | `bre-08` | یک دقیقه توجه به نفس | 780 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%DB%8C%DA%A9%20%D8%AF%D9%82%DB%8C%D9%82%D9%87%20%D8%AA%D9%88%D8%AC%D9%87%20%D8%A8%D9%87%20%D9%86%D9%81%D8%B3.html> | ❌ 404 |
+| 134 | `tool-casio991.html` | CASIO fx-991CW ClassWiz | 51 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B1%DB%8C%D8%A7%D8%B6%DB%8C/tool-casio991.html> | ❌ 404 |
+| 135 | `tool-ti-nspire.html` | TI-Nspire CX II-T CAS | 64 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B1%DB%8C%D8%A7%D8%B6%DB%8C/tool-ti-nspire.html> | ❌ 404 |
+| 136 | `tool-calendar.html` | تقویم | 91 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B9%D9%85%D9%88%D9%85%DB%8C/tool-calendar.html> | ❌ 404 |
+| 137 | `tool-converter.html` | مبدل همه‌کاره مهندسی | 36 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B9%D9%85%D9%88%D9%85%DB%8C/tool-converter.html> | ❌ 404 |
+| 138 | `tool-dj120d.html` | DJ-120D Plus | 37 KB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AC%D8%B9%D8%A8%D9%87%20%D8%A7%D8%A8%D8%B2%D8%A7%D8%B1%20%D8%B9%D9%85%D9%88%D9%85%DB%8C/tool-dj120d.html> | ❌ 404 |
+| 139 | `spo-01` | اسکوات آرام | 1.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A7%D8%B3%DA%A9%D9%88%D8%A7%D8%AA%20%D8%A2%D8%B1%D8%A7%D9%85.html> | ❌ 404 |
+| 140 | `spo-02` | بالا بردن پاشنه‌ها | 1.6 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A8%D8%A7%D9%84%D8%A7%20%D8%A8%D8%B1%D8%AF%D9%86%20%D9%BE%D8%A7%D8%B4%D9%86%D9%87%E2%80%8C%D9%87%D8%A7.html> | ❌ 404 |
+| 141 | `spo-03` | جامپینگ‌جک بدون پرش | 2.1 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%AC%D8%A7%D9%85%D9%BE%DB%8C%D9%86%DA%AF%E2%80%8C%D8%AC%DA%A9%20%D8%A8%D8%AF%D9%88%D9%86%20%D9%BE%D8%B1%D8%B4.html> | ❌ 404 |
+| 142 | `spo-04` | سوپرمنِ دست‌وپای مخالف | 2.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%B3%D9%88%D9%BE%D8%B1%D9%85%D9%86%D9%90%20%D8%AF%D8%B3%D8%AA%E2%80%8C%D9%88%D9%BE%D8%A7%DB%8C%20%D9%85%D8%AE%D8%A7%D9%84%D9%81.html> | ❌ 404 |
+| 143 | `spo-05` | لانگز آرام | 3.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%84%D8%A7%D9%86%DA%AF%D8%B2%20%D8%A2%D8%B1%D8%A7%D9%85.html> | ❌ 404 |
+| 144 | `spo-06` | پلانک روی زانو | 1.9 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%BE%D9%84%D8%A7%D9%86%DA%A9%20%D8%B1%D9%88%DB%8C%20%D8%B2%D8%A7%D9%86%D9%88.html> | ❌ 404 |
+| 145 | `spo-07` | چرخش مچ دست و پا | 3.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%D9%85%DA%86%20%D8%AF%D8%B3%D8%AA%20%D9%88%20%D9%BE%D8%A7.html> | ❌ 404 |
+| 146 | `spo-08` | چرخش کوچک تنه | 1.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%DA%A9%D9%88%DA%86%DA%A9%20%D8%AA%D9%86%D9%87.html> | ❌ 404 |
+| 147 | `spo-09` | کرانچ ملایم | 1.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B1%D8%A7%D9%86%DA%86%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.html> | ❌ 404 |
+| 148 | `spo-10` | کشش ساق به دیوار | 2.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B3%D8%A7%D9%82%20%D8%A8%D9%87%20%D8%AF%DB%8C%D9%88%D8%A7%D8%B1.html> | ❌ 404 |
+| 149 | `spo-11` | کشش شانهٔ ضربدری | 2.1 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B4%D8%A7%D9%86%D9%87%D9%94%20%D8%B6%D8%B1%D8%A8%D8%AF%D8%B1%DB%8C.html> | ❌ 404 |
+| 150 | `spo-12` | کشش ملایم گردن | 1.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%D9%84%D8%A7%DB%8C%D9%85%20%DA%AF%D8%B1%D8%AF%D9%86.html> | ❌ 404 |
+| 151 | `spo-13` | کشش مچ و ساعد | 3.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%DA%86%20%D9%88%20%D8%B3%D8%A7%D8%B9%D8%AF.html> | ❌ 404 |
+| 152 | `spo-14` | کشش همسترینگ نشسته | 2.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%87%D9%85%D8%B3%D8%AA%D8%B1%DB%8C%D9%86%DA%AF%20%D9%86%D8%B4%D8%B3%D8%AA%D9%87.html> | ❌ 404 |
+| 153 | `spo-15` | کشش پروانه | 1.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%BE%D8%B1%D9%88%D8%A7%D9%86%D9%87.html> | ❌ 404 |
+| 154 | `yga-01` | حالت کودک | 1.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/01%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9.html> | ❌ 404 |
+| 155 | `yga-02` | گربه–گاو | 2.1 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/02%20-%20%DA%AF%D8%B1%D8%A8%D9%87%E2%80%93%DA%AF%D8%A7%D9%88.html> | ❌ 404 |
+| 156 | `yga-03` | سگ سر پایین | 2.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/03%20-%20%D8%B3%DA%AF%20%D8%B3%D8%B1%20%D9%BE%D8%A7%DB%8C%DB%8C%D9%86.html> | ❌ 404 |
+| 157 | `yga-04` | کبرای ملایم | 2.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/04%20-%20%DA%A9%D8%A8%D8%B1%D8%A7%DB%8C%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.html> | ❌ 404 |
+| 158 | `yga-05` | جنگجوی یک | 3.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/05%20-%20%D8%AC%D9%86%DA%AF%D8%AC%D9%88%DB%8C%20%DB%8C%DA%A9.html> | ❌ 404 |
+| 159 | `yga-06` | جنگجوی دو | 3.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/06%20-%20%D8%AC%D9%86%DA%AF%D8%AC%D9%88%DB%8C%20%D8%AF%D9%88.html> | ❌ 404 |
+| 160 | `yga-07` | درخت | 2.3 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/07%20-%20%D8%AF%D8%B1%D8%AE%D8%AA.html> | ❌ 404 |
+| 161 | `yga-08` | پل | 1.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/08%20-%20%D9%BE%D9%84.html> | ❌ 404 |
+| 162 | `yga-09` | چرخش نشسته | 2.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/09%20-%20%DA%86%D8%B1%D8%AE%D8%B4%20%D9%86%D8%B4%D8%B3%D8%AA%D9%87.html> | ❌ 404 |
+| 163 | `yga-10` | حالت کودک با زانوهای باز | 2.0 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/10%20-%20%D8%AD%D8%A7%D9%84%D8%AA%20%DA%A9%D9%88%D8%AF%DA%A9%20%D8%A8%D8%A7%20%D8%B2%D8%A7%D9%86%D9%88%D9%87%D8%A7%DB%8C%20%D8%A8%D8%A7%D8%B2.html> | ❌ 404 |
+| 164 | `yga-11` | کبوتر حمایت‌شده | 3.4 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/11%20-%20%DA%A9%D8%A8%D9%88%D8%AA%D8%B1%20%D8%AD%D9%85%D8%A7%DB%8C%D8%AA%E2%80%8C%D8%B4%D8%AF%D9%87.html> | ❌ 404 |
+| 165 | `yga-12` | مثلث | 2.8 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/12%20-%20%D9%85%D8%AB%D9%84%D8%AB.html> | ❌ 404 |
+| 166 | `yga-13` | استراحت به پشت | 3.5 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/13%20-%20%D8%A7%D8%B3%D8%AA%D8%B1%D8%A7%D8%AD%D8%AA%20%D8%A8%D9%87%20%D9%BE%D8%B4%D8%AA.html> | ❌ 404 |
+| 167 | `yga-14` | نیم‌قایق با زانوهای خم | 2.7 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/14%20-%20%D9%86%DB%8C%D9%85%E2%80%8C%D9%82%D8%A7%DB%8C%D9%82%20%D8%A8%D8%A7%20%D8%B2%D8%A7%D9%86%D9%88%D9%87%D8%A7%DB%8C%20%D8%AE%D9%85.html> | ❌ 404 |
+| 168 | `yga-15` | خم‌شدن به جلو ایستاده | 2.2 MB | <https://c539776.parspack.net/html%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/15%20-%20%D8%AE%D9%85%E2%80%8C%D8%B4%D8%AF%D9%86%20%D8%A8%D9%87%20%D8%AC%D9%84%D9%88%20%D8%A7%DB%8C%D8%B3%D8%AA%D8%A7%D8%AF%D9%87.html> | ❌ 404 |
 
 ## JPG — 56 فایل
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `ex-01.jpg` | ex-01.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-01.jpg> | ✅ 206 |
-| 2 | `ex-02.jpg` | ex-02.jpg | 67 KB | <https://c539776.parspack.net/common/mirror/ex-02.jpg> | ✅ 206 |
-| 3 | `ex-03.jpg` | ex-03.jpg | 71 KB | <https://c539776.parspack.net/common/mirror/ex-03.jpg> | ✅ 206 |
-| 4 | `ex-04.jpg` | ex-04.jpg | 77 KB | <https://c539776.parspack.net/common/mirror/ex-04.jpg> | ✅ 206 |
-| 5 | `ex-05.jpg` | ex-05.jpg | 60 KB | <https://c539776.parspack.net/common/mirror/ex-05.jpg> | ✅ 206 |
-| 6 | `ex-06.jpg` | ex-06.jpg | 52 KB | <https://c539776.parspack.net/common/mirror/ex-06.jpg> | ✅ 206 |
-| 7 | `ex-07.jpg` | ex-07.jpg | 90 KB | <https://c539776.parspack.net/common/mirror/ex-07.jpg> | ✅ 206 |
-| 8 | `ex-08.jpg` | ex-08.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-08.jpg> | ✅ 206 |
-| 9 | `ex-09.jpg` | ex-09.jpg | 64 KB | <https://c539776.parspack.net/common/mirror/ex-09.jpg> | ✅ 206 |
-| 10 | `ex-10.jpg` | ex-10.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-10.jpg> | ✅ 206 |
-| 11 | `ex-11.jpg` | ex-11.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-11.jpg> | ✅ 206 |
-| 12 | `ex-12.jpg` | ex-12.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-12.jpg> | ✅ 206 |
-| 13 | `ex-13.jpg` | ex-13.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-13.jpg> | ✅ 206 |
-| 14 | `ex-14.jpg` | ex-14.jpg | 73 KB | <https://c539776.parspack.net/common/mirror/ex-14.jpg> | ✅ 206 |
-| 15 | `ex-15.jpg` | ex-15.jpg | 74 KB | <https://c539776.parspack.net/common/mirror/ex-15.jpg> | ✅ 206 |
-| 16 | `yg-01.jpg` | yg-01.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-01.jpg> | ✅ 206 |
-| 17 | `yg-02.jpg` | yg-02.jpg | 142 KB | <https://c539776.parspack.net/common/mirror/yg-02.jpg> | ✅ 206 |
-| 18 | `yg-03.jpg` | yg-03.jpg | 149 KB | <https://c539776.parspack.net/common/mirror/yg-03.jpg> | ✅ 206 |
-| 19 | `yg-04.jpg` | yg-04.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-04.jpg> | ✅ 206 |
-| 20 | `yg-07.jpg` | yg-07.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-07.jpg> | ✅ 206 |
-| 21 | `yg-08.jpg` | yg-08.jpg | 156 KB | <https://c539776.parspack.net/common/mirror/yg-08.jpg> | ✅ 206 |
-| 22 | `yg-09.jpg` | yg-09.jpg | 144 KB | <https://c539776.parspack.net/common/mirror/yg-09.jpg> | ✅ 206 |
-| 23 | `yg-10.jpg` | yg-10.jpg | 145 KB | <https://c539776.parspack.net/common/mirror/yg-10.jpg> | ✅ 206 |
-| 24 | `yg-11.jpg` | yg-11.jpg | 160 KB | <https://c539776.parspack.net/common/mirror/yg-11.jpg> | ✅ 206 |
-| 25 | `yg-12.jpg` | yg-12.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-12.jpg> | ✅ 206 |
-| 26 | `yg-13.jpg` | yg-13.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-13.jpg> | ✅ 206 |
-| 27 | `yg-14.jpg` | yg-14.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-14.jpg> | ✅ 206 |
-| 28 | `yg-15.jpg` | yg-15.jpg | 164 KB | <https://c539776.parspack.net/common/mirror/yg-15.jpg> | ✅ 206 |
-| 29 | `isp-01` | اسکوات آرام | 59 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A7%D8%B3%DA%A9%D9%88%D8%A7%D8%AA%20%D8%A2%D8%B1%D8%A7%D9%85.jpg> | ✅ 206 |
-| 30 | `isp-02` | بالا بردن پاشنه‌ها | 67 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A8%D8%A7%D9%84%D8%A7%20%D8%A8%D8%B1%D8%AF%D9%86%20%D9%BE%D8%A7%D8%B4%D9%86%D9%87%E2%80%8C%D9%87%D8%A7.jpg> | ✅ 206 |
-| 31 | `isp-03` | جامپینگ‌جک بدون پرش | 71 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%AC%D8%A7%D9%85%D9%BE%DB%8C%D9%86%DA%AF%E2%80%8C%D8%AC%DA%A9%20%D8%A8%D8%AF%D9%88%D9%86%20%D9%BE%D8%B1%D8%B4.jpg> | ✅ 206 |
-| 32 | `isp-04` | سوپرمنِ دست‌وپای مخالف | 77 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%B3%D9%88%D9%BE%D8%B1%D9%85%D9%86%D9%90%20%D8%AF%D8%B3%D8%AA%E2%80%8C%D9%88%D9%BE%D8%A7%DB%8C%20%D9%85%D8%AE%D8%A7%D9%84%D9%81.jpg> | ✅ 206 |
-| 33 | `isp-05` | لانگز آرام | 60 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%84%D8%A7%D9%86%DA%AF%D8%B2%20%D8%A2%D8%B1%D8%A7%D9%85.jpg> | ✅ 206 |
-| 34 | `isp-06` | پلانک روی زانو | 52 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%BE%D9%84%D8%A7%D9%86%DA%A9%20%D8%B1%D9%88%DB%8C%20%D8%B2%D8%A7%D9%86%D9%88.jpg> | ✅ 206 |
-| 35 | `isp-07` | چرخش مچ دست و پا | 90 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%D9%85%DA%86%20%D8%AF%D8%B3%D8%AA%20%D9%88%20%D9%BE%D8%A7.jpg> | ✅ 206 |
-| 36 | `isp-08` | چرخش کوچک تنه | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%DA%A9%D9%88%DA%86%DA%A9%20%D8%AA%D9%86%D9%87.jpg> | ✅ 206 |
-| 37 | `isp-09` | کرانچ ملایم | 64 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B1%D8%A7%D9%86%DA%86%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.jpg> | ✅ 206 |
-| 38 | `isp-10` | کشش ساق به دیوار | 59 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B3%D8%A7%D9%82%20%D8%A8%D9%87%20%D8%AF%DB%8C%D9%88%D8%A7%D8%B1.jpg> | ✅ 206 |
-| 39 | `isp-11` | کشش شانهٔ ضربدری | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B4%D8%A7%D9%86%D9%87%D9%94%20%D8%B6%D8%B1%D8%A8%D8%AF%D8%B1%DB%8C.jpg> | ✅ 206 |
-| 40 | `isp-12` | کشش ملایم گردن | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%D9%84%D8%A7%DB%8C%D9%85%20%DA%AF%D8%B1%D8%AF%D9%86.jpg> | ✅ 206 |
-| 41 | `isp-13` | کشش مچ و ساعد | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%DA%86%20%D9%88%20%D8%B3%D8%A7%D8%B9%D8%AF.jpg> | ✅ 206 |
-| 42 | `isp-14` | کشش همسترینگ نشسته | 73 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%87%D9%85%D8%B3%D8%AA%D8%B1%DB%8C%D9%86%DA%AF%20%D9%86%D8%B4%D8%B3%D8%AA%D9%87.jpg> | ✅ 206 |
-| 43 | `isp-15` | کشش پروانه | 74 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%BE%D8%B1%D9%88%D8%A7%D9%86%D9%87.jpg> | ✅ 206 |
-| 44 | `iyg-01` | 01 | 135 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/01.jpg> | ✅ 206 |
-| 45 | `iyg-02` | 02 | 142 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/02.jpg> | ✅ 206 |
-| 46 | `iyg-03` | 03 | 149 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/03.jpg> | ✅ 206 |
-| 47 | `iyg-04` | 04 | 135 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/04.jpg> | ✅ 206 |
-| 48 | `iyg-05` | 07 | 161 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/07.jpg> | ✅ 206 |
-| 49 | `iyg-06` | 08 | 156 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/08.jpg> | ✅ 206 |
-| 50 | `iyg-07` | 09 | 144 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/09.jpg> | ✅ 206 |
-| 51 | `iyg-08` | 10 | 145 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/10.jpg> | ✅ 206 |
-| 52 | `iyg-09` | 11 | 160 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/11.jpg> | ✅ 206 |
-| 53 | `iyg-10` | 12 | 158 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/12.jpg> | ✅ 206 |
-| 54 | `iyg-11` | 13 | 161 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/13.jpg> | ✅ 206 |
-| 55 | `iyg-12` | 14 | 158 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/14.jpg> | ✅ 206 |
-| 56 | `iyg-13` | 15 | 164 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/15.jpg> | ✅ 206 |
+| 1 | `ex-01.jpg` | ex-01.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-01.jpg> | ❌ 404 |
+| 2 | `ex-02.jpg` | ex-02.jpg | 67 KB | <https://c539776.parspack.net/common/mirror/ex-02.jpg> | ❌ 404 |
+| 3 | `ex-03.jpg` | ex-03.jpg | 71 KB | <https://c539776.parspack.net/common/mirror/ex-03.jpg> | ❌ 404 |
+| 4 | `ex-04.jpg` | ex-04.jpg | 77 KB | <https://c539776.parspack.net/common/mirror/ex-04.jpg> | ❌ 404 |
+| 5 | `ex-05.jpg` | ex-05.jpg | 60 KB | <https://c539776.parspack.net/common/mirror/ex-05.jpg> | ❌ 404 |
+| 6 | `ex-06.jpg` | ex-06.jpg | 52 KB | <https://c539776.parspack.net/common/mirror/ex-06.jpg> | ❌ 404 |
+| 7 | `ex-07.jpg` | ex-07.jpg | 90 KB | <https://c539776.parspack.net/common/mirror/ex-07.jpg> | ❌ 404 |
+| 8 | `ex-08.jpg` | ex-08.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-08.jpg> | ❌ 404 |
+| 9 | `ex-09.jpg` | ex-09.jpg | 64 KB | <https://c539776.parspack.net/common/mirror/ex-09.jpg> | ❌ 404 |
+| 10 | `ex-10.jpg` | ex-10.jpg | 59 KB | <https://c539776.parspack.net/common/mirror/ex-10.jpg> | ❌ 404 |
+| 11 | `ex-11.jpg` | ex-11.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-11.jpg> | ❌ 404 |
+| 12 | `ex-12.jpg` | ex-12.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-12.jpg> | ❌ 404 |
+| 13 | `ex-13.jpg` | ex-13.jpg | 85 KB | <https://c539776.parspack.net/common/mirror/ex-13.jpg> | ❌ 404 |
+| 14 | `ex-14.jpg` | ex-14.jpg | 73 KB | <https://c539776.parspack.net/common/mirror/ex-14.jpg> | ❌ 404 |
+| 15 | `ex-15.jpg` | ex-15.jpg | 74 KB | <https://c539776.parspack.net/common/mirror/ex-15.jpg> | ❌ 404 |
+| 16 | `yg-01.jpg` | yg-01.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-01.jpg> | ❌ 404 |
+| 17 | `yg-02.jpg` | yg-02.jpg | 142 KB | <https://c539776.parspack.net/common/mirror/yg-02.jpg> | ❌ 404 |
+| 18 | `yg-03.jpg` | yg-03.jpg | 149 KB | <https://c539776.parspack.net/common/mirror/yg-03.jpg> | ❌ 404 |
+| 19 | `yg-04.jpg` | yg-04.jpg | 135 KB | <https://c539776.parspack.net/common/mirror/yg-04.jpg> | ❌ 404 |
+| 20 | `yg-07.jpg` | yg-07.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-07.jpg> | ❌ 404 |
+| 21 | `yg-08.jpg` | yg-08.jpg | 156 KB | <https://c539776.parspack.net/common/mirror/yg-08.jpg> | ❌ 404 |
+| 22 | `yg-09.jpg` | yg-09.jpg | 144 KB | <https://c539776.parspack.net/common/mirror/yg-09.jpg> | ❌ 404 |
+| 23 | `yg-10.jpg` | yg-10.jpg | 145 KB | <https://c539776.parspack.net/common/mirror/yg-10.jpg> | ❌ 404 |
+| 24 | `yg-11.jpg` | yg-11.jpg | 160 KB | <https://c539776.parspack.net/common/mirror/yg-11.jpg> | ❌ 404 |
+| 25 | `yg-12.jpg` | yg-12.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-12.jpg> | ❌ 404 |
+| 26 | `yg-13.jpg` | yg-13.jpg | 161 KB | <https://c539776.parspack.net/common/mirror/yg-13.jpg> | ❌ 404 |
+| 27 | `yg-14.jpg` | yg-14.jpg | 158 KB | <https://c539776.parspack.net/common/mirror/yg-14.jpg> | ❌ 404 |
+| 28 | `yg-15.jpg` | yg-15.jpg | 164 KB | <https://c539776.parspack.net/common/mirror/yg-15.jpg> | ❌ 404 |
+| 29 | `isp-01` | اسکوات آرام | 59 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A7%D8%B3%DA%A9%D9%88%D8%A7%D8%AA%20%D8%A2%D8%B1%D8%A7%D9%85.jpg> | ❌ 404 |
+| 30 | `isp-02` | بالا بردن پاشنه‌ها | 67 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%A8%D8%A7%D9%84%D8%A7%20%D8%A8%D8%B1%D8%AF%D9%86%20%D9%BE%D8%A7%D8%B4%D9%86%D9%87%E2%80%8C%D9%87%D8%A7.jpg> | ❌ 404 |
+| 31 | `isp-03` | جامپینگ‌جک بدون پرش | 71 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%AC%D8%A7%D9%85%D9%BE%DB%8C%D9%86%DA%AF%E2%80%8C%D8%AC%DA%A9%20%D8%A8%D8%AF%D9%88%D9%86%20%D9%BE%D8%B1%D8%B4.jpg> | ❌ 404 |
+| 32 | `isp-04` | سوپرمنِ دست‌وپای مخالف | 77 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D8%B3%D9%88%D9%BE%D8%B1%D9%85%D9%86%D9%90%20%D8%AF%D8%B3%D8%AA%E2%80%8C%D9%88%D9%BE%D8%A7%DB%8C%20%D9%85%D8%AE%D8%A7%D9%84%D9%81.jpg> | ❌ 404 |
+| 33 | `isp-05` | لانگز آرام | 60 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%84%D8%A7%D9%86%DA%AF%D8%B2%20%D8%A2%D8%B1%D8%A7%D9%85.jpg> | ❌ 404 |
+| 34 | `isp-06` | پلانک روی زانو | 52 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%D9%BE%D9%84%D8%A7%D9%86%DA%A9%20%D8%B1%D9%88%DB%8C%20%D8%B2%D8%A7%D9%86%D9%88.jpg> | ❌ 404 |
+| 35 | `isp-07` | چرخش مچ دست و پا | 90 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%D9%85%DA%86%20%D8%AF%D8%B3%D8%AA%20%D9%88%20%D9%BE%D8%A7.jpg> | ❌ 404 |
+| 36 | `isp-08` | چرخش کوچک تنه | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%86%D8%B1%D8%AE%D8%B4%20%DA%A9%D9%88%DA%86%DA%A9%20%D8%AA%D9%86%D9%87.jpg> | ❌ 404 |
+| 37 | `isp-09` | کرانچ ملایم | 64 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B1%D8%A7%D9%86%DA%86%20%D9%85%D9%84%D8%A7%DB%8C%D9%85.jpg> | ❌ 404 |
+| 38 | `isp-10` | کشش ساق به دیوار | 59 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B3%D8%A7%D9%82%20%D8%A8%D9%87%20%D8%AF%DB%8C%D9%88%D8%A7%D8%B1.jpg> | ❌ 404 |
+| 39 | `isp-11` | کشش شانهٔ ضربدری | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D8%B4%D8%A7%D9%86%D9%87%D9%94%20%D8%B6%D8%B1%D8%A8%D8%AF%D8%B1%DB%8C.jpg> | ❌ 404 |
+| 40 | `isp-12` | کشش ملایم گردن | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%D9%84%D8%A7%DB%8C%D9%85%20%DA%AF%D8%B1%D8%AF%D9%86.jpg> | ❌ 404 |
+| 41 | `isp-13` | کشش مچ و ساعد | 85 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%85%DA%86%20%D9%88%20%D8%B3%D8%A7%D8%B9%D8%AF.jpg> | ❌ 404 |
+| 42 | `isp-14` | کشش همسترینگ نشسته | 73 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%87%D9%85%D8%B3%D8%AA%D8%B1%DB%8C%D9%86%DA%AF%20%D9%86%D8%B4%D8%B3%D8%AA%D9%87.jpg> | ❌ 404 |
+| 43 | `isp-15` | کشش پروانه | 74 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%D8%AD%D8%B1%DA%A9%D8%A7%D8%AA%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C/%DA%A9%D8%B4%D8%B4%20%D9%BE%D8%B1%D9%88%D8%A7%D9%86%D9%87.jpg> | ❌ 404 |
+| 44 | `iyg-01` | 01 | 135 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/01.jpg> | ❌ 404 |
+| 45 | `iyg-02` | 02 | 142 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/02.jpg> | ❌ 404 |
+| 46 | `iyg-03` | 03 | 149 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/03.jpg> | ❌ 404 |
+| 47 | `iyg-04` | 04 | 135 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/04.jpg> | ❌ 404 |
+| 48 | `iyg-05` | 07 | 161 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/07.jpg> | ❌ 404 |
+| 49 | `iyg-06` | 08 | 156 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/08.jpg> | ❌ 404 |
+| 50 | `iyg-07` | 09 | 144 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/09.jpg> | ❌ 404 |
+| 51 | `iyg-08` | 10 | 145 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/10.jpg> | ❌ 404 |
+| 52 | `iyg-09` | 11 | 160 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/11.jpg> | ❌ 404 |
+| 53 | `iyg-10` | 12 | 158 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/12.jpg> | ❌ 404 |
+| 54 | `iyg-11` | 13 | 161 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/13.jpg> | ❌ 404 |
+| 55 | `iyg-12` | 14 | 158 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/14.jpg> | ❌ 404 |
+| 56 | `iyg-13` | 15 | 164 KB | <https://c539776.parspack.net/%D8%B9%DA%A9%D8%B3%20%D9%87%D8%A7/%DB%8C%D9%88%DA%AF%D8%A7/15.jpg> | ❌ 404 |
 
 ## MP3 — 8 فایل
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `ryazif01d01.mp3` | ryazif01d01.mp3 | 22.8 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d01.mp3> | ✅ 206 |
-| 2 | `ryazif01d02.mp3` | ryazif01d02.mp3 | 26.6 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d02.mp3> | ✅ 206 |
-| 3 | `ryazif01d03.mp3` | ryazif01d03.mp3 | 28.9 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d03.mp3> | ✅ 206 |
-| 4 | `ryazif01d04.mp3` | ryazif01d04.mp3 | 27.7 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d04.mp3> | ✅ 206 |
-| 5 | `ryazif01review.mp3` | ryazif01review.mp3 | 21.4 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01review.mp3> | ✅ 206 |
-| 6 | `ryazif02d01.mp3` | ryazif02d01.mp3 | 30.7 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d01.mp3> | ✅ 206 |
-| 7 | `ryazif02d02.mp3` | ryazif02d02.mp3 | 23.6 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d02.mp3> | ✅ 206 |
-| 8 | `ryazif02d03.mp3` | ryazif02d03.mp3 | 31.8 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d03.mp3> | ✅ 206 |
+| 1 | `ryazif01d01.mp3` | ryazif01d01.mp3 | 22.8 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d01.mp3> | ❌ 404 |
+| 2 | `ryazif01d02.mp3` | ryazif01d02.mp3 | 26.6 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d02.mp3> | ❌ 404 |
+| 3 | `ryazif01d03.mp3` | ryazif01d03.mp3 | 28.9 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d03.mp3> | ❌ 404 |
+| 4 | `ryazif01d04.mp3` | ryazif01d04.mp3 | 27.7 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01d04.mp3> | ❌ 404 |
+| 5 | `ryazif01review.mp3` | ryazif01review.mp3 | 21.4 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif01review.mp3> | ❌ 404 |
+| 6 | `ryazif02d01.mp3` | ryazif02d01.mp3 | 30.7 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d01.mp3> | ❌ 404 |
+| 7 | `ryazif02d02.mp3` | ryazif02d02.mp3 | 23.6 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d02.mp3> | ❌ 404 |
+| 8 | `ryazif02d03.mp3` | ryazif02d03.mp3 | 31.8 MB | <https://c539776.parspack.net/grades/grade9/study/ryazif02d03.mp3> | ❌ 404 |
 
 ## PDF — 28 فایل
 
 | # | شناسه | عنوان | حجم | نشانی واقعی | وضعیت |
 |---:|---|---|---:|---|---|
-| 1 | `C905-fehrest.pdf` | فهرست ریاضی نهم | 144 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905-fehrest.pdf> | ✅ 206 |
-| 2 | `C905f01d01.pdf` | ریاضی نهم — فصل 01، درس 01 | 151 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d01.pdf> | ✅ 206 |
-| 3 | `C905f01d02.pdf` | ریاضی نهم — فصل 01، درس 02 | 227 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d02.pdf> | ✅ 206 |
-| 4 | `C905f01d03.pdf` | ریاضی نهم — فصل 01، درس 03 | 221 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d03.pdf> | ✅ 206 |
-| 5 | `C905f01d04.pdf` | ریاضی نهم — فصل 01، درس 04 | 245 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d04.pdf> | ✅ 206 |
-| 6 | `C905f02d01.pdf` | ریاضی نهم — فصل 02، درس 01 | 252 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d01.pdf> | ✅ 206 |
-| 7 | `C905f02d02.pdf` | ریاضی نهم — فصل 02، درس 02 | 311 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d02.pdf> | ✅ 206 |
-| 8 | `C905f02d03.pdf` | ریاضی نهم — فصل 02، درس 03 | 278 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d03.pdf> | ✅ 206 |
-| 9 | `C905f03d01.pdf` | ریاضی نهم — فصل 03، درس 01 | 122 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d01.pdf> | ✅ 206 |
-| 10 | `C905f03d02.pdf` | ریاضی نهم — فصل 03، درس 02 | 257 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d02.pdf> | ✅ 206 |
-| 11 | `C905f03d03.pdf` | ریاضی نهم — فصل 03، درس 03 | 226 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d03.pdf> | ✅ 206 |
-| 12 | `C905f03d04.pdf` | ریاضی نهم — فصل 03، درس 04 | 198 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d04.pdf> | ✅ 206 |
-| 13 | `C905f03d05.pdf` | ریاضی نهم — فصل 03، درس 05 | 354 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d05.pdf> | ✅ 206 |
-| 14 | `C905f04d01.pdf` | ریاضی نهم — فصل 04، درس 01 | 273 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d01.pdf> | ✅ 206 |
-| 15 | `C905f04d02.pdf` | ریاضی نهم — فصل 04، درس 02 | 159 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d02.pdf> | ✅ 206 |
-| 16 | `C905f04d03.pdf` | ریاضی نهم — فصل 04، درس 03 | 233 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d03.pdf> | ✅ 206 |
-| 17 | `C905f04d04.pdf` | ریاضی نهم — فصل 04، درس 04 | 372 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d04.pdf> | ✅ 206 |
-| 18 | `C905f05d01.pdf` | ریاضی نهم — فصل 05، درس 01 | 251 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d01.pdf> | ✅ 206 |
-| 19 | `C905f05d02.pdf` | ریاضی نهم — فصل 05، درس 02 | 197 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d02.pdf> | ✅ 206 |
-| 20 | `C905f05d03.pdf` | ریاضی نهم — فصل 05، درس 03 | 414 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d03.pdf> | ✅ 206 |
-| 21 | `C905f06d01.pdf` | ریاضی نهم — فصل 06، درس 01 | 215 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d01.pdf> | ✅ 206 |
-| 22 | `C905f06d02.pdf` | ریاضی نهم — فصل 06، درس 02 | 269 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d02.pdf> | ✅ 206 |
-| 23 | `C905f06d03.pdf` | ریاضی نهم — فصل 06، درس 03 | 2.0 MB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d03.pdf> | ✅ 206 |
-| 24 | `C905f07d01.pdf` | ریاضی نهم — فصل 07، درس 01 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d01.pdf> | ✅ 206 |
-| 25 | `C905f07d03.pdf` | ریاضی نهم — فصل 07، درس 03 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d03.pdf> | ✅ 206 |
-| 26 | `C905f08d01.pdf` | C905f08d01.pdf | 183 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d01.pdf> | ✅ 206 |
-| 27 | `C905f08d02.pdf` | C905f08d02.pdf | 274 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d02.pdf> | ✅ 206 |
-| 28 | `C905f08d03.pdf` | C905f08d03.pdf | 282 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d03.pdf> | ✅ 206 |
+| 1 | `C905-fehrest.pdf` | فهرست ریاضی نهم | 144 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905-fehrest.pdf> | ❌ 404 |
+| 2 | `C905f01d01.pdf` | ریاضی نهم — فصل 01، درس 01 | 151 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d01.pdf> | ❌ 404 |
+| 3 | `C905f01d02.pdf` | ریاضی نهم — فصل 01، درس 02 | 227 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d02.pdf> | ❌ 404 |
+| 4 | `C905f01d03.pdf` | ریاضی نهم — فصل 01، درس 03 | 221 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d03.pdf> | ❌ 404 |
+| 5 | `C905f01d04.pdf` | ریاضی نهم — فصل 01، درس 04 | 245 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f01d04.pdf> | ❌ 404 |
+| 6 | `C905f02d01.pdf` | ریاضی نهم — فصل 02، درس 01 | 252 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d01.pdf> | ❌ 404 |
+| 7 | `C905f02d02.pdf` | ریاضی نهم — فصل 02، درس 02 | 311 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d02.pdf> | ❌ 404 |
+| 8 | `C905f02d03.pdf` | ریاضی نهم — فصل 02، درس 03 | 278 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f02d03.pdf> | ❌ 404 |
+| 9 | `C905f03d01.pdf` | ریاضی نهم — فصل 03، درس 01 | 122 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d01.pdf> | ❌ 404 |
+| 10 | `C905f03d02.pdf` | ریاضی نهم — فصل 03، درس 02 | 257 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d02.pdf> | ❌ 404 |
+| 11 | `C905f03d03.pdf` | ریاضی نهم — فصل 03، درس 03 | 226 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d03.pdf> | ❌ 404 |
+| 12 | `C905f03d04.pdf` | ریاضی نهم — فصل 03، درس 04 | 198 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d04.pdf> | ❌ 404 |
+| 13 | `C905f03d05.pdf` | ریاضی نهم — فصل 03، درس 05 | 354 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f03d05.pdf> | ❌ 404 |
+| 14 | `C905f04d01.pdf` | ریاضی نهم — فصل 04، درس 01 | 273 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d01.pdf> | ❌ 404 |
+| 15 | `C905f04d02.pdf` | ریاضی نهم — فصل 04، درس 02 | 159 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d02.pdf> | ❌ 404 |
+| 16 | `C905f04d03.pdf` | ریاضی نهم — فصل 04، درس 03 | 233 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d03.pdf> | ❌ 404 |
+| 17 | `C905f04d04.pdf` | ریاضی نهم — فصل 04، درس 04 | 372 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f04d04.pdf> | ❌ 404 |
+| 18 | `C905f05d01.pdf` | ریاضی نهم — فصل 05، درس 01 | 251 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d01.pdf> | ❌ 404 |
+| 19 | `C905f05d02.pdf` | ریاضی نهم — فصل 05، درس 02 | 197 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d02.pdf> | ❌ 404 |
+| 20 | `C905f05d03.pdf` | ریاضی نهم — فصل 05، درس 03 | 414 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f05d03.pdf> | ❌ 404 |
+| 21 | `C905f06d01.pdf` | ریاضی نهم — فصل 06، درس 01 | 215 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d01.pdf> | ❌ 404 |
+| 22 | `C905f06d02.pdf` | ریاضی نهم — فصل 06، درس 02 | 269 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d02.pdf> | ❌ 404 |
+| 23 | `C905f06d03.pdf` | ریاضی نهم — فصل 06، درس 03 | 2.0 MB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f06d03.pdf> | ❌ 404 |
+| 24 | `C905f07d01.pdf` | ریاضی نهم — فصل 07، درس 01 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d01.pdf> | ❌ 404 |
+| 25 | `C905f07d03.pdf` | ریاضی نهم — فصل 07، درس 03 | 242 KB | <https://c539776.parspack.net/PDF%20%D9%87%D8%A7/C905f07d03.pdf> | ❌ 404 |
+| 26 | `C905f08d01.pdf` | C905f08d01.pdf | 183 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d01.pdf> | ❌ 404 |
+| 27 | `C905f08d02.pdf` | C905f08d02.pdf | 274 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d02.pdf> | ❌ 404 |
+| 28 | `C905f08d03.pdf` | C905f08d03.pdf | 282 KB | <https://c539776.parspack.net/grades/grade9/study/C905f08d03.pdf> | ❌ 404 |
 
 ## مقایسهٔ APK با سورس مخزن
 
-✅ هر نشانی HTML/PDF که سورس می‌سازد، دقیقاً در APK هم هست.
+فقط در سورس: 379 — فقط در APK: 196
+
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%209/%D8%B2%DB%8C%D8%B3%D8%AA/Hamyar%20e%20Man%20-%20%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%20%D8%B2%DB%8C%D8%B3%D8%AA%20%D9%BE%D8%A7%DB%8C%D9%87%20%D9%86%D9%87%D9%85.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%209/%D8%B4%DB%8C%D9%85%DB%8C/Hamyar%20e%20Man%20-%20%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%20%D8%B4%DB%8C%D9%85%DB%8C%20%D9%BE%D8%A7%DB%8C%D9%87%20%D9%86%D9%87%D9%85.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%209/%D9%81%DB%8C%D8%B2%DB%8C%DA%A9/Hamyar%20e%20Man%20-%20%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87%20%D9%81%DB%8C%D8%B2%DB%8C%DA%A9%20%D9%BE%D8%A7%DB%8C%D9%87%20%D9%86%D9%87%D9%85.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/01-speed-reading.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/02-handwriting.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/03-touch-typing.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/04-note-taking.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/05-summarizing.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/06-debate-principles.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/07-logical-fallacies.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/08-public-speaking.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/09-public-speaking-anxiety.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/10-formal-email.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/11-active-listening.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/12-mental-math.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/13-memory-boost.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/14-problem-solving.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/15-relationships.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/16-self-awareness.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/17-mental-traps.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/18-resilience.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/19-daily-planning.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/20-habit-building.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/21-study-space.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/22-windows-basics.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/23-ai-literacy.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/24-smart-search.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/25-online-safety.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/26-fake-news.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/27-teamwork.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/28-conflict-with-friends.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/29-saying-no.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/30-budgeting.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/31-needs-vs-wants.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/32-brainstorming.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/33-creative-thinking.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DA%AF%D8%A7%D9%87/34-music-theory.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A7%D8%B3%DA%A9%D9%88%D8%A7%D8%AA%20%D8%A2%D8%B1%D8%A7%D9%85.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%A8%D8%A7%D9%84%D8%A7%20%D8%A8%D8%B1%D8%AF%D9%86%20%D9%BE%D8%A7%D8%B4%D9%86%D9%87%E2%80%8C%D9%87%D8%A7.html`
+- `https://c539776.parspack.net/Bucket/Html-files/%D8%AA%D9%85%D8%B1%DB%8C%D9%86%D8%A7%D8%AA%20%D8%AA%D9%86%D9%81%D8%B3%DB%8C/%D8%AA%D9%86%D9%81%D8%B3%20%D8%A2%D8%B1%D8%A7%D9%85%20%D9%87%D9%86%DA%AF%D8%A7%D9%85%20%D9%82%D8%A7%D8%B9%D8%AF%DA%AF%DB%8C.html`
