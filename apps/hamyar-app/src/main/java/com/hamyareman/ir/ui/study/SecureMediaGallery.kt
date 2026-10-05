@@ -77,8 +77,6 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
-import com.hamyareman.ir.ui.components.DesignAsset
-import com.hamyareman.ir.ui.components.RealisticDeskFrame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -212,6 +210,7 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
                 }
             }
         }
+    }
     }
 
     selected?.let { item ->
