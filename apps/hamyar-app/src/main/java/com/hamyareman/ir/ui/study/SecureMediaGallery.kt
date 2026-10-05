@@ -98,7 +98,7 @@ private data class SecureMediaItem(
 
 /** آلبوم داخلیِ فضای امن؛ فقط عکس، ویدیو و صوت را می‌پذیرد. */
 @Composable
-fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
+fun SecureMediaGalleryScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val container = LocalAppContainer.current
     val store = remember { LocalStore(context, "hamyar_secure_media") }
@@ -172,20 +172,6 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                // دفتر خاطرات همیشه مثل یک کتاب واقعی، کنار بقیهٔ رسانه‌ها دیده می‌شود.
-                item(key = "private-diary-book") {
-                    Card(Modifier.fillMaxWidth().clickable(onClick = onOpenDiary)) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            com.hamyareman.ir.ui.components.RemoteDesignImage(
-                                key = diaryCover,
-                                contentDescription = "دفتر خاطرات",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
-                            )
-                            Text("دفتر خاطرات", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(5.dp))
-                        }
-                    }
-                }
                 items(media, key = { it.id }) { item ->
                     Card(Modifier.fillMaxWidth().clickable { selected = item }) {
                         Box(
