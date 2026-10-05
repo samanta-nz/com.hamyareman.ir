@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +60,9 @@ import com.hamyareman.ir.ui.components.DesignAsset
 import com.hamyareman.ir.ui.components.RealisticBookPager
 import com.hamyareman.ir.ui.components.BookStage
 import com.hamyareman.ir.ui.components.BookOpening
+import com.hamyareman.ir.ui.components.BookSkin
+import com.hamyareman.ir.ui.components.BookSkinCover
+import com.hamyareman.ir.ui.components.BookSkinSpread
 import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
@@ -72,6 +78,9 @@ import java.util.UUID
 
 private const val POETRY_STORE = "hamyar_poetry_book"
 private const val POEMS_KEY = "poems"
+
+/** جلد، کتاب باز و ورق دفتر شعر: PNG دوربری‌شدهٔ چرم قهوه‌ای (بوم مشترک ۱۰۵۹×۱۴۸۶). */
+private val poetrySkin = BookSkin.LeatherBrown
 
 private data class Poem(
     val id: String,
@@ -446,6 +455,43 @@ private fun PoetryHemistichCell(
     )
 }
 
+/** یک «واحد» روی ورق: یک بیت دو مصراعی (یک سطر) یا یک سطر آزاد (یک یا چند سطر خط‌دار). */
+private data class PoemUnit(val rows: Int, val first: String, val second: String?, val key: String)
+
+private fun buildPoemUnits(text: String, twoCol: Boolean): List<PoemUnit> {
+    val flat = text.replace("\r", "")
+        .split(NOTEBOOK_PAGE_SEPARATOR)
+        .flatMap { it.split('\n') }
+        .map { it.trimEnd() }
+    if (twoCol) {
+        return flat.filter { it.isNotBlank() }.chunked(2).mapIndexed { i, pair ->
+            PoemUnit(1, pair.getOrNull(0).orEmpty(), pair.getOrNull(1).orEmpty(), "pair-$i")
+        }
+    }
+    return flat.mapIndexed { i, line ->
+        val rows = ((line.length + 35) / 36).coerceAtLeast(1)
+        PoemUnit(rows, line, null, "line-$i")
+    }
+}
+
+/** چیدن واحدها روی صفحه‌ها بر اساس ظرفیت خط‌های ورق؛ صفحهٔ اول دو سطر برای عنوان و فاصله کم می‌کند. */
+private fun paginatePoem(units: List<PoemUnit>, lineCount: Int): List<List<PoemUnit>> {
+    val pages = mutableListOf<MutableList<PoemUnit>>()
+    var current = mutableListOf<PoemUnit>()
+    var free = lineCount - 2
+    for (u in units) {
+        if (u.rows > free && current.isNotEmpty()) {
+            pages += current
+            current = mutableListOf()
+            free = lineCount
+        }
+        current += u
+        free -= u.rows
+    }
+    pages += current
+    return pages
+}
+
 @Composable
 private fun PoetryViewer(
     poem: Poem,
@@ -453,8 +499,11 @@ private fun PoetryViewer(
     onEdit: () -> Unit,
     onClose: () -> Unit,
 ) {
-    val lines = text.split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf("") }
-    var activePage by remember(poem.id, lines.size) { mutableStateOf(0) }
+    val twoCol = twoHemistich(poem.type)
+    val pages = remember(text, poem.type) {
+        paginatePoem(buildPoemUnits(text, twoCol), poetrySkin.lineCount)
+    }
+    var activePage by remember(poem.id, pages.size) { mutableStateOf(0) }
     var selectedPair by remember(poem.id) { mutableStateOf<String?>(null) }
 
     Dialog(
@@ -465,77 +514,78 @@ private fun PoetryViewer(
             Box(Modifier.fillMaxSize()) {
                 BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
                     RealisticBookPager(
-                        pageCount = lines.size.coerceAtLeast(1),
+                        pageCount = pages.size + 1,
                         initialPage = 0,
                         viewerGesture = true,
+                        skinned = true,
                         onPageChanged = { activePage = it },
                         modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = 10.dp),
-                    ) { page, _ ->
-                        NotebookPaper(
-                            header = if (page == 0) poem.title.ifBlank { poem.type } else "",
-                            headerAlign = oppositeTextAlign(notebookTextAlignFromWire(poem.alignment)),
-                            showVerticalGuides = false,
-                        ) {
-                            if (twoHemistich(poem.type)) {
-                                val all = lines.getOrElse(page) { "" }
-                                    .split('\n')
-                                    .filter { it.isNotBlank() }
-                                val pairs = all.chunked(2)
-                                Column(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(start = 62.dp, end = 62.dp, top = 4.dp, bottom = 30.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                                ) {
-                                    pairs.forEachIndexed { idx, pair ->
-                                        val pairKey = page.toString() + ":" + idx
-                                        Row(
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(5.dp))
-                                                .background(
-                                                    if (selectedPair == pairKey) Color(0x183B82F6)
-                                                    else Color.Transparent,
-                                                )
-                                                .clickable {
-                                                    selectedPair = if (selectedPair == pairKey) null else pairKey
+                    ) { index, _ ->
+                        if (index == 0) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                BookSkinCover(poetrySkin, Modifier.fillMaxWidth(), "دفتر شعر من")
+                            }
+                        } else {
+                            val page = index - 1
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                BookSkinSpread(poetrySkin) { line, _ ->
+                                    val lh = with(LocalDensity.current) { line.toSp() }
+                                    val style = TextStyle(
+                                        fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+                                        fontSize = lh * 0.62f,
+                                        lineHeight = lh,
+                                        color = Color(0xFF18384F),
+                                        textAlign = TextAlign.Right,
+                                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+                                        lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
+                                            alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Bottom,
+                                            trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
+                                        ),
+                                    )
+                                    Column(Modifier.fillMaxSize()) {
+                                        if (page == 0) {
+                                            // عنوان در سطر اول (تراز معکوس)، یک سطر فاصله، بعد شعر.
+                                            Text(
+                                                poem.title.ifBlank { poem.type },
+                                                Modifier.fillMaxWidth(),
+                                                style = style.copy(
+                                                    textAlign = oppositeTextAlign(notebookTextAlignFromWire(poem.alignment)),
+                                                ),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                            Spacer(Modifier.height(line))
+                                        }
+                                        pages.getOrElse(page) { emptyList() }.forEach { unit ->
+                                            if (unit.second != null) {
+                                                Row(
+                                                    Modifier
+                                                        .fillMaxWidth()
+                                                        .height(line)
+                                                        .background(
+                                                            if (selectedPair == unit.key) Color(0x183B82F6)
+                                                            else Color.Transparent,
+                                                        )
+                                                        .clickable {
+                                                            selectedPair = if (selectedPair == unit.key) null else unit.key
+                                                        },
+                                                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                                ) {
+                                                    Text(unit.first, Modifier.weight(1f), style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                    Text(unit.second, Modifier.weight(1f), style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                                 }
-                                                .padding(vertical = 5.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(18.dp),
-                                        ) {
-                                            Text(
-                                                pair.getOrNull(0).orEmpty(),
-                                                Modifier.weight(1f),
-                                                textAlign = TextAlign.Right,
-                                                color = Color(0xFF18384F),
-                                                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                                fontSize = 18.sp,
-                                                lineHeight = 24.sp,
-                                            )
-                                            Text(
-                                                pair.getOrNull(1).orEmpty(),
-                                                Modifier.weight(1f),
-                                                textAlign = TextAlign.Right,
-                                                color = Color(0xFF18384F),
-                                                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                                fontSize = 18.sp,
-                                                lineHeight = 24.sp,
-                                            )
+                                            } else {
+                                                Text(
+                                                    unit.first,
+                                                    Modifier.fillMaxWidth().height(line * unit.rows),
+                                                    style = style.copy(textAlign = notebookTextAlignFromWire(poem.alignment)),
+                                                    maxLines = unit.rows,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                )
+                                            }
                                         }
                                     }
                                 }
-                            } else {
-                                Text(
-                                    lines.getOrElse(page) { "" },
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(start = 62.dp, end = 62.dp, top = 4.dp, bottom = 30.dp),
-                                    textAlign = notebookTextAlignFromWire(poem.alignment),
-                                    color = Color(0xFF18384F),
-                                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                    fontSize = 18.sp,
-                                    lineHeight = 24.sp,
-                                )
                             }
                         }
                     }
@@ -558,7 +608,7 @@ private fun PoetryViewer(
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            if (lines.size > 1) (activePage + 1).toString() + "/" + lines.size.toString() else "",
+                            if (pages.size > 1 && activePage > 0) activePage.toString() + "/" + pages.size.toString() else "",
                             color = Color(0xFFB8C6D8),
                             style = MaterialTheme.typography.labelSmall,
                         )
