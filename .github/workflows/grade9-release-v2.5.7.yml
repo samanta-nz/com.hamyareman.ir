@@ -2,9 +2,6 @@ name: Grade 9 — Release v2.5.7 (forced, unified)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - New-graphic
 
 permissions:
   contents: write
