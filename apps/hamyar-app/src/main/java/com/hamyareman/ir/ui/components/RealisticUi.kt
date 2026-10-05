@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -138,7 +139,7 @@ fun RealisticCoverTile(
                 shape,
             )
             .padding(if (selected) 3.dp else 1.dp)
-            .androidx.compose.foundation.clickable(onClick = onClick),
+            .clickable(onClick = onClick),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             RemoteDesignImage(
