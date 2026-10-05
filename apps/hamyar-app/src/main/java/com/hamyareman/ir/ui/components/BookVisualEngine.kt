@@ -182,7 +182,7 @@ fun RealisticBookPage(
                 )
                 .border(
                     if (isCover) 1.1.dp else 0.7.dp,
-                    if (isCover) Color(0x88B88A4A) else Color(0x4D675B4A),
+                    if (isCover) themeTertiary.copy(alpha = 0.55f) else themePrimary.copy(alpha = 0.18f),
                     RoundedCornerShape(radius),
                 ),
         ) {
@@ -213,7 +213,7 @@ fun RealisticBookPage(
                 repeat(if (isCover) 2 else 6) { i ->
                     val p = i * (if (isCover) 2.2f else 1.55f)
                     drawLine(
-                        color = if (isCover) Color(0x66B88A4A) else Color(0x55907E67),
+                        color = if (isCover) themeTertiary.copy(alpha = 0.42f) else themePrimary.copy(alpha = 0.28f),
                         start = Offset(edgeX + edgeDirection * p, 5f),
                         end = Offset(edgeX + edgeDirection * p, size.height - 6f),
                         strokeWidth = if (isCover) 1.05f else 0.72f,
@@ -223,13 +223,13 @@ fun RealisticBookPage(
                 if (isCover) {
                     val spineX = if (offset >= 0f) 8f else size.width - 8f
                     drawLine(
-                        color = Color(0x447BA6C9),
+                        color = themePrimary.copy(alpha = 0.28f),
                         start = Offset(spineX, 4f),
                         end = Offset(spineX, size.height - 4f),
                         strokeWidth = 4.5f,
                     )
                     drawLine(
-                        color = Color(0x33FFFFFF),
+                        color = Color.White.copy(alpha = 0.20f),
                         start = Offset(spineX + if (offset >= 0f) 3f else -3f, 6f),
                         end = Offset(spineX + if (offset >= 0f) 3f else -3f, size.height - 6f),
                         strokeWidth = 1.0f,
