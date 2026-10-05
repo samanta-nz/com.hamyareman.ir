@@ -258,7 +258,12 @@ fun ZahraNavHost() {
             composable(Screen.Meds.route) { MedsScreen { nav.popBackStack() } }
             composable(Screen.SleepLog.route) { SleepLogScreen { nav.popBackStack() } }
             composable(Screen.ReadingCorner.route) { ReadingCornerScreen { nav.popBackStack() } }
-            composable(Screen.Appearance.route) { AppearanceScreen { nav.popBackStack() } }
+            composable(Screen.Appearance.route) {
+                AppearanceScreen(
+                    onBack = { nav.popBackStack() },
+                    onHelp = { nav.navigate(Screen.UserGuide.of("appearance")) },
+                )
+            }
             composable(Screen.CycleCal.route) { com.hamyareman.ir.ui.cycle.CycleCalScreen { nav.popBackStack() } }
             composable(Screen.CycleLog.route) { com.hamyareman.ir.ui.cycle.CycleLogScreen { nav.popBackStack() } }
             composable(Screen.CycleToday.route) { com.hamyareman.ir.ui.cycle.CycleTodayScreen(nav) { nav.popBackStack() } }
@@ -302,7 +307,7 @@ fun ZahraNavHost() {
             composable(Screen.Diary.route) {
                 SafeContentGuard(onLocked = {
                     nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Diary.route) { inclusive = true } }
-                }) { DiaryScreen { nav.popBackStack() } }
+                }) { DiaryScreen(onBack = { nav.popBackStack() }, onHelp = { nav.navigate(Screen.UserGuide.of("diary")) }) }
             }
             composable(Screen.Notebooks.route) {
                 SafeContentGuard(onLocked = {
@@ -312,7 +317,7 @@ fun ZahraNavHost() {
             composable(Screen.Poetry.route) {
                 SafeContentGuard(onLocked = {
                     nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Poetry.route) { inclusive = true } }
-                }) { PoetryBookScreen { nav.popBackStack() } }
+                }) { PoetryBookScreen(onBack = { nav.popBackStack() }, onHelp = { nav.navigate(Screen.UserGuide.of("poetry")) }) }
             }
             composable(Screen.SafeFreeWriting.route) {
                 SafeContentGuard(onLocked = {
@@ -325,6 +330,7 @@ fun ZahraNavHost() {
                 }) {
                     SecureMediaGalleryScreen(
                         onBack = { nav.popBackStack() },
+                        onHelp = { nav.navigate(Screen.UserGuide.of("album")) },
                     )
                 }
             }
