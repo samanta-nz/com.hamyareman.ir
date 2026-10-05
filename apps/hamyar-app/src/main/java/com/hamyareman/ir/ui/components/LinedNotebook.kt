@@ -92,8 +92,9 @@ private fun metrics(widthDp: Float, heightDp: Float): NotebookLayoutMetrics {
 }
 
 private fun cutText(text: String, capacity: Int): List<String> {
-    val normalized = text.replace("\r", "").trim()
-    if (normalized.isBlank()) return listOf("")
+    // فاصلهٔ تایپی بخشی از محتوای صفحه است؛ trim کردن متن در هر تغییر، Space را می‌بلعد.
+    val normalized = text.replace("\r", "")
+    if (normalized.isEmpty()) return listOf("")
     if (normalized.length <= capacity) return listOf(normalized)
     val out = mutableListOf<String>()
     var rest = normalized
@@ -111,7 +112,7 @@ private fun cutText(text: String, capacity: Int): List<String> {
 private fun decodePages(value: String, capacity: Int): List<String> {
     val normalized = value.replace("\r", "")
     if (normalized.contains(NOTEBOOK_PAGE_SEPARATOR)) {
-        return normalized.split(NOTEBOOK_PAGE_SEPARATOR).map { it.trim() }.ifEmpty { listOf("") }
+        return normalized.split(NOTEBOOK_PAGE_SEPARATOR).map { it }.ifEmpty { listOf("") }
     }
     return cutText(normalized, capacity)
 }
