@@ -1,11 +1,11 @@
 # New-graphic validation report
 
-- Commit: `bd81bbacc85b3fc6e14e64d59b1a17fcd9e32569`
+- Commit: `cd7a813a62a0796586886eccfb0ad3f33030cfc4`
 - Branch: `New-graphic`
 - Static acceptance: `success`
 - Compile + unit tests: `success`
 - Lint: `success`
-- Assemble release APK: `cancelled`
+- Assemble release APK: `success`
 
 ## Compile errors (first 60 matching lines)
 ```
@@ -21,4 +21,4 @@
 ```
 
 ## Changed files
-M	.github/workflows/arena-release-grade9-v2.5.4.yml
+A	.github/workflows/arena-release-grade9-v2.5.6.yml
