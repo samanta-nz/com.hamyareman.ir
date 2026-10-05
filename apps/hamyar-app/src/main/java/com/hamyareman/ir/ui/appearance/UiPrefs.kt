@@ -102,6 +102,15 @@ class UiPrefs(context: Context) {
         store.putString(KEY_SIZE, textSizeOffset.toString())
     }
 
+    fun resetFontTheme() {
+        val reset = FontTheme()
+        fontTheme = reset
+        store.putString(KEY_FONT_THEME, reset.toJson().toString())
+        fontKey = ""
+        store.putString(KEY_FONT, "")
+        AppTypography.apply(reset)
+    }
+
     fun updateFontTheme(value: FontTheme) {
         val facesChanged =
             value.greetingFont != fontTheme.greetingFont ||
