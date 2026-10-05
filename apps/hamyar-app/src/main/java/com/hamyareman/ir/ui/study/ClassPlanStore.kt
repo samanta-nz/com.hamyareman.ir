@@ -545,14 +545,20 @@ object ClassPlanStore {
         StudyActivity.add(ctx, packId, "school_exam", "گزارش امتحان مدرسه ($iso): $text")
     }
 
+    /**
+     * زمان بیداری/آماده‌شدن کاملاً مشتق از دو ورودی بالادستی است:
+     * ساعت حضور همان شیفت و مدت آماده‌سازی پیش از حرکت.
+     * بنابراین با تغییر هرکدام، مقدار نمایشی و آلارم واقعی هر دو شیفت بلافاصله تغییر می‌کنند.
+     */
     fun wakeHourMinute(snap: Snapshot, shift: Shift): Pair<Int, Int> {
-        return if (shift == Shift.MORNING) {
-            var m = snap.morningHour * 60 + snap.morningMinute - snap.wakeLeadMin
-            if (m < 0) m = 0
-            (m / 60) to (m % 60)
+        val arrivalMin = if (shift == Shift.MORNING) {
+            snap.morningHour * 60 + snap.morningMinute
         } else {
-            snap.noonHour to snap.noonMinute
+            snap.noonHour * 60 + snap.noonMinute
         }
+        val lead = snap.wakeLeadMin.coerceIn(0, 12 * 60)
+        val m = (arrivalMin - lead).coerceAtLeast(0)
+        return (m / 60) to (m % 60)
     }
 
     fun sleepText(snap: Snapshot, shift: Shift): String =
