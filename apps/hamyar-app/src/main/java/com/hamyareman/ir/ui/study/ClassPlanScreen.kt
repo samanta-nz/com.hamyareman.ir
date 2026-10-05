@@ -819,6 +819,19 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
             },
             dismissButton = { TextButton(onClick = { shiftSettings = false }) { Text("بستن") } })
     }
+    if (derivedHelp) {
+        AlertDialog(
+            onDismissRequest = { derivedHelp = false },
+            title = { Text("آلارم خودکار") },
+            text = {
+                Text(
+                    "این دو زمان عمداً قابل تنظیم مستقیم نیستند. زمان بیداری از ساعت حضور همان شیفت منهای مدت آماده‌سازی قبل از حرکت به دست می‌آید. بنابراین تغییر ساعت ورود شیفت یا مدت آماده‌سازی، زمان بیداری همان شیفت و آلارم واقعی آن را هم‌زمان تغییر می‌دهد.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = { TextButton(onClick = { derivedHelp = false }) { Text("متوجه شدم") } },
+        )
+    }
     if (settingsOpen) {
         val sounds = remember(ctx) { AlarmRinger.deviceSounds(ctx) }
         var soundUri by remember { mutableStateOf(AlarmRinger.savedSound(ctx)) }
