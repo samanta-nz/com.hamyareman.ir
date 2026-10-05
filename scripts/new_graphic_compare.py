@@ -131,7 +131,7 @@ def render(chks):
         if c.status != 'PASS':
             lines.append(f'- **{c.status}** — {c.title}: {c.evidence}')
     lines += ['', '## Changed paths in branch delta', '']
-    lines.extend(f'- {bt}{p}{bt}' for p in changed)
+    lines.extend(f'- `{p}`' for p in changed)
     if not changed:
         lines.append('- No branch-specific paths detected against main.')
     lines += ['', '## Scope guard', '', 'این گزارش فقط روی New-graphic تولید می‌شود و هیچ push یا merge به main انجام نمی‌دهد.', '']
