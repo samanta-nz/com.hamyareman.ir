@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 
 private val Leather = Color(0xFF3A2A20)
 private val Gold = Color(0xFFB88A4A)
+private val Paper = Color(0xFFF7F0E3)
 
 @Composable
 fun RealisticDeskFrame(
@@ -163,7 +164,7 @@ fun RealisticCoverTile(
 fun RealisticIconAction(
     contentDescription: String,
     onClick: () -> Unit,
-    icon: ImageVector = androidx.compose.material.icons.Icons.Outlined.AutoStories,
+    icon: ImageVector = androidx.compose.material.icons.Icons.Default.MenuBook,
     tint: Color = Color.White,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
