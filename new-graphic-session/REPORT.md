@@ -1,6 +1,6 @@
 # New-graphic validation report
 
-- Commit: `94c206303bbbbdfd51f2bda20cd70da51aabf725`
+- Commit: `66262668fe1e6a1c08b66604c4e0460839c19636`
 - Branch: `New-graphic`
 - Static acceptance: `success`
 - Compile + unit tests: `success`
@@ -21,4 +21,4 @@
 ```
 
 ## Changed files
-M	.github/workflows/new-graphic-validate.yml
+M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/HomeScreen.kt
