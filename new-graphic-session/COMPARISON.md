@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T08:12:58.926351+00:00
+- Generated: 2026-10-05T16:44:10.159599+00:00
 - Branch: New-graphic
-- HEAD: cd7a813a62a0796586886eccfb0ad3f33030cfc4
+- HEAD: 9d04b1a110545b295fb9923363f18af07ae1648f
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	178
+- rev-list main...HEAD: 2	186
 
 ## Summary
 
@@ -47,12 +47,14 @@
 - `RELEASES.md`
 - `apps/hamyar-app/build.gradle.kts`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookSkin.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookVisualEngine.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/RealisticUi.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/CalendarOccasions.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/HomeScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/WaterQuickCard.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/hub/HubComponents.kt`
@@ -60,8 +62,10 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/SafeSpaceScreens.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/SafeSpaceSecurity.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanStore.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SchoolAlarmStore.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.4.md"`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.5.md"`
