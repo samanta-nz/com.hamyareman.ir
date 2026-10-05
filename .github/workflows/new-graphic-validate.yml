@@ -1,0 +1,106 @@
+name: New-graphic validation
+
+on:
+  push:
+    branches: [New-graphic]
+    paths-ignore:
+      - "new-graphic-session/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: new-graphic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout New-graphic
+        uses: actions/checkout@v4
+        with:
+          ref: New-graphic
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate and compress design fallbacks
+        run: |
+          python -m pip install --disable-pip-version-check Pillow
+          python scripts/new_graphic_generate_assets.py
+
+      - name: Static graphic acceptance checks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          checks = {
+              "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/PinLockGate.kt": ["PatternLockGrid", "LockVariant.SafeSpace", "PatternFeedback.Success"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt": ["headerOnFirstLine", "RealisticBookPage", "NOTEBOOK_PAGE_SEPARATOR"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt": ["RealisticDeskFrame", "DIARY_DESK", "LinedNotebookInput"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt": ["RealisticDeskFrame", "POETRY_BG", "showVerticalGuides = false"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt": ["RealisticDeskFrame", "ALBUM_BG", "GridCells.Adaptive"],
+          }
+          errors = []
+          for path, tokens in checks.items():
+              source = Path(path).read_text(encoding="utf-8")
+              for token in tokens:
+                  if token not in source:
+                      errors.append(f"missing {token} in {path}")
+          if errors:
+              raise SystemExit("\n".join(errors))
+          print("graphic acceptance checks: PASS")
+          PY
+
+      - name: Compile and unit test
+        id: build
+        continue-on-error: true
+        run: ./gradlew --console=plain --stacktrace :hamyar-app:compileP09DebugKotlin :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest
+
+      - name: Write session report
+        if: always()
+        run: |
+          mkdir -p new-graphic-session
+          REPORT="new-graphic-session/REPORT-${GITHUB_SHA}.md"
+          {
+            echo "# New-graphic validation report"
+            echo
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            echo "- Build conclusion: \`${{ steps.build.outcome }}\`"
+            echo
+            echo "## Generated assets"
+            find apps/hamyar-app/src/main/assets/lock apps/hamyar-app/src/main/assets/diary apps/hamyar-app/src/main/assets/poetry apps/hamyar-app/src/main/assets/album -type f -name '*.jpg' -printf '%p %s bytes\\n' | sort
+            echo
+            echo "## Changed files"
+            git diff-tree --no-commit-id --name-status -r "${GITHUB_SHA}^" "${GITHUB_SHA}" || true
+          } > "$REPORT"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$REPORT"
+          git commit -m "[new-graphic-report] record validation ${GITHUB_SHA}" || true
+          git push origin HEAD:New-graphic || true
+
+      - name: Fail after report
+        if: steps.build.outcome != 'success'
+        run: exit 1
