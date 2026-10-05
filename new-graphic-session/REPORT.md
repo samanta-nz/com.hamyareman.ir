@@ -1,15 +1,24 @@
 # New-graphic validation report
 
-- Commit: `653dde7683a3689a6e52b80a29f9d7f7678dbabc`
+- Commit: `8e9ec66c1221b9125faab3438949b4813a8fc95c`
 - Branch: `New-graphic`
 - Static acceptance: `success`
-- Compile + unit tests: `cancelled`
-- Lint: `skipped`
-- Assemble release APK: `skipped`
+- Compile + unit tests: `success`
+- Lint: `success`
+- Assemble release APK: `success`
 
 ## Compile errors (first 60 matching lines)
 ```
 ```
 
+## Lint errors (first 60 matching lines)
+```
+```
+
+## Assemble errors (first 60 matching lines)
+```
+> Task :hamyar-app:checkP09ReleaseDuplicateClasses
+```
+
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt
+M	.release-trigger/grade9-v2.5.7
