@@ -1,11 +1,24 @@
 # New-graphic validation report
 
-- Commit: `2121823b04d870619b6603226a9d73f1b1d7bacb`
+- Commit: `94c206303bbbbdfd51f2bda20cd70da51aabf725`
 - Branch: `New-graphic`
-- Static acceptance: `skipped`
-- Compile + unit tests: `skipped`
-- Lint: `skipped`
-- Assemble release APK: `skipped`
+- Static acceptance: `success`
+- Compile + unit tests: `success`
+- Lint: `success`
+- Assemble release APK: `success`
+
+## Compile errors (first 60 matching lines)
+```
+```
+
+## Lint errors (first 60 matching lines)
+```
+```
+
+## Assemble errors (first 60 matching lines)
+```
+> Task :hamyar-app:checkP09ReleaseDuplicateClasses
+```
 
 ## Changed files
-M	scripts/new_graphic_generate_assets.py
+M	.github/workflows/new-graphic-validate.yml
