@@ -77,6 +77,8 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
+import com.hamyareman.ir.ui.components.DesignAsset
+import com.hamyareman.ir.ui.components.RealisticDeskFrame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -147,8 +149,13 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onOpenDiary: () -> Unit) {
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar("آلبوم شخصی", onBack)
+    RealisticDeskFrame(
+        backgroundKey = DesignAsset.ALBUM_BG,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            AppTopBar("آلبوم شخصی", onBack)
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("عکس، ویدیو و صوت؛ فایل‌ها در پوشهٔ خصوصی برنامه می‌مانند.", style = MaterialTheme.typography.bodySmall)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
