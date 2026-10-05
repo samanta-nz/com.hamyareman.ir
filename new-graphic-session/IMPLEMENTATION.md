@@ -20,3 +20,12 @@ Scope: visual/product implementation only on branch `New-graphic`.
 
 ## Visual asset note
 The raster backgrounds are reproducible from `scripts/new_graphic_generate_assets.py`. CI generates them into the Android asset tree before compilation, so APK builds contain local fallbacks even when the remote bucket is unavailable.
+
+## اجرای فعلی نشست
+- پوستهٔ کنترل‌های عمومی اپ (`AppTopBar`، `PrimaryButton`، `InlineButton`، `SectionCard`) با رنگ/عمق/سایهٔ تم Hamyar یکپارچه شد و API/ساختار صفحات تغییر نکرد.
+- سطوح واقع‌گرایانهٔ دفترها و جلدها تقویت شد: نور، بافت، لبه، stack واقعی ورق‌ها و افکت خم/چرخش ورق.
+- ویرایش شعرهای دو-مصراعی از صفر به دو ناحیهٔ مستقل با تورق RTL بازسازی شد و خطوط عمودی برای شعر حفظ نمی‌شود.
+- چیدمان عکس دفتر خاطرات اکنون `TOP / BOTTOM / NONE` را در خروجی واقعی صفحه رعایت می‌کند و تصویر تصادفی روی متن نمی‌افتد.
+- مولد بک‌گراندها با texture/vignette/atmosphere تکرارپذیر و فشرده‌سازی JPEG به‌روزرسانی شد.
+- workflow مستقل `new-graphic-parspack-sync.yml` و ابزار `upload_graphic_assets.py` برای تولید، آپلود، skip بر اساس SHA-256 و تأیید خواندن عمومی با مسیر `https://c539776.parspack.net/assets/...` اضافه شد.
+- گزارش‌های اجرایی فقط زیر `new-graphic-session/` نگهداری می‌شوند.
