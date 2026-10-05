@@ -5,6 +5,7 @@ on:
     branches: [New-graphic]
     paths-ignore:
       - "new-graphic-session/**"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,7 +17,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-22.04
-    timeout-minutes: 35
+    timeout-minutes: 60
     steps:
       - name: Checkout New-graphic
         uses: actions/checkout@v4
@@ -59,12 +60,12 @@ jobs:
           checks = {
               "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/PinLockGate.kt": ["PatternLockGrid", "LockVariant", "SafeSpace", "PatternFeedback.Success"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt": ["headerOnFirstLine", "RealisticBookPage", "NOTEBOOK_PAGE_SEPARATOR"],
-              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt": ["RealisticDeskFrame", "DIARY_DESK", "LinedNotebookInput"],
-              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt": ["RealisticDeskFrame", "POETRY_BG", "showVerticalGuides = false", "PoetryHemistichEditor"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt": ["RealisticDeskFrame", "DIARY_DESK", "LinedNotebookInput", "COVER_NAVY_FLORAL_INSIDE"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt": ["RealisticDeskFrame", "POETRY_BG", "showVerticalGuides = false", "PoetryHemistichEditor", "COVER_LEATHER"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookVisualEngine.kt": ["RealisticBookPage", "stackDepth", "rotationY", "shadowElevation", "cameraDistance"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/RealisticUi.kt": ["RealisticDeskFrame", "RealisticCoverTile", "RealisticIconAction", "MaterialTheme.colorScheme.primary"],
               "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/Components.kt": ["ControlShape", "CardShape", "ButtonDefaults.buttonElevation", "TopAppBarDefaults.topAppBarColors"],
-              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt": ["https://", "removePrefix(\"assets/\")", "readable(remote)"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt": ["https://", "removePrefix(\"assets/\")", "readable(remote)", "COVER_LEATHER_INSIDE", "COVER_NAVY_FLORAL_SHEET"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt": ["RealisticDeskFrame", "ALBUM_BG", "GridCells.Adaptive"],
           }
           errors = []
@@ -73,6 +74,9 @@ jobs:
               for token in tokens:
                   if token not in source:
                       errors.append(f"missing {token} in {path}")
+          for stray in [Path("apps/hamyareman")]:
+              if stray.exists():
+                  errors.append(f"stray directory still present: {stray}")
           assets = [
               Path("apps/hamyar-app/src/main/assets/lock/app-lock-bg.jpg"),
               Path("apps/hamyar-app/src/main/assets/lock/safespace-lock-bg.jpg"),
@@ -91,11 +95,28 @@ jobs:
       - name: Compile and unit test
         id: build
         continue-on-error: true
-        run: ./gradlew --console=plain --stacktrace :hamyar-app:compileP09DebugKotlin :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest
+        run: |
+          set -o pipefail
+          ./gradlew --console=plain --stacktrace :hamyar-app:compileP09DebugKotlin :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest 2>&1 | tee /tmp/build.log
+
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew --console=plain :hamyar-app:lintP09Debug 2>&1 | tee /tmp/lint.log
+
+      - name: Assemble release APK
+        id: assemble
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew --console=plain :hamyar-app:assembleP09Release 2>&1 | tee /tmp/assemble.log
 
       - name: Write session report
         if: always()
         run: |
+          cp /tmp/build.log /tmp/lint.log /tmp/assemble.log /tmp/ 2>/dev/null || true
           git fetch --no-tags --prune origin New-graphic
           git checkout -B report-base origin/New-graphic
           mkdir -p new-graphic-session
@@ -106,11 +127,20 @@ jobs:
             echo "- Commit: \`${GITHUB_SHA}\`"
             echo "- Branch: \`${GITHUB_REF_NAME}\`"
             echo "- Static acceptance: \`${{ steps.static.outcome }}\`"
-            echo "- Build outcome: \`${{ steps.build.outcome }}\`"
+            echo "- Compile + unit tests: \`${{ steps.build.outcome }}\`"
+            echo "- Lint: \`${{ steps.lint.outcome }}\`"
+            echo "- Assemble release APK: \`${{ steps.assemble.outcome }}\`"
             echo
-            echo "## Generated assets"
-            find apps/hamyar-app/src/main/assets/lock apps/hamyar-app/src/main/assets/diary apps/hamyar-app/src/main/assets/poetry apps/hamyar-app/src/main/assets/album -type f -name '*.jpg' -printf '%p %s bytes\\n' | sort
-            echo
+            for pair in "Compile:/tmp/build.log" "Lint:/tmp/lint.log" "Assemble:/tmp/assemble.log"; do
+              name="${pair%%:*}"; file="${pair#*:}"
+              if [ -f "$file" ]; then
+                echo "## $name errors (first 60 matching lines)"
+                echo '```'
+                grep -E "^e: |Error: |error: |FAILED|What went wrong|Execution failed|Duplicate|Unresolved|Lint found" "$file" | head -60 || true
+                echo '```'
+                echo
+              fi
+            done
             echo "## Changed files"
             git diff-tree --no-commit-id --name-status -r "${GITHUB_SHA}^" "${GITHUB_SHA}" || true
           } > "$REPORT"
@@ -122,5 +152,5 @@ jobs:
           git push origin HEAD:New-graphic || true
 
       - name: Fail after report
-        if: steps.static.outcome != 'success' || steps.build.outcome != 'success'
+        if: steps.static.outcome != 'success' || steps.build.outcome != 'success' || steps.lint.outcome != 'success' || steps.assemble.outcome != 'success'
         run: exit 1
