@@ -136,8 +136,8 @@ def render(chks):
         lines.append('- No branch-specific paths detected against main.')
     lines += ['', '## Scope guard', '', 'این گزارش فقط روی New-graphic تولید می‌شود و هیچ push یا merge به main انجام نمی‌دهد.', '']
     REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text('\\n'.join(lines) + '\\n', encoding='utf-8')
-    print('\\n'.join(lines))
+    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(lines))
 
 if __name__ == '__main__':
     render(requirement_checks())
