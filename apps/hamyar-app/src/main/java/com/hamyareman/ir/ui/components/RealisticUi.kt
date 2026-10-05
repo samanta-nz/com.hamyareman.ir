@@ -35,9 +35,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 
-private val LeatherFallback = Color(0xFF3A2A20)
-private val GoldFallback = Color(0xFFB88A4A)
-private val PaperFallback = Color(0xFFF7F0E3)
+private val Leather = Color(0xFF3A2A20)
+private val Gold = Color(0xFFB88A4A)
+private val Paper = Color(0xFFF7F0E3)
 
 @Composable
 fun RealisticDeskFrame(
@@ -47,8 +47,6 @@ fun RealisticDeskFrame(
     content: @Composable () -> Unit,
 ) {
     val themePrimary = MaterialTheme.colorScheme.primary
-    val themeSecondary = MaterialTheme.colorScheme.secondary
-    val themeTertiary = MaterialTheme.colorScheme.tertiary
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         RemoteDesignImage(
             key = backgroundKey,
