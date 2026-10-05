@@ -2,6 +2,7 @@ package com.hamyareman.ir.ui.safespace
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -39,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -66,7 +68,6 @@ import com.hamyareman.ir.ui.components.BookSkinSpread
 import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
-import com.hamyareman.ir.ui.components.NotebookTitlePicker
 import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
 import com.hamyareman.ir.ui.components.nextRegisteredTitle
 import com.hamyareman.ir.ui.components.notebookAlignmentWire
@@ -92,7 +93,7 @@ private data class Poem(
 )
 
 private val poemTypes = listOf(
-    "غزل", "قصیده", "دوبیتی", "رباعی", "قطعه", "مثنوی", "سپید", "نثر شاعرانه",
+    "غزل", "قصیده", "دوبیتی", "رباعی", "مثنوی", "شعر نو", "سپید", "نثر شاعرانه", "ترانه", "سایر",
 )
 
 private fun twoHemistich(type: String): Boolean =
@@ -194,21 +195,18 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Text("نوع شعر", style = MaterialTheme.typography.labelMedium)
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            poemTypes.forEach { option ->
-                                FilterChip(
-                                    selected = type == option,
-                                    onClick = { type = option; if (editingId == null && (title.isBlank() || title in poemTypes || title == "شعر من")) title = option },
-                                    label = { Text(option) },
-                                )
-                            }
-                        }
-                        NotebookTitlePicker(
+                        PoetryTypePicker(
+                            value = type,
+                            onValueChange = { selected ->
+                                type = selected
+                                if (editingId == null) title = selected
+                            },
+                        )
+                        androidx.compose.material3.OutlinedTextField(
                             value = title,
-                            defaultTitle = "شعر من",
-                            suggestions = listOf("شعر برای امروز", "دل‌نوشتهٔ شاعرانه", "شعر کوتاه"),
-                            onValueChange = { title = it },
+                            onValueChange = { title = it.take(90) },
+                            label = { Text("عنوان شعر") },
+                            singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
@@ -434,8 +432,9 @@ private fun PoetryHemistichCell(
         singleLine = true,
         textStyle = TextStyle(
             fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-            fontSize = 18.sp,
+            fontSize = 21.sp,
             lineHeight = 24.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
             color = Color(0xFF18384F),
             textAlign = TextAlign.Right,
         ),
@@ -457,6 +456,33 @@ private fun PoetryHemistichCell(
 
 /** یک «واحد» روی ورق: یک بیت دو مصراعی (یک سطر) یا یک سطر آزاد (یک یا چند سطر خط‌دار). */
 private data class PoemUnit(val rows: Int, val first: String, val second: String?, val key: String)
+
+@Composable
+private fun PoetryTypePicker(
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("نوع شعر: "+value, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        androidx.compose.material3.DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            poemTypes.forEach { option ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        expanded = false
+                        onValueChange(option)
+                    },
+                )
+            }
+        }
+    }
+}
 
 private fun buildPoemUnits(text: String, twoCol: Boolean): List<PoemUnit> {
     val flat = text.replace("\r", "")
@@ -519,7 +545,21 @@ private fun PoetryViewer(
                         viewerGesture = true,
                         skinned = true,
                         onPageChanged = { activePage = it },
-                        modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = 10.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 20.dp, bottom = 10.dp)
+                            .pointerInput(pages.size) {
+                                detectTapGestures(
+                                    onTap = {
+                                        val next = (activePage + 1).coerceAtMost(pages.size)
+                                        if (next != activePage) activePage = next
+                                    },
+                                    onDoubleTap = {
+                                        val previous = (activePage - 1).coerceAtLeast(0)
+                                        if (previous != activePage) activePage = previous
+                                    },
+                                )
+                            },
                     ) { index, _ ->
                         if (index == 0) {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -532,8 +572,9 @@ private fun PoetryViewer(
                                     val lh = with(LocalDensity.current) { line.toSp() }
                                     val style = TextStyle(
                                         fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                        fontSize = lh * 0.62f,
+                                        fontSize = lh * 0.87f,
                                         lineHeight = lh,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                         color = Color(0xFF18384F),
                                         textAlign = TextAlign.Right,
                                         platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
