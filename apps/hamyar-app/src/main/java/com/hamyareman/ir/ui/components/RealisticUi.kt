@@ -187,3 +187,5 @@ fun RealisticIconAction(
 }
 
 // New-graphic validation: all shared realistic surfaces are compile-gated.
+
+// Final New-graphic validation trigger.
