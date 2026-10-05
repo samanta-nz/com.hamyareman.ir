@@ -311,7 +311,7 @@ private fun titleOrDefault(value: String, default: String): String =
     value.trim().ifBlank { default }
 
 @Composable
-fun DiaryScreen(onBack: () -> Unit) {
+fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val container = LocalAppContainer.current
     val store = remember { LocalStore(context, DIARY_STORE) }
