@@ -251,10 +251,11 @@ private fun SecureMediaViewer(
     onDelete: () -> Unit,
 ) {
     val context = LocalContext.current
+    val playerBackground = MaterialTheme.colorScheme.background
     var revision by remember(item.path) { mutableIntStateOf(0) }
     var confirmDelete by remember(item.path) { mutableStateOf(false) }
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Column(Modifier.fillMaxSize().background(Color(0xFF07111F))) {
+        Column(Modifier.fillMaxSize().background(playerBackground)) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 when {
                     item.mime.startsWith("image/") -> ZoomableSecureImage(item.path, revision)
@@ -351,6 +352,8 @@ private fun SecureMedia3Player(
 @Composable
 internal fun AlbumArtEqualizer(path: String, playing: Boolean, phase: Float) {
     val context = LocalContext.current
+    val accent = MaterialTheme.colorScheme.secondary
+    val accentContainer = MaterialTheme.colorScheme.secondaryContainer
     val art = remember(path) {
         runCatching {
             val retriever = MediaMetadataRetriever()
@@ -373,7 +376,7 @@ internal fun AlbumArtEqualizer(path: String, playing: Boolean, phase: Float) {
                 val length = 7f + pulse * 24f
                 val start = Offset(center.x + kotlin.math.cos(angle) * base, center.y + kotlin.math.sin(angle) * base)
                 val end = Offset(center.x + kotlin.math.cos(angle) * (base + length), center.y + kotlin.math.sin(angle) * (base + length))
-                drawLine(Color(0xFF62D8B3), start, end, strokeWidth = 5f, cap = StrokeCap.Round)
+                drawLine(accent, start, end, strokeWidth = 5f, cap = StrokeCap.Round)
             }
         }
         if (art != null) {
@@ -385,7 +388,7 @@ internal fun AlbumArtEqualizer(path: String, playing: Boolean, phase: Float) {
             )
         } else {
             Box(
-                Modifier.size(154.dp).clip(CircleShape).background(Color(0xFF183E45)),
+                Modifier.size(154.dp).clip(CircleShape).background(accentContainer),
                 contentAlignment = Alignment.Center,
             ) { Text("🎧", style = MaterialTheme.typography.displayLarge) }
         }
