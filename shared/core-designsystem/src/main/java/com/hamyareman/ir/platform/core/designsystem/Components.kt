@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -37,7 +38,7 @@ private val CardShape = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar(title: String, onBack: (() -> Unit)? = null) {
+fun AppTopBar(title: String, onBack: (() -> Unit)? = null, onHelp: (() -> Unit)? = null) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -66,6 +67,13 @@ fun AppTopBar(title: String, onBack: (() -> Unit)? = null) {
                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
             ),
+            actions = {
+                if (onHelp != null) {
+                    IconButton(onClick = onHelp) {
+                        Icon(Icons.Outlined.HelpOutline, contentDescription = "راهنما")
+                    }
+                }
+            },
             navigationIcon = {
                 if (onBack != null) {
                     IconButton(onClick = onBack) {
