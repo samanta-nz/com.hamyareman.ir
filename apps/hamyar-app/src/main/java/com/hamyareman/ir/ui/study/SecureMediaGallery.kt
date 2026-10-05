@@ -155,7 +155,7 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
     ) {
         Column(Modifier.fillMaxSize()) {
-            AppTopBar("آلبوم شخصی", onBack)
+            AppTopBar("آلبوم شخصی", onBack, onHelp = onHelp)
         Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("عکس، ویدیو و صوت؛ فایل‌ها در پوشهٔ خصوصی برنامه می‌مانند.", style = MaterialTheme.typography.bodySmall)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
