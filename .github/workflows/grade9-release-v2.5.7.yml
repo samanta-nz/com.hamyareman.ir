@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: grade9-v2.5.7-forced-release
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   VERSION_NAME: "2.5.7"
