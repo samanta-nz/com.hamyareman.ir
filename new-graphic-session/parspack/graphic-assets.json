@@ -1,0 +1,49 @@
+{
+  "bucket": "c539776",
+  "publicBase": "https://parspack.net",
+  "assets": [
+    {
+      "key": "assets/lock/app-lock-bg.jpg",
+      "local": "apps/hamyar-app/src/main/assets/lock/app-lock-bg.jpg",
+      "status": "uploaded",
+      "publicUrl": "https://c539776.parspack.net/assets/lock/app-lock-bg.jpg",
+      "publicRead": true
+    },
+    {
+      "key": "assets/lock/safespace-lock-bg.jpg",
+      "local": "apps/hamyar-app/src/main/assets/lock/safespace-lock-bg.jpg",
+      "status": "uploaded",
+      "publicUrl": "https://c539776.parspack.net/assets/lock/safespace-lock-bg.jpg",
+      "publicRead": true
+    },
+    {
+      "key": "assets/diary/desk-bg.jpg",
+      "local": "apps/hamyar-app/src/main/assets/diary/desk-bg.jpg",
+      "status": "uploaded",
+      "publicUrl": "https://c539776.parspack.net/assets/diary/desk-bg.jpg",
+      "publicRead": true
+    },
+    {
+      "key": "assets/poetry/poetry-bg.jpg",
+      "local": "apps/hamyar-app/src/main/assets/poetry/poetry-bg.jpg",
+      "status": "uploaded",
+      "publicUrl": "https://c539776.parspack.net/assets/poetry/poetry-bg.jpg",
+      "publicRead": true
+    },
+    {
+      "key": "assets/album/album-bg.jpg",
+      "local": "apps/hamyar-app/src/main/assets/album/album-bg.jpg",
+      "status": "uploaded",
+      "publicUrl": "https://c539776.parspack.net/assets/album/album-bg.jpg",
+      "publicRead": true
+    },
+    {
+      "key": "assets/diary/paper-cream.jpg",
+      "local": "apps/hamyar-app/src/main/assets/diary/paper-cream.jpg",
+      "status": "uploaded",
+      "publicUrl": "https://c539776.parspack.net/assets/diary/paper-cream.jpg",
+      "publicRead": true
+    }
+  ],
+  "failed": 0
+}
