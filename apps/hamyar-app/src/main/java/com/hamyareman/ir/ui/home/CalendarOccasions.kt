@@ -112,11 +112,26 @@ object CalendarOccasions {
         return "${h[2]} $month ${h[0]}"
     }
 
+    /** تعطیلی مدارس در نوروز: از ۱ تا ۱۳ فروردین هر سال. */
+    fun isSchoolNoruzHoliday(j: JalaliDate.Jalali): Boolean =
+        j.month == 1 && j.day in 1..13
+
     fun matching(ctx: Context, date: LocalDate, lunarOffset: Int = CalendarPrefs.lunarOffset(ctx)): List<CalEvent> {
         val j = JalaliDate.toJalali(date.toString()) ?: return emptyList()
         val shifted = date.minusDays(lunarOffset.toLong())
         val hij = hijriOf(shifted)
-        return events(ctx).filter { e ->
+        val noruz = if (isSchoolNoruzHoliday(j)) {
+            listOf(
+                CalEvent(
+                    category = "تعطیل مدرسه",
+                    title = "تعطیلات نوروزی مدرسه",
+                    holiday = true,
+                    shamsiDay = j.day,
+                    shamsiMonth = j.month,
+                )
+            )
+        } else emptyList()
+        return noruz + events(ctx).filter { e ->
             when {
                 e.shamsiDay > 0 && e.shamsiMonth > 0 ->
                     j.month == e.shamsiMonth && j.day == e.shamsiDay
