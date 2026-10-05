@@ -1,6 +1,6 @@
 # New-graphic validation report
 
-- Commit: `5232f0a617a084fb27c64ba5ce0f49ca18079408`
+- Commit: `dc95e941d6534040b6c9a9f505279cd968c57afa`
 - Branch: `New-graphic`
 - Static acceptance: `skipped`
 - Compile + unit tests: `skipped`
@@ -8,4 +8,4 @@
 - Assemble release APK: `skipped`
 
 ## Changed files
-M	.github/workflows/new-graphic-validate.yml
+M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt
