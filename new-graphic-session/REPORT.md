@@ -1,12 +1,12 @@
 # New-graphic validation report
 
-- Commit: `f46229b71e2b86016f58b27844e27e3d48fda3c6`
+- Commit: `234bb81488c553ac52981da8d9b3edbc2b923e75`
 - Branch: `New-graphic`
-- Static acceptance: `skipped`
-- Build outcome: `skipped`
+- Static acceptance: `success`
+- Build outcome: `success`
 
 ## Generated assets
-apps/hamyar-app/src/main/assets/diary/cover-geometric.jpg 42090 bytes\napps/hamyar-app/src/main/assets/diary/page-lined.jpg 13317 bytes\napps/hamyar-app/src/main/assets/diary/cover-celestial.jpg 30270 bytes\napps/hamyar-app/src/main/assets/diary/cover-botanical.jpg 30717 bytes\n
+apps/hamyar-app/src/main/assets/lock/app-lock-bg.jpg 46963 bytes\napps/hamyar-app/src/main/assets/lock/safespace-lock-bg.jpg 31620 bytes\napps/hamyar-app/src/main/assets/diary/desk-bg.jpg 57389 bytes\napps/hamyar-app/src/main/assets/diary/cover-geometric.jpg 42090 bytes\napps/hamyar-app/src/main/assets/diary/page-lined.jpg 13317 bytes\napps/hamyar-app/src/main/assets/diary/cover-celestial.jpg 30270 bytes\napps/hamyar-app/src/main/assets/diary/cover-botanical.jpg 30717 bytes\napps/hamyar-app/src/main/assets/diary/paper-cream.jpg 28439 bytes\napps/hamyar-app/src/main/assets/poetry/poetry-bg.jpg 68981 bytes\napps/hamyar-app/src/main/assets/album/album-bg.jpg 53786 bytes\n
 
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt
+M	apps/hamyar-app/build.gradle.kts
