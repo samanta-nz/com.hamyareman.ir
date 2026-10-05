@@ -109,16 +109,44 @@ fun BookOpening(
     }
 }
 
+/**
+ * [skinned] = true برای کتاب‌های PNG دوربری‌شده: جلد/ورق خودشان لبه، سایه و عمق دارند،
+ * پس اینجا فقط حرکت ورق‌خوردن (چرخش و مقیاس) اعمال می‌شود و کادر/سایهٔ مستطیلی نمی‌کشیم.
+ */
 @Composable
 fun RealisticBookPage(
     modifier: Modifier = Modifier,
     pageOffset: Float = 0f,
     stackDepth: Int = 0,
     isCover: Boolean = false,
+    skinned: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val offset = pageOffset.coerceIn(-1.2f, 1.2f)
     val bend = abs(offset)
+
+    if (skinned) {
+        Box(
+            modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    rotationY = -offset * if (isCover) 12f else 8f
+                    scaleX = 1f - bend * 0.02f
+                    scaleY = 1f - bend * 0.008f
+                    translationX = -offset * 8.dp.toPx()
+                    cameraDistance = 48f * density
+                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
+                        pivotFractionX = if (offset >= 0f) 1f else 0f,
+                        pivotFractionY = 0.5f,
+                    )
+                    alpha = 1f - (bend * 0.35f).coerceAtMost(0.5f)
+                },
+        ) {
+            content()
+        }
+        return
+    }
+
     val depth = stackDepth.coerceIn(0, 10)
     val themePrimary = MaterialTheme.colorScheme.primary
     val themeTertiary = MaterialTheme.colorScheme.tertiary
@@ -267,6 +295,7 @@ fun RealisticBookPager(
     initialPage: Int = 0,
     modifier: Modifier = Modifier,
     viewerGesture: Boolean = true,
+    skinned: Boolean = false,
     onPageChanged: ((Int) -> Unit)? = null,
     pageContent: @Composable (page: Int, offset: Float) -> Unit,
 ) {
@@ -329,6 +358,7 @@ fun RealisticBookPager(
                 pageOffset = offset,
                 stackDepth = (count - page - 1).coerceIn(0, 9),
                 isCover = page == 0,
+                skinned = skinned,
             ) {
                 pageContent(page, offset)
             }
