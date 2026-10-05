@@ -21,7 +21,8 @@ jobs:
       - name: Checkout New-graphic
         uses: actions/checkout@v4
         with:
-          ref: New-graphic
+          ref: ${{ github.sha }}
+          fetch-depth: 50
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -82,7 +83,7 @@ jobs:
         if: always()
         run: |
           git fetch --no-tags --prune origin New-graphic
-          git reset --hard origin/New-graphic
+          git checkout -B report-base origin/New-graphic
           mkdir -p new-graphic-session
           REPORT="new-graphic-session/REPORT-${GITHUB_SHA}.md"
           {
@@ -90,7 +91,8 @@ jobs:
             echo
             echo "- Commit: \`${GITHUB_SHA}\`"
             echo "- Branch: \`${GITHUB_REF_NAME}\`"
-            echo "- Build conclusion: \`${{ steps.build.outcome }}\`"
+            echo "- Static acceptance: \`${{ steps.static.outcome }}\`"
+            echo "- Build outcome: \`${{ steps.build.outcome }}\`"
             echo
             echo "## Generated assets"
             find apps/hamyar-app/src/main/assets/lock apps/hamyar-app/src/main/assets/diary apps/hamyar-app/src/main/assets/poetry apps/hamyar-app/src/main/assets/album -type f -name '*.jpg' -printf '%p %s bytes\\n' | sort
