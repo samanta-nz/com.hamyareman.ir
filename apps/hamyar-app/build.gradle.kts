@@ -127,6 +127,14 @@ android {
         resValues = true
     }
 
+    // تصاویر مرجع گرافیک در ریشهٔ ریپو، همان‌طور که هستند، داخل APK به‌عنوان
+    // asset هم قابل دسترسی‌اند؛ بنابراین fallback دقیقاً از همان PNG مرجع استفاده می‌کند.
+    sourceSets {
+        getByName("main") {
+            assets.srcDir(rootProject.file("assets"))
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
