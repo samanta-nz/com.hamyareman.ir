@@ -239,7 +239,9 @@ fun ZahraNavHost() {
                 ClassPlanScreen(
                     onBack = { nav.popBackStack() },
                     initialTab = 2,
-                    onVirtualHours = { nav.navigate(Screen.VirtualClass.route) })
+                    onVirtualHours = { nav.navigate(Screen.VirtualClass.route) },
+                    onHelp = { nav.navigate(Screen.UserGuide.of("school")) },
+                )
             }
             composable(Screen.ClassPlanCalendar.route) {
                 ClassPlanScreen(
