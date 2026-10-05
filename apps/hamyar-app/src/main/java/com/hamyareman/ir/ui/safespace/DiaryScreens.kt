@@ -259,7 +259,7 @@ private fun decodePayload(cipher: String, decrypt: (String) -> String): DiaryPay
         }.ifEmpty { listOf(DiaryPageModel("")) }.let { DiaryPayload(it) }
     }.getOrElse {
         DiaryPayload(
-            plain.split(NOTEBOOK_PAGE_SEPARATOR).map { DiaryPageModel(it.trim()) }.ifEmpty { listOf(DiaryPageModel(plain.trim())) },
+            plain.split(NOTEBOOK_PAGE_SEPARATOR).map { DiaryPageModel(it) }.ifEmpty { listOf(DiaryPageModel(plain)) },
         )
     }
 }
@@ -548,35 +548,7 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
-                        Box(Modifier.fillMaxWidth()) {
-                            LinedNotebookInput(
-                                text,
-                                { text = it },
-                                header = titleOrDefault(title, "خاطرات امروز"),
-                                textAlign = alignment,
-                            )
-                            if (imagePath.isNotBlank()) {
-                            Text(
-                                "برای جابه‌جایی، «تنظیم دوباره» را بزن و عکس را مستقیم روی همان کاغذ بکش.",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            OutlinedTextField(
-                                value = imageCaption,
-                                onValueChange = { imageCaption = it.take(140) },
-                                label = { Text("عنوان عکس / پانویس") },
-                                singleLine = true,
-                                maxLines = 1,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                            DiaryImageWrapPicker(wrap) { wrap = it }
-                            TextButton(onClick = {
-                                deleteDiaryImage(imagePath)
-                                imagePath = ""
-                                imageCaption = ""
-                                placementMode = false
-                            }) { Text("برداشتن عکس") }
-                        }
+                        LinedNotebookInput(text, { text = it }, header = titleOrDefault(title, "خاطرات امروز"), textAlign = alignment)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(
                                 onClick = { imagePicker.launch(arrayOf("image/*")) },
@@ -646,18 +618,10 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                                 maxLines = 1,
                                 modifier = Modifier.fillMaxWidth(),
                             )
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            ) {
-                                ImageWrap.entries.forEach { option ->
-                                    FilterChip(
-                                        selected = wrap == option,
-                                        onClick = { wrap = option },
-                                        label = { Text(option.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                    )
-                                }
-                            }
+                            DiaryImageWrapPicker(
+                                value = wrap,
+                                onValueChange = { wrap = it },
+                            )
                             Text(
                                 "اندازه، جایگاه و چرخش تصویر با لمس مستقیم ذخیره می‌شود؛ دیگر هیچ لغزنده‌ای برای جاگذاری وجود ندارد.",
                                 style = MaterialTheme.typography.labelSmall,
@@ -1159,5 +1123,4 @@ fun NotebooksScreen(onBack: () -> Unit) {
             }
         }
     }
-}
 }
