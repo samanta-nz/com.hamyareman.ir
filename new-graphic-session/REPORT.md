@@ -1,14 +1,23 @@
 # New-graphic validation report
 
-- Commit: `24a37030bddee722202fac195f1b0426ac0016b1`
+- Commit: `5028b94d89d9c5089a39977a061c4a764dd51b05`
 - Branch: `New-graphic`
 - Static acceptance: `success`
-- Compile + unit tests: `cancelled`
-- Lint: `skipped`
-- Assemble release APK: `skipped`
+- Compile + unit tests: `success`
+- Lint: `success`
+- Assemble release APK: `success`
 
 ## Compile errors (first 60 matching lines)
 ```
+```
+
+## Lint errors (first 60 matching lines)
+```
+```
+
+## Assemble errors (first 60 matching lines)
+```
+> Task :hamyar-app:checkP09ReleaseDuplicateClasses
 ```
 
 ## Changed files
