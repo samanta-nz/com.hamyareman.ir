@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T01:55:07.520946+00:00
+- Generated: 2026-10-05T02:11:28.874503+00:00
 - Branch: New-graphic
-- HEAD: f46229b71e2b86016f58b27844e27e3d48fda3c6
+- HEAD: dc95e941d6534040b6c9a9f505279cd968c57afa
 - main: c9cbdc72670a3aac0fc1a35cad79bec540115bba
-- rev-list main...HEAD: 0	147
+- rev-list main...HEAD: 0	156
 
 ## Summary
 
@@ -47,6 +47,7 @@
 - `apps/hamyar-app/build.gradle.kts`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookSkin.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookVisualEngine.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt`
@@ -60,7 +61,6 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt`
-- `apps/hamyareman/ir/ui/safespace/PoetryBookScreen.kt`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.4.md"`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.5.md"`
 - `info.md`
