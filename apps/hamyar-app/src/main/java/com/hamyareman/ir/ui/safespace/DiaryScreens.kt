@@ -671,6 +671,8 @@ fun DiaryScreen(onBack: () -> Unit) {
         }
     }
 
+    }
+
     viewerStart?.let { start ->
         DiaryBookViewer(
             cover = diaryCovers.firstOrNull { it.id == coverId } ?: diaryCovers.first(),
