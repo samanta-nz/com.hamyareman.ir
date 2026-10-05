@@ -8,19 +8,43 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.ChevronLeft
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.HistoryEdu
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,11 +54,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
@@ -42,22 +69,25 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.Helplines
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
-import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
+import com.hamyareman.ir.platform.core.designsystem.LockBackdropLayer
+import com.hamyareman.ir.platform.core.designsystem.LockVariant
 import com.hamyareman.ir.platform.core.designsystem.PatternLockGrid
+import com.hamyareman.ir.platform.core.designsystem.PinLockGate
+import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.core.designsystem.SectionCard
+import com.hamyareman.ir.platform.core.security.AppLock
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
 import com.hamyareman.ir.ui.components.LinedNotebookInput
 import com.hamyareman.ir.ui.hub.layerTo
-import com.hamyareman.ir.ui.hub.HubCard
 import com.hamyareman.ir.ui.navigation.Screen
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
-private data class SafeSection(val emoji: String, val title: String, val subtitle: String, val route: String)
+private data class SafeSection(val icon: ImageVector, val title: String, val subtitle: String, val route: String)
 
-/** فضای امن فقط پس از PIN یا بیومتریک باز می‌شود و هیچ محتوایی پیش از احراز نمایش نمی‌دهد. */
+/** فضای امن فقط پس از PIN، الگو یا بیومتریکِ مستقل باز می‌شود و هیچ محتوایی پیش از احراز نمایش نمی‌دهد. */
 @Composable
 fun SafeSpaceScreen(nav: NavController) {
     val context = LocalContext.current
@@ -66,113 +96,47 @@ fun SafeSpaceScreen(nav: NavController) {
     val safeLock = remember { SafeSpaceSession.lock(context) }
     val safeBiometric = remember { SafeSpaceSession.biometric(context) }
     var unlocked by remember { mutableStateOf(SafeSpaceSession.isUnlocked(context)) }
-    var pin by remember { mutableStateOf("") }
-    var confirmation by remember { mutableStateOf("") }
     var pattern by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     val needsSetup = !safeLock.hasPin()
 
     if (!unlocked || !SafeSpaceSession.isUnlocked(context)) {
-        val hasPattern = safeLock.hasPattern()
-        Column(Modifier.fillMaxSize()) {
-            AppTopBar("فضای امن", { nav.popBackStack() })
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = .14f),
-                                MaterialTheme.colorScheme.surface,
-                                MaterialTheme.colorScheme.background,
-                            ),
-                        ),
-                    )
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    if (needsSetup) {
-                        "برای فضای امن یک PIN مستقل بساز؛ این PIN با قفل خودِ برنامه فرق دارد."
-                    } else if (hasPattern) {
-                        "الگوی خط‌ونقطهٔ فضای امن را رسم کن؛ این الگو از قفل اصلی برنامه مستقل است."
-                    } else {
-                        "برای دیدن بخش‌های خصوصی، قفل مستقل فضای امن را باز کن."
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                if (!needsSetup && hasPattern) {
-                    PatternLockGrid(pattern = pattern, onPatternChange = { pattern = it }, enabled = true)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { pattern = ""; error = null }, modifier = Modifier.weight(1f)) { Text("پاک‌کردن") }
-                        PrimaryButton("بازکردن با الگو", Modifier.weight(2f)) {
-                            if (pattern.length < 4) {
-                                error = "الگو باید حداقل ۴ نقطهٔ متفاوت داشته باشد."
-                            } else if (safeLock.verifyPattern(pattern)) {
-                                pattern = ""
-                                SafeSpaceSession.markUnlocked()
-                                unlocked = true
-                                error = null
-                            } else {
-                                pattern = ""
-                                error = "الگوی فضای امن درست نیست."
-                            }
-                        }
+        if (needsSetup) {
+            SafeSpacePinSetup(
+                onBack = { nav.popBackStack() },
+                validate = { safeLock.validatePin(it) },
+                create = { safeLock.setPin(it) },
+                onDone = {
+                    SafeSpaceSession.markUnlocked()
+                    unlocked = true
+                    if (activity != null && safeBiometric.status(context) == BiometricStatus.READY) {
+                        BiometricPromptRunner.show(
+                            activity = activity,
+                            title = "فعال‌کردن بیومتریک فضای امن",
+                            subtitle = "برای ورود سریع‌تر به فضای امن یک بار هویتت را تأیید کن.",
+                            negativeText = "فعلاً نه",
+                            onSuccess = { safeBiometric.setEnabled(true, context) },
+                            onError = { error = it },
+                        )
                     }
-                    Text("یا با PIN مستقل فضای امن وارد شو.", style = MaterialTheme.typography.bodySmall)
-                }
-                OutlinedTextField(
-                    value = pin,
-                    onValueChange = { pin = it.filter(Char::isDigit).take(8); error = null },
-                    label = { Text(if (needsSetup) "PIN جدید فضای امن" else "PIN فضای امن") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                if (needsSetup) {
-                    OutlinedTextField(
-                        value = confirmation,
-                        onValueChange = { confirmation = it.filter(Char::isDigit).take(8); error = null },
-                        label = { Text("تکرار PIN مستقل") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                PrimaryButton(if (needsSetup) "ساخت PIN و ورود" else "ورود با PIN") {
-                    if (needsSetup) {
-                        error = when {
-                            pin != confirmation -> "تکرار PIN یکسان نیست."
-                            else -> safeLock.validatePin(pin)
-                        }
-                        if (error == null && safeLock.setPin(pin)) {
-                            SafeSpaceSession.markUnlocked()
-                            unlocked = true
-                            if (activity != null && safeBiometric.status(context) == BiometricStatus.READY) {
-                                BiometricPromptRunner.show(
-                                    activity = activity,
-                                    title = "فعال‌کردن بیومتریک فضای امن",
-                                    subtitle = "برای ورود سریع‌تر به فضای امن یک بار هویتت را تأیید کن.",
-                                    negativeText = "فعلاً نه",
-                                    onSuccess = { safeBiometric.setEnabled(true, context) },
-                                    onError = { error = it },
-                                )
-                            }
-                        }
-                    } else if (safeLock.verify(pin)) {
-                        SafeSpaceSession.markUnlocked()
-                        unlocked = true
-                        error = null
-                    } else {
-                        error = "PIN فضای امن درست نیست."
-                    }
-                }
-                if (!needsSetup && activity != null && safeBiometric.shouldOffer(activity)) {
-                    OutlinedButton(
-                        onClick = {
+                },
+            )
+        } else {
+            val offerBiometric = activity != null && safeBiometric.shouldOffer(activity)
+            Box(Modifier.fillMaxSize()) {
+                // قفل فضای امن: صحنهٔ شب جنگلی، الگوی واقعی نقطه + خط و تأیید خودکار با رها کردن انگشت.
+                PinLockGate(
+                    title = "قفل فضای امن",
+                    subtitle = "برای دیدن بخش‌های خصوصی، PIN مستقل فضای امن را وارد کن.",
+                    minLength = AppLock.MIN_PIN,
+                    maxLength = AppLock.MAX_PIN,
+                    patternEnabled = safeLock.hasPattern(),
+                    onPatternVerify = { value -> safeLock.verifyPattern(value) },
+                    variant = LockVariant.SafeSpace,
+                    biometricLabel = if (offerBiometric) "بازکردن با اثر انگشت/چهره" else null,
+                    externalNotice = error,
+                    onBiometricRequest = if (offerBiometric && activity != null) {
+                        {
                             BiometricPromptRunner.show(
                                 activity = activity,
                                 title = "فضای امن",
@@ -184,28 +148,35 @@ fun SafeSpaceScreen(nav: NavController) {
                                 },
                                 onError = { error = it },
                             )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("بازکردن با اثر انگشت/چهره") }
-                }
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                        }
+                    } else {
+                        null
+                    },
+                    onVerify = { pin -> safeLock.verify(pin) },
+                    onUnlocked = {
+                        SafeSpaceSession.markUnlocked()
+                        unlocked = true
+                        error = null
+                    },
+                )
+                LockBackButton(onClick = { nav.popBackStack() }, modifier = Modifier.align(Alignment.TopStart))
             }
         }
         return
     }
 
-    // ترتیب ثابت: دل‌نوشت → دفتر خاطرات → نوشته‌های آزاد → آلبوم شخصی.
+    // ترتیب فضای امن (طبق طرح): بکاپ و بازیابی ← قالب بکاپ و هشدارها ← سایر بخش‌ها ← امنیت مستقل (آخر، همیشه بسته).
     val sections = listOf(
-        SafeSection("💌", "دل‌نوشت", "یادداشت‌های خصوصی خط‌دار با عنوان و ویرایش", Screen.Journal.route),
-        SafeSection("📕", "دفتر خاطرات", "جلد دلخواه، تاریخ شمسی و تورق راست‌به‌چپ", Screen.Diary.route),
-        SafeSection("✍️", "نوشته‌های آزاد", "نوشته‌های خصوصی با عنوان و امکان ویرایش", Screen.SafeFreeWriting.route),
-        SafeSection("🪶", "دفتر شعر", "غزل، قصیده، دوبیتی و شعر آزاد با تورق راست‌به‌چپ", Screen.Poetry.route),
-        SafeSection("🔐", "آلبوم شخصی", "عکس، ویدیو، صوت و دفتر خاطرات در نمای کتاب", Screen.SecureGallery.route),
+        SafeSection(Icons.Outlined.Email, "دل‌نوشت", "یادداشت‌های خصوصی خط‌دار با عنوان و ویرایش", Screen.Journal.route),
+        SafeSection(Icons.Outlined.MenuBook, "دفتر خاطرات", "جلد دلخواه، تاریخ شمسی و تورق راست‌به‌چپ", Screen.Diary.route),
+        SafeSection(Icons.Outlined.EditNote, "نوشته‌های آزاد", "نوشته‌های خصوصی با عنوان و امکان ویرایش", Screen.SafeFreeWriting.route),
+        SafeSection(Icons.Outlined.HistoryEdu, "دفتر شعر", "غزل، قصیده، دوبیتی و شعر آزاد با تورق راست‌به‌چپ", Screen.Poetry.route),
+        SafeSection(Icons.Outlined.PhotoLibrary, "آلبوم شخصی", "عکس، ویدیو، صوت و دفتر خاطرات در نمای کتاب", Screen.SecureGallery.route),
     )
     var policy by remember { mutableStateOf(SafeSpaceSession.policy(context)) }
     var biometricEnabled by remember { mutableStateOf(safeBiometric.isEnabled()) }
     var showHelp by remember { mutableStateOf(false) }
-    var securityExpanded by remember { mutableStateOf(false) }
+    var securityExpanded by remember { mutableStateOf(false) } // همیشه در حالت اولیه بسته
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxWidth()) {
             AppTopBar("فضای امن", { nav.popBackStack() })
@@ -216,32 +187,45 @@ fun SafeSpaceScreen(nav: NavController) {
         }
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SafeSpaceBackupCard()
-            sections.forEach { section ->
-                HubCard(
-                    emoji = section.emoji,
-                    title = section.title,
-                    subtitle = section.subtitle,
-                    slotId = "hub.safe.item.${section.route}",
-                ) { nav.layerTo(section.route) }
+            SafePanel {
+                Text(
+                    "بخش‌های فضای امن",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 6.dp),
+                )
+                sections.forEachIndexed { index, section ->
+                    if (index > 0) SafeDivider()
+                    SafeRow(section.icon, section.title, section.subtitle) { nav.layerTo(section.route) }
+                }
             }
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.fillMaxWidth()) {
-                    Row(
-                        Modifier.fillMaxWidth().clickable { securityExpanded = !securityExpanded }.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text("امنیت مستقل فضای امن", style = MaterialTheme.typography.titleMedium)
-                            Text("تنظیمات امنیتی این بخش جدا از قفل اصلی برنامه‌اند.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Text(if (securityExpanded) "⌃" else "⌄", style = MaterialTheme.typography.titleLarge)
+            SafePanel {
+                Row(
+                    Modifier.fillMaxWidth().clickable { securityExpanded = !securityExpanded }.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    SafeIconBadge(Icons.Outlined.Lock)
+                    Column(Modifier.weight(1f)) {
+                        Text("تنظیمات امنیتی", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "قفل جداگانه · الگوی نقطه‌وخط · ورود بیومتریک",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                    if (securityExpanded) {
-                        Column(Modifier.padding(horizontal = 14.dp, vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(
+                        if (securityExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                        contentDescription = if (securityExpanded) "بستن تنظیمات امنیتی" else "باز کردن تنظیمات امنیتی",
+                    )
+                }
+                if (securityExpanded) {
+                    Column(
+                        Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         Text("الگوی خط‌ونقطهٔ مستقل", style = MaterialTheme.typography.labelLarge)
                         PatternLockGrid(pattern = pattern, onPatternChange = { pattern = it }, enabled = true)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -256,40 +240,45 @@ fun SafeSpaceScreen(nav: NavController) {
                                 }
                             }
                         }
-                            SafeExitPolicy.entries.forEach { option ->
-                                FilterChip(
-                                    selected = policy == option,
-                                    onClick = { policy = option; SafeSpaceSession.setPolicy(context, option) },
-                                    label = { Text(option.titleFa) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                            }
-                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("ورود با اثر انگشت/چهره")
-                                Switch(
-                                    checked = biometricEnabled,
-                                    onCheckedChange = { enabled ->
-                                        if (!enabled) { safeBiometric.setEnabled(false, context); biometricEnabled = false }
-                                        else if (activity != null) BiometricPromptRunner.show(
-                                            activity = activity,
-                                            title = "فعال‌کردن ورود بیومتریک فضای امن",
-                                            subtitle = "اثر انگشت یا چهره‌ات را برای تأیید ثبت کن.",
-                                            negativeText = "بی‌خیال",
-                                            onSuccess = { biometricEnabled = safeBiometric.setEnabled(true, context) },
-                                            onError = { error = it },
-                                        )
-                                    },
-                                )
-                            }
-                            OutlinedButton(
-                                onClick = { SafeSpaceSession.forceLock(); unlocked = false; pin = "" },
+                        SafeExitPolicy.entries.forEach { option ->
+                            FilterChip(
+                                selected = policy == option,
+                                onClick = { policy = option; SafeSpaceSession.setPolicy(context, option) },
+                                label = { Text(option.titleFa) },
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("خروج و قفل فوری فضای امن") }
-                            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                            )
                         }
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("ورود با اثر انگشت/چهره")
+                            Switch(
+                                checked = biometricEnabled,
+                                onCheckedChange = { enabled ->
+                                    if (!enabled) { safeBiometric.setEnabled(false, context); biometricEnabled = false }
+                                    else if (activity != null) BiometricPromptRunner.show(
+                                        activity = activity,
+                                        title = "فعال‌کردن ورود بیومتریک فضای امن",
+                                        subtitle = "اثر انگشت یا چهره‌ات را برای تأیید ثبت کن.",
+                                        negativeText = "بی‌خیال",
+                                        onSuccess = { biometricEnabled = safeBiometric.setEnabled(true, context) },
+                                        onError = { error = it },
+                                    )
+                                },
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = { SafeSpaceSession.forceLock(); unlocked = false },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("خروج و قفل فوری فضای امن") }
+                        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     }
                 }
             }
+            Text(
+                "امنیت فضای امن مستقل از قفل برنامه است و می‌توانی رمز یا الگوی جداگانه‌ای برای آن انتخاب کنی.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
         }
     }
 
@@ -299,7 +288,7 @@ fun SafeSpaceScreen(nav: NavController) {
             title = { Text("راهنمای فضای امن") },
             text = {
                 Text(
-                    "• PIN و بیومتریک این بخش از قفل اصلی برنامه مستقل‌اند.\n" +
+                    "• PIN، الگو و بیومتریک این بخش از قفل اصلی برنامه مستقل‌اند.\n" +
                         "• گزینهٔ «با قفل صفحه» فقط با خاموش یا قفل‌شدن گوشی می‌بندد.\n" +
                         "• زمان‌های ۱، ۲ و ۳ دقیقه از لحظهٔ خروج از فضای امن محاسبه می‌شوند.\n" +
                         "• متن‌ها با کلید امن دستگاه و فایل‌های آلبوم در پوشهٔ خصوصی اپ نگهداری می‌شوند.\n" +
@@ -308,6 +297,156 @@ fun SafeSpaceScreen(nav: NavController) {
             },
             confirmButton = { TextButton(onClick = { showHelp = false }) { Text("فهمیدم") } },
         )
+    }
+}
+
+/** دکمهٔ بازگشت شیشه‌ایِ روی پس‌زمینهٔ تیرهٔ قفل. */
+@Composable
+private fun LockBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .statusBarsPadding()
+            .padding(12.dp)
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.12f)),
+    ) {
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "بازگشت", tint = Color.White)
+    }
+}
+
+/** ساخت PIN مستقل فضای امن (بار اول)، روی همان پس‌زمینهٔ شب جنگلی. */
+@Composable
+private fun SafeSpacePinSetup(
+    onBack: () -> Unit,
+    validate: (String) -> String?,
+    create: (String) -> Boolean,
+    onDone: () -> Unit,
+) {
+    var pin by remember { mutableStateOf("") }
+    var confirmation by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color.White,
+        unfocusedTextColor = Color.White,
+        focusedBorderColor = Color(0xFF3D8BFF),
+        unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+        cursorColor = Color.White,
+        focusedLabelColor = Color.White,
+        unfocusedLabelColor = Color.White.copy(alpha = 0.75f),
+    )
+    Box(Modifier.fillMaxSize()) {
+        LockBackdropLayer(LockVariant.SafeSpace)
+        Column(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(Icons.Outlined.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
+            Text("قفل فضای امن", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+            Text(
+                "برای فضای امن یک PIN مستقل بساز؛ این PIN با قفل خودِ برنامه فرق دارد.",
+                color = Color.White.copy(alpha = 0.78f),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+            )
+            OutlinedTextField(
+                value = pin,
+                onValueChange = { pin = it.filter(Char::isDigit).take(AppLock.MAX_PIN); error = null },
+                label = { Text("PIN جدید فضای امن") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true,
+                colors = fieldColors,
+                modifier = Modifier.widthIn(max = 320.dp).fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = confirmation,
+                onValueChange = { confirmation = it.filter(Char::isDigit).take(AppLock.MAX_PIN); error = null },
+                label = { Text("تکرار PIN مستقل") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true,
+                colors = fieldColors,
+                modifier = Modifier.widthIn(max = 320.dp).fillMaxWidth(),
+            )
+            error?.let { Text(it, color = Color(0xFFFF9A9A), textAlign = TextAlign.Center) }
+            Button(
+                onClick = {
+                    error = when {
+                        pin != confirmation -> "تکرار PIN یکسان نیست."
+                        else -> validate(pin)
+                    }
+                    if (error == null) {
+                        if (create(pin)) onDone() else error = "ذخیرهٔ PIN انجام نشد."
+                    }
+                },
+                modifier = Modifier.widthIn(max = 320.dp).fillMaxWidth(),
+            ) { Text("ساخت PIN و ورود") }
+        }
+        LockBackButton(onClick = onBack, modifier = Modifier.align(Alignment.TopStart))
+    }
+}
+
+/** کارت کاغذیِ گوشه‌گرد؛ پایهٔ همهٔ بخش‌های صفحهٔ فضای امن. */
+@Composable
+internal fun SafePanel(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) { Column(Modifier.fillMaxWidth(), content = content) }
+}
+
+@Composable
+internal fun SafeIconBadge(icon: ImageVector) {
+    Box(
+        Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+    }
+}
+
+@Composable
+internal fun SafeDivider() {
+    Box(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+    )
+}
+
+@Composable
+internal fun SafeRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        SafeIconBadge(icon)
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+            )
+        }
+        Icon(Icons.Outlined.ChevronLeft, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
