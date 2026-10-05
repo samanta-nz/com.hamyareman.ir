@@ -181,7 +181,7 @@ fun PoetryBookScreen(onBack: () -> Unit) {
         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
     ) {
         Column(Modifier.fillMaxSize()) {
-            com.hamyareman.ir.platform.core.designsystem.AppTopBar("دفتر شعر", onBack)
+            com.hamyareman.ir.platform.core.designsystem.AppTopBar("دفتر شعر", onBack, onHelp = { })
         LazyColumn(
             Modifier.fillMaxSize().padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
