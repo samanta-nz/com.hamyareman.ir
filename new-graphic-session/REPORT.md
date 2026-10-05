@@ -1,15 +1,11 @@
 # New-graphic validation report
 
-- Commit: `ddf537f625042f44e456c006e690a63335ff5545`
+- Commit: `5e4f7f0505c072e119da8a58ead259c86af7e9a0`
 - Branch: `New-graphic`
-- Static acceptance: `success`
-- Compile + unit tests: `cancelled`
+- Static acceptance: `skipped`
+- Compile + unit tests: `skipped`
 - Lint: `skipped`
 - Assemble release APK: `skipped`
 
-## Compile errors (first 60 matching lines)
-```
-```
-
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanStore.kt
+M	apps/hamyar-app/build.gradle.kts
