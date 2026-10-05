@@ -164,7 +164,7 @@ fun RealisticCoverTile(
 fun RealisticIconAction(
     contentDescription: String,
     onClick: () -> Unit,
-    icon: ImageVector = androidx.compose.material.icons.Icons.Default.MenuBook,
+    icon: ImageVector,
     tint: Color = Color.White,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
