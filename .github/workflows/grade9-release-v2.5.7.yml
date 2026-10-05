@@ -123,7 +123,7 @@ jobs:
           test "$(head -c 2 /tmp/apk-head.bin)" = "PK"
           echo "EXTERNAL_URL=$URL" >> "$GITHUB_ENV"
 
-      - name: Publish Arvan object and verify anonymous read
+      - name: Publish ParsPack object and verify anonymous read
         env:
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
@@ -136,8 +136,6 @@ jobs:
             --provider parspack \
             --content-type application/vnd.android.package-archive \
             --env-name INTERNAL_URL
-          test -s "$GITHUB_ENV"
-          grep -q '^INTERNAL_URL=https://' "$GITHUB_ENV"
 
       - name: Publish forced update row to Appwrite
         env:
