@@ -136,7 +136,8 @@ jobs:
             --provider parspack \
             --content-type application/vnd.android.package-archive \
             --env-name INTERNAL_URL
-          test -n "${INTERNAL_URL:-}"
+          test -s "$GITHUB_ENV"
+          grep -q '^INTERNAL_URL=https://' "$GITHUB_ENV"
 
       - name: Publish forced update row to Appwrite
         env:
