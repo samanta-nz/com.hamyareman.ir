@@ -1,6 +1,6 @@
 # New-graphic validation report
 
-- Commit: `fafc1d96a3dab52ff1f50b1d9123dc1163d6f3aa`
+- Commit: `ddf537f625042f44e456c006e690a63335ff5545`
 - Branch: `New-graphic`
 - Static acceptance: `success`
 - Compile + unit tests: `cancelled`
@@ -12,4 +12,4 @@
 ```
 
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt
+M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanStore.kt
