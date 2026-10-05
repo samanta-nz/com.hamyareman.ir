@@ -1,12 +1,11 @@
 # New-graphic validation report
 
-- Commit: `234bb81488c553ac52981da8d9b3edbc2b923e75`
+- Commit: `5232f0a617a084fb27c64ba5ce0f49ca18079408`
 - Branch: `New-graphic`
-- Static acceptance: `success`
-- Build outcome: `success`
-
-## Generated assets
-apps/hamyar-app/src/main/assets/lock/app-lock-bg.jpg 46963 bytes\napps/hamyar-app/src/main/assets/lock/safespace-lock-bg.jpg 31620 bytes\napps/hamyar-app/src/main/assets/diary/desk-bg.jpg 57389 bytes\napps/hamyar-app/src/main/assets/diary/cover-geometric.jpg 42090 bytes\napps/hamyar-app/src/main/assets/diary/page-lined.jpg 13317 bytes\napps/hamyar-app/src/main/assets/diary/cover-celestial.jpg 30270 bytes\napps/hamyar-app/src/main/assets/diary/cover-botanical.jpg 30717 bytes\napps/hamyar-app/src/main/assets/diary/paper-cream.jpg 28439 bytes\napps/hamyar-app/src/main/assets/poetry/poetry-bg.jpg 68981 bytes\napps/hamyar-app/src/main/assets/album/album-bg.jpg 53786 bytes\n
+- Static acceptance: `skipped`
+- Compile + unit tests: `skipped`
+- Lint: `skipped`
+- Assemble release APK: `skipped`
 
 ## Changed files
-M	apps/hamyar-app/build.gradle.kts
+M	.github/workflows/new-graphic-validate.yml
