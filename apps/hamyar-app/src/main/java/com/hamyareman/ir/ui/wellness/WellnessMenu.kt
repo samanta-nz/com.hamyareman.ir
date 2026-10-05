@@ -6,6 +6,10 @@ import com.hamyareman.ir.ui.navigation.Screen
  * درخت منوی «سلامتی و آرامش» مطابق فهرست محصول.
  * هاب‌ها از روی همین کاتالوگ ساخته می‌شوند؛ حرکت‌های از قبل موجود با
  * [PracticeItem.wellnessSlug] یا [PracticeItem.route] به صفحه‌ی قبلی وصل می‌شوند.
+ *
+ * معماری صفحه‌ها: صفحهٔ اول همیشه کاشی؛ صفحهٔ دوم کاشی یا «آکاردئون + کاشی».
+ * هر گروهی که در [PracticeGroup.childGroupIds] یا [PracticeItem.childGroupId] زیرگروه داشته باشد،
+ * در صفحهٔ دوم به‌صورت آکاردئون نمایش داده می‌شود (صفحهٔ واسط ساخته نمی‌شود).
  */
 data class PracticeItem(
     val id: String,
@@ -39,7 +43,10 @@ object WellnessMenu {
     fun groupsOf(ids: List<String>): List<PracticeGroup> = ids.mapNotNull { groups[it] }
 
     val mindfulnessIds = listOf("mf-presence", "mf-hypnosis", "mf-thoughts", "mf-social", "mf-journal", "mf-learn")
-    val calmIds = listOf("cl-breath", "cl-pmr", "cl-journey", "cl-visual", "cl-story", "cl-sounds", "cl-bedtime")
+
+    // «آرام‌سازی پیش از خواب» (cl-bedtime) طبق ساختار نهایی از «کسب آرامش» حذف شد؛
+    // مقصد درست آن سلامتی > خواب > آماده‌سازی آرام خواب است.
+    val calmIds = listOf("cl-breath", "cl-pmr", "cl-journey", "cl-visual", "cl-story", "cl-sounds")
     val betweenIds = listOf("bl-desk", "bl-eyes", "bl-body", "bl-focus")
     val skillsIds = SkillsCatalog.ids
 
@@ -674,14 +681,30 @@ object WellnessMenu {
             ),
         ),
         g(
-            "hl-sleep", "😴", "خواب", "ثبت، قصه، بشنو و بخواب، تنفس پیش از خواب",
+            "hl-sleep", "😴", "خواب", "ثبت، قصه، بشنو و بخواب، تنفس و آماده‌سازی خواب",
             items = listOf(
-                i("hl-sleep-log", "🌙", "ثبت خواب و رشته", "ساعت خواب و بیداری", route = Screen.SleepLog.route),
-                i("hl-sleep-story", "📖", "قصه‌ی شب", "روایت برای خواب", child = "cl-story"),
-                i("hl-sleep-listen", "🎧", "بشنو و بخواب", "صوت یکنواخت شب", route = Screen.SleepNight.route),
+                i("hl-sleep-log", "🌙", "ثبت خواب و رشته", "الگوی خواب خود را ثبت کنید و پیشرفتتان را ببینید.", route = Screen.SleepLog.route),
+                i("hl-sleep-story", "📖", "قصه‌ی شب", "داستان‌های آرامش‌بخش برای خواب بهتر", child = "cl-story"),
+                i("hl-sleep-listen", "🎧", "بشنو و بخواب", "موسیقی و صدای طبیعت برای آرامش ذهن", route = Screen.SleepNight.route),
                 i(
-                    "hl-sleep-breath", "🌬️", "تنفس پیش از خواب", "شکمی و ۴-۷-۸ برای خواب، نه بیداری",
+                    "hl-sleep-breath", "🌬️", "تنفس پیش از خواب", "با چند نفس عمیق، آرام شوید.",
                     route = Screen.SleepBreath.route,
+                ),
+            ),
+            // آکاردئون: «آماده‌سازی آرام خواب» — کاشی‌های محتوا مستقیم زیر آن باز می‌شوند.
+            children = listOf("hl-sleep-prep"),
+        ),
+        // HTML هر دو مورد روی ParsPack:
+        //   Bucket/Html-files/app/health/sleep/preparation/01-pre-sleep-body-relaxation.html
+        //   Bucket/Html-files/app/health/sleep/preparation/02-release-day-thoughts.html
+        g(
+            "hl-sleep-prep", "🛏️", "آماده‌سازی آرام خواب", "بدن و ذهن خود را برای خوابی عمیق‌تر آماده کنید.",
+            items = listOf(
+                i(
+                    "sp-body", "🧘", "آرام‌سازی بدنی قبل خواب", "۲۸ دقیقه", "۲۸ دقیقه",
+                ),
+                i(
+                    "sp-release", "🍵", "رهاکردن فکرهای روز", "۲۵ دقیقه", "۲۵ دقیقه",
                 ),
             ),
         ),
@@ -702,6 +725,8 @@ object WellnessMenu {
     private val explicitPlaceholderItems = setOf(
         "pd-hips", "pd-heat", "pd-food-period", "pd-food-after", "pd-food-mid", "pd-food-pms",
         "hl-focus-food", "mf-body-scan", "mf-grounding", "mf-one-minute",
+        // HTML آن‌ها روی ParsPack ساخته می‌شود؛ تا آن موقع «به‌زودی».
+        "sp-body", "sp-release",
     )
 
     /** صفحات داخلیِ این شاخه‌ها عمداً بدون قاب عنوان/فلش خود صفحه نمایش داده می‌شوند. */
