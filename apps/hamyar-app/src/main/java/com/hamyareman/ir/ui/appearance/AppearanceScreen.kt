@@ -45,19 +45,28 @@ import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 /** صفحه‌ی ظاهر: تم رنگ و اندازهٔ نوشته. فونت قفل است. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearanceScreen(onBack: () -> Unit) {
+fun AppearanceScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     val prefs = LocalUiPrefs.current
     var pendingTheme by remember { mutableStateOf<BrandTheme?>(null) }
 
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("ظاهر", onBack)
+        AppTopBar("ظاهر", onBack, onHelp = onHelp)
         Column(
             Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("تم‌های تازهٔ هماهنگ با هویت همیار من، همراه با اندازهٔ نوشتهٔ سراسری ✨", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-            Text("اندازهٔ نوشتهٔ سراسری", style = MaterialTheme.typography.titleMedium)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("اندازهٔ نوشتهٔ سراسری", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = { prefs.resetFontTheme() }) {
+                    Text("بازگردانی فونت پیش‌فرض")
+                }
+            }
             Text(
                 if (prefs.textSizeOffset == 0) "استاندارد (۱۳)"
                 else {
