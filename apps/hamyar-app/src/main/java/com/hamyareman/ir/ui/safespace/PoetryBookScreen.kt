@@ -204,6 +204,8 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                             header = if (title.isBlank()) type else title,
                             textAlign = alignment,
                             showVerticalGuides = false,
+                            headerOnFirstLine = true,
+                            realistic = true,
                         )
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = ::save, modifier = Modifier.weight(2f)) {
@@ -298,8 +300,6 @@ fun PoetryBookScreen(onBack: () -> Unit) {
                 }
             }
         }
-    }
-
     }
 
     viewer?.let { poem ->
