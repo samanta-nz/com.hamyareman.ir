@@ -329,8 +329,8 @@ fun LinedNotebookInput(
                     },
                     textStyle = TextStyle(
                         fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Normal,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold,
                         lineHeight = LINE_HEIGHT_SP.sp,
                         color = PaperInk,
                         textAlign = textAlign,
