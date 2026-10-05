@@ -1160,3 +1160,4 @@ fun NotebooksScreen(onBack: () -> Unit) {
         }
     }
 }
+}
