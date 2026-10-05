@@ -183,7 +183,9 @@ fun BackgroundMusicTileHost(
             }
 
             // فقط یک اندازهٔ نهایی؛ بدون انیمیشنِ چندچرخه‌ای روی Android WebView.
-            val height = if (expanded) (screenHeight - 24.dp).coerceAtLeast(420.dp) else TILE_HEIGHT
+            val height = if (expanded) {
+                (screenHeight * 0.78f).coerceIn(420.dp, 620.dp)
+            } else TILE_HEIGHT
             Box(modifier.fillMaxWidth().height(height)) {
                 AndroidView(
                     factory = { web },
