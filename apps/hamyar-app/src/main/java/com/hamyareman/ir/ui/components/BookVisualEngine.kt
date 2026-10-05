@@ -115,70 +115,140 @@ fun RealisticBookPage(
     content: @Composable () -> Unit,
 ) {
     val offset = pageOffset.coerceIn(-1.2f, 1.2f)
-    val curve = abs(offset)
-    val depth = stackDepth.coerceIn(0, 9)
+    val bend = abs(offset)
+    val depth = stackDepth.coerceIn(0, 10)
     val radius = if (isCover) 7.dp else 3.dp
+    val warmEdge = Color(0xFFE4DAC9)
 
     Box(
         modifier
             .fillMaxSize()
-            .padding(horizontal = if (isCover) 9.dp else 6.dp, vertical = 6.dp)
+            .padding(horizontal = if (isCover) 8.dp else 5.dp, vertical = 6.dp)
             .graphicsLayer {
-                rotationY = -offset * if (isCover) 13f else 8f
-                rotationZ = offset * .55f
-                scaleX = 1f - curve * if (isCover) .024f else .015f
-                scaleY = 1f - curve * .008f
+                val eased = (bend * bend).coerceAtMost(1f)
+                rotationY = -offset * if (isCover) 14f else 9f
+                rotationZ = offset * 0.55f
+                scaleX = 1f - bend * if (isCover) 0.023f else 0.014f
+                scaleY = 1f - bend * 0.007f
                 translationX = -offset * 8.dp.toPx()
-                cameraDistance = 42f * density
+                cameraDistance = 48f * density
                 transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
-                    pivotFractionX = if (offset > 0f) 1f else 0f,
-                    pivotFractionY = .5f,
+                    pivotFractionX = if (offset >= 0f) 1f else 0f,
+                    pivotFractionY = 0.5f,
                 )
+                shadowElevation = (12f + eased * 10f) * density
             }
-            .shadow(if (isCover) 24.dp else 18.dp, RoundedCornerShape(radius)),
+            .shadow(if (isCover) 24.dp else 18.dp, RoundedCornerShape(radius), clip = false),
     ) {
+        // صفحه‌های زیرین واقعاً به شکل stack دیده می‌شوند، نه یک shadow تخت.
         repeat(depth) { index ->
+            val d = index + 1
             Box(
                 Modifier
                     .fillMaxSize()
                     .padding(
-                        start = ((index + 1) * 1.6f).dp,
-                        end = ((index + 1) * 1.6f).dp,
-                        top = ((index + 1) * .65f).dp,
+                        start = (d * 1.45f).dp,
+                        end = (d * 1.45f).dp,
+                        top = (d * 0.68f).dp,
                     )
-                    .shadow(1.4.dp, RoundedCornerShape(3.dp))
-                    .background(Color(0xFFECE4D6)),
+                    .shadow(1.8.dp, RoundedCornerShape(3.dp), clip = false)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(warmEdge, Color(0xFFF0E7D7)),
+                        ),
+                        RoundedCornerShape(3.dp),
+                    )
+                    .border(0.55.dp, Color(0x3A6A5A48), RoundedCornerShape(3.dp)),
             )
         }
 
         Box(
             Modifier
                 .fillMaxSize()
-                .shadow(if (isCover) 26.dp else 17.dp, RoundedCornerShape(radius))
-                .background(if (isCover) Color(0xFF172A3C) else PaperWarm, RoundedCornerShape(radius)),
+                .clip(RoundedCornerShape(radius))
+                .background(
+                    if (isCover) {
+                        Brush.linearGradient(
+                            listOf(Color(0xFF263E56), Color(0xFF102235), Color(0xFF1D3146)),
+                        )
+                    } else {
+                        Brush.linearGradient(
+                            listOf(PaperWarm, Color(0xFFF4EBDD), PaperWarm),
+                        )
+                    },
+                    RoundedCornerShape(radius),
+                )
+                .border(
+                    if (isCover) 1.1.dp else 0.7.dp,
+                    if (isCover) Color(0x88B88A4A) else Color(0x4D675B4A),
+                    RoundedCornerShape(radius),
+                ),
         ) {
             content()
+
             Canvas(Modifier.fillMaxSize()) {
-                val shade = (.08f + curve * .20f).coerceAtMost(.28f)
+                // شکست نور روی جلد/کاغذ و سایهٔ داخلی.
                 drawRect(
                     Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color(0x10FFFFFF),
-                            Color(0x36000000).copy(alpha = shade),
-                        ),
+                        colors = if (offset >= 0f) {
+                            listOf(
+                                Color(0x08000000),
+                                Color.Transparent,
+                                Color(0x36000000),
+                            )
+                        } else {
+                            listOf(
+                                Color(0x36000000),
+                                Color.Transparent,
+                                Color(0x08000000),
+                            )
+                        },
                     ),
                 )
+
+                val edgeX = if (offset >= 0f) size.width - 3f else 3f
+                val edgeDirection = if (offset >= 0f) -1f else 1f
+                repeat(if (isCover) 2 else 6) { i ->
+                    val p = i * (if (isCover) 2.2f else 1.55f)
+                    drawLine(
+                        color = if (isCover) Color(0x66B88A4A) else Color(0x55907E67),
+                        start = Offset(edgeX + edgeDirection * p, 5f),
+                        end = Offset(edgeX + edgeDirection * p, size.height - 6f),
+                        strokeWidth = if (isCover) 1.05f else 0.72f,
+                    )
+                }
+
+                if (isCover) {
+                    val spineX = if (offset >= 0f) 8f else size.width - 8f
+                    drawLine(
+                        color = Color(0x447BA6C9),
+                        start = Offset(spineX, 4f),
+                        end = Offset(spineX, size.height - 4f),
+                        strokeWidth = 4.5f,
+                    )
+                    drawLine(
+                        color = Color(0x33FFFFFF),
+                        start = Offset(spineX + if (offset >= 0f) 3f else -3f, 6f),
+                        end = Offset(spineX + if (offset >= 0f) 3f else -3f, size.height - 6f),
+                        strokeWidth = 1.0f,
+                    )
+                }
+
+                // curl بسیار ملایم در لبهٔ ورق هنگام swipe.
+                if (!isCover && bend > 0.08f) {
+                    val curl = (bend.coerceIn(0f, 1f) * size.width * 0.07f)
+                    val x = if (offset >= 0f) size.width - curl else curl
+                    drawCircle(
+                        color = Color(0x26000000),
+                        radius = 16f + bend * 12f,
+                        center = Offset(x, size.height * 0.5f),
+                    )
+                }
+
                 drawLine(
-                    color = Color(0x55FFFFFF),
+                    color = Color(0x38FFFFFF),
                     start = Offset(2f, 2f),
                     end = Offset(size.width - 2f, 2f),
-                    strokeWidth = 1.6f,
-                )
-                drawLine(
-                    color = Color(0x55000000),
-                    start = Offset(size.width - 1.5f, 3f),
-                    end = Offset(size.width - 1.5f, size.height - 3f),
                     strokeWidth = 1.4f,
                 )
             }
