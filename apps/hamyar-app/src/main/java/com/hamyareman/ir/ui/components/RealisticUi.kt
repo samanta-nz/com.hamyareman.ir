@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,12 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.hamyareman.ir.platform.core.designsystem.BrandTheme
 
 private val Leather = Color(0xFF3A2A20)
 private val Gold = Color(0xFFB88A4A)
-private val Paper = Color(0xFFF7F0E3)
-private val Ink = Color(0xFF18243A)
 
 @Composable
 fun RealisticDeskFrame(
@@ -164,6 +162,7 @@ fun RealisticCoverTile(
 fun RealisticIconAction(
     contentDescription: String,
     onClick: () -> Unit,
+    icon: ImageVector = androidx.compose.material.icons.Icons.Outlined.AutoStories,
     tint: Color = Color.White,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -178,7 +177,7 @@ fun RealisticIconAction(
             .border(0.8.dp, Color(0x55FFFFFF), androidx.compose.foundation.shape.CircleShape),
     ) {
         Icon(
-            imageVector = androidx.compose.material.icons.Icons.Outlined.AutoStories,
+            imageVector = icon,
             contentDescription = contentDescription,
             tint = tint.copy(alpha = if (enabled) 1f else 0.45f),
         )
