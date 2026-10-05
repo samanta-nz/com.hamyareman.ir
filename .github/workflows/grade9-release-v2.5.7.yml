@@ -6,7 +6,7 @@ on:
     branches:
       - New-graphic
     paths:
-      - ".release-trigger/grade9-v2.5.7"
+      - ".release-trigger/**"
 
 permissions:
   contents: write
