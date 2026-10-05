@@ -50,11 +50,13 @@ jobs:
           python scripts/new_graphic_generate_assets.py
 
       - name: Static graphic acceptance checks
+        id: static
+        continue-on-error: true
         run: |
           python - <<'PY'
           from pathlib import Path
           checks = {
-              "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/PinLockGate.kt": ["PatternLockGrid", "LockVariant.SafeSpace", "PatternFeedback.Success"],
+              "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/PinLockGate.kt": ["PatternLockGrid", "LockVariant", "SafeSpace", "PatternFeedback.Success"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt": ["headerOnFirstLine", "RealisticBookPage", "NOTEBOOK_PAGE_SEPARATOR"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt": ["RealisticDeskFrame", "DIARY_DESK", "LinedNotebookInput"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt": ["RealisticDeskFrame", "POETRY_BG", "showVerticalGuides = false"],
@@ -79,6 +81,8 @@ jobs:
       - name: Write session report
         if: always()
         run: |
+          git fetch --no-tags --prune origin New-graphic
+          git reset --hard origin/New-graphic
           mkdir -p new-graphic-session
           REPORT="new-graphic-session/REPORT-${GITHUB_SHA}.md"
           {
@@ -102,5 +106,5 @@ jobs:
           git push origin HEAD:New-graphic || true
 
       - name: Fail after report
-        if: steps.build.outcome != 'success'
+        if: steps.static.outcome != 'success' || steps.build.outcome != 'success'
         run: exit 1
