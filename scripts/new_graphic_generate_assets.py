@@ -5,6 +5,10 @@ from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "apps/hamyar-app/src/main/assets"
+# تصویرهای واقعی (Gemini) در assets/ ریشه هستند و با sourceSets به APK می‌روند.
+# اگر فایلی همان‌جا باشد، نسخهٔ رسم‌شده با کد ساخته نمی‌شود تا Gradle خطای
+# «Duplicate resources» ندهد؛ فقط جای فایل‌های ناموجود fallback ساخته می‌شود.
+REAL = ROOT / "assets"
 
 
 def gradient(w, h, stops):
@@ -128,15 +132,22 @@ def paper():
 
 
 assets = {
-    "lock/app-lock-bg.jpg": lock_bg(False),
-    "lock/safespace-lock-bg.jpg": lock_bg(True),
-    "diary/desk-bg.jpg": desk("diary"),
-    "poetry/poetry-bg.jpg": desk("poetry"),
-    "album/album-bg.jpg": desk("album"),
-    "diary/paper-cream.jpg": paper(),
+    "lock/app-lock-bg.jpg": lambda: lock_bg(False),
+    "lock/safespace-lock-bg.jpg": lambda: lock_bg(True),
+    "diary/desk-bg.jpg": lambda: desk("diary"),
+    "poetry/poetry-bg.jpg": lambda: desk("poetry"),
+    "album/album-bg.jpg": lambda: desk("album"),
+    "diary/paper-cream.jpg": paper,
 }
 
-for relative, image in assets.items():
+for relative, make in assets.items():
+    if (REAL / relative).exists():
+        print(f"skip {relative}: real image exists in assets/")
+        stale = OUT / relative
+        if stale.exists():
+            stale.unlink()
+        continue
+    image = make()
     target = OUT / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     image.save(target, "JPEG", quality=82, optimize=True, progressive=True)
