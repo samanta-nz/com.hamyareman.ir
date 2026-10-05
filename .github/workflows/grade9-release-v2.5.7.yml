@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - New-graphic
+    paths:
+      - ".release-trigger/grade9-v2.5.7"
 
 permissions:
   contents: write
