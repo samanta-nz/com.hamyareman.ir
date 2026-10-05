@@ -60,7 +60,11 @@ jobs:
               "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/PinLockGate.kt": ["PatternLockGrid", "LockVariant", "SafeSpace", "PatternFeedback.Success"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt": ["headerOnFirstLine", "RealisticBookPage", "NOTEBOOK_PAGE_SEPARATOR"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/DiaryScreens.kt": ["RealisticDeskFrame", "DIARY_DESK", "LinedNotebookInput"],
-              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt": ["RealisticDeskFrame", "POETRY_BG", "showVerticalGuides = false"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/safespace/PoetryBookScreen.kt": ["RealisticDeskFrame", "POETRY_BG", "showVerticalGuides = false", "PoetryHemistichEditor"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookVisualEngine.kt": ["RealisticBookPage", "stackDepth", "rotationY", "shadowElevation", "cameraDistance"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/RealisticUi.kt": ["RealisticDeskFrame", "RealisticCoverTile", "RealisticIconAction", "MaterialTheme.colorScheme.primary"],
+              "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/Components.kt": ["ControlShape", "CardShape", "ButtonDefaults.buttonElevation", "TopAppBarDefaults.topAppBarColors"],
+              "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt": ["https://", "removePrefix(\"assets/\")", "readable(remote)"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt": ["RealisticDeskFrame", "ALBUM_BG", "GridCells.Adaptive"],
           }
           errors = []
@@ -69,6 +73,16 @@ jobs:
               for token in tokens:
                   if token not in source:
                       errors.append(f"missing {token} in {path}")
+          assets = [
+              Path("apps/hamyar-app/src/main/assets/lock/app-lock-bg.jpg"),
+              Path("apps/hamyar-app/src/main/assets/lock/safespace-lock-bg.jpg"),
+              Path("apps/hamyar-app/src/main/assets/diary/desk-bg.jpg"),
+              Path("apps/hamyar-app/src/main/assets/poetry/poetry-bg.jpg"),
+              Path("apps/hamyar-app/src/main/assets/album/album-bg.jpg"),
+          ]
+          for asset in assets:
+              if not asset.exists() or asset.stat().st_size < 5000:
+                  errors.append(f"generated asset missing/too small: {asset}")
           if errors:
               raise SystemExit("\n".join(errors))
           print("graphic acceptance checks: PASS")
