@@ -1,6 +1,6 @@
 # New-graphic validation report
 
-- Commit: `01a46014ac86750c046583ddcd84c4d0a4f6c966`
+- Commit: `f807dd968629a51901ef24f5f90b0a8a388dbdb7`
 - Branch: `New-graphic`
 - Static acceptance: `success`
 - Compile + unit tests: `success`
@@ -21,4 +21,4 @@
 ```
 
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessMenu.kt
+M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/PracticeScreens.kt
