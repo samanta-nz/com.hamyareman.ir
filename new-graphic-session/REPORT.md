@@ -1,6 +1,6 @@
 # New-graphic validation report
 
-- Commit: `5028b94d89d9c5089a39977a061c4a764dd51b05`
+- Commit: `01a46014ac86750c046583ddcd84c4d0a4f6c966`
 - Branch: `New-graphic`
 - Static acceptance: `success`
 - Compile + unit tests: `success`
@@ -21,4 +21,4 @@
 ```
 
 ## Changed files
-M	.release-trigger/grade9-v2.5.7
+M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessMenu.kt
