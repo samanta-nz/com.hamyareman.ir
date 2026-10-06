@@ -1,24 +1,11 @@
 # New-graphic validation report
 
-- Commit: `f807dd968629a51901ef24f5f90b0a8a388dbdb7`
+- Commit: `24156edccb60bbdb74f00bcf6189d389821504ae`
 - Branch: `New-graphic`
-- Static acceptance: `success`
-- Compile + unit tests: `success`
-- Lint: `success`
-- Assemble release APK: `success`
-
-## Compile errors (first 60 matching lines)
-```
-```
-
-## Lint errors (first 60 matching lines)
-```
-```
-
-## Assemble errors (first 60 matching lines)
-```
-> Task :hamyar-app:checkP09ReleaseDuplicateClasses
-```
+- Static acceptance: `skipped`
+- Compile + unit tests: `skipped`
+- Lint: `skipped`
+- Assemble release APK: `skipped`
 
 ## Changed files
-M	apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/PracticeScreens.kt
+D	apps/hamyar-app/src/main/assets/book-covers/C911.jpg
