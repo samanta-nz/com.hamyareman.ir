@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-06T04:32:56.675024+00:00
+- Generated: 2026-10-06T04:33:30.247891+00:00
 - Branch: New-graphic
-- HEAD: d4792b27d7c223099a34904c2d455386830cf4bc
+- HEAD: 91a0bc4bcd659170c3223bb7056dc40478888852
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	291
+- rev-list main...HEAD: 2	293
 
 ## Summary
 
@@ -69,6 +69,7 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/RealisticUi.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/content/ContentCatalog.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/CalendarOccasions.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/HomeScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/WaterQuickCard.kt`
