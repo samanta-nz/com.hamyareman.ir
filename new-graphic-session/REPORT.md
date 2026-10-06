@@ -1,11 +1,24 @@
 # New-graphic validation report
 
-- Commit: `24156edccb60bbdb74f00bcf6189d389821504ae`
+- Commit: `3bc4a566c4c22b742b1bb924d0de6609ad11ece3`
 - Branch: `New-graphic`
-- Static acceptance: `skipped`
-- Compile + unit tests: `skipped`
-- Lint: `skipped`
-- Assemble release APK: `skipped`
+- Static acceptance: `success`
+- Compile + unit tests: `success`
+- Lint: `success`
+- Assemble release APK: `success`
+
+## Compile errors (first 60 matching lines)
+```
+```
+
+## Lint errors (first 60 matching lines)
+```
+```
+
+## Assemble errors (first 60 matching lines)
+```
+> Task :hamyar-app:checkP09ReleaseDuplicateClasses
+```
 
 ## Changed files
-D	apps/hamyar-app/src/main/assets/book-covers/C911.jpg
+M	.github/workflows/new-graphic-validate.yml
