@@ -50,6 +50,26 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check Pillow
           python scripts/new_graphic_generate_assets.py
+          python scripts/generate_missing_tile_covers.py
+
+      - name: Reject removed legacy assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          forbidden = [
+              Path("apps/hamyar-app/src/main/assets/content/background-music.html"),
+              Path("apps/hamyar-app/src/main/assets/practice-covers/hl-sleep-calm.jpg"),
+              Path("apps/hamyar-app/src/main/assets/book-covers/C908.jpg"),
+              Path("apps/hamyar-app/src/main/assets/book-covers/C911.jpg"),
+          ]
+          found = [str(p) for p in forbidden if p.exists()]
+          if found:
+              raise SystemExit(
+                  "removed legacy assets must not exist:\n" + "\n".join(found)
+              )
+          print("legacy asset guard: PASS")
+          PY
 
       - name: Static graphic acceptance checks
         id: static
