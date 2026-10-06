@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-05T23:52:42.863036+00:00
+- Generated: 2026-10-06T04:32:56.675024+00:00
 - Branch: New-graphic
-- HEAD: 01a46014ac86750c046583ddcd84c4d0a4f6c966
+- HEAD: d4792b27d7c223099a34904c2d455386830cf4bc
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	288
+- rev-list main...HEAD: 2	291
 
 ## Summary
 
@@ -59,6 +59,7 @@
 - `.release-trigger/grade9-v2.5.7`
 - `RELEASES.md`
 - `apps/hamyar-app/build.gradle.kts`
+- `apps/hamyar-app/src/main/assets/content/app-content.tsv`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt`
