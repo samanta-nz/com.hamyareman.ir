@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -66,7 +65,7 @@ fun PracticeHubScreen(
     extraTop: @Composable () -> Unit = {},
     extraBottom: @Composable () -> Unit = {},
 ) {
-    val groups = remember(rootIds) { WellnessMenu.groupsOf(rootIds) }
+    val groups = remember(rootIds) { WellnessLayout.groupsOf(rootIds) }
     HubBody {
         HubHeader(title, subtitle, onBack, slotId = headerSlot)
         extraTop()
@@ -107,7 +106,7 @@ private sealed interface PracticeSection {
 
 private fun sectionsOf(group: PracticeGroup): List<PracticeSection> = buildList {
     group.items.forEach { item ->
-        val child = item.childGroupId.takeIf { it.isNotBlank() }?.let { WellnessMenu.group(it) }
+        val child = item.childGroupId.takeIf { it.isNotBlank() }?.let { WellnessLayout.group(it) }
         if (child != null) {
             add(PracticeSection.Accordion(child.id, item.emoji, item.title, item.subtitle, flatItems(child)))
         } else {
@@ -115,25 +114,25 @@ private fun sectionsOf(group: PracticeGroup): List<PracticeSection> = buildList 
         }
     }
     group.childGroupIds.forEach { cid ->
-        val child = WellnessMenu.group(cid) ?: return@forEach
+        val child = WellnessLayout.group(cid) ?: return@forEach
         add(PracticeSection.Accordion(child.id, child.emoji, child.title, child.subtitle, flatItems(child)))
     }
 }
 
 /** آیتم‌های یک گروه؛ اگر خودش زیرگروه دارد، آیتم‌هایشان هم پشت سر هم می‌آیند (بدون صفحهٔ واسط). */
 private fun flatItems(group: PracticeGroup): List<PracticeItem> =
-    group.items + group.childGroupIds.mapNotNull { WellnessMenu.group(it) }.flatMap { flatItems(it) }
+    group.items + group.childGroupIds.mapNotNull { WellnessLayout.group(it) }.flatMap { flatItems(it) }
 
 @Composable
 fun PracticeGroupScreen(nav: NavController, groupId: String, onBack: () -> Unit) {
-    val group = WellnessMenu.group(groupId)
+    val group = WellnessLayout.group(groupId)
     val ctx = LocalContext.current
     val memory = remember { LocalStore(ctx, "hamyar_accordion_memory") }
     // اولین ورود همه بسته‌اند؛ بعد از آن آخرین آکاردئونِ بازشده در حافظهٔ همین منو می‌ماند. فقط یکی باز است.
     var openId by remember(groupId) { mutableStateOf(memory.getString("open_$groupId", "")) }
 
     HubBody {
-        if (!WellnessMenu.hideInternalChromeForGroup(groupId)) {
+        if (!WellnessLayout.hideInternalChromeForGroup(groupId)) {
             HubHeader(
                 title = group?.title ?: "تمرین",
                 subtitle = group?.subtitle ?: "",
@@ -267,7 +266,7 @@ fun PracticeItemScreen(
     var stepIx by remember { mutableStateOf(0) }
 
     Column(Modifier.fillMaxSize()) {
-        if (!WellnessMenu.hideInternalChromeForItem(itemId)) {
+        if (!WellnessLayout.isPlaceholderItem(itemId)) {
             com.hamyareman.ir.platform.core.designsystem.AppTopBar(
                 item?.title ?: "تمرین",
                 onBack,
@@ -284,7 +283,7 @@ fun PracticeItemScreen(
                 Text("این تمرین پیدا نشد.", style = AppTypography.pageBody.style)
                 return@Column
             }
-            val staticPlaceholder = WellnessMenu.isPlaceholderItem(item.id)
+            val staticPlaceholder = WellnessLayout.isPlaceholderItem(item.id)
             if (!staticPlaceholder) {
                 Text(item.subtitle, style = AppTypography.pageHeading.style)
                 if (item.minutes.isNotBlank()) {
@@ -365,6 +364,8 @@ fun BetweenLessonsHubScreen(nav: NavController, onBack: () -> Unit) {
 
 internal fun openPractice(nav: NavController, item: PracticeItem) {
     when {
+        // پل خودهیپنوز به صفحهٔ بشنو و بخواب: همیشه ابزار داخلی (FIX)، نه متن مرحله‌ای.
+        item.id == "hyp-sleep" -> nav.layerTo(Screen.SleepNight.route)
         item.childGroupId.isNotBlank() -> nav.layerTo(Screen.PracticeGroup.of(item.childGroupId))
         item.route.isNotBlank() && item.steps.isEmpty() && item.body.isBlank() && item.wellnessSlug.isBlank() ->
             nav.layerTo(item.route)
