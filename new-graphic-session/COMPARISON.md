@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-06T04:33:30.247891+00:00
+- Generated: 2026-10-06T04:34:17.448580+00:00
 - Branch: New-graphic
-- HEAD: 91a0bc4bcd659170c3223bb7056dc40478888852
+- HEAD: 82f69fbcb50cab2bb3e761f8a4379b3177b7bc52
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	293
+- rev-list main...HEAD: 2	295
 
 ## Summary
 
@@ -90,6 +90,7 @@
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/update/UpdatePlan.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/PracticeScreens.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessLayout.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/wellness/WellnessMenu.kt`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.4.md"`
 - `"docs/maintenance/grade9/\330\247\331\206\330\252\330\264\330\247\330\261-2.5.5.md"`
