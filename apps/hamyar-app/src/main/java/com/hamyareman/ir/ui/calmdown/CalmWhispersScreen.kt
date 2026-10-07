@@ -89,45 +89,41 @@ private fun TextStyle.sleepTimerSmall(): TextStyle = copy(
 fun CalmWhispersScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val appearance = LocalUiPrefs.current
-    val webRef = remember { arrayOfNulls<WebView>(1) }
+    val activity = context as? androidx.fragment.app.FragmentActivity
+        ?: error("CalmWhispersScreen requires FragmentActivity")
+    val player = remember(activity) {
+        androidx.lifecycle.ViewModelProvider(activity)[NatureWhisperPlayerViewModel::class.java]
+    }
     SecureWebEffect()
 
-    var pageReady by remember { mutableStateOf(false) }
-    var selectedMinutes by remember { mutableIntStateOf(0) }
-    var secondsLeft by remember { mutableIntStateOf(0) }
+    val pageReady by player.pageReady
+    val webViewReady by player.webViewReady
+    val selectedMinutes = player.selectedMinutes.intValue
+    val secondsLeft = player.secondsLeft.intValue
+
     var timerOpen by remember { mutableStateOf(false) }
     var choiceMenuOpen by remember { mutableStateOf(false) }
     var interactionTick by remember { mutableIntStateOf(0) }
+    var exitDialogOpen by remember { mutableStateOf(false) }
 
     fun touchTimer() {
         timerOpen = true
         interactionTick++
     }
 
-    // سه ثانیه بعد از آخرین تعامل، پنل جمع می‌شود؛ پخش یا تایمر متوقف نمی‌شود.
-    LaunchedEffect(timerOpen, interactionTick) {
-        if (timerOpen) {
-            delay(3_000)
-            timerOpen = false
-        }
+    LaunchedEffect(Unit) {
+        player.ensureWebView(context, appearance)
     }
 
-    // شمارش معکوس؛ در پایان صدا و سرویس با هم بسته می‌شوند.
-    LaunchedEffect(selectedMinutes) {
-        if (selectedMinutes <= 0) {
-            secondsLeft = 0
-            HtmlAudioKeepAliveService.stop(context)
-            return@LaunchedEffect
+    LaunchedEffect(appearance.darkMode, appearance.darkTheme) {
+        player.updateAppearance(appearance)
+    }
+
+    LaunchedEffect(timerOpen, interactionTick) {
+        if (timerOpen) {
+            kotlinx.coroutines.delay(3_000)
+            timerOpen = false
         }
-        HtmlAudioKeepAliveService.start(context)
-        secondsLeft = selectedMinutes * 60
-        while (secondsLeft > 0) {
-            delay(1_000)
-            secondsLeft -= 1
-        }
-        webRef[0]?.stopManagedMedia()
-        HtmlAudioKeepAliveService.stop(context)
-        selectedMinutes = 0
     }
 
     BackHandler {
@@ -135,14 +131,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
             timerOpen = false
             choiceMenuOpen = false
         } else {
-            onBack()
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            webRef[0]?.stopManagedMedia()
-            HtmlAudioKeepAliveService.stop(context)
+            exitDialogOpen = true
         }
     }
 
@@ -159,48 +148,20 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
         label = "timer arrow scale",
     )
 
-    // هیچ AppTopBarی اینجا نیست: WebView تمام صفحهٔ محتواست و فقط پنل تایمر
-    // روی آن می‌نشیند. برگشت با کلید back دستگاه انجام می‌شود.
     Box(Modifier.fillMaxSize().background(Color.Black)) {
-        AndroidView(
-            factory = { viewContext ->
-                WebView(viewContext).apply {
-                    installHamyarAppearanceBridge(appearance)
-                    setBackgroundColor(AndroidColor.TRANSPARENT)
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.mediaPlaybackRequiresUserGesture = false
-                    settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                    settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-                    webViewClient = object : HmkWebViewClient(
-                        viewContext.applicationContext,
-                        HmkWebViewClient.bucketHost(),
-                    ) {
-                        override fun onPageFinished(view: WebView, url: String) {
-                            super.onPageFinished(view, url)
-                            view.post { pageReady = true }
-                            view.publishHamyarAppearance(
-                                appearance.darkMode,
-                                appearance.darkTheme,
-                                cacheHit = mainDocumentWasLoadedFromCache(),
-                            )
-                            // تنها صفحات موسیقی/خواب نگهبان Web Audio دارند تا با قفل صفحه قطع نشوند.
-                            view.bindManagedMediaLifecycle(watchWebAudio = true)
-                        }
-                    }
-                    installManagedMediaLifecycle()
-                    webRef[0] = this
-                    loadUrl(MUSIC_FULL_URL)
-                }
-            },
-            update = { it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme) },
-            modifier = Modifier.fillMaxSize(),
-            onRelease = {
-                it.stopManagedMedia()
-                if (webRef[0] === it) webRef[0] = null
-                it.destroy()
-            },
-        )
+        if (webViewReady && player.webView != null) {
+            AndroidView(
+                factory = { player.webView!! },
+                update = { view ->
+                    view.onResume()
+                    view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
+                },
+                modifier = Modifier.fillMaxSize(),
+                onRelease = {
+                    // Activity-scoped ViewModel intentionally retains the WebView.
+                },
+            )
+        }
 
         if (!pageReady) {
             CircularProgressIndicator(
@@ -288,9 +249,14 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                                 ) {
                                     TIMER_CHOICES.forEach { minutes ->
                                         DropdownMenuItem(
-                                            text = { Text("$minutes دقیقه", style = MaterialTheme.typography.bodySmall.sleepTimerSmall()) },
+                                            text = {
+                                                Text(
+                                                    "${minutes} دقیقه",
+                                                    style = MaterialTheme.typography.bodySmall.sleepTimerSmall(),
+                                                )
+                                            },
                                             onClick = {
-                                                selectedMinutes = minutes
+                                                player.startTimer(context, minutes)
                                                 choiceMenuOpen = false
                                                 touchTimer()
                                             },
@@ -301,10 +267,12 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                             if (selectedMinutes > 0) {
                                 TextButton(
                                     onClick = {
-                                        selectedMinutes = 0
+                                        player.cancelTimer()
                                         touchTimer()
                                     },
-                                ) { Text("لغو", style = MaterialTheme.typography.labelLarge.sleepTimerSmall()) }
+                                ) {
+                                    Text("لغو", style = MaterialTheme.typography.labelLarge.sleepTimerSmall())
+                                }
                             }
                             Spacer(Modifier.width(1.dp))
                         }
@@ -317,6 +285,42 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                     }
                 }
             }
+        }
+
+        if (exitDialogOpen) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { exitDialogOpen = false },
+                title = { Text("نجواهای آرام‌بخش طبیعت") },
+                text = {
+                    Text(
+                        if (selectedMinutes > 0)
+                            "می‌خواهی از این صفحه خارج شوی و پخش و تایمر ادامه داشته باشند؟"
+                        else
+                            "می‌خواهی از این صفحه خارج شوی؟ صدای در حال پخش می‌تواند در پس‌زمینه ادامه پیدا کند.",
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            exitDialogOpen = false
+                            onBack()
+                        },
+                    ) {
+                        Text("ادامه پخش")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            player.stopPlayback(context)
+                            exitDialogOpen = false
+                            onBack()
+                        },
+                    ) {
+                        Text("قطع پخش")
+                    }
+                },
+            )
         }
     }
 }

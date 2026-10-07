@@ -1,4 +1,4 @@
-name: New-graphic package validation
+name: New-graphic package and player validation
 
 # Single validation path: compile/tests, requirements audit, and APK-output guard. Never assembles an APK.
 
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: new-graphic-${{ github.sha }}
+  group: new-graphic-validation
   cancel-in-progress: true
 
 jobs:
@@ -114,6 +114,9 @@ jobs:
           print("static graphic acceptance: PASS")
           print("legacy asset guard: PASS")
           PY
+
+      - name: Verify player lifecycle contracts
+        run: python3 scripts/verify_player_lifecycle.py
 
       - name: Compile and JVM unit tests
         run: |
