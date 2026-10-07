@@ -50,6 +50,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -294,6 +295,7 @@ fun LinedNotebookInput(
         }
         var pages by remember(value) { mutableStateOf(decodePages(value, pageCapacity)) }
         val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
+        val layoutDirection = LocalLayoutDirection.current
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(value, pageCapacity) {
@@ -303,12 +305,12 @@ fun LinedNotebookInput(
         HorizontalPager(
             state = pager,
             modifier = Modifier.fillMaxWidth(),
-            reverseLayout = true,
+            reverseLayout = PersianPaging.pagerReverseLayout(layoutDirection),
             beyondViewportPageCount = 2,
         ) { pageIndex ->
             NotebookPaper(
                 header = if (pageIndex == 0) header else "",
-                headerAlign = oppositeTextAlign(textAlign),
+                headerAlign = TextAlign.Right,
                 showVerticalGuides = showVerticalGuides,
                 headerOnFirstLine = headerOnFirstLine,
                 realistic = realistic,
