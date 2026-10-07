@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.PI
@@ -29,6 +30,37 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlinx.coroutines.launch
+
+/**
+ * تنها منبع حقیقت جهت تورق دفتر فارسی.
+ *
+ * قرارداد فیزیکی: کشیدن از چپ به راست = صفحهٔ بعد، لولای ورق روی لبهٔ راست.
+ * در RTL واقعی، Pager نباید دوباره با reverseLayout جهت را معکوس کند.
+ */
+internal object PersianPaging {
+    val hingeTransformOrigin: TransformOrigin = TransformOrigin(1f, 0.5f)
+
+    fun pagerReverseLayout(layoutDirection: LayoutDirection): Boolean =
+        layoutDirection != LayoutDirection.Rtl
+
+    fun indexAfterSwipe(current: Int, count: Int, forward: Boolean): Int {
+        val last = (count - 1).coerceAtLeast(0)
+        return if (forward) (current + 1).coerceAtMost(last)
+        else (current - 1).coerceAtLeast(0)
+    }
+
+    fun dragDirection(dx: Float): Int = when {
+        dx > 0f -> 1
+        dx < 0f -> -1
+        else -> 0
+    }
+
+    fun targetForProgress(progress: Float): Int = when {
+        progress > 0.32f -> 1
+        progress < -0.32f -> -1
+        else -> 0
+    }
+}
 
 /**
  * وضعیت تورق کتاب. [progress] بین −۱ و ۱ است:
@@ -56,8 +88,8 @@ class BookFlipState(initialPage: Int, count: Int) {
     internal suspend fun settle(target: Float) {
         progress.animateTo(target, tween(durationMillis = 520, easing = FastOutSlowInEasing))
         when {
-            target > 0.5f -> current = (current + 1).coerceAtMost(pageCount - 1)
-            target < -0.5f -> current = (current - 1).coerceAtLeast(0)
+            target > 0.5f -> current = PersianPaging.indexAfterSwipe(current, pageCount, forward = true)
+            target < -0.5f -> current = PersianPaging.indexAfterSwipe(current, pageCount, forward = false)
         }
         progress.snapTo(0f)
     }
@@ -122,9 +154,9 @@ fun BookFlipper(
                         scope.launch {
                             val p = state.progress.value
                             state.settle(
-                                when {
-                                    p > 0.32f -> 1f
-                                    p < -0.32f -> -1f
+                                when (PersianPaging.targetForProgress(p)) {
+                                    1 -> 1f
+                                    -1 -> -1f
                                     else -> 0f
                                 },
                             )
@@ -141,7 +173,7 @@ fun BookFlipper(
                         .fillMaxSize()
                         .graphicsLayer {
                             val o = (state.current - page) + state.progress.value
-                            transformOrigin = TransformOrigin(1f, 0.5f)
+                            transformOrigin = PersianPaging.hingeTransformOrigin
                             alpha = if (o >= 1f || o <= -1f) 0f else 1f
                             if (o > 0f && o < 1f) {
                                 scaleX = cos(o * PI / 2).toFloat().coerceIn(0.001f, 1f)
