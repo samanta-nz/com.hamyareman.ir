@@ -33,6 +33,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextMeasurer
@@ -209,6 +210,7 @@ internal fun SkinnedNotebookEditor(
     val measurer = rememberTextMeasurer()
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val geo = remember(skin, maxWidth) { SkinGeometry(skin, maxWidth.value) }
+        val layoutDirection = LocalLayoutDirection.current
         val style = remember(geo, textAlign, density) { skinTextStyle(geo.line, density, textAlign) }
         val widthPx = with(density) { geo.textWidth.roundToPx() }
         val pages = remember(value) { value.split(NOTEBOOK_PAGE_SEPARATOR) }
@@ -291,7 +293,7 @@ internal fun SkinnedNotebookEditor(
             HorizontalPager(
                 state = pager,
                 modifier = Modifier.fillMaxWidth(),
-                reverseLayout = true,
+                reverseLayout = PersianPaging.pagerReverseLayout(layoutDirection),
                 beyondViewportPageCount = 1,
             ) { pageIndex ->
                 BookSkinSpread(skin) { line, lines ->
@@ -304,7 +306,7 @@ internal fun SkinnedNotebookEditor(
                             Text(
                                 header,
                                 Modifier.fillMaxWidth().height(line),
-                                style = style.copy(textAlign = oppositeTextAlign(textAlign)),
+                                style = style.copy(textAlign = TextAlign.Right),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
