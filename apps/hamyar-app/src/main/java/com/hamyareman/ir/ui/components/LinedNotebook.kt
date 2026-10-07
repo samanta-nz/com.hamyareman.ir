@@ -51,6 +51,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +63,7 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.roundToPx
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
@@ -65,63 +71,28 @@ import kotlinx.coroutines.launch
 
 internal const val NOTEBOOK_PAGE_SEPARATOR = '\u000c'
 
-data class NotebookLayoutMetrics(
-    val visibleLines: Int,
-    val charsPerLine: Int,
-    val pageCapacity: Int,
-    val topSkipLines: Int,
-    val lineHeightSp: Int,
-)
-
-private const val TOP_SKIP_LINES = 0
 private const val LINE_HEIGHT_SP = 24
 private const val SIDE_GUTTER_DP = 60
 private const val BOTTOM_GUTTER_DP = 26
 private const val PAGE_ASPECT = 0.707f
+private const val DEFAULT_NOTEBOOK_LINES = 18
 
-private fun metrics(widthDp: Float, heightDp: Float): NotebookLayoutMetrics {
-    val usableWidth = (widthDp - SIDE_GUTTER_DP * 2).coerceAtLeast(140f)
-    val charsPerLine = (usableWidth / 10.7f).toInt().coerceIn(14, 42)
-    val usableHeight = (heightDp - BOTTOM_GUTTER_DP - TOP_SKIP_LINES * LINE_HEIGHT_SP).coerceAtLeast(120f)
-    val visibleLines = (usableHeight / LINE_HEIGHT_SP).toInt().coerceIn(8, 26)
-    return NotebookLayoutMetrics(
-        visibleLines = visibleLines,
-        charsPerLine = charsPerLine,
-        pageCapacity = (visibleLines * charsPerLine * 0.9f).toInt().coerceAtLeast(180),
-        topSkipLines = TOP_SKIP_LINES,
-        lineHeightSp = LINE_HEIGHT_SP,
-    )
-}
+private fun notebookBodyStyle(textAlign: TextAlign): TextStyle = TextStyle(
+    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
+    fontSize = 21.sp,
+    fontWeight = FontWeight.Bold,
+    lineHeight = LINE_HEIGHT_SP.sp,
+    color = PaperInk,
+    textAlign = textAlign,
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Center,
+        trim = LineHeightStyle.Trim.None,
+    ),
+)
 
-private fun cutText(text: String, capacity: Int): List<String> {
-    // فاصلهٔ تایپی بخشی از محتوای صفحه است؛ trim کردن متن در هر تغییر، Space را می‌بلعد.
-    val normalized = text.replace("\r", "")
-    if (normalized.isEmpty()) return listOf("")
-    if (normalized.length <= capacity) return listOf(normalized)
-    val out = mutableListOf<String>()
-    var rest = normalized
-    while (rest.length > capacity) {
-        val floor = (capacity * 0.72f).toInt()
-        val cut = rest.lastIndexOfAny(charArrayOf('\n', ' ', '،', '.', '؛', '؟'), capacity)
-            .takeIf { it >= floor } ?: capacity
-        out += rest.substring(0, cut)
-        val nextStart = if (cut < rest.length && rest[cut] == ' ') cut + 1 else cut
-        rest = rest.substring(nextStart)
-    }
-    out += rest
-    return out
-}
-
-private fun decodePages(value: String, capacity: Int): List<String> {
-    val normalized = value.replace("\r", "")
-    if (normalized.contains(NOTEBOOK_PAGE_SEPARATOR)) {
-        return normalized.split(NOTEBOOK_PAGE_SEPARATOR).map { it }.ifEmpty { listOf("") }
-    }
-    return cutText(normalized, capacity)
-}
-
-private fun encodePages(pages: List<String>): String =
-    pages.joinToString(NOTEBOOK_PAGE_SEPARATOR.toString())
+private fun splitStoredPages(value: String): List<String> =
+    value.replace("\\r", "").split(NOTEBOOK_PAGE_SEPARATOR).ifEmpty { listOf("") }
 
 @Composable
 fun NotebookPaper(
@@ -278,79 +249,158 @@ fun LinedNotebookInput(
     showVerticalGuides: Boolean = true,
     headerOnFirstLine: Boolean = false,
     realistic: Boolean = false,
+    typedLines: Int = DEFAULT_NOTEBOOK_LINES,
+    headerForPage: ((pageIndex: Int, pageCount: Int) -> String)? = null,
     overlay: @Composable (pageIndex: Int) -> Unit = {},
 ) {
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val measurer = rememberTextMeasurer()
+    val bodyStyle = remember(textAlign) { notebookBodyStyle(textAlign) }
+    val focusRequester = remember { FocusRequester() }
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val layout = remember(maxWidth) {
-            metrics(
-                widthDp = maxWidth.value,
-                heightDp = (maxWidth.value / PAGE_ASPECT).coerceAtLeast(430f),
+        val widthPx = with(density) {
+            (maxWidth - SIDE_GUTTER_DP.dp * 2f).coerceAtLeast(1.dp).roundToPx()
+        }
+        var pages by remember(value) { mutableStateOf(splitStoredPages(value)) }
+        var lastPublished by remember { mutableStateOf(value) }
+        val flip = rememberBookFlipState(initialPage = 0, pageCount = pages.size)
+        val scope = rememberCoroutineScope()
+        var field by remember {
+            val first = pages.firstOrNull().orEmpty()
+            mutableStateOf(TextFieldValue(first, TextRange(first.length)))
+        }
+        var pendingCursor by remember { mutableStateOf<Int?>(null) }
+
+        val pageCapacity = typedLines.coerceAtLeast(1)
+        val fit = { text: String, capacity: Int ->
+            firstMeasuredPageFit(
+                text = text,
+                measurer = measurer,
+                style = bodyStyle,
+                widthPx = widthPx,
+                maxLines = capacity,
             )
         }
-        val pageCapacity = remember(layout, header) {
-            val reserved = if (header.isBlank()) 0 else if (headerOnFirstLine) 3 else 2
-            ((layout.visibleLines - reserved).coerceAtLeast(8) * layout.charsPerLine * .93f)
-                .toInt()
-                .coerceAtLeast(140)
-        }
-        var pages by remember(value) { mutableStateOf(decodePages(value, pageCapacity)) }
-        val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
-        val layoutDirection = LocalLayoutDirection.current
-        val scope = rememberCoroutineScope()
 
-        LaunchedEffect(value, pageCapacity) {
-            pages = decodePages(value, pageCapacity)
+        fun publish(result: MeasuredEditResult) {
+            pages = result.pages
+            flip.pageCount = result.pages.size.coerceAtLeast(1)
+            if (result.page == flip.current) {
+                val pageText = result.pages.getOrElse(result.page) { "" }
+                field = TextFieldValue(
+                    pageText,
+                    TextRange(result.cursor.coerceIn(0, pageText.length)),
+                )
+            } else {
+                pendingCursor = result.cursor
+                scope.launch {
+                    if (result.page > flip.current) {
+                        repeat(result.page - flip.current) { flip.flipForward() }
+                    } else if (result.page < flip.current) {
+                        repeat(flip.current - result.page) { flip.flipBackward() }
+                    }
+                }
+            }
+            val encoded = result.pages.joinToString(NOTEBOOK_PAGE_SEPARATOR.toString())
+            lastPublished = encoded
+            onValueChange(encoded)
         }
 
-        HorizontalPager(
-            state = pager,
-            modifier = Modifier.fillMaxWidth(),
-            reverseLayout = PersianPaging.pagerReverseLayout(layoutDirection),
-            beyondViewportPageCount = 2,
-        ) { pageIndex ->
-            NotebookPaper(
-                header = if (pageIndex == 0) header else "",
-                headerAlign = TextAlign.Right,
-                showVerticalGuides = showVerticalGuides,
-                headerOnFirstLine = headerOnFirstLine,
-                realistic = realistic,
+        fun commit(next: TextFieldValue) {
+            val result = applyMeasuredEdit(
+                pages = pages,
+                index = flip.current,
+                text = next.text,
+                cursor = next.selection.start,
+                capacityForPage = { pageCapacity },
+                nextCapacity = pageCapacity,
+                measurer = measurer,
+                style = bodyStyle,
+                widthPx = widthPx,
+            )
+            publish(result)
+        }
+
+        LaunchedEffect(value) {
+            if (value != lastPublished) {
+                val external = splitStoredPages(value)
+                pages = external
+                flip.pageCount = external.size.coerceAtLeast(1)
+                flip.current = 0
+                pendingCursor = null
+                lastPublished = value
+                val first = external.firstOrNull().orEmpty()
+                field = TextFieldValue(first, TextRange(first.length))
+            }
+        }
+        LaunchedEffect(flip.current) {
+            val textOnPage = pages.getOrElse(flip.current) { "" }
+            val cursor = (pendingCursor ?: textOnPage.length).coerceIn(0, textOnPage.length)
+            field = TextFieldValue(textOnPage, TextRange(cursor))
+            pendingCursor = null
+            runCatching { focusRequester.requestFocus() }
+        }
+
+        Column(modifier.fillMaxWidth()) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(PAGE_ASPECT),
             ) {
-                Box(Modifier.fillMaxSize()) {
-                    BasicTextField(
-                    value = pages.getOrElse(pageIndex) { "" },
-                    onValueChange = { changed ->
-                        val chunks = cutText(changed, pageCapacity)
-                        val next = pages.toMutableList()
-                        next[pageIndex] = chunks.firstOrNull().orEmpty()
-                        if (chunks.size > 1) next.addAll(pageIndex + 1, chunks.drop(1))
-                        pages = next
-                        onValueChange(encodePages(next))
-                        if (chunks.size > 1) {
-                            scope.launch {
-                                pager.animateScrollToPage(
-                                    (pageIndex + chunks.lastIndex).coerceAtMost(next.lastIndex),
+                BookFlipper(
+                    state = flip,
+                    modifier = Modifier.fillMaxSize(),
+                ) { pageIndex ->
+                    val resolvedHeader = headerForPage?.invoke(pageIndex, pages.size)
+                        ?: if (header.isNotBlank()) header else ""
+                    NotebookPaper(
+                        header = resolvedHeader,
+                        headerAlign = TextAlign.Right,
+                        showVerticalGuides = showVerticalGuides,
+                        headerOnFirstLine = headerOnFirstLine,
+                        realistic = realistic,
+                    ) {
+                        Box(Modifier.fillMaxSize()) {
+                            if (pageIndex == flip.current) {
+                                BasicTextField(
+                                    value = field,
+                                    onValueChange = ::commit,
+                                    textStyle = bodyStyle,
+                                    cursorBrush = SolidColor(Color(0xFF27485C)),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(with(density) { (typedLines * LINE_HEIGHT_SP).sp.toDp() })
+                                        .focusRequester(focusRequester),
+                                )
+                            } else {
+                                Text(
+                                    pages.getOrElse(pageIndex) { "" },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(with(density) { (typedLines * LINE_HEIGHT_SP).sp.toDp() }),
+                                    style = bodyStyle,
+                                    maxLines = typedLines,
+                                    overflow = TextOverflow.Clip,
                                 )
                             }
+                            overlay(pageIndex)
                         }
-                    },
-                    textStyle = TextStyle(
-                        fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = LINE_HEIGHT_SP.sp,
-                        color = PaperInk,
-                        textAlign = textAlign,
-                        platformStyle = PlatformTextStyle(includeFontPadding = false),
-                        lineHeightStyle = LineHeightStyle(
-                            alignment = LineHeightStyle.Alignment.Center,
-                            trim = LineHeightStyle.Trim.None,
-                        ),
-                    ),
-                    cursorBrush = SolidColor(Color(0xFF27485C)),
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    overlay(pageIndex)
+                    }
                 }
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                TextButton(
+                    onClick = { scope.launch { flip.flipBackward() } },
+                    enabled = flip.current > 0,
+                ) { Text("صفحه قبل") }
+                TextButton(
+                    onClick = { scope.launch { flip.flipForward() } },
+                    enabled = flip.current < flip.pageCount - 1,
+                ) { Text("صفحه بعد") }
             }
         }
     }
