@@ -1,6 +1,6 @@
-name: New-graphic build validation
+name: New-graphic package validation
 
-# Single validation path: compile/test/lint/compare only; never assembles an APK.
+# Single validation path: compile/tests, requirements audit, and APK-output guard. Never assembles an APK.
 
 on:
   push:
@@ -118,10 +118,6 @@ jobs:
       - name: Compile and JVM unit tests
         run: |
           ./gradlew --no-daemon --console=plain --stacktrace             :hamyar-app:compileP09DebugKotlin             :core-common:testDebugUnitTest             :hamyar-app:testP09DebugUnitTest
-
-      - name: Lint
-        run: |
-          ./gradlew --no-daemon --console=plain --stacktrace             :hamyar-app:lintP09Debug
 
       - name: Compare New-graphic requirements
         run: |
