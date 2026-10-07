@@ -1,14 +1,14 @@
-name: New-graphic validation
+name: New-graphic build validation
 
 on:
   push:
     branches: [New-graphic]
     paths-ignore:
-      - "new-graphic-session/**"
+      - 'new-graphic-session/**'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: new-graphic-${{ github.ref }}
@@ -18,14 +18,15 @@ jobs:
   validate:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
+
     steps:
-      - name: Checkout New-graphic
+      - name: Checkout source
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
           fetch-depth: 50
 
-      - name: Set up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -41,41 +42,21 @@ jobs:
         with:
           cache-cleanup: never
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Generate design fallbacks (only where no real image exists)
+      - name: Generate design fallbacks
         run: |
           python -m pip install --disable-pip-version-check Pillow
           python scripts/new_graphic_generate_assets.py
 
-      - name: Reject removed legacy assets
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          forbidden = [
-              Path("apps/hamyar-app/src/main/assets/content/background-music.html"),
-              Path("apps/hamyar-app/src/main/assets/practice-covers/hl-sleep-calm.jpg"),
-              Path("apps/hamyar-app/src/main/assets/book-covers/C908.jpg"),
-              Path("apps/hamyar-app/src/main/assets/book-covers/C911.jpg"),
-          ]
-          found = [str(p) for p in forbidden if p.exists()]
-          if found:
-              raise SystemExit(
-                  "removed legacy assets must not exist:\n" + "\n".join(found)
-              )
-          print("legacy asset guard: PASS")
-          PY
-
       - name: Static graphic acceptance checks
-        id: static
-        continue-on-error: true
         run: |
           python - <<'PY'
           from pathlib import Path
+
           checks = {
               "shared/core-designsystem/src/main/java/com/hamyareman/ir/platform/core/designsystem/PinLockGate.kt": ["PatternLockGrid", "LockVariant", "SafeSpace", "PatternFeedback.Success"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt": ["headerOnFirstLine", "RealisticBookPage", "NOTEBOOK_PAGE_SEPARATOR"],
@@ -88,90 +69,67 @@ jobs:
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt": ["https://", "removePrefix(\"assets/\")", "readable(remote)", "COVER_LEATHER_INSIDE", "COVER_NAVY_FLORAL_SHEET"],
               "apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt": ["RealisticDeskFrame", "ALBUM_BG", "GridCells.Adaptive"],
           }
+
+          forbidden = [
+              Path("apps/hamyar-app/src/main/assets/content/background-music.html"),
+              Path("apps/hamyar-app/src/main/assets/practice-covers/hl-sleep-calm.jpg"),
+              Path("apps/hamyar-app/src/main/assets/book-covers/C908.jpg"),
+              Path("apps/hamyar-app/src/main/assets/book-covers/C911.jpg"),
+          ]
+
           errors = []
+
           for path, tokens in checks.items():
               source = Path(path).read_text(encoding="utf-8")
               for token in tokens:
                   if token not in source:
                       errors.append(f"missing {token} in {path}")
+
+          found = [str(p) for p in forbidden if p.exists()]
+          if found:
+              errors.append("removed legacy assets still exist: " + ", ".join(found))
+
           if Path("apps/hamyareman").exists():
               errors.append("stray directory still present: apps/hamyareman")
-          # هر پس‌زمینه یا از assets/ ریشه می‌آید یا fallback تولیدشده.
+
           for rel in ["lock/app-lock-bg.jpg", "lock/safespace-lock-bg.jpg", "diary/desk-bg.jpg", "poetry/poetry-bg.jpg", "album/album-bg.jpg"]:
               real = Path("assets") / rel
-              gen = Path("apps/hamyar-app/src/main/assets") / rel
-              if real.exists() and gen.exists():
+              generated = Path("apps/hamyar-app/src/main/assets") / rel
+              if real.exists() and generated.exists():
                   errors.append(f"duplicate asset (real + generated): {rel}")
-              if not (real.exists() or gen.exists()):
+              if not (real.exists() or generated.exists()):
                   errors.append(f"asset missing: {rel}")
+
           for name in ["cover-leather-brown", "cover-navy-floral"]:
               for suffix in ["", "-inside", "-sheet"]:
                   p = Path("assets/diary") / f"{name}{suffix}.png"
                   if not p.exists() or p.stat().st_size < 20000:
                       errors.append(f"book png missing/too small: {p}")
+
           if errors:
               raise SystemExit("\n".join(errors))
-          print("graphic acceptance checks: PASS")
+
+          print("static graphic acceptance: PASS")
+          print("legacy asset guard: PASS")
           PY
 
-      - name: Compile and unit test
-        id: build
-        continue-on-error: true
+      - name: Compile and JVM unit tests
         run: |
-          set -o pipefail
-          ./gradlew --console=plain --stacktrace :hamyar-app:compileP09DebugKotlin :core-common:testDebugUnitTest :hamyar-app:testP09DebugUnitTest 2>&1 | tee /tmp/build.log
+          ./gradlew --no-daemon --console=plain --stacktrace             :hamyar-app:compileP09DebugKotlin             :core-common:testDebugUnitTest             :hamyar-app:testP09DebugUnitTest
 
       - name: Lint
-        id: lint
-        continue-on-error: true
         run: |
-          set -o pipefail
-          ./gradlew --console=plain :hamyar-app:lintP09Debug 2>&1 | tee /tmp/lint.log
+          ./gradlew --no-daemon --console=plain --stacktrace             :hamyar-app:lintP09Debug
 
-      - name: Assemble release APK
-        id: assemble
-        continue-on-error: true
+      - name: Compare New-graphic requirements
         run: |
-          set -o pipefail
-          ./gradlew --console=plain :hamyar-app:assembleP09Release 2>&1 | tee /tmp/assemble.log
+          python3 scripts/new_graphic_compare.py
 
-      - name: Write session report
-        if: always()
+      - name: Verify no APK was produced
         run: |
-          git fetch --no-tags --prune origin New-graphic
-          git checkout -B report-base origin/New-graphic
-          mkdir -p new-graphic-session
-          REPORT="new-graphic-session/REPORT.md"
-          {
-            echo "# New-graphic validation report"
-            echo
-            echo "- Commit: \`${GITHUB_SHA}\`"
-            echo "- Branch: \`${GITHUB_REF_NAME}\`"
-            echo "- Static acceptance: \`${{ steps.static.outcome }}\`"
-            echo "- Compile + unit tests: \`${{ steps.build.outcome }}\`"
-            echo "- Lint: \`${{ steps.lint.outcome }}\`"
-            echo "- Assemble release APK: \`${{ steps.assemble.outcome }}\`"
-            echo
-            for pair in "Compile:/tmp/build.log" "Lint:/tmp/lint.log" "Assemble:/tmp/assemble.log"; do
-              name="${pair%%:*}"; file="${pair#*:}"
-              if [ -f "$file" ]; then
-                echo "## $name errors (first 60 matching lines)"
-                echo '```'
-                grep -E "^e: |Error: |error: |FAILED|What went wrong|Execution failed|Duplicate|Unresolved|Lint found" "$file" | head -60 || true
-                echo '```'
-                echo
-              fi
-            done
-            echo "## Changed files"
-            git diff-tree --no-commit-id --name-status -r "${GITHUB_SHA}^" "${GITHUB_SHA}" || true
-          } > "$REPORT"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$REPORT"
-          git commit -m "[new-graphic-report] refresh validation report" || true
-          git push origin HEAD:New-graphic || true
-
-      - name: Fail after report
-        if: steps.static.outcome != 'success' || steps.build.outcome != 'success' || steps.lint.outcome != 'success' || steps.assemble.outcome != 'success'
-        run: exit 1
+          if find . -type f -name '*.apk' -not -path './.git/*' | grep -q .; then
+            echo "ERROR: APK output detected; this validation must not build an APK."
+            find . -type f -name '*.apk' -not -path './.git/*' -print
+            exit 1
+          fi
+          echo "APK output guard: PASS"
