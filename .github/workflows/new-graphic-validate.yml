@@ -1,5 +1,7 @@
 name: New-graphic build validation
 
+# Single validation path: compile/test/lint/compare only; never assembles an APK.
+
 on:
   push:
     branches: [New-graphic]
