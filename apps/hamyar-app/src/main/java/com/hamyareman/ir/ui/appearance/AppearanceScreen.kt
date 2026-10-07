@@ -97,13 +97,21 @@ fun AppearanceScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                 }
             }
 
+            Text("تم پیش‌فرض", style = MaterialTheme.typography.titleMedium)
+            ThemeGroup(listOf(BrandTheme.HamyarNavy), prefs) { pendingTheme = it }
+            if (prefs.theme != BrandTheme.HamyarNavy) {
+                TextButton(onClick = { prefs.resetThemeToDefault() }) {
+                    Text("بازگشت به تم پیش‌فرض همیار")
+                }
+            }
+
             val girl = com.hamyareman.ir.ui.profile.StudentProfileState.gender.equals("girl", ignoreCase = true)
             if (girl) {
                 Text("تم‌های دخترانه", style = MaterialTheme.typography.titleMedium)
-                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
+                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it != BrandTheme.HamyarNavy && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
             } else {
                 Text("تم‌های پسرانه", style = MaterialTheme.typography.titleMedium)
-                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
+                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it != BrandTheme.HamyarNavy && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
             }
 
             pendingTheme?.let { brand ->

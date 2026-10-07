@@ -61,28 +61,38 @@ class ReminderReceiver : BroadcastReceiver() {
         ) return
 
         val notificationId = id.hashCode()
-        val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            if (sleepInvitation) putExtra(EXTRA_SLEEP_DESTINATION, SLEEP_LISTEN)
-        }
-        val contentIntent = launch?.let {
-            PendingIntent.getActivity(
-                context,
-                (id + "_open").hashCode(),
-                it,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        }
-        val school = channel == NotificationChannels.SCHOOL_ALARM || id.startsWith("school_")
+        val school = channel == NotificationChannels.SCHOOL_ALARM ||
+            channel == NotificationChannels.SCHOOL_ALARM_V2 || id.startsWith("school_")
         val audibleAlarm = school && !sleepInvitation
         if (audibleAlarm) AlarmRinger.start(context)
 
-        fun actionPending(labelKey: String, destination: String? = null): PendingIntent {
+        /**
+         * اکشن‌هایی که صفحه‌ای از اپ را باز می‌کنند باید مستقیماً Activity باشند؛ از اندروید ۱۲
+         * شروع Activity از داخل BroadcastReceiver (trampoline) برای اعلان‌ها مسدود است.
+         * MainActivity خودش اعلان را می‌بندد و زنگ را قطع می‌کند.
+         */
+        fun launchPending(labelKey: String, destination: String? = null): PendingIntent? {
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                putExtra(AlarmStopReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+                putExtra(AlarmStopReceiver.EXTRA_REMINDER_ID, id)
+                putExtra(EXTRA_DISMISS_FROM_NOTIFICATION, true)
+                destination?.let { putExtra(EXTRA_SLEEP_DESTINATION, it) }
+            } ?: return null
+            return PendingIntent.getActivity(
+                context,
+                (id + labelKey).hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
+
+        /** اکشنی که فقط زنگ و اعلان را می‌بندد (بدون باز کردن اپ). */
+        fun stopPending(labelKey: String): PendingIntent {
             val action = Intent(context, AlarmStopReceiver::class.java).apply {
                 action = ACTION_STOP_ALARM
                 putExtra(AlarmStopReceiver.EXTRA_NOTIFICATION_ID, notificationId)
                 putExtra(AlarmStopReceiver.EXTRA_REMINDER_ID, id)
-                destination?.let { putExtra(AlarmStopReceiver.EXTRA_SLEEP_DESTINATION, it) }
             }
             return PendingIntent.getBroadcast(
                 context,
@@ -92,9 +102,14 @@ class ReminderReceiver : BroadcastReceiver() {
             )
         }
 
+        val contentIntent = launchPending(
+            "_open",
+            if (sleepInvitation) SLEEP_LISTEN else null,
+        )
+
         val builder = NotificationCompat.Builder(
             context,
-            if (school) NotificationChannels.SCHOOL_ALARM else channel,
+            if (school) NotificationChannels.SCHOOL_ALARM_V2 else channel,
         )
             .setSmallIcon(R.drawable.ic_stat_notification)
             .setContentTitle(title)
@@ -106,19 +121,19 @@ class ReminderReceiver : BroadcastReceiver() {
             .apply {
                 contentIntent?.let { setContentIntent(it) }
                 if (audibleAlarm) {
-                    setDefaults(NotificationCompat.DEFAULT_VIBRATE)
-                    setSound(null)
+                    // کنار زدن اعلان هم زنگ را قطع می‌کند.
+                    setDeleteIntent(stopPending("_dismiss"))
                     val isBus = id.contains("_bus_")
                     addAction(
                         android.R.drawable.ic_lock_idle_alarm,
                         if (isBus) "باشه فهمیدم" else "باشه الان حاضر شم",
-                        actionPending("_ack"),
+                        stopPending("_ack"),
                     )
                 } else if (sleepInvitation) {
                     setSilent(true)
-                    addAction(0, "بریم قصه", actionPending("_story", SLEEP_STORY))
-                    addAction(0, "بریم موسیقی", actionPending("_listen", SLEEP_LISTEN))
-                    addAction(0, "بریم تنفس", actionPending("_breath", SLEEP_BREATH))
+                    launchPending("_story", SLEEP_STORY)?.let { addAction(0, "بریم قصه", it) }
+                    launchPending("_listen", SLEEP_LISTEN)?.let { addAction(0, "بریم موسیقی", it) }
+                    launchPending("_breath", SLEEP_BREATH)?.let { addAction(0, "بریم تنفس", it) }
                 } else {
                     setDefaults(NotificationCompat.DEFAULT_ALL)
                 }
@@ -163,6 +178,7 @@ class ReminderReceiver : BroadcastReceiver() {
         const val EXTRA_CHANNEL = "reminder_channel"
         const val EXTRA_OPEN_SLEEP = "open_sleep"
         const val EXTRA_SLEEP_DESTINATION = "open_sleep_destination"
+        const val EXTRA_DISMISS_FROM_NOTIFICATION = "dismiss_from_notification"
         const val SLEEP_STORY = "story"
         const val SLEEP_LISTEN = "listen"
         const val SLEEP_BREATH = "breath"

@@ -87,6 +87,13 @@ class UiPrefs(context: Context) {
         store.putString(KEY_THEME, theme.name)
     }
 
+    /** بازگشت به تم پیش‌فرض همیار (سرمه‌ای) و پاک‌کردن علامت «انتخاب دستی». */
+    fun resetThemeToDefault() {
+        theme = BrandTheme.HamyarNavy
+        store.putString(KEY_THEME, theme.name)
+        themeUserSet = false
+    }
+
     fun updateDarkMode(value: String) {
         darkMode = value
         store.putString(KEY_DARK, value)

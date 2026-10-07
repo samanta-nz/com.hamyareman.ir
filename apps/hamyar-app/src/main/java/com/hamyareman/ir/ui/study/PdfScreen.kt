@@ -98,7 +98,10 @@ import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.feature.hearttoheart.MediaFiles
+import com.hamyareman.ir.ui.components.DraftAutoSave
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.readDraft
+import com.hamyareman.ir.ui.components.writeDraft
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.profile.loadOrientedBitmap
 import kotlinx.coroutines.Dispatchers
@@ -123,6 +126,7 @@ internal data class NoteFile(
 
 private const val KEY_FILES = "study_pdfs"
 private const val KEY_NOTES = "lesson_notes_text"
+private const val NOTE_DRAFT_KEY = "draft_lesson_note"
 private const val KEY_NOTES_AT = "lesson_notes_at"
 private const val FREE_FILE_CAP = 10
 private val GalleryGroups = listOf("عکس", "ویدیو", "صوت", "PDF", "متن", "سایر")
@@ -357,6 +361,24 @@ fun PdfUploadScreen(onBack: () -> Unit) {
     var noteTitle by remember { mutableStateOf("") }
     var editingNoteId by remember { mutableStateOf<String?>(null) }
     var notesOpen by remember { mutableStateOf(false) }
+    var noteDraftReady by remember { mutableStateOf(false) }
+    fun noteDraftJson(): String? =
+        if (notes.isBlank()) null
+        else JSONObject().put("title", noteTitle).put("text", notes).toString()
+    fun restoreNoteDraft() {
+        val d = readDraft(store, NOTE_DRAFT_KEY) { container.encryptor.decrypt(it) } ?: return
+        noteTitle = d.optString("title", "")
+        notes = d.optString("text", "")
+    }
+    LaunchedEffect(Unit) {
+        restoreNoteDraft()
+        noteDraftReady = true
+    }
+    DraftAutoSave(
+        enabled = noteDraftReady && editingNoteId == null,
+        current = noteDraftJson(),
+        onSave = { writeDraft(store, NOTE_DRAFT_KEY, it) { s -> container.encryptor.encrypt(s) } },
+    )
     var askDeleteNote by remember { mutableStateOf<LessonNote?>(null) }
     var pdfView by remember { mutableStateOf<NoteFile?>(null) }
     var editTarget by remember { mutableStateOf<NoteFile?>(null) }
@@ -658,10 +680,13 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     noteItems.filterNot { it.id == id }
                 noteItems = next.sortedByDescending { it.updatedAt }
                 writeNotes(store, noteItems)
+                val wasEditingNote = editingNoteId != null
+                if (!wasEditingNote) writeDraft(store, NOTE_DRAFT_KEY, null) { it }
                 editingNoteId = null
                 // پس از ذخیره، دفترچه و عنوان خالی می‌شوند.
                 noteTitle = ""
                 notes = ""
+                if (wasEditingNote) restoreNoteDraft()
                 scope.launch {
                     val uid = container.auth.cachedUserId()
                         ?: runCatching { container.auth.currentUserId() }.getOrNull().orEmpty()
@@ -691,6 +716,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     editingNoteId = null
                     noteTitle = ""
                     notes = ""
+                    restoreNoteDraft()
                 }) { Text("لغو ویرایش") }
             }
 
@@ -699,6 +725,9 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                 expanded = notesOpen,
                 onToggle = { notesOpen = !notesOpen },
                 onPick = { n ->
+                    if (editingNoteId == null) {
+                        writeDraft(store, NOTE_DRAFT_KEY, noteDraftJson()) { s -> container.encryptor.encrypt(s) }
+                    }
                     editingNoteId = n.id
                     noteTitle = n.title
                     notes = n.text
@@ -925,6 +954,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                         editingNoteId = null
                         noteTitle = ""
                         notes = ""
+                        restoreNoteDraft()
                     }
                     askDeleteNote = null
                     scope.launch {
@@ -1020,6 +1050,7 @@ private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
                 id = item.id,
                 title = item.title,
                 uri = android.net.Uri.fromFile(File(item.localPath)),
+                mime = item.mime,
             ),
         ),
         initialIndex = 0,

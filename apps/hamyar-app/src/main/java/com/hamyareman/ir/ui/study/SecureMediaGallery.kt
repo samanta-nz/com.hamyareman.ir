@@ -324,6 +324,7 @@ private fun SecureMedia3Player(
             id = it.id,
             title = it.name,
             uri = Uri.fromFile(File(it.path)),
+            mime = it.mime,
         )
     }
     PremiumMediaPlayer(

@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.FormatAlignCenter
 import androidx.compose.material.icons.filled.FormatAlignLeft
 import androidx.compose.material.icons.filled.FormatAlignRight
@@ -424,6 +425,10 @@ fun NotebookAlignmentPicker(
     }
 }
 
+/**
+ * فیلد عنوان قابل ویرایش. فلش کنار فیلد عنوان‌های پیشنهادی را می‌دهد؛ انتخاب یکی از آن‌ها
+ * فقط فیلد را پر می‌کند و کاربر می‌تواند آزادانه تغییرش دهد.
+ */
 @Composable
 fun NotebookTitlePicker(
     value: String,
@@ -434,60 +439,41 @@ fun NotebookTitlePicker(
 ) {
     val presets = buildList {
         add(defaultTitle)
-        add("عنوان جدید")
-        suggestions.forEach { if (it != defaultTitle && it != "عنوان جدید") add(it) }
+        suggestions.forEach { if (it != defaultTitle) add(it) }
     }.distinct()
-    var expanded by remember(value) { mutableStateOf(false) }
-    var customRequested by remember(value) {
-        mutableStateOf(value.isNotBlank() && value !in presets)
-    }
-    val shown = when {
-        customRequested -> if (value.isBlank()) "عنوان جدید" else value
-        value.isBlank() -> defaultTitle
-        else -> value
-    }
+    var expanded by remember { mutableStateOf(false) }
 
     Box(modifier) {
         OutlinedTextField(
-            value = shown,
-            onValueChange = {},
-            readOnly = true,
+            value = value,
+            onValueChange = { onValueChange(it.take(90)) },
             singleLine = true,
             maxLines = 1,
             label = { Text("عنوان") },
+            placeholder = { Text(defaultTitle) },
+            trailingIcon = {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        androidx.compose.material.icons.Icons.Default.ArrowDropDown,
+                        contentDescription = "عنوان‌های پیشنهادی",
+                    )
+                }
+            },
             textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
-            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+            modifier = Modifier.fillMaxWidth(),
         )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             properties = PopupProperties(focusable = true),
         ) {
-            presets.forEachIndexed { index, option ->
+            presets.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     onClick = {
                         expanded = false
-                        if (index == 1) {
-                            customRequested = true
-                            onValueChange("")
-                        } else {
-                            customRequested = false
-                            onValueChange(option)
-                        }
+                        onValueChange(option)
                     },
-                )
-            }
-        }
-        if (customRequested) {
-            Column(Modifier.fillMaxWidth().padding(top = 72.dp)) {
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { onValueChange(it.take(90)) },
-                    label = { Text("عنوان جدید") },
-                    singleLine = true,
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

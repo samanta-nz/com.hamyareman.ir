@@ -61,6 +61,7 @@ data class PremiumMediaQueueItem(
     val id: String,
     val title: String,
     val uri: android.net.Uri,
+    val mime: String = "",
 )
 
 @Composable
@@ -91,12 +92,18 @@ fun PremiumMediaPlayer(
     var phase by remember(queueKey) { mutableFloatStateOf(0f) }
     var muted by remember(queueKey) { mutableStateOf(false) }
 
-    LaunchedEffect(queueKey) {
+    // «تلاش دوباره» پخش را از ابتدای ترک و بدون موقعیت ذخیره‌شده دوباره می‌سازد.
+    var attempt by remember(queueKey) { mutableStateOf(0) }
+
+    LaunchedEffect(queueKey, attempt) {
+        // دروازهٔ پخش باید قبل از اتصال باز باشد، وگرنه سرویس پخش را بی‌صدا متوقف می‌کند.
+        com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
         if (!playback.connect()) return@LaunchedEffect
         val mediaItems = items.map { row ->
             MediaItem.Builder()
                 .setMediaId(row.id)
                 .setUri(row.uri)
+                .apply { if (row.mime.isNotBlank()) setMimeType(row.mime) }
                 .setMediaMetadata(
                     MediaMetadata.Builder()
                         .setTitle(row.title)
@@ -106,11 +113,19 @@ fun PremiumMediaPlayer(
                 .build()
         }
         val start = initialIndex.coerceIn(0, mediaItems.lastIndex)
-        val resume = store.getLong("resume_" + items[start].id, 0L)
+        // موقعیت ادامه فقط اگر معتبر باشد؛ ترکی که تا انتها رفته از اول پخش می‌شود.
+        val resume = if (attempt > 0) 0L else store.getLong("resume_" + items[start].id, 0L).coerceAtLeast(0L)
         playback.setMediaItems(mediaItems, start, resume)
         if (autoPlay) {
             com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
             playback.play()
+            // اگر کمی بعد هنوز پخش نشده و خطایی هم نیست، فرمان پخش یک بار دیگر داده می‌شود.
+            delay(1_500L)
+            val now = playback.state.value
+            if (!now.playing && now.error == null) {
+                com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
+                playback.play()
+            }
         }
     }
 
@@ -119,7 +134,11 @@ fun PremiumMediaPlayer(
         while (true) {
             position = playback.positionMs
             val id = items.getOrNull(state.currentIndex)?.id
-            if (id != null) store.putLong("resume_" + id, position)
+            if (id != null) {
+                val dur = state.durationMs
+                // نزدیک انتهای ترک موقعیتی ذخیره نمی‌شود تا دفعهٔ بعد از اول شروع شود.
+                store.putLong("resume_" + id, if (dur > 0 && position >= dur - 3_000L) 0L else position)
+            }
             if (state.playing) phase += .13f
             delay(if (state.playing) 120L else 450L)
         }
@@ -129,7 +148,11 @@ fun PremiumMediaPlayer(
         com.hamyareman.ir.platform.feature.playback.TeachGate.enter()
         onDispose {
             val id = items.getOrNull(state.currentIndex)?.id
-            if (id != null) store.putLong("resume_" + id, playback.positionMs)
+            if (id != null) {
+                val dur = playback.durationMs
+                val pos = playback.positionMs
+                store.putLong("resume_" + id, if (dur > 0 && pos >= dur - 3_000L) 0L else pos)
+            }
             runCatching { playback.stop() }
             playback.release()
             com.hamyareman.ir.platform.feature.playback.TeachGate.exit()
@@ -186,6 +209,7 @@ fun PremiumMediaPlayer(
         )
         state.error?.let {
             Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            androidx.compose.material3.TextButton(onClick = { attempt++ }) { Text("تلاش دوباره") }
         }
 
         Slider(

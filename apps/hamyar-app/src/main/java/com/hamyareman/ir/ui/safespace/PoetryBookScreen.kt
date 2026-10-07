@@ -34,6 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +66,22 @@ import com.hamyareman.ir.ui.components.BookOpening
 import com.hamyareman.ir.ui.components.BookSkin
 import com.hamyareman.ir.ui.components.BookSkinCover
 import com.hamyareman.ir.ui.components.BookSkinSpread
+import com.hamyareman.ir.ui.components.BookFlipper
+import com.hamyareman.ir.ui.components.DraftAutoSave
+import com.hamyareman.ir.ui.components.readDraft
+import com.hamyareman.ir.ui.components.writeDraft
+import org.json.JSONObject
+import com.hamyareman.ir.ui.components.SkinGeometry
+import com.hamyareman.ir.ui.components.SkinnedNotebookEditor
+import com.hamyareman.ir.ui.components.firstPageFit
+import com.hamyareman.ir.ui.components.measureLineCount
+import com.hamyareman.ir.ui.components.rememberBookFlipState
+import com.hamyareman.ir.ui.components.skinTextStyle
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.rememberTextMeasurer
 import com.hamyareman.ir.ui.components.NOTEBOOK_PAGE_SEPARATOR
 import com.hamyareman.ir.ui.components.NotebookBookPage
 import com.hamyareman.ir.ui.components.NotebookPaper
@@ -92,12 +109,26 @@ private data class Poem(
     val alignment: String = "right",
 )
 
-private val poemTypes = listOf(
-    "غزل", "قصیده", "دوبیتی", "رباعی", "مثنوی", "شعر نو", "سپید", "نثر شاعرانه", "ترانه", "سایر",
+/** نوع‌های اصلی؛ «سایر» فهرست نوع‌های دیگر را باز می‌کند. */
+private val mainPoemTypes = listOf("غزل", "قصیده", "دوبیتی", "رباعی", "مثنوی")
+
+private val otherPoemTypes = listOf(
+    "قطعه", "شعر نو", "نیمایی", "سپید", "چهارپاره", "مستزاد", "ترکیب‌بند", "ترجیع‌بند",
+    "مسمط", "مخمس", "تک‌بیت", "ترانه", "نثر شاعرانه", "هایکو", "شعر کودک", "سایر",
 )
 
+private val poemTypes = mainPoemTypes + otherPoemTypes
+
+/** قالب‌هایی که هر بیت دو مصراع مستقل دارد. */
 private fun twoHemistich(type: String): Boolean =
-    type in setOf("غزل", "قصیده", "دوبیتی", "رباعی", "قطعه", "مثنوی")
+    type in setOf(
+        "غزل", "قصیده", "دوبیتی", "رباعی", "قطعه", "مثنوی", "مستزاد", "ترکیب‌بند", "ترجیع‌بند", "تک‌بیت",
+    )
+
+private const val POEM_DRAFT_KEY = "draft_poem"
+
+/** صفحه‌های تورق ۳ سایز بزرگ‌تر از صفحهٔ تایپ‌اند. */
+private const val POETRY_VIEW_BONUS_SP = 3f
 
 private fun readPoems(container: com.hamyareman.ir.di.AppContainer): List<Poem> = runCatching {
     val arr = JSONArray(container.store.getString(POEMS_KEY, "[]"))
@@ -137,6 +168,36 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     var notice by remember { mutableStateOf<String?>(null) }
     var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
     var guideExpanded by remember { mutableStateOf(false) }
+    val draftStore = remember { container.store }
+    var draftReady by remember { mutableStateOf(false) }
+
+    fun draftSnapshot(): String? =
+        if (text.isBlank()) null
+        else JSONObject()
+            .put("title", title)
+            .put("type", type)
+            .put("text", text)
+            .put("align", notebookAlignmentWire(alignment))
+            .toString()
+
+    fun restoreDraft(): Boolean {
+        val d = readDraft(draftStore, POEM_DRAFT_KEY) { container.encryptor.decrypt(it) } ?: return false
+        type = d.optString("type", type).ifBlank { poemTypes.first() }
+        title = d.optString("title", title).ifBlank { type }
+        text = d.optString("text", "")
+        alignment = notebookTextAlignFromWire(d.optString("align"))
+        return text.isNotBlank()
+    }
+
+    LaunchedEffect(Unit) {
+        if (restoreDraft()) notice = "پیش‌نویس قبلی‌ات برگشت؛ از همان‌جا ادامه بده."
+        draftReady = true
+    }
+    DraftAutoSave(
+        enabled = draftReady && editingId == null,
+        current = draftSnapshot(),
+        onSave = { writeDraft(draftStore, POEM_DRAFT_KEY, it) { s -> container.encryptor.encrypt(s) } },
+    )
 
     fun reset() {
         editingId = null
@@ -148,6 +209,9 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     }
 
     fun edit(poem: Poem) {
+        if (editingId == null) {
+            writeDraft(draftStore, POEM_DRAFT_KEY, draftSnapshot()) { s -> container.encryptor.encrypt(s) }
+        }
         editingId = poem.id
         title = poem.title.ifBlank { poem.type.ifBlank { poemTypes.first() } }
         type = poem.type.ifBlank { poemTypes.first() }
@@ -169,9 +233,12 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
             cipher = container.encryptor.encrypt(text),
             alignment = notebookAlignmentWire(alignment),
         )
+        val wasEditing = editingId != null
         poems = (listOf(changed) + poems.filterNot { it.id == changed.id }).sortedByDescending { it.createdAt }
         writePoems(container, poems)
+        if (!wasEditing) writeDraft(draftStore, POEM_DRAFT_KEY, null) { it }
         reset()
+        if (wasEditing) restoreDraft()
         notice = "شعر ذخیره شد."
     }
 
@@ -190,11 +257,6 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("دفتر شعر", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            "همان موتور کاغذ و تورق دفترچه‌ها، با چینش ویژهٔ شعرهای دو مصراعی.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                         PoetryTypePicker(
                             value = type,
                             onValueChange = { selected ->
@@ -205,34 +267,25 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                         androidx.compose.material3.OutlinedTextField(
                             value = title,
                             onValueChange = { title = it.take(90) },
-                            label = { Text("عنوان شعر") },
+                            label = { Text("عنوان شعر (قابل ویرایش)") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
+                        val headerText = if (title.isBlank()) type else title
                         if (twoHemistich(type)) {
-                            NotebookPaper(
-                                header = if (title.isBlank()) type else title,
-                                headerAlign = oppositeTextAlign(alignment),
-                                showVerticalGuides = false,
-                                headerOnFirstLine = true,
-                                realistic = true,
-                            ) {
-                                PoetryHemistichEditor(
-                                    value = text,
-                                    onValueChange = { text = it },
-                                    modifier = Modifier.fillMaxSize(),
-                                )
-                            }
+                            PoetryHemistichEditor(
+                                value = text,
+                                onValueChange = { text = it },
+                                header = headerText,
+                            )
                         } else {
-                            LinedNotebookInput(
-                                text,
-                                { text = it },
-                                header = if (title.isBlank()) type else title,
+                            SkinnedNotebookEditor(
+                                skin = poetrySkin,
+                                value = text,
+                                onValueChange = { text = it },
+                                header = headerText,
                                 textAlign = alignment,
-                                showVerticalGuides = false,
-                                headerOnFirstLine = true,
-                                realistic = true,
                             )
                         }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -346,74 +399,107 @@ data class PoetryHemistichRow(
     val left: String = "",
 )
 
+/** ویرایشگر شعر دو مصراعی روی ورق چرمی: هر بیت یک سطر، دو مصراع کنار هم، روی خط‌های ورق. */
 @Composable
 private fun PoetryHemistichEditor(
     value: String,
     onValueChange: (String) -> Unit,
+    header: String,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier) {
-        val rowsPerPage = ((maxHeight.value - 18f) / 42f).toInt().coerceIn(6, 15)
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+        val geo = remember(maxWidth) { SkinGeometry(poetrySkin, maxWidth.value) }
+        val style = remember(geo, density) { skinTextStyle(geo.line, density, TextAlign.Right) }
+        val gap = 14.dp
+        val cellPx = with(density) { ((geo.textWidth - gap) / 2).roundToPx() }
         val rows = remember(value) {
             val lines = value.replace("\r", "").split('\n')
-            val paired = lines.chunked(2).map {
-                PoetryHemistichRow(
-                    right = it.getOrNull(0).orEmpty(),
-                    left = it.getOrNull(1).orEmpty(),
-                )
-            }
-            if (paired.isEmpty()) listOf(PoetryHemistichRow()) else paired
+            lines.chunked(2).map {
+                PoetryHemistichRow(right = it.getOrNull(0).orEmpty(), left = it.getOrNull(1).orEmpty())
+            }.ifEmpty { listOf(PoetryHemistichRow()) }
         }
-        val pages = rows.chunked(rowsPerPage).ifEmpty { listOf(listOf(PoetryHemistichRow())) }
-        val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
+        // همیشه یک سطر خالی برای ادامهٔ شعر در انتها هست.
+        val shown = remember(rows) {
+            val last = rows.last()
+            if (last.right.isNotBlank() || last.left.isNotBlank()) rows + PoetryHemistichRow() else rows
+        }
+        val firstCap = (poetrySkin.lineCount - if (header.isNotBlank()) 2 else 0).coerceAtLeast(1)
+        val pageRanges = remember(shown.size, firstCap) {
+            val out = mutableListOf<IntRange>()
+            var start = 0
+            var cap = firstCap
+            while (start < shown.size) {
+                val end = minOf(shown.size, start + cap)
+                out += start until end
+                start = end
+                cap = poetrySkin.lineCount
+            }
+            out
+        }
+        val pager = rememberPagerState(pageCount = { pageRanges.size.coerceAtLeast(1) })
 
-        HorizontalPager(
-            state = pager,
-            modifier = Modifier.fillMaxSize(),
-            reverseLayout = true,
-            beyondViewportPageCount = 1,
-        ) { pageIndex ->
-            Column(
-                Modifier.fillMaxSize().padding(start = 6.dp, end = 6.dp, bottom = 22.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                pages[pageIndex].forEachIndexed { rowIndex, row ->
-                    val absoluteRow = pageIndex * rowsPerPage + rowIndex
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(22.dp),
-                    ) {
-                        PoetryHemistichCell(
-                            value = row.right,
-                            label = "مصراع اول، ردیف ${absoluteRow + 1}",
-                            modifier = Modifier.weight(1f),
-                            onValueChange = { changed ->
-                                val next = rows.toMutableList()
-                                while (next.size <= absoluteRow) next += PoetryHemistichRow()
-                                next[absoluteRow] = next[absoluteRow].copy(right = changed)
-                                onValueChange(
-                                    next.joinToString("\n") { r -> r.right + "\n" + r.left }
-                                        .trimEnd('\n'),
+        fun update(absRow: Int, right: String? = null, left: String? = null) {
+            val list = shown.toMutableList()
+            val r = list[absRow]
+            list[absRow] = r.copy(right = right ?: r.right, left = left ?: r.left)
+            onValueChange(list.joinToString("\n") { it.right + "\n" + it.left }.trimEnd('\n'))
+        }
+
+        fun accepts(old: String, new: String): Boolean =
+            new.length <= old.length || (new.length <= 180 && measureLineCount(measurer, new, style, cellPx) <= 1)
+
+        Column {
+            HorizontalPager(
+                state = pager,
+                modifier = Modifier.fillMaxWidth(),
+                reverseLayout = true,
+                beyondViewportPageCount = 1,
+            ) { pageIndex ->
+                BookSkinSpread(poetrySkin) { line, _ ->
+                    Column(Modifier.fillMaxSize()) {
+                        if (pageIndex == 0 && header.isNotBlank()) {
+                            Text(
+                                header,
+                                Modifier.fillMaxWidth().height(line),
+                                style = style.copy(textAlign = oppositeTextAlign(TextAlign.Right)),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Spacer(Modifier.height(line))
+                        }
+                        val range = pageRanges.getOrNull(pageIndex) ?: IntRange.EMPTY
+                        range.forEach { absRow ->
+                            val row = shown[absRow]
+                            Row(
+                                Modifier.fillMaxWidth().height(line),
+                                horizontalArrangement = Arrangement.spacedBy(gap),
+                            ) {
+                                PoetryHemistichCell(
+                                    value = row.right,
+                                    style = style,
+                                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                                    onValueChange = { if (accepts(row.right, it)) update(absRow, right = it) },
                                 )
-                            },
-                        )
-                        PoetryHemistichCell(
-                            value = row.left,
-                            label = "مصراع دوم، ردیف ${absoluteRow + 1}",
-                            modifier = Modifier.weight(1f),
-                            onValueChange = { changed ->
-                                val next = rows.toMutableList()
-                                while (next.size <= absoluteRow) next += PoetryHemistichRow()
-                                next[absoluteRow] = next[absoluteRow].copy(left = changed)
-                                onValueChange(
-                                    next.joinToString("\n") { r -> r.right + "\n" + r.left }
-                                        .trimEnd('\n'),
+                                PoetryHemistichCell(
+                                    value = row.left,
+                                    style = style,
+                                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                                    onValueChange = { if (accepts(row.left, it)) update(absRow, left = it) },
                                 )
-                            },
-                        )
+                            }
+                        }
                     }
                 }
             }
+            Text(
+                "صفحهٔ ${pager.currentPage + 1} از ${pageRanges.size.coerceAtLeast(1)}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
@@ -421,57 +507,47 @@ private fun PoetryHemistichEditor(
 @Composable
 private fun PoetryHemistichCell(
     value: String,
-    label: String,
+    style: TextStyle,
     modifier: Modifier = Modifier,
     onValueChange: (String) -> Unit,
 ) {
-    var focused by remember(label) { mutableStateOf(false) }
     BasicTextField(
         value = value,
-        onValueChange = { onValueChange(it.take(180)) },
+        onValueChange = onValueChange,
         singleLine = true,
-        textStyle = TextStyle(
-            fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-            fontSize = 21.sp,
-            lineHeight = 24.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            color = Color(0xFF18384F),
-            textAlign = TextAlign.Right,
-        ),
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(7.dp))
-            .background(
-                if (focused) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f)
-                else Color.Transparent,
-            )
-            .onFocusChanged { focused = it.isFocused }
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        decorationBox = { innerTextField ->
-            Box(Modifier.fillMaxWidth()) { innerTextField() }
-        },
+        textStyle = style,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        cursorBrush = SolidColor(Color(0xFF27485C)),
+        modifier = modifier,
     )
 }
 
-/** یک «واحد» روی ورق: یک بیت دو مصراعی (یک سطر) یا یک سطر آزاد (یک یا چند سطر خط‌دار). */
+/** یک «واحد» روی ورق: یک بیت دو مصراعی (یک یا چند سطر) یا یک سطر آزاد (یک یا چند سطر خط‌دار). */
 private data class PoemUnit(val rows: Int, val first: String, val second: String?, val key: String)
 
+/**
+ * انتخاب نوع شعر: نوع‌های اصلی و یک گزینهٔ «سایر» که با لمس، نوع‌های دیگر
+ * (شعر نو، نیمایی، سپید، چهارپاره و …) را در همان منو باز می‌کند.
+ */
 @Composable
 private fun PoetryTypePicker(
     value: String,
     onValueChange: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var othersOpen by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxWidth()) {
-        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-            Text("نوع شعر: "+value, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        OutlinedButton(
+            onClick = { othersOpen = value in otherPoemTypes; expanded = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("نوع شعر: " + value, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         androidx.compose.material3.DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            poemTypes.forEach { option ->
+            mainPoemTypes.forEach { option ->
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
@@ -480,44 +556,100 @@ private fun PoetryTypePicker(
                     },
                 )
             }
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text(if (othersOpen) "سایر ⌃" else "سایر ⌄") },
+                onClick = { othersOpen = !othersOpen },
+            )
+            if (othersOpen) {
+                otherPoemTypes.forEach { option ->
+                    androidx.compose.material3.DropdownMenuItem(
+                        text = { Text("   " + option) },
+                        onClick = {
+                            expanded = false
+                            onValueChange(option)
+                        },
+                    )
+                }
+            }
         }
     }
 }
 
-private fun buildPoemUnits(text: String, twoCol: Boolean): List<PoemUnit> {
+private fun buildPoemUnits(
+    text: String,
+    twoCol: Boolean,
+    rowsOf: (String, Boolean) -> Int,
+): List<PoemUnit> {
     val flat = text.replace("\r", "")
         .split(NOTEBOOK_PAGE_SEPARATOR)
         .flatMap { it.split('\n') }
         .map { it.trimEnd() }
     if (twoCol) {
         return flat.filter { it.isNotBlank() }.chunked(2).mapIndexed { i, pair ->
-            PoemUnit(1, pair.getOrNull(0).orEmpty(), pair.getOrNull(1).orEmpty(), "pair-$i")
+            val a = pair.getOrNull(0).orEmpty()
+            val b = pair.getOrNull(1).orEmpty()
+            PoemUnit(maxOf(rowsOf(a, true), rowsOf(b, true)), a, b, "pair-$i")
         }
     }
-    return flat.mapIndexed { i, line ->
-        val rows = ((line.length + 35) / 36).coerceAtLeast(1)
-        PoemUnit(rows, line, null, "line-$i")
-    }
+    return flat.mapIndexed { i, line -> PoemUnit(rowsOf(line, false), line, null, "line-$i") }
 }
 
-/** چیدن واحدها روی صفحه‌ها بر اساس ظرفیت خط‌های ورق؛ صفحهٔ اول دو سطر برای عنوان و فاصله کم می‌کند. */
-private fun paginatePoem(units: List<PoemUnit>, lineCount: Int): List<List<PoemUnit>> {
-    val pages = mutableListOf<MutableList<PoemUnit>>()
+/**
+ * چیدن واحدها روی صفحه‌ها بر اساس ظرفیت خط‌های ورق؛ صفحهٔ اول برای عنوان و فاصله کم می‌کند.
+ * سطر آزادِ بلندتر از باقی‌ماندهٔ صفحه روی صفحهٔ بعد ادامه پیدا می‌کند.
+ */
+private fun paginatePoem(
+    units: List<PoemUnit>,
+    lineCount: Int,
+    firstFree: Int,
+    split: (String, Int) -> Pair<String, String>,
+    rowsOf: (String) -> Int,
+): List<List<PoemUnit>> {
+    val pages = mutableListOf<List<PoemUnit>>()
     var current = mutableListOf<PoemUnit>()
-    var free = lineCount - 2
-    for (u in units) {
-        if (u.rows > free && current.isNotEmpty()) {
-            pages += current
-            current = mutableListOf()
-            free = lineCount
+    var free = firstFree.coerceAtLeast(1)
+    val queue = java.util.ArrayDeque(units)
+    var guard = 0
+    while (queue.isNotEmpty() && guard++ < 5000) {
+        val u = queue.pollFirst() ?: break
+        when {
+            u.rows <= free -> {
+                current += u
+                free -= u.rows
+            }
+            current.isNotEmpty() -> {
+                pages += current
+                current = mutableListOf()
+                free = lineCount
+                queue.addFirst(u)
+            }
+            u.second == null -> {
+                val (fit, rest) = split(u.first, free)
+                if (rest.isEmpty()) {
+                    current += u
+                    free = 0
+                } else {
+                    current += PoemUnit(rowsOf(fit).coerceIn(1, free), fit, null, u.key + "a")
+                    queue.addFirst(PoemUnit(rowsOf(rest), rest, null, u.key + "b"))
+                    pages += current
+                    current = mutableListOf()
+                    free = lineCount
+                }
+            }
+            else -> {
+                current += u
+                free = 0
+            }
         }
-        current += u
-        free -= u.rows
     }
-    pages += current
+    if (current.isNotEmpty() || pages.isEmpty()) pages += current
     return pages
 }
 
+/**
+ * تورق شعر: تک‌لمس = صفحهٔ بعد، دو لمس پیاپی = صفحهٔ قبل، با افکت جمع‌شدن ورق دور شیرازه.
+ * متن بولد و ۳ سایز بزرگ‌تر از صفحهٔ تایپ است و هر سطر روی خط ورق می‌نشیند.
+ */
 @Composable
 private fun PoetryViewer(
     poem: Poem,
@@ -526,103 +658,92 @@ private fun PoetryViewer(
     onClose: () -> Unit,
 ) {
     val twoCol = twoHemistich(poem.type)
-    val pages = remember(text, poem.type) {
-        paginatePoem(buildPoemUnits(text, twoCol), poetrySkin.lineCount)
-    }
-    var activePage by remember(poem.id, pages.size) { mutableStateOf(0) }
-    var selectedPair by remember(poem.id) { mutableStateOf<String?>(null) }
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
 
     Dialog(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BookStage {
-            Box(Modifier.fillMaxSize()) {
-                BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
-                    RealisticBookPager(
-                        pageCount = pages.size + 1,
-                        initialPage = 0,
-                        viewerGesture = true,
-                        skinned = true,
-                        onPageChanged = { activePage = it },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 20.dp, bottom = 10.dp)
-                            .pointerInput(pages.size) {
-                                detectTapGestures(
-                                    onTap = {
-                                        val next = (activePage + 1).coerceAtMost(pages.size)
-                                        if (next != activePage) activePage = next
-                                    },
-                                    onDoubleTap = {
-                                        val previous = (activePage - 1).coerceAtLeast(0)
-                                        if (previous != activePage) activePage = previous
-                                    },
-                                )
-                            },
-                    ) { index, _ ->
-                        if (index == 0) {
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val geo = remember(maxWidth) { SkinGeometry(poetrySkin, maxWidth.value) }
+                val gap = 14.dp
+                val align = notebookTextAlignFromWire(poem.alignment)
+                val style = remember(geo, density) {
+                    skinTextStyle(geo.line, density, TextAlign.Right, POETRY_VIEW_BONUS_SP)
+                }
+                val fullPx = with(density) { geo.textWidth.roundToPx() }
+                val cellPx = with(density) { ((geo.textWidth - gap) / 2).roundToPx() }
+                val pages = remember(text, poem.type, geo, fullPx) {
+                    val rowsFor = { t: String, cell: Boolean ->
+                        maxOf(1, measureLineCount(measurer, t, style, if (cell) cellPx else fullPx))
+                    }
+                    paginatePoem(
+                        units = buildPoemUnits(text, twoCol, rowsFor),
+                        lineCount = poetrySkin.lineCount,
+                        firstFree = poetrySkin.lineCount - 2,
+                        split = { t, rows -> firstPageFit(t, measurer, style, fullPx, rows) },
+                        rowsOf = { t -> rowsFor(t, false) },
+                    )
+                }
+                val flip = rememberBookFlipState(initialPage = 0, pageCount = pages.size + 1)
+
+                Box(Modifier.fillMaxSize()) {
+                    BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
+                        BookFlipper(
+                            state = flip,
+                            modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = 10.dp),
+                        ) { index ->
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                BookSkinCover(poetrySkin, Modifier.fillMaxWidth(), "دفتر شعر من")
-                            }
-                        } else {
-                            val page = index - 1
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                BookSkinSpread(poetrySkin) { line, _ ->
-                                    val lh = with(LocalDensity.current) { line.toSp() }
-                                    val style = TextStyle(
-                                        fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                        fontSize = lh * 0.87f,
-                                        lineHeight = lh,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                        color = Color(0xFF18384F),
-                                        textAlign = TextAlign.Right,
-                                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
-                                        lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
-                                            alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Bottom,
-                                            trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
-                                        ),
-                                    )
-                                    Column(Modifier.fillMaxSize()) {
-                                        if (page == 0) {
-                                            // عنوان در سطر اول (تراز معکوس)، یک سطر فاصله، بعد شعر.
-                                            Text(
-                                                poem.title.ifBlank { poem.type },
-                                                Modifier.fillMaxWidth(),
-                                                style = style.copy(
-                                                    textAlign = oppositeTextAlign(notebookTextAlignFromWire(poem.alignment)),
-                                                ),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                            )
-                                            Spacer(Modifier.height(line))
-                                        }
-                                        pages.getOrElse(page) { emptyList() }.forEach { unit ->
-                                            if (unit.second != null) {
-                                                Row(
-                                                    Modifier
-                                                        .fillMaxWidth()
-                                                        .height(line)
-                                                        .background(
-                                                            if (selectedPair == unit.key) Color(0x183B82F6)
-                                                            else Color.Transparent,
-                                                        )
-                                                        .clickable {
-                                                            selectedPair = if (selectedPair == unit.key) null else unit.key
-                                                        },
-                                                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                                                ) {
-                                                    Text(unit.first, Modifier.weight(1f), style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                                    Text(unit.second, Modifier.weight(1f), style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                                }
-                                            } else {
+                                if (index == 0) {
+                                    BookSkinCover(poetrySkin, Modifier.fillMaxWidth(), "دفتر شعر من")
+                                } else {
+                                    val page = index - 1
+                                    BookSkinSpread(poetrySkin) { line, _ ->
+                                        val pageStyle = skinTextStyle(line, density, TextAlign.Right, POETRY_VIEW_BONUS_SP)
+                                        Column(Modifier.fillMaxSize()) {
+                                            if (page == 0) {
+                                                // عنوان در سطر اول (تراز معکوس)، یک سطر فاصله، بعد شعر.
                                                 Text(
-                                                    unit.first,
-                                                    Modifier.fillMaxWidth().height(line * unit.rows),
-                                                    style = style.copy(textAlign = notebookTextAlignFromWire(poem.alignment)),
-                                                    maxLines = unit.rows,
+                                                    poem.title.ifBlank { poem.type },
+                                                    Modifier.fillMaxWidth().height(line),
+                                                    style = pageStyle.copy(textAlign = oppositeTextAlign(align)),
+                                                    maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis,
                                                 )
+                                                Spacer(Modifier.height(line))
+                                            }
+                                            pages.getOrElse(page) { emptyList() }.forEach { unit ->
+                                                if (unit.second != null) {
+                                                    Row(
+                                                        Modifier.fillMaxWidth().height(line * unit.rows),
+                                                        horizontalArrangement = Arrangement.spacedBy(gap),
+                                                    ) {
+                                                        Text(
+                                                            unit.first,
+                                                            Modifier.weight(1f),
+                                                            style = pageStyle,
+                                                            maxLines = unit.rows,
+                                                            overflow = TextOverflow.Ellipsis,
+                                                        )
+                                                        Text(
+                                                            unit.second,
+                                                            Modifier.weight(1f),
+                                                            style = pageStyle,
+                                                            maxLines = unit.rows,
+                                                            overflow = TextOverflow.Ellipsis,
+                                                        )
+                                                    }
+                                                } else {
+                                                    Text(
+                                                        unit.first,
+                                                        Modifier.fillMaxWidth().height(line * unit.rows),
+                                                        style = pageStyle.copy(textAlign = align),
+                                                        maxLines = unit.rows,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -630,31 +751,31 @@ private fun PoetryViewer(
                             }
                         }
                     }
-                }
 
-                Row(
-                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(7.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            poem.title.ifBlank { "شعر من" },
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(poem.type, color = Color(0xFFB8C6D8), style = MaterialTheme.typography.labelSmall)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            if (pages.size > 1 && activePage > 0) activePage.toString() + "/" + pages.size.toString() else "",
-                            color = Color(0xFFB8C6D8),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                        IconButton(onClick = onEdit) {
-                            Icon(Icons.Default.Edit, contentDescription = "ویرایش شعر", tint = Color.White)
+                    Row(
+                        Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(7.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                poem.title.ifBlank { "شعر من" },
+                                color = Color.White,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(poem.type, color = Color(0xFFB8C6D8), style = MaterialTheme.typography.labelSmall)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                if (pages.size > 1 && flip.current > 0) flip.current.toString() + "/" + pages.size.toString() else "",
+                                color = Color(0xFFB8C6D8),
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                            IconButton(onClick = onEdit) {
+                                Icon(Icons.Default.Edit, contentDescription = "ویرایش شعر", tint = Color.White)
+                            }
                         }
                     }
                 }

@@ -451,7 +451,31 @@ class MainActivity : FragmentActivity() {
         captureSleepIntent(intent)
     }
 
+    /** اکشن/لمس اعلان آلارم یا دعوت خواب: زنگ قطع و اعلان بسته می‌شود. */
+    private fun dismissAlarmNotification(intent: android.content.Intent?) {
+        if (intent?.getBooleanExtra(
+                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_DISMISS_FROM_NOTIFICATION,
+                false,
+            ) != true
+        ) return
+        com.hamyareman.ir.platform.core.notifications.AlarmRinger.stop()
+        val nm = getSystemService(android.app.NotificationManager::class.java)
+        val nid = intent.getIntExtra(
+            com.hamyareman.ir.platform.core.notifications.AlarmStopReceiver.EXTRA_NOTIFICATION_ID,
+            Int.MIN_VALUE,
+        )
+        if (nid != Int.MIN_VALUE) nm?.cancel(nid)
+        intent.getStringExtra(com.hamyareman.ir.platform.core.notifications.AlarmStopReceiver.EXTRA_REMINDER_ID)
+            ?.let { id ->
+                val base = id.removeSuffix("_r")
+                nm?.cancel(base.hashCode())
+                nm?.cancel("${base}_r".hashCode())
+            }
+        intent.removeExtra(com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_DISMISS_FROM_NOTIFICATION)
+    }
+
     private fun captureSleepIntent(intent: android.content.Intent?) {
+        dismissAlarmNotification(intent)
         val destination = intent?.getStringExtra(
             com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_SLEEP_DESTINATION,
         )

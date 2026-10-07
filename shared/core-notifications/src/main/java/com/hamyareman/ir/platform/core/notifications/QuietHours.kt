@@ -258,11 +258,18 @@ object NotificationChannels {
     const val WEEKLY = "weekly"
     const val SYNC = "sync"
     const val SCHOOL_ALARM = "school_alarm"
+
+    /**
+     * کانال بی‌صدای آلارم مدرسه و دعوت خواب. صدای کانال قدیمی `school_alarm` بعد از ساخت
+     * قابل تغییر نیست و جدا از زنگ برنامه پخش می‌شد و با بستن اعلان قطع نمی‌شد؛ پس صدای
+     * آلارم فقط از AlarmRinger می‌آید و اینجا کانال بی‌صدا (با لرزش) است.
+     */
+    const val SCHOOL_ALARM_V2 = "school_alarm_v2"
     const val UPDATES = "updates"
     const val QUIET_STATUS = "quiet_status"
 
     val all: List<String> = listOf(
-        MESSAGES, CALLS, REMINDERS, WEEKLY, SYNC, SCHOOL_ALARM, UPDATES, QUIET_STATUS,
+        MESSAGES, CALLS, REMINDERS, WEEKLY, SYNC, SCHOOL_ALARM_V2, UPDATES, QUIET_STATUS,
     )
 
     private data class ChannelSpec(val id: String, val name: String, val importance: Int)
@@ -273,13 +280,15 @@ object NotificationChannels {
         ChannelSpec(REMINDERS, "یادآورهای ملایم", NotificationManager.IMPORTANCE_DEFAULT),
         ChannelSpec(WEEKLY, "خلاصهٔ هفتگی", NotificationManager.IMPORTANCE_LOW),
         ChannelSpec(SYNC, "همگام‌سازی", NotificationManager.IMPORTANCE_MIN),
-        ChannelSpec(SCHOOL_ALARM, "آلارم مدرسه و خواب", NotificationManager.IMPORTANCE_HIGH),
+        ChannelSpec(SCHOOL_ALARM_V2, "آلارم مدرسه و خواب", NotificationManager.IMPORTANCE_HIGH),
         ChannelSpec(QUIET_STATUS, "وضعیت ساعات سکوت", NotificationManager.IMPORTANCE_LOW),
     )
 
     /** ساخت کانال‌ها — باید یک‌بار در Application.onCreate صدا زده شود. */
     fun ensure(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        // کانال قدیمی با صدای پیش‌فرض سیستم حذف می‌شود.
+        runCatching { manager.deleteNotificationChannel(SCHOOL_ALARM) }
         specs().forEach { spec ->
             val channel = NotificationChannel(spec.id, spec.name, spec.importance).apply {
                 description = spec.name
@@ -287,6 +296,11 @@ object NotificationChannels {
                 if (spec.id == QUIET_STATUS) {
                     setSound(null, null)
                     enableVibration(false)
+                }
+                if (spec.id == SCHOOL_ALARM_V2) {
+                    setSound(null, null)
+                    enableVibration(true)
+                    vibrationPattern = longArrayOf(0, 400, 250, 400)
                 }
             }
             manager.createNotificationChannel(channel)

@@ -46,6 +46,13 @@ internal object DesignAsset {
     const val COVER_GEOMETRIC = "assets/diary/cover-geometric.jpg"
     const val PAGE_LINED = "assets/diary/page-lined.jpg"
 
+    /**
+     * جلد/ورق کتاب‌های PNG داخل خود APK امبد شده‌اند و بدون شبکه و بدون انتظار برای باکت
+     * نمایش داده می‌شوند (دفتر شعر چرمی و دفتر خاطرات سرمه‌ای).
+     */
+    fun isEmbeddedBook(key: String): Boolean =
+        key.endsWith(".png") && key.substringAfterLast('/').startsWith("cover-")
+
     fun remoteUrl(key: String): String =
         ServerResolver.INTERNAL_PUBLIC.trimEnd('/') + "/" +
             key.split('/').joinToString("/") {
@@ -83,10 +90,13 @@ fun RemoteDesignImage(
     contentScale: ContentScale = ContentScale.Crop,
 ) {
     val remote = remember(key) { DesignAsset.remoteUrl(key) }
-    var source by remember(key) { mutableStateOf<Any>(remote) }
+    val embedded = remember(key) { DesignAsset.isEmbeddedBook(key) }
+    var source by remember(key) {
+        mutableStateOf<Any>(if (embedded) DesignAsset.localUri(key) else remote)
+    }
 
     LaunchedEffect(key) {
-        source = if (readable(remote)) remote else DesignAsset.localUri(key)
+        if (!embedded) source = if (readable(remote)) remote else DesignAsset.localUri(key)
     }
 
     AsyncImage(

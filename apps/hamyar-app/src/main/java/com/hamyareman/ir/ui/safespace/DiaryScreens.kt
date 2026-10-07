@@ -17,6 +17,19 @@ import com.hamyareman.ir.ui.components.BookOpening
 import com.hamyareman.ir.ui.components.BookSkin
 import com.hamyareman.ir.ui.components.BookSkinCover
 import com.hamyareman.ir.ui.components.BookSkinSpread
+import com.hamyareman.ir.ui.components.BookFlipper
+import com.hamyareman.ir.ui.components.DraftAutoSave
+import com.hamyareman.ir.ui.components.readDraft
+import com.hamyareman.ir.ui.components.writeDraft
+import org.json.JSONObject
+import com.hamyareman.ir.ui.components.SkinGeometry
+import com.hamyareman.ir.ui.components.SkinnedNotebookEditor
+import com.hamyareman.ir.ui.components.SkinnedStaticPage
+import com.hamyareman.ir.ui.components.reflowText
+import com.hamyareman.ir.ui.components.rememberBookFlipState
+import com.hamyareman.ir.ui.components.skinTextStyle
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -101,6 +114,8 @@ import java.io.File
 import java.util.UUID
 
 private const val DIARY_STORE = "hamyar_private_diary"
+private const val DIARY_DRAFT_KEY = "draft_diary_page"
+private const val NOTEBOOK_DRAFT_PREFIX = "draft_notebook_"
 private const val NOTEBOOKS = "notebooks"
 
 private data class Notebook(
@@ -133,7 +148,7 @@ private const val DIARY_COVER = "cover"
 private const val DIARY_MEDIA_DIR = "diary-media"
 
 private enum class ImageWrap(val wire: String, val title: String) {
-    NONE("none", "بدون پیچش"),
+    NONE("none", "عکس بالا / متن پایین"),
     TOP("top", "عکس بالا / متن پایین"),
     BOTTOM("bottom", "عکس پایین / متن بالا"),
 }
@@ -286,6 +301,13 @@ private fun deleteDiaryImage(path: String) {
 private fun titleOrDefault(value: String, default: String): String =
     value.trim().ifBlank { default }
 
+/** ردیف‌هایی از ورق که عکس (۷ سطر) و پانویسش (۱ سطر) می‌گیرند؛ متن زیر عکس نمی‌رود. */
+private fun photoRows(path: String, caption: String): Int =
+    if (path.isBlank()) 0 else 7 + if (caption.isNotBlank()) 1 else 0
+
+/** صفحه‌های تورق ۳ سایز بزرگ‌تر از صفحهٔ تایپ‌اند. */
+private const val DIARY_VIEW_BONUS_SP = 3f
+
 @Composable
 private fun DiaryImageWrapPicker(
     value: ImageWrap,
@@ -294,13 +316,17 @@ private fun DiaryImageWrapPicker(
     var expanded by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxWidth()) {
         OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-            Text("جای عکس: " + value.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                "جای عکس: " + (if (value == ImageWrap.NONE) ImageWrap.TOP else value).title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            ImageWrap.entries.forEach { option ->
+            ImageWrap.entries.filter { it != ImageWrap.NONE }.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option.title) },
                     onClick = {
@@ -350,11 +376,58 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
             imageScale = 1f
             imageRotation = 0f
             placementMode = true
+            if (wrap == ImageWrap.NONE) wrap = ImageWrap.TOP
             notice = "تصویر انتخاب شد؛ با یک انگشت جابه‌جا و با دو انگشت بزرگ‌نمایی/چرخش کن."
         } else {
             notice = "عکس قابل ذخیره‌سازی نبود."
         }
     }
+
+    var draftReady by remember { mutableStateOf(false) }
+
+    /** پیش‌نویس صفحهٔ جدید؛ فقط وقتی چیزی تایپ یا عکسی انتخاب شده باشد. */
+    fun draftSnapshot(): String? =
+        if (text.isBlank() && imagePath.isBlank()) null
+        else JSONObject()
+            .put("title", title)
+            .put("text", text)
+            .put("imagePath", imagePath)
+            .put("caption", imageCaption)
+            .put("w", imageWidth.toDouble())
+            .put("ox", imageOffsetX.toDouble())
+            .put("oy", imageOffsetY.toDouble())
+            .put("scale", imageScale.toDouble())
+            .put("rot", imageRotation.toDouble())
+            .put("wrap", wrap.name)
+            .put("align", notebookAlignmentWire(alignment))
+            .toString()
+
+    fun restoreDraft(): Boolean {
+        val d = readDraft(store, DIARY_DRAFT_KEY) { container.encryptor.decrypt(it) } ?: return false
+        title = d.optString("title", title).ifBlank { "خاطرات امروز" }
+        text = d.optString("text", "")
+        val savedImage = d.optString("imagePath", "")
+        imagePath = if (savedImage.isNotBlank() && File(savedImage).exists()) savedImage else ""
+        imageCaption = if (imagePath.isBlank()) "" else d.optString("caption", "")
+        imageWidth = d.optDouble("w", 0.56).toFloat()
+        imageOffsetX = d.optDouble("ox", 0.0).toFloat()
+        imageOffsetY = d.optDouble("oy", 0.0).toFloat()
+        imageScale = d.optDouble("scale", 1.0).toFloat()
+        imageRotation = d.optDouble("rot", 0.0).toFloat()
+        wrap = runCatching { ImageWrap.valueOf(d.optString("wrap")) }.getOrDefault(ImageWrap.TOP)
+        alignment = notebookTextAlignFromWire(d.optString("align"))
+        return text.isNotBlank() || imagePath.isNotBlank()
+    }
+
+    LaunchedEffect(Unit) {
+        if (restoreDraft()) notice = "پیش‌نویس قبلی‌ات برگشت؛ از همان‌جا ادامه بده."
+        draftReady = true
+    }
+    DraftAutoSave(
+        enabled = draftReady && editingEntryId == null,
+        current = draftSnapshot(),
+        onSave = { writeDraft(store, DIARY_DRAFT_KEY, it) { s -> container.encryptor.encrypt(s) } },
+    )
 
     fun openNew() {
         editingEntryId = null
@@ -375,6 +448,10 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     }
 
     fun openExisting(entry: DiaryEntry, pageIndex: Int) {
+        // پیش‌نویس صفحهٔ جدید قبل از جایگزین‌شدن با صفحهٔ در حال ویرایش نگه داشته می‌شود.
+        if (editingEntryId == null) {
+            writeDraft(store, DIARY_DRAFT_KEY, draftSnapshot()) { s -> container.encryptor.encrypt(s) }
+        }
         val pages = decodePayload(entry.cipher) { container.encryptor.decrypt(it).orEmpty() }.pages
         val page = pages.getOrElse(pageIndex) { DiaryPageModel("") }
         editingEntryId = entry.id
@@ -441,12 +518,15 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
             entries = entries.map { if (it.id == changed.id) changed else it }
         }
         writeDiary(store, entries)
+        val wasEditingExisting = currentEntry != null
+        if (!wasEditingExisting) writeDraft(store, DIARY_DRAFT_KEY, null) { it }
         text = ""
         imagePath = ""
         imageCaption = ""
         editingEntryId = null
         editingPageIndex = 0
         placementMode = false
+        if (wasEditingExisting) restoreDraft()
         notice = "صفحه ذخیره شد و فهرست دفتر آماده است."
     }
 
@@ -548,15 +628,22 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
-                        LinedNotebookInput(
-                            text,
-                            { text = it },
-                            header = titleOrDefault(title, "خاطرات امروز"),
+                        val photoRowsNow = photoRows(imagePath, imageCaption)
+                        SkinnedNotebookEditor(
+                            skin = diarySkin,
+                            value = text,
+                            onValueChange = { text = it },
+                            header = if (editingEntryId == null || editingPageIndex == 0) titleOrDefault(title, "خاطرات امروز") else "",
                             textAlign = alignment,
-                            overlay = { pageIndex ->
-                                if (pageIndex == 0 && imagePath.isNotBlank()) {
-                                    DiaryTouchPlacement(
+                            firstPageTopRows = if (wrap != ImageWrap.BOTTOM) photoRowsNow else 0,
+                            firstPageBottomRows = if (wrap == ImageWrap.BOTTOM) photoRowsNow else 0,
+                            firstPageOverlay = { slotTop, line ->
+                                if (imagePath.isNotBlank()) {
+                                    DiaryPhotoBlock(
+                                        slotTop = slotTop,
+                                        line = line,
                                         path = imagePath,
+                                        caption = imageCaption,
                                         widthFraction = imageWidth,
                                         offsetX = imageOffsetX,
                                         offsetY = imageOffsetY,
@@ -705,6 +792,19 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     }
 }
 
+private data class DiarySlice(
+    val entry: DiaryEntry,
+    val pageIndex: Int,
+    val sub: Int,
+    val page: DiaryPageModel,
+    val text: String,
+)
+
+/**
+ * تورق کتاب: تک‌لمس = صفحهٔ بعد، دو لمس پیاپی = صفحهٔ قبل، کشیدن = ورق‌زدن دستی با افکت
+ * جمع‌شدن ورق دور شیرازه. متن با فونت بولد و بزرگ‌تر نشان داده می‌شود و اگر از یک ورق
+ * بیشتر شد، خودکار روی ورق بعدی ادامه پیدا می‌کند.
+ */
 @Composable
 private fun DiaryBookViewer(
     cover: DiaryCover,
@@ -713,62 +813,66 @@ private fun DiaryBookViewer(
     onEdit: (DiaryViewerPage) -> Unit,
     onClose: () -> Unit,
 ) {
-    var activePage by remember(startPage, pages.size) { mutableStateOf((startPage + 1).coerceIn(0, pages.size)) }
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
     Dialog(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BookStage {
-            Box(Modifier.fillMaxSize()) {
-                BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
-                    RealisticBookPager(
-                        pageCount = pages.size + 1,
-                        initialPage = activePage,
-                        viewerGesture = true,
-                        skinned = true,
-                        onPageChanged = { activePage = it },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 22.dp, bottom = 10.dp)
-                            .pointerInput(pages.size) {
-                                detectTapGestures(
-                                    onTap = {
-                                        val next = (activePage + 1).coerceAtMost(pages.size)
-                                        if (next != activePage) activePage = next
-                                    },
-                                    onDoubleTap = {
-                                        val previous = (activePage - 1).coerceAtLeast(0)
-                                        if (previous != activePage) activePage = previous
-                                    },
-                                )
-                            },
-                    ) { index, _ ->
-                        if (index == 0) {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                BookSkinCover(diarySkin, Modifier.fillMaxWidth(), cover.title)
-                            }
-                        } else {
-                            val item = pages[index - 1]
-                            DiaryRenderedPage(
-                                item.page,
-                                header = if (item.pageIndex == 0) item.entry.title else "",
-                            )
-                        }
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val geo = remember(maxWidth) { SkinGeometry(diarySkin, maxWidth.value) }
+                val style = remember(geo, density) {
+                    skinTextStyle(geo.line, density, TextAlign.Right, DIARY_VIEW_BONUS_SP)
+                }
+                val widthPx = with(density) { geo.textWidth.roundToPx() }
+                val slices = remember(pages, geo, widthPx) {
+                    pages.flatMap { vp ->
+                        val headerRows = if (vp.pageIndex == 0 && vp.entry.title.isNotBlank()) 2 else 0
+                        val firstCap = (diarySkin.lineCount - headerRows - photoRows(vp.page.imagePath, vp.page.caption))
+                            .coerceAtLeast(1)
+                        reflowText(vp.page.text, measurer, style, widthPx, firstCap, diarySkin.lineCount)
+                            .mapIndexed { sub, t -> DiarySlice(vp.entry, vp.pageIndex, sub, vp.page, t) }
                     }
                 }
-                Row(
-                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(7.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
-                    Text("کتاب خاطرات", color = Color.White, style = MaterialTheme.typography.titleMedium)
-                    TextButton(
-                        onClick = {
-                            pages.getOrNull(activePage - 1)?.let(onEdit)
-                        },
-                        enabled = activePage > 0,
-                    ) { Text("ویرایش", color = Color.White) }
+                val startSlice = pages.getOrNull(startPage)?.let { vp ->
+                    slices.indexOfFirst { it.entry.id == vp.entry.id && it.pageIndex == vp.pageIndex && it.sub == 0 }
+                } ?: -1
+                val flip = rememberBookFlipState(
+                    initialPage = startSlice.coerceAtLeast(0) + 1,
+                    pageCount = slices.size + 1,
+                )
+                Box(Modifier.fillMaxSize()) {
+                    BookOpening(visible = true, modifier = Modifier.fillMaxSize()) {
+                        BookFlipper(
+                            state = flip,
+                            modifier = Modifier.fillMaxSize().padding(top = 22.dp, bottom = 10.dp),
+                        ) { index ->
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                if (index == 0) {
+                                    BookSkinCover(diarySkin, Modifier.fillMaxWidth(), cover.title)
+                                } else {
+                                    slices.getOrNull(index - 1)?.let { DiarySlicePage(it) }
+                                }
+                            }
+                        }
+                    }
+                    Row(
+                        Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(7.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TextButton(onClick = onClose) { Text("بستن", color = Color.White) }
+                        Text("کتاب خاطرات", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                        TextButton(
+                            onClick = {
+                                slices.getOrNull(flip.current - 1)?.let {
+                                    onEdit(DiaryViewerPage(it.entry, it.pageIndex, it.page))
+                                }
+                            },
+                            enabled = flip.current > 0,
+                        ) { Text("ویرایش", color = Color.White) }
+                    }
                 }
             }
         }
@@ -776,135 +880,140 @@ private fun DiaryBookViewer(
 }
 
 @Composable
-private fun DiaryTouchPlacement(
+private fun DiarySlicePage(slice: DiarySlice) {
+    val page = slice.page
+    val first = slice.sub == 0
+    val hasImage = first && page.imagePath.isNotBlank()
+    val rows = if (hasImage) photoRows(page.imagePath, page.caption) else 0
+    SkinnedStaticPage(
+        skin = diarySkin,
+        header = if (first && slice.pageIndex == 0) slice.entry.title else "",
+        text = slice.text,
+        textAlign = notebookTextAlignFromWire(page.alignment),
+        bonusSp = DIARY_VIEW_BONUS_SP,
+        topRows = if (page.wrap != ImageWrap.BOTTOM) rows else 0,
+        bottomRows = if (page.wrap == ImageWrap.BOTTOM) rows else 0,
+        overlay = { slotTop, line ->
+            if (hasImage) {
+                DiaryPhotoBlock(
+                    slotTop = slotTop,
+                    line = line,
+                    path = page.imagePath,
+                    caption = page.caption,
+                    widthFraction = page.imageWidth,
+                    offsetX = page.imageOffsetX,
+                    offsetY = page.imageOffsetY,
+                    scale = page.imageScale,
+                    rotation = page.imageRotation,
+                    bonusSp = DIARY_VIEW_BONUS_SP,
+                )
+            }
+        },
+    )
+}
+
+/**
+ * عکسِ روی ورق؛ هم در ویرایشگر (پیش‌نمایش و جابه‌جایی) و هم در تورق با همین کد کشیده می‌شود،
+ * پس جای عکس هنگام تایپ دقیقاً همان است که در کتاب دیده می‌شود. ۷ سطر برای عکس و ۱ سطر
+ * پانویس رزرو است و متن هیچ‌وقت زیر عکس نمی‌رود.
+ */
+@Composable
+private fun DiaryPhotoBlock(
+    slotTop: Dp,
+    line: Dp,
     path: String,
+    caption: String,
     widthFraction: Float,
     offsetX: Float,
     offsetY: Float,
     scale: Float,
     rotation: Float,
-    active: Boolean,
-    onTransform: (panX: Float, panY: Float, zoom: Float, rotation: Float, width: Float, height: Float) -> Unit,
+    active: Boolean = false,
+    bonusSp: Float = 0f,
+    onTransform: (panX: Float, panY: Float, zoom: Float, rotation: Float, width: Float, height: Float) -> Unit =
+        { _, _, _, _, _, _ -> },
 ) {
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val w = constraints.maxWidth.toFloat().coerceAtLeast(1f)
-        val h = constraints.maxHeight.toFloat().coerceAtLeast(1f)
-        Box(
-            Modifier
-                .fillMaxWidth(widthFraction.coerceIn(.25f, .78f))
-                .aspectRatio(.92f)
-                .align(Alignment.Center)
-                .graphicsLayer {
-                    translationX = offsetX * w
-                    translationY = offsetY * h
-                    scaleX = scale
-                    scaleY = scale
-                    rotationZ = rotation
-                    alpha = if (active) .98f else .94f
-                }
-                .shadow(20.dp, RoundedCornerShape(4.dp))
-                .clip(RoundedCornerShape(4.dp))
-                .border(1.dp, if (active) Color.White else Color(0x50FFFFFF), RoundedCornerShape(4.dp))
-                .pointerInput(active, path) {
-                    if (!active) return@pointerInput
-                    detectTransformGestures { _, pan, zoom, rotationDelta ->
-                        onTransform(pan.x, pan.y, zoom, rotationDelta, w, h)
+    val density = LocalDensity.current
+    Column(Modifier.offset(y = slotTop).fillMaxWidth()) {
+        BoxWithConstraints(Modifier.fillMaxWidth().height(line * 7)) {
+            val w = constraints.maxWidth.toFloat().coerceAtLeast(1f)
+            val h = constraints.maxHeight.toFloat().coerceAtLeast(1f)
+            Box(
+                Modifier
+                    .fillMaxWidth(widthFraction.coerceIn(.25f, .78f))
+                    .fillMaxHeight()
+                    .align(Alignment.Center)
+                    .graphicsLayer {
+                        translationX = offsetX * w
+                        translationY = offsetY * h
+                        scaleX = scale
+                        scaleY = scale
+                        rotationZ = rotation
                     }
-                },
-        ) {
-            AsyncImage(
-                model = File(path),
-                contentDescription = "عکس دفتر خاطرات",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-    }
-}
-
-/**
- * صفحهٔ خاطرات روی ورق PNG: هر سطر دقیقاً روی خط‌های ورق می‌نشیند.
- * سطر اول عنوان (تراز معکوس)، سطر دوم خالی، از سطر سوم متن. عکس ۷ سطر جا می‌گیرد و پانویسش
- * یک سطر، پس متنِ بعد از آن هم روی خط می‌ماند. BOTTOM: متن اول و عکس بعد؛ بقیه: عکس اول.
- */
-@Composable
-private fun DiaryRenderedPage(page: DiaryPageModel, header: String = "") {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        BookSkinSpread(diarySkin) { line, _ ->
-            val lh = with(LocalDensity.current) { line.toSp() }
-            val style = androidx.compose.ui.text.TextStyle(
-                fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                fontSize = lh * 0.72f,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                lineHeight = lh,
-                color = Color(0xFF19364B),
-                textAlign = notebookTextAlignFromWire(page.alignment),
-                platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
-                lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
-                    alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Bottom,
-                    trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
-                ),
-            )
-            Column(Modifier.fillMaxSize()) {
-                if (header.isNotBlank()) {
-                    Text(
-                        header,
-                        Modifier.fillMaxWidth(),
-                        style = style.copy(textAlign = oppositeTextAlign(notebookTextAlignFromWire(page.alignment))),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                    .shadow(8.dp, RoundedCornerShape(2.dp))
+                    .clip(RoundedCornerShape(2.dp))
+                    .then(
+                        if (active) Modifier.border(1.dp, Color.White, RoundedCornerShape(2.dp))
+                        else Modifier,
                     )
-                    Spacer(Modifier.height(line))
-                }
-                val hasImage = page.imagePath.isNotBlank()
-                if (hasImage && page.wrap != ImageWrap.BOTTOM) {
-                    DiaryImageSlot(page, line, style)
-                }
-                Text(page.text, Modifier.fillMaxWidth(), style = style)
-                if (hasImage && page.wrap == ImageWrap.BOTTOM) {
-                    DiaryImageSlot(page, line, style)
-                }
+                    .pointerInput(active, path) {
+                        if (!active) return@pointerInput
+                        detectTransformGestures { _, pan, zoom, rotationDelta ->
+                            onTransform(pan.x, pan.y, zoom, rotationDelta, w, h)
+                        }
+                    },
+            ) {
+                AsyncImage(
+                    model = File(path),
+                    contentDescription = caption.ifBlank { "عکس" },
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
         }
+        if (caption.isNotBlank()) {
+            Text(
+                caption,
+                Modifier.fillMaxWidth().height(line),
+                style = skinTextStyle(line, density, TextAlign.Center, bonusSp)
+                    .copy(color = Color(0xFF526B80)),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
+/** ورق‌های ذخیره‌شدهٔ یک متن؛ اگر از یک ورق بیشتر شد زیر هم ادامه پیدا می‌کند. */
 @Composable
-private fun DiaryImageSlot(
-    page: DiaryPageModel,
-    line: Dp,
-    style: androidx.compose.ui.text.TextStyle,
+private fun SkinnedReflowedPages(
+    skin: BookSkin,
+    header: String,
+    text: String,
+    textAlign: TextAlign,
+    bonusSp: Float = 0f,
 ) {
-    Box(
-        Modifier.fillMaxWidth().height(line * 7),
-        contentAlignment = Alignment.Center,
-    ) {
-        AsyncImage(
-            model = File(page.imagePath),
-            contentDescription = page.caption.ifBlank { "عکس" },
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxWidth(page.imageWidth.coerceIn(.25f, .78f))
-                .fillMaxHeight()
-                .graphicsLayer {
-                    scaleX = page.imageScale
-                    scaleY = page.imageScale
-                    rotationZ = page.imageRotation
-                    translationX = page.imageOffsetX * 240f
-                    translationY = page.imageOffsetY * 180f
-                }
-                .shadow(8.dp, RoundedCornerShape(2.dp))
-                .clip(RoundedCornerShape(2.dp)),
-        )
-    }
-    if (page.caption.isNotBlank()) {
-        Text(
-            page.caption,
-            Modifier.fillMaxWidth(),
-            style = style.copy(color = Color(0xFF526B80), textAlign = TextAlign.Center),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val geo = remember(skin, maxWidth) { SkinGeometry(skin, maxWidth.value) }
+        val style = remember(geo, density) { skinTextStyle(geo.line, density, textAlign, bonusSp) }
+        val widthPx = with(density) { geo.textWidth.roundToPx() }
+        val headerRows = if (header.isNotBlank()) 2 else 0
+        val chunks = remember(text, geo, widthPx, headerRows) {
+            reflowText(text, measurer, style, widthPx, (skin.lineCount - headerRows).coerceAtLeast(1), skin.lineCount)
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            chunks.forEachIndexed { i, chunk ->
+                SkinnedStaticPage(
+                    skin = skin,
+                    header = if (i == 0) header else "",
+                    text = chunk,
+                    textAlign = textAlign,
+                    bonusSp = bonusSp,
+                )
+            }
+        }
     }
 }
 
@@ -920,12 +1029,37 @@ fun NotebooksScreen(onBack: () -> Unit) {
     var alignment by remember { mutableStateOf(androidx.compose.ui.text.style.TextAlign.Right) }
     var notice by remember { mutableStateOf<String?>(null) }
     val selected = notebooks.firstOrNull { it.id == selectedId }
+    var loadedNotebookId by remember { mutableStateOf<String?>(null) }
+    val savedNotebookText = selected?.let { container.encryptor.decrypt(it.cipher).orEmpty() }
     LaunchedEffect(selected?.id) {
+        loadedNotebookId = null
         selected?.let {
-            text = container.encryptor.decrypt(it.cipher).orEmpty()
-            alignment = notebookTextAlignFromWire(it.alignment)
+            val saved = container.encryptor.decrypt(it.cipher).orEmpty()
+            val d = readDraft(store, NOTEBOOK_DRAFT_PREFIX + it.id) { raw -> container.encryptor.decrypt(raw) }
+            text = d?.optString("text", saved) ?: saved
+            alignment = notebookTextAlignFromWire(d?.optString("align") ?: it.alignment)
+            if (d != null && text != saved) notice = "پیش‌نویس قبلی‌ات برگشت؛ از همان‌جا ادامه بده."
+            loadedNotebookId = it.id
         }
     }
+    fun notebookDraftJson(): String? =
+        if (selected == null || text == savedNotebookText) null
+        else JSONObject().put("text", text).put("align", notebookAlignmentWire(alignment)).toString()
+    fun persistNotebookDraft() {
+        val id = selected?.id ?: return
+        if (loadedNotebookId != id) return
+        writeDraft(store, NOTEBOOK_DRAFT_PREFIX + id, notebookDraftJson()) { s -> container.encryptor.encrypt(s) }
+    }
+    DraftAutoSave(
+        enabled = selected != null && loadedNotebookId == selected.id,
+        current = notebookDraftJson(),
+        onSave = {
+            val id = selectedId
+            if (id != null && loadedNotebookId == id) {
+                writeDraft(store, NOTEBOOK_DRAFT_PREFIX + id, it) { s -> container.encryptor.encrypt(s) }
+            }
+        },
+    )
 
     fun rowId(id: String): String =
         "notebook_" + container.auth.cachedUserId().orEmpty().take(32) + "_" + id.take(32)
@@ -952,7 +1086,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         AppTopBar(
             if (selected == null) "دفترچه‌های یادداشت" else selected.title,
-            if (selected == null) onBack else ({ selectedId = null; text = ""; notice = null }),
+            if (selected == null) onBack else ({ persistNotebookDraft(); selectedId = null; text = ""; notice = null }),
         )
         LazyColumn(
             Modifier.fillMaxSize().padding(12.dp),
@@ -1042,13 +1176,14 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                 "نوشتن در " + selected.title,
                                 style = MaterialTheme.typography.titleMedium,
                             )
-                            Text(
-                                "عنوانِ شماره‌دار در سطر اول می‌آید؛ یک سطر فاصله دارد و سپس نوشتن شروع می‌شود.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
                             NotebookAlignmentPicker(alignment, { alignment = it })
-                            LinedNotebookInput(text, { text = it }, header = selected.title, textAlign = alignment)
+                            SkinnedNotebookEditor(
+                                skin = BookSkin.NavyFloral,
+                                value = text,
+                                onValueChange = { text = it },
+                                header = selected.title,
+                                textAlign = alignment,
+                            )
                             Button(
                                 onClick = {
                                     if (text.isBlank()) {
@@ -1061,6 +1196,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                         notebooks = notebooks.map { if (it.id == changed.id) changed else it }
                                         writeNotebooks(store, notebooks)
                                         queue(changed)
+                                        writeDraft(store, NOTEBOOK_DRAFT_PREFIX + selected.id, null) { it }
                                         text = ""
                                         selectedId = null
                                         notice = "ذخیره شد و به فهرست دفترچه‌ها برگشتی."
@@ -1079,31 +1215,12 @@ fun NotebooksScreen(onBack: () -> Unit) {
                 val pages = fullText.split(NOTEBOOK_PAGE_SEPARATOR).filter { it.isNotBlank() }
                 pages.forEachIndexed { index, page ->
                     item(key = "notebook-page-" + selected.id + "-" + index) {
-                        NotebookBookPage(
-                            pageNumber = index + 1,
-                            pageCount = pages.size.coerceAtLeast(1),
-                            stackPages = (pages.size - index - 1).coerceIn(0, 7),
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            NotebookPaper(
-                                header = if (index == 0) selected.title else "",
-                                headerAlign = oppositeTextAlign(notebookTextAlignFromWire(selected.alignment)),
-                                showVerticalGuides = true,
-                            ) {
-                                Text(
-                                    page,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(start = 74.dp, end = 74.dp, top = 0.dp, bottom = 28.dp),
-                                    fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-                                    fontSize = 21.sp,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    lineHeight = 24.sp,
-                                    textAlign = notebookTextAlignFromWire(selected.alignment),
-                                    color = Color(0xFF19364B),
-                                )
-                            }
-                        }
+                        SkinnedReflowedPages(
+                            skin = BookSkin.NavyFloral,
+                            header = if (index == 0) selected.title else "",
+                            text = page,
+                            textAlign = notebookTextAlignFromWire(selected.alignment),
+                        )
                     }
                 }
             }

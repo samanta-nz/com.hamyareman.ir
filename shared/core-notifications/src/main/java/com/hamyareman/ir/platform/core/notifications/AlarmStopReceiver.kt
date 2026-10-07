@@ -19,10 +19,19 @@ class AlarmStopReceiver : BroadcastReceiver() {
         if (notificationId != Int.MIN_VALUE) {
             context.getSystemService(NotificationManager::class.java)?.cancel(notificationId)
         }
-        intent?.getStringExtra(EXTRA_REMINDER_ID)?.let { cancelRepeat(context, it) }
+        intent?.getStringExtra(EXTRA_REMINDER_ID)?.let { id ->
+            cancelRepeat(context, id)
+            // اعلان تکراری (_r) و اصلی هر دو بسته شوند تا اعلان معلق نماند.
+            val base = id.removeSuffix("_r")
+            val nm = context.getSystemService(NotificationManager::class.java)
+            nm?.cancel(base.hashCode())
+            nm?.cancel("${base}_r".hashCode())
+        }
 
         val destination = intent?.getStringExtra(EXTRA_SLEEP_DESTINATION).orEmpty()
-        if (destination.isNotBlank()) {
+        // از اندروید ۱۲ باز کردن Activity از گیرندهٔ اعلان مسدود است؛ اکشن‌های باز کردن صفحه
+        // اکنون مستقیماً PendingIntent.getActivity هستند. این مسیر فقط برای نسخه‌های قدیمی‌تر است.
+        if (destination.isNotBlank() && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
             context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(ReminderReceiver.EXTRA_SLEEP_DESTINATION, destination)

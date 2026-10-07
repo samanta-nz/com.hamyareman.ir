@@ -491,8 +491,10 @@ private fun ShamsiCalendarSection() {
                             val iso = JalaliDate.toGregorianIso(JalaliDate.Jalali(year, month, day))
                             val date = iso?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
                             val evs = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.matching(ctx, it, offset) }.orEmpty()
-                            val official = date != null && com.hamyareman.ir.ui.home.CalendarOccasions.isOfficialHoliday(ctx, date, offset)
-                            val school = date != null && com.hamyareman.ir.ui.home.CalendarOccasions.isSchoolWeekend(date) && !official
+                            val tone = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.dayTone(ctx, it, offset) }
+                                ?: com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.NONE
+                            val official = tone == com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.RED
+                            val school = tone == com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.BLUE
                             val isToday = year == todayJ.year && month == todayJ.month && day == todayJ.day
                             val g = date
                             val h = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.hijriOf(it) }
@@ -538,6 +540,12 @@ private fun ShamsiCalendarSection() {
                 }
                 repeat(7 - row.size) { Spacer(Modifier.weight(1f)) }
             }
+        }
+        if (month == 1) {
+            Text(
+                "۱ تا ۱۳ فروردین: تعطیلات نوروزی مدرسه (آبی). جمعه‌ها و روزهای دارای مناسبت قرمز هستند.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF1D4ED8))
         }
         Text("مناسبات این ماه", fontWeight = FontWeight.Bold)
         val monthOcc = com.hamyareman.ir.ui.home.CalendarOccasions.monthOccasions(ctx, year, month, dim, offset)

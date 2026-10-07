@@ -120,18 +120,7 @@ object CalendarOccasions {
         val j = JalaliDate.toJalali(date.toString()) ?: return emptyList()
         val shifted = date.minusDays(lunarOffset.toLong())
         val hij = hijriOf(shifted)
-        val noruz = if (isSchoolNoruzHoliday(j)) {
-            listOf(
-                CalEvent(
-                    category = "تعطیل مدرسه",
-                    title = "تعطیلات نوروزی مدرسه",
-                    holiday = true,
-                    shamsiDay = j.day,
-                    shamsiMonth = j.month,
-                )
-            )
-        } else emptyList()
-        return noruz + events(ctx).filter { e ->
+        return events(ctx).filter { e ->
             when {
                 e.shamsiDay > 0 && e.shamsiMonth > 0 ->
                     j.month == e.shamsiMonth && j.day == e.shamsiDay
@@ -149,10 +138,13 @@ object CalendarOccasions {
         val date = runCatching { LocalDate.parse(iso) }.getOrNull() ?: return emptyList()
         // پنجشنبه/جمعه فقط «وضعیت هفته» هستند، نه مناسبت تقویمی. متن رنگی
         // آن‌ها مستقیماً در داشبورد ساخته می‌شود و وارد فهرست مناسبت‌ها نمی‌شود.
-        return matching(ctx, date, lunarOffset).flatMap { e ->
+        val list = matching(ctx, date, lunarOffset).flatMap { e ->
             val base = Occasion(e.title, e.kind, e.holiday)
             if (e.holiday) listOf(Occasion(e.title, OccasionKind.OFFICIAL, true), base) else listOf(base)
         }
+        return if (isSchoolNoruzHoliday(j)) {
+            list + Occasion("تعطیلات نوروزی مدرسه", OccasionKind.OFFICIAL, false)
+        } else list
     }
 
     fun visibleOn(ctx: Context, j: JalaliDate.Jalali): List<Occasion> {
@@ -167,6 +159,24 @@ object CalendarOccasions {
 
     fun isOfficialHoliday(ctx: Context, date: LocalDate, lunarOffset: Int): Boolean =
         date.dayOfWeek == DayOfWeek.FRIDAY || matching(ctx, date, lunarOffset).any { it.holiday }
+
+    /** رنگ خانهٔ تقویم: قرمز = تعطیل رسمی/جمعه/مناسبت، آبی = تعطیل مدرسه. */
+    enum class DayTone { RED, BLUE, NONE }
+
+    /**
+     * در بازهٔ تعطیلات نوروزی مدرسه (۱ تا ۱۳ فروردین): جمعه‌ها و روزهای دارای مناسبت قرمز،
+     * بقیهٔ روزهای بازه آبی. بیرون از این بازه: تعطیل رسمی قرمز و پنجشنبه آبی.
+     */
+    fun dayTone(ctx: Context, date: LocalDate, lunarOffset: Int = CalendarPrefs.lunarOffset(ctx)): DayTone {
+        val j = JalaliDate.toJalali(date.toString())
+        if (j != null && isSchoolNoruzHoliday(j)) {
+            val hasOccasion = matching(ctx, date, lunarOffset).isNotEmpty() ||
+                IranOfficialHolidays.occasion(j) != null
+            return if (date.dayOfWeek == DayOfWeek.FRIDAY || hasOccasion) DayTone.RED else DayTone.BLUE
+        }
+        if (isOfficialHoliday(ctx, date, lunarOffset)) return DayTone.RED
+        return if (isSchoolWeekend(date)) DayTone.BLUE else DayTone.NONE
+    }
 
     /** پنجشنبه تعطیل مدرسه است، نه تعطیل رسمی. */
     fun isSchoolWeekend(date: LocalDate): Boolean =
@@ -192,7 +202,10 @@ object CalendarOccasions {
                 }
                 if (kinds.any { it in enabled }) out += d to e
             }
-            // روز خالی پنجشنبه/جمعه عمداً به «مناسبات این ماه» تزریق نمی‌شود.
+            // در بازهٔ نوروز، جمعه‌های بدون مناسبت هم ثبت می‌شوند تا دلیل قرمز بودنشان معلوم باشد.
+            if (month == 1 && d in 1..13 && matched.isEmpty() && date.dayOfWeek == DayOfWeek.FRIDAY) {
+                out += d to CalEvent(category = "تعطیل رسمی", title = "جمعه", holiday = true, shamsiDay = d, shamsiMonth = 1)
+            }
         }
         return out
     }
