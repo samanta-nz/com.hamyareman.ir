@@ -34,6 +34,7 @@ android {
         // انتشار عمومی از Android 10 به بعد؛ APIهای قدیمی‌تر در این محصول پشتیبانی نمی‌شوند.
         targetSdk = 36
         // نسخهٔ پیش‌فرض توسعه؛ workflow انتشار versionCode/versionName را برای هر انتشار override می‌کند.
+    // Release grade 9 v2.5.8
         versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 258
         versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "2.5.8"
         ndk {
