@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-07T02:25:43.272144+00:00
+- Generated: 2026-10-07T02:27:13.322525+00:00
 - Branch: New-graphic
-- HEAD: c00760ef2d7b921f02c7d96c3301bfb05ac60fb2
+- HEAD: 2c3eeb752dc5821d4d756444382fe7f77bff6c6b
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	310
+- rev-list main...HEAD: 2	312
 
 ## Summary
 
@@ -56,6 +56,7 @@
 - `.github/workflows/release-grade9-v2.yml`
 - `.github/workflows/ship-ci-apk.yml`
 - `.github/workflows/upload-apk-arvan.yml`
+- `.patch-drop/part04.patch`
 - `.patch-drop/part05.patch`
 - `.release-trigger/grade9-v2.5.7`
 - `RELEASES.md`
