@@ -21,7 +21,6 @@ import com.hamyareman.ir.ui.components.BookFlipper
 import com.hamyareman.ir.ui.components.DraftAutoSave
 import com.hamyareman.ir.ui.components.readDraft
 import com.hamyareman.ir.ui.components.writeDraft
-import org.json.JSONObject
 import com.hamyareman.ir.ui.components.SkinGeometry
 import com.hamyareman.ir.ui.components.SkinnedNotebookEditor
 import com.hamyareman.ir.ui.components.SkinnedStaticPage
