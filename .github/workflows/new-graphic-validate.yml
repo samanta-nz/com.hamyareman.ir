@@ -1,6 +1,7 @@
 name: New-graphic package and player validation
 
 # Single validation path: compile/tests, requirements audit, and APK-output guard. Never assembles an APK.
+# Rollback verification trigger; no application source changes.
 
 on:
   push:
