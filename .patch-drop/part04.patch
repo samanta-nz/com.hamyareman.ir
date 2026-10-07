@@ -1,0 +1,671 @@
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/SkinnedNotebook.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/SkinnedNotebook.kt
+new file mode 100644
+index 0000000..8074b19
+--- /dev/null
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/SkinnedNotebook.kt
+@@ -0,0 +1,412 @@
++package com.hamyareman.ir.ui.components
++
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.BoxScope
++import androidx.compose.foundation.layout.BoxWithConstraints
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.offset
++import androidx.compose.foundation.pager.HorizontalPager
++import androidx.compose.foundation.pager.rememberPagerState
++import androidx.compose.foundation.text.BasicTextField
++import androidx.compose.material3.MaterialTheme
++import androidx.compose.material3.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.LaunchedEffect
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.rememberCoroutineScope
++import androidx.compose.runtime.rememberUpdatedState
++import androidx.compose.runtime.setValue
++import androidx.compose.runtime.snapshotFlow
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.focus.FocusRequester
++import androidx.compose.ui.focus.focusRequester
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.SolidColor
++import androidx.compose.ui.input.key.Key
++import androidx.compose.ui.input.key.KeyEventType
++import androidx.compose.ui.input.key.key
++import androidx.compose.ui.input.key.onPreviewKeyEvent
++import androidx.compose.ui.input.key.type
++import androidx.compose.ui.platform.LocalDensity
++import androidx.compose.ui.text.AnnotatedString
++import androidx.compose.ui.text.PlatformTextStyle
++import androidx.compose.ui.text.TextMeasurer
++import androidx.compose.ui.text.TextRange
++import androidx.compose.ui.text.TextStyle
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.input.TextFieldValue
++import androidx.compose.ui.text.rememberTextMeasurer
++import androidx.compose.ui.text.style.LineHeightStyle
++import androidx.compose.ui.text.style.TextAlign
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.Density
++import androidx.compose.ui.unit.Dp
++import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
++import com.hamyareman.ir.ui.appearance.EmbeddedFonts
++import kotlinx.coroutines.delay
++import kotlinx.coroutines.flow.first
++import kotlinx.coroutines.launch
++import kotlinx.coroutines.withTimeoutOrNull
++
++/** جوهر متن روی ورق؛ همان رنگ قبلی دفترها. */
++internal val SkinInk = Color(0xFF19364B)
++
++/** هندسهٔ ورق PNG برای یک عرض مشخص (همان فرمول BookSkinSpread). */
++internal class SkinGeometry(val skin: BookSkin, maxWidthDp: Float) {
++    private val k = maxWidthDp / BookSkin.CANVAS_W
++    val line: Dp = (skin.lineSpacing * k).dp
++    val textWidth: Dp = ((skin.textRight - skin.textLeft) * k).dp
++    val lines: Int get() = skin.lineCount
++}
++
++/**
++ * سبک متن روی خط‌های ورق. اندازه از ارتفاع سطر می‌آید؛ [bonusSp] برای صفحه‌های تورق
++ * بزرگ‌تر است. تراز پایینِ سطر باعث می‌شود نوشته دقیقاً روی خط بنشیند.
++ */
++internal fun skinTextStyle(
++    line: Dp,
++    density: Density,
++    align: TextAlign,
++    bonusSp: Float = 0f,
++    scale: Float = 0.72f,
++): TextStyle {
++    val lineSp = with(density) { line.toSp() }
++    return TextStyle(
++        fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
++        fontSize = (lineSp.value * scale + bonusSp).sp,
++        fontWeight = FontWeight.Bold,
++        lineHeight = lineSp,
++        color = SkinInk,
++        textAlign = align,
++        platformStyle = PlatformTextStyle(includeFontPadding = false),
++        lineHeightStyle = LineHeightStyle(
++            alignment = LineHeightStyle.Alignment.Bottom,
++            trim = LineHeightStyle.Trim.None,
++        ),
++    )
++}
++
++internal fun measureLineCount(
++    measurer: TextMeasurer,
++    text: String,
++    style: TextStyle,
++    widthPx: Int,
++): Int = measurer.measure(
++    text = AnnotatedString(text),
++    style = style,
++    constraints = androidx.compose.ui.unit.Constraints(maxWidth = widthPx.coerceAtLeast(1)),
++).lineCount
++
++/**
++ * بزرگ‌ترین بخش ابتدای [text] که در [maxLines] سطر جا شود و باقیماندهٔ آن.
++ * شکستن ترجیحاً سر فاصله یا خط جدید است.
++ */
++internal fun firstPageFit(
++    text: String,
++    measurer: TextMeasurer,
++    style: TextStyle,
++    widthPx: Int,
++    maxLines: Int,
++): Pair<String, String> {
++    val cap = maxLines.coerceAtLeast(1)
++    if (text.isEmpty() || measureLineCount(measurer, text, style, widthPx) <= cap) return text to ""
++    var lo = 0
++    var hi = text.length
++    while (lo < hi) {
++        val mid = (lo + hi + 1) / 2
++        if (measureLineCount(measurer, text.substring(0, mid), style, widthPx) <= cap) lo = mid else hi = mid - 1
++    }
++    var cut = lo.coerceAtLeast(1)
++    val soft = text.lastIndexOfAny(charArrayOf('\n', ' '), cut - 1)
++    if (soft > 0 && soft >= cut - 28) {
++        return text.substring(0, soft) to text.substring(soft + 1)
++    }
++    if (cut >= text.length) cut = text.length - 1
++    return text.substring(0, cut) to text.substring(cut)
++}
++
++/** متن را روی چند صفحه می‌چیند: ظرفیت صفحهٔ اول [firstCapacity] و بقیه [nextCapacity] سطر. */
++internal fun reflowText(
++    text: String,
++    measurer: TextMeasurer,
++    style: TextStyle,
++    widthPx: Int,
++    firstCapacity: Int,
++    nextCapacity: Int,
++): List<String> {
++    val out = mutableListOf<String>()
++    var carry = text
++    var cap = firstCapacity
++    do {
++        val (fit, rest) = firstPageFit(carry, measurer, style, widthPx, cap)
++        out += fit
++        carry = rest
++        cap = nextCapacity
++    } while (carry.isNotEmpty())
++    return out
++}
++
++private class EditResult(val pages: List<String>, val page: Int, val cursor: Int)
++
++private fun applyEdit(
++    pages: List<String>,
++    index: Int,
++    text: String,
++    cursor: Int,
++    capacity: (Int) -> Int,
++    fullCapacity: Int,
++    fit: (String, Int) -> Pair<String, String>,
++): EditResult {
++    val out = pages.toMutableList()
++    val (first, rest) = fit(text, capacity(index))
++    out[index] = first
++    if (rest.isEmpty()) return EditResult(out, index, cursor.coerceIn(0, first.length))
++    val chunks = mutableListOf(first)
++    var carry = rest
++    while (carry.isNotEmpty()) {
++        val (f, r) = fit(carry, fullCapacity)
++        chunks += f
++        carry = r
++    }
++    out.addAll(index + 1, chunks.drop(1))
++    var pos = 0
++    chunks.forEachIndexed { i, chunk ->
++        val start = text.indexOf(chunk, pos).let { if (it < 0) pos else it }
++        val end = start + chunk.length
++        if (cursor <= end || i == chunks.lastIndex) {
++            return EditResult(out, index + i, (cursor - start).coerceIn(0, chunk.length))
++        }
++        pos = end
++    }
++    return EditResult(out, index, first.length)
++}
++
++/**
++ * ویرایشگر دفتر روی همان ورق PNG نمایشگر: هر سطر تایپ دقیقاً روی یک خط ورق می‌نشیند.
++ * سطر اول عنوان، سطر دوم خالی، از سطر سوم متن. [firstPageTopRows]/[firstPageBottomRows]
++ * سطرهایی از صفحهٔ اول‌اند که عکس می‌گیرد و متن زیرشان نمی‌رود.
++ * پر شدن صفحه به‌طور خودکار صفحهٔ بعد را باز می‌کند (جداکنندهٔ صفحه: [NOTEBOOK_PAGE_SEPARATOR]).
++ */
++@Composable
++internal fun SkinnedNotebookEditor(
++    skin: BookSkin,
++    value: String,
++    onValueChange: (String) -> Unit,
++    header: String,
++    textAlign: TextAlign,
++    modifier: Modifier = Modifier,
++    firstPageTopRows: Int = 0,
++    firstPageBottomRows: Int = 0,
++    firstPageOverlay: @Composable BoxScope.(slotTop: Dp, line: Dp) -> Unit = { _, _ -> },
++) {
++    val density = LocalDensity.current
++    val measurer = rememberTextMeasurer()
++    BoxWithConstraints(modifier.fillMaxWidth()) {
++        val geo = remember(skin, maxWidth) { SkinGeometry(skin, maxWidth.value) }
++        val style = remember(geo, textAlign, density) { skinTextStyle(geo.line, density, textAlign) }
++        val widthPx = with(density) { geo.textWidth.roundToPx() }
++        val pages = remember(value) { value.split(NOTEBOOK_PAGE_SEPARATOR) }
++        val latestPages by rememberUpdatedState(pages)
++        val pager = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
++        val scope = rememberCoroutineScope()
++        var field by remember {
++            mutableStateOf(TextFieldValue(pages.first(), TextRange(pages.first().length)))
++        }
++        var pendingCursor by remember { mutableStateOf<Int?>(null) }
++        var started by remember { mutableStateOf(false) }
++        val focus = remember { FocusRequester() }
++
++        fun headerRowsOf(page: Int) = if (page == 0 && header.isNotBlank()) 2 else 0
++        fun capacityOf(page: Int): Int {
++            val top = if (page == 0) firstPageTopRows else 0
++            val bottom = if (page == 0) firstPageBottomRows else 0
++            return (skin.lineCount - headerRowsOf(page) - top - bottom).coerceAtLeast(1)
++        }
++        val fit: (String, Int) -> Pair<String, String> =
++            { t, cap -> firstPageFit(t, measurer, style, widthPx, cap) }
++
++        fun publish(result: EditResult) {
++            onValueChange(result.pages.joinToString(NOTEBOOK_PAGE_SEPARATOR.toString()))
++        }
++
++        fun goTo(page: Int, cursor: Int) {
++            pendingCursor = cursor
++            scope.launch {
++                withTimeoutOrNull(600) { snapshotFlow { pager.pageCount }.first { it > page } }
++                pager.animateScrollToPage(page)
++            }
++        }
++
++        fun commit(newField: TextFieldValue) {
++            val cur = pager.currentPage
++            val result = applyEdit(latestPages, cur, newField.text, newField.selection.start, ::capacityOf, skin.lineCount, fit)
++            publish(result)
++            if (result.page == cur) {
++                val t = result.pages[cur]
++                field = if (t == newField.text) newField else TextFieldValue(t, TextRange(result.cursor.coerceIn(0, t.length)))
++            } else {
++                goTo(result.page, result.cursor)
++            }
++        }
++
++        fun mergeWithPrevious() {
++            val cur = pager.currentPage
++            if (cur <= 0) return
++            val prev = latestPages[cur - 1]
++            val list = latestPages.toMutableList()
++            list.removeAt(cur)
++            val result = applyEdit(list, cur - 1, prev + field.text, prev.length, ::capacityOf, skin.lineCount, fit)
++            publish(result)
++            goTo(result.page, result.cursor)
++        }
++
++        // تغییر صفحه: متن همان صفحه در فیلد فعال بارگذاری می‌شود.
++        LaunchedEffect(pager.currentPage) {
++            val txt = latestPages.getOrElse(pager.currentPage) { "" }
++            val cursor = (pendingCursor ?: txt.length).coerceIn(0, txt.length)
++            field = TextFieldValue(txt, TextRange(cursor))
++            pendingCursor = null
++            if (started) {
++                delay(80)
++                runCatching { focus.requestFocus() }
++            }
++            started = true
++        }
++        // تغییر بیرونی متن (باز کردن صفحهٔ دیگر، پاک‌شدن بعد از ذخیره).
++        LaunchedEffect(value) {
++            if (pager.currentPage > latestPages.lastIndex) {
++                pager.scrollToPage(latestPages.lastIndex.coerceAtLeast(0))
++            }
++            val txt = latestPages.getOrElse(pager.currentPage) { "" }
++            if (field.text != txt) field = TextFieldValue(txt, TextRange(txt.length))
++        }
++
++        Column {
++            HorizontalPager(
++                state = pager,
++                modifier = Modifier.fillMaxWidth(),
++                reverseLayout = true,
++                beyondViewportPageCount = 1,
++            ) { pageIndex ->
++                BookSkinSpread(skin) { line, lines ->
++                    val headerRows = headerRowsOf(pageIndex)
++                    val topRows = if (pageIndex == 0) firstPageTopRows else 0
++                    val bottomRows = if (pageIndex == 0) firstPageBottomRows else 0
++                    val cap = capacityOf(pageIndex)
++                    Box(Modifier.fillMaxSize()) {
++                        if (headerRows > 0) {
++                            Text(
++                                header,
++                                Modifier.fillMaxWidth().height(line),
++                                style = style.copy(textAlign = oppositeTextAlign(textAlign)),
++                                maxLines = 1,
++                                overflow = TextOverflow.Ellipsis,
++                            )
++                        }
++                        Box(
++                            Modifier
++                                .offset(y = line * (headerRows + topRows))
++                                .fillMaxWidth()
++                                .height(line * cap),
++                        ) {
++                            if (pageIndex == pager.currentPage) {
++                                BasicTextField(
++                                    value = field,
++                                    onValueChange = { commit(it) },
++                                    textStyle = style,
++                                    cursorBrush = SolidColor(Color(0xFF27485C)),
++                                    modifier = Modifier
++                                        .fillMaxSize()
++                                        .focusRequester(focus)
++                                        .onPreviewKeyEvent { ev ->
++                                            if (ev.type == KeyEventType.KeyDown &&
++                                                ev.key == Key.Backspace &&
++                                                field.selection.collapsed &&
++                                                field.selection.start == 0 &&
++                                                pager.currentPage > 0
++                                            ) {
++                                                mergeWithPrevious()
++                                                true
++                                            } else false
++                                        },
++                                )
++                            } else {
++                                Text(
++                                    pages.getOrElse(pageIndex) { "" },
++                                    Modifier.fillMaxSize(),
++                                    style = style,
++                                    maxLines = cap,
++                                    overflow = TextOverflow.Clip,
++                                )
++                            }
++                        }
++                        if (pageIndex == 0) {
++                            val slotTop = if (firstPageTopRows > 0) line * headerRows else line * (lines - bottomRows)
++                            firstPageOverlay(slotTop, line)
++                        }
++                    }
++                }
++            }
++            Text(
++                "صفحهٔ ${pager.currentPage + 1} از ${pages.size}",
++                style = MaterialTheme.typography.labelSmall,
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++                modifier = Modifier.fillMaxWidth(),
++                textAlign = TextAlign.Center,
++            )
++        }
++    }
++}
++
++/**
++ * یک ورق ثابت (برای تورق و نمایش): عنوان در سطر اول، یک سطر خالی، بعد متن روی خط‌ها.
++ * [overlay] برای جای عکس است؛ [slotTop] بالای ناحیهٔ رزروشدهٔ عکس را می‌دهد.
++ */
++@Composable
++internal fun SkinnedStaticPage(
++    skin: BookSkin,
++    header: String,
++    text: String,
++    textAlign: TextAlign,
++    modifier: Modifier = Modifier,
++    bonusSp: Float = 0f,
++    topRows: Int = 0,
++    bottomRows: Int = 0,
++    overlay: @Composable BoxScope.(slotTop: Dp, line: Dp) -> Unit = { _, _ -> },
++) {
++    val density = LocalDensity.current
++    BookSkinSpread(skin, modifier) { line, lines ->
++        val style = skinTextStyle(line, density, textAlign, bonusSp)
++        val headerRows = if (header.isNotBlank()) 2 else 0
++        val cap = (lines - headerRows - topRows - bottomRows).coerceAtLeast(1)
++        Box(Modifier.fillMaxSize()) {
++            if (headerRows > 0) {
++                Text(
++                    header,
++                    Modifier.fillMaxWidth().height(line),
++                    style = style.copy(textAlign = oppositeTextAlign(textAlign)),
++                    maxLines = 1,
++                    overflow = TextOverflow.Ellipsis,
++                )
++            }
++            Text(
++                text,
++                Modifier
++                    .offset(y = line * (headerRows + topRows))
++                    .fillMaxWidth()
++                    .height(line * cap),
++                style = style,
++                maxLines = cap,
++                overflow = TextOverflow.Clip,
++            )
++            val slotTop = if (topRows > 0) line * headerRows else line * (lines - bottomRows)
++            overlay(slotTop, line)
++        }
++    }
++}
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookFlipper.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookFlipper.kt
+new file mode 100644
+index 0000000..8aa762a
+--- /dev/null
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookFlipper.kt
+@@ -0,0 +1,176 @@
++package com.hamyareman.ir.ui.components
++
++import androidx.compose.animation.core.Animatable
++import androidx.compose.animation.core.FastOutSlowInEasing
++import androidx.compose.animation.core.tween
++import androidx.compose.foundation.gestures.detectHorizontalDragGestures
++import androidx.compose.foundation.gestures.detectTapGestures
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.SideEffect
++import androidx.compose.runtime.Stable
++import androidx.compose.runtime.derivedStateOf
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.key
++import androidx.compose.runtime.mutableIntStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.rememberCoroutineScope
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.draw.drawWithContent
++import androidx.compose.ui.graphics.Brush
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.TransformOrigin
++import androidx.compose.ui.graphics.graphicsLayer
++import androidx.compose.ui.input.pointer.pointerInput
++import kotlin.math.PI
++import kotlin.math.abs
++import kotlin.math.cos
++import kotlin.math.sin
++import kotlinx.coroutines.launch
++
++/**
++ * وضعیت تورق کتاب. [progress] بین −۱ و ۱ است:
++ * مثبت = ورق فعلی دور شیرازه جمع می‌شود و صفحهٔ بعد زیرش پیدا می‌شود،
++ * منفی = ورق قبلی از شیرازه باز می‌شود و روی صفحهٔ فعلی می‌نشیند.
++ */
++@Stable
++class BookFlipState(initialPage: Int, count: Int) {
++    var pageCount by mutableIntStateOf(count.coerceAtLeast(1))
++    var current by mutableIntStateOf(initialPage.coerceIn(0, count.coerceAtLeast(1) - 1))
++    internal val progress = Animatable(0f)
++
++    /** تک‌لمس: صفحهٔ بعد. */
++    suspend fun flipForward() {
++        if (current >= pageCount - 1) return
++        settle(1f)
++    }
++
++    /** دو لمس پیاپی: صفحهٔ قبل. */
++    suspend fun flipBackward() {
++        if (current <= 0) return
++        settle(-1f)
++    }
++
++    internal suspend fun settle(target: Float) {
++        progress.animateTo(target, tween(durationMillis = 520, easing = FastOutSlowInEasing))
++        when {
++            target > 0.5f -> current = (current + 1).coerceAtMost(pageCount - 1)
++            target < -0.5f -> current = (current - 1).coerceAtLeast(0)
++        }
++        progress.snapTo(0f)
++    }
++}
++
++@Composable
++fun rememberBookFlipState(initialPage: Int, pageCount: Int): BookFlipState {
++    val state = remember { BookFlipState(initialPage, pageCount) }
++    SideEffect {
++        state.pageCount = pageCount.coerceAtLeast(1)
++        if (state.current > state.pageCount - 1) state.current = state.pageCount - 1
++    }
++    return state
++}
++
++/**
++ * تورق واقعی: ورق در حال برگشتن به دور شیرازهٔ سمت راست جمع می‌شود (مقیاس افقی با سایه)،
++ * صفحهٔ زیرین ثابت می‌ماند و کم‌کم نمایان می‌شود.
++ * تک‌لمس = صفحهٔ بعد، دو لمس پیاپی = صفحهٔ قبل، کشیدن افقی = ورق‌زدن دستی.
++ */
++@Composable
++fun BookFlipper(
++    state: BookFlipState,
++    modifier: Modifier = Modifier,
++    pageContent: @Composable (page: Int) -> Unit,
++) {
++    val scope = rememberCoroutineScope()
++    // فقط وقتی علامت پیشرفت عوض شود ترتیب ترکیب (زیر/رو) عوض می‌شود؛ نه در هر فریم.
++    val forward by remember(state) { derivedStateOf { state.progress.value >= 0f } }
++    val current = state.current
++    val pages = buildList {
++        if (forward) {
++            if (current + 1 < state.pageCount) add(current + 1)
++            add(current)
++        } else {
++            add(current)
++            if (current - 1 >= 0) add(current - 1)
++        }
++    }
++
++    Box(
++        modifier
++            .fillMaxSize()
++            .pointerInput(state) {
++                detectTapGestures(
++                    onTap = { scope.launch { state.flipForward() } },
++                    onDoubleTap = { scope.launch { state.flipBackward() } },
++                )
++            }
++            .pointerInput(state) {
++                val width = size.width.toFloat().coerceAtLeast(1f)
++                detectHorizontalDragGestures(
++                    onDragStart = { scope.launch { state.progress.stop() } },
++                    onHorizontalDrag = { change, dx ->
++                        change.consume()
++                        val lower = if (state.current > 0) -1f else 0f
++                        val upper = if (state.current < state.pageCount - 1) 1f else 0f
++                        val next = (state.progress.value + dx / width * 1.25f).coerceIn(lower, upper)
++                        scope.launch { state.progress.snapTo(next) }
++                    },
++                    onDragEnd = {
++                        scope.launch {
++                            val p = state.progress.value
++                            state.settle(
++                                when {
++                                    p > 0.32f -> 1f
++                                    p < -0.32f -> -1f
++                                    else -> 0f
++                                },
++                            )
++                        }
++                    },
++                    onDragCancel = { scope.launch { state.settle(0f) } },
++                )
++            },
++    ) {
++        pages.forEach { page ->
++            key(page) {
++                Box(
++                    Modifier
++                        .fillMaxSize()
++                        .graphicsLayer {
++                            val o = (state.current - page) + state.progress.value
++                            transformOrigin = TransformOrigin(1f, 0.5f)
++                            alpha = if (o >= 1f || o <= -1f) 0f else 1f
++                            if (o > 0f && o < 1f) {
++                                scaleX = cos(o * PI / 2).toFloat().coerceIn(0.001f, 1f)
++                                scaleY = 1f + 0.025f * sin(o * PI).toFloat()
++                            }
++                        }
++                        .drawWithContent {
++                            drawContent()
++                            val o = (state.current - page) + state.progress.value
++                            if (o > 0f && o < 1f) {
++                                // لبهٔ ورق در حال خم‌شدن تیره‌تر می‌شود.
++                                drawRect(
++                                    Brush.horizontalGradient(
++                                        listOf(
++                                            Color.Black.copy(alpha = 0.34f * sin(o * PI).toFloat()),
++                                            Color.Transparent,
++                                        ),
++                                    ),
++                                )
++                            } else if (o <= 0f && o > -1f) {
++                                // صفحهٔ زیرین زیر سایهٔ ورق در حال برگشتن است.
++                                val fold = 1f - abs(o)
++                                drawRect(Color.Black.copy(alpha = 0.22f * sin(fold * PI).toFloat()))
++                            }
++                        },
++                ) {
++                    pageContent(page)
++                }
++            }
++        }
++    }
++}
+diff --git a/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/ReminderReceiver.kt b/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/ReminderReceiver.kt
+index db258fa..af382eb 100644
+--- a/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/ReminderReceiver.kt
++++ b/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/ReminderReceiver.kt
+@@ -64,6 +64,19 @@ class ReminderReceiver : BroadcastReceiver() {
+-        val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
+-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+-            if (sleepInvitation) putExtra(EXTRA_SLEEP_DESTINATION, SLEEP_LISTEN)
+-        }
+-        val contentIntent = launch?.let {
+-            PendingIntent.getActivity(
++        val school = channel == NotificationChannels.SCHOOL_ALARM ||
++            channel == NotificationChannels.SCHOOL_ALARM_V2 || id.startsWith("school_")
++        val audibleAlarm = school && !sleepInvitation
++        if (audibleAlarm) AlarmRinger.start(context)
++
++        /**
++         * اکشن‌هایی که صفحه‌ای از اپ را باز می‌کنند باید مستقیماً Activity باشند؛ از اندروید ۱۲
++         * شروع Activity از داخل BroadcastReceiver (trampoline) برای اعلان‌ها مسدود است.
++         * MainActivity خودش اعلان را می‌بندد و زنگ را قطع می‌کند.
++         */
++        fun launchPending(labelKey: String, destination: String? = null): PendingIntent? {
++            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
++                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
++                putExtra(AlarmStopReceiver.EXTRA_NOTIFICATION_ID, notificationId)
++                putExtra(AlarmStopReceiver.EXTRA_REMINDER_ID, id)
++                putExtra(EXTRA_DISMISS_FROM_NOTIFICATION, true)
++                destination?.let { putExtra(EXTRA_SLEEP_DESTINATION, it) }
++            } ?: return null
++            return PendingIntent.getActivity(
+@@ -71,2 +84,2 @@ class ReminderReceiver : BroadcastReceiver() {
+-                (id + "_open").hashCode(),
+-                it,
++                (id + labelKey).hashCode(),
++                intent,
+@@ -76,3 +88,0 @@ class ReminderReceiver : BroadcastReceiver() {
+-        val school = channel == NotificationChannels.SCHOOL_ALARM || id.startsWith("school_")
+-        val audibleAlarm = school && !sleepInvitation
+-        if (audibleAlarm) AlarmRinger.start(context)
+@@ -80 +90,2 @@ class ReminderReceiver : BroadcastReceiver() {
+-        fun actionPending(labelKey: String, destination: String? = null): PendingIntent {
++        /** اکشنی که فقط زنگ و اعلان را می‌بندد (بدون باز کردن اپ). */
++        fun stopPending(labelKey: String): PendingIntent {
+@@ -85 +95,0 @@ class ReminderReceiver : BroadcastReceiver() {
+-                destination?.let { putExtra(AlarmStopReceiver.EXTRA_SLEEP_DESTINATION, it) }
+@@ -94,0 +105,5 @@ class ReminderReceiver : BroadcastReceiver() {
++        val contentIntent = launchPending(
++            "_open",
++            if (sleepInvitation) SLEEP_LISTEN else null,
++        )
++
+@@ -97 +112 @@ class ReminderReceiver : BroadcastReceiver() {
+-            if (school) NotificationChannels.SCHOOL_ALARM else channel,
++            if (school) NotificationChannels.SCHOOL_ALARM_V2 else channel,
+@@ -109,2 +124,2 @@ class ReminderReceiver : BroadcastReceiver() {
+-                    setDefaults(NotificationCompat.DEFAULT_VIBRATE)
+-                    setSound(null)
++                    // کنار زدن اعلان هم زنگ را قطع می‌کند.
++                    setDeleteIntent(stopPending("_dismiss"))
+@@ -115 +130 @@ class ReminderReceiver : BroadcastReceiver() {
+-                        actionPending("_ack"),
++                        stopPending("_ack"),
+@@ -119,3 +134,3 @@ class ReminderReceiver : BroadcastReceiver() {
+-                    addAction(0, "بریم قصه", actionPending("_story", SLEEP_STORY))
+-                    addAction(0, "بریم موسیقی", actionPending("_listen", SLEEP_LISTEN))
+-                    addAction(0, "بریم تنفس", actionPending("_breath", SLEEP_BREATH))
++                    launchPending("_story", SLEEP_STORY)?.let { addAction(0, "بریم قصه", it) }
++                    launchPending("_listen", SLEEP_LISTEN)?.let { addAction(0, "بریم موسیقی", it) }
++                    launchPending("_breath", SLEEP_BREATH)?.let { addAction(0, "بریم تنفس", it) }
+@@ -165,0 +181 @@ class ReminderReceiver : BroadcastReceiver() {
++        const val EXTRA_DISMISS_FROM_NOTIFICATION = "dismiss_from_notification"
