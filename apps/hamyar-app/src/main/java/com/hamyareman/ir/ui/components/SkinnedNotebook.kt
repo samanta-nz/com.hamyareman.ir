@@ -26,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -55,8 +57,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
-/** جوهر متن روی ورق؛ همان رنگ قبلی دفترها. */
-internal val SkinInk = Color(0xFF19364B)
+/** جوهر واقعی خودکار برای تمام دفترهای تایپی. */
+internal val NotebookPenBlue = Color(0xFF1565C0)
+internal val SkinInk = NotebookPenBlue
+private const val TYPED_NOTEBOOK_BONUS_SP = 3f
 
 /** هندسهٔ ورق PNG برای یک عرض مشخص (همان فرمول BookSkinSpread). */
 internal class SkinGeometry(val skin: BookSkin, maxWidthDp: Float) {
@@ -75,15 +79,17 @@ internal fun skinTextStyle(
     density: Density,
     align: TextAlign,
     bonusSp: Float = 0f,
+    typedBonusSp: Float = 0f,
     scale: Float = 0.72f,
 ): TextStyle {
     val lineSp = with(density) { line.toSp() }
     return TextStyle(
         fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-        fontSize = (lineSp.value * scale + bonusSp).sp,
+        fontSize = (lineSp.value * scale + bonusSp + typedBonusSp).sp,
         fontWeight = FontWeight.Bold,
         lineHeight = lineSp,
         color = SkinInk,
+        shadow = Shadow(SkinInk.copy(alpha = 0.16f), offset = Offset(0.28f, 0.38f), blurRadius = 0.55f),
         textAlign = align,
         platformStyle = PlatformTextStyle(includeFontPadding = false),
         lineHeightStyle = LineHeightStyle(
@@ -211,7 +217,7 @@ internal fun SkinnedNotebookEditor(
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val geo = remember(skin, maxWidth) { SkinGeometry(skin, maxWidth.value) }
         val layoutDirection = LocalLayoutDirection.current
-        val style = remember(geo, textAlign, density) { skinTextStyle(geo.line, density, textAlign) }
+        val style = remember(geo, textAlign, density) { skinTextStyle(geo.line, density, textAlign, typedBonusSp = TYPED_NOTEBOOK_BONUS_SP) }
         val widthPx = with(density) { geo.textWidth.roundToPx() }
         val pages = remember(value) { value.split(NOTEBOOK_PAGE_SEPARATOR) }
         val latestPages by rememberUpdatedState(pages)
@@ -322,7 +328,7 @@ internal fun SkinnedNotebookEditor(
                                     value = field,
                                     onValueChange = { commit(it) },
                                     textStyle = style,
-                                    cursorBrush = SolidColor(Color(0xFF27485C)),
+                                    cursorBrush = SolidColor(NotebookPenBlue),
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .focusRequester(focus)

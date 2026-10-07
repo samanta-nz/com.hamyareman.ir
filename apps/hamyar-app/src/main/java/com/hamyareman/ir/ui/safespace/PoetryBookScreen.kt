@@ -410,7 +410,7 @@ private fun PoetryHemistichEditor(
     val measurer = rememberTextMeasurer()
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val geo = remember(maxWidth) { SkinGeometry(poetrySkin, maxWidth.value) }
-        val style = remember(geo, density) { skinTextStyle(geo.line, density, TextAlign.Right) }
+        val style = remember(geo, density) { skinTextStyle(geo.line, density, TextAlign.Right, typedBonusSp = 3f) }
         val gap = 14.dp
         val cellPx = with(density) { ((geo.textWidth - gap) / 2).roundToPx() }
         val rows = remember(value) {
@@ -516,7 +516,7 @@ private fun PoetryHemistichCell(
         singleLine = true,
         textStyle = style,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        cursorBrush = SolidColor(Color(0xFF27485C)),
+        cursorBrush = SolidColor(com.hamyareman.ir.ui.components.NotebookPenBlue),
         modifier = modifier,
     )
 }

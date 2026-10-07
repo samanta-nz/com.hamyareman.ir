@@ -46,11 +46,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.TextRange
@@ -76,13 +76,15 @@ private const val SIDE_GUTTER_DP = 60
 private const val BOTTOM_GUTTER_DP = 26
 private const val PAGE_ASPECT = 0.707f
 private const val DEFAULT_NOTEBOOK_LINES = 18
+private const val TYPED_NOTEBOOK_FONT_SP = 24
 
 private fun notebookBodyStyle(textAlign: TextAlign): TextStyle = TextStyle(
     fontFamily = EmbeddedFonts.family("badkhat_bold", EmbeddedFonts.W_BOLD),
-    fontSize = 21.sp,
+    fontSize = TYPED_NOTEBOOK_FONT_SP.sp,
     fontWeight = FontWeight.Bold,
     lineHeight = LINE_HEIGHT_SP.sp,
-    color = PaperInk,
+    color = NotebookPenBlue,
+    shadow = Shadow(NotebookPenBlue.copy(alpha = 0.16f), offset = Offset(0.28f, 0.38f), blurRadius = 0.55f),
     textAlign = textAlign,
     platformStyle = PlatformTextStyle(includeFontPadding = false),
     lineHeightStyle = LineHeightStyle(
@@ -254,7 +256,6 @@ fun LinedNotebookInput(
     overlay: @Composable (pageIndex: Int) -> Unit = {},
 ) {
     val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
     val measurer = rememberTextMeasurer()
     val bodyStyle = remember(textAlign) { notebookBodyStyle(textAlign) }
     val focusRequester = remember { FocusRequester() }
@@ -367,7 +368,7 @@ fun LinedNotebookInput(
                                     value = field,
                                     onValueChange = ::commit,
                                     textStyle = bodyStyle,
-                                    cursorBrush = SolidColor(Color(0xFF27485C)),
+                                    cursorBrush = SolidColor(NotebookPenBlue),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(with(density) { (typedLines * LINE_HEIGHT_SP).sp.toDp() })
