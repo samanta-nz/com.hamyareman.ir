@@ -1,10 +1,10 @@
 # New-graphic — Requirements Comparison
 
-- Generated: 2026-10-06T04:34:59.845409+00:00
+- Generated: 2026-10-07T02:25:43.272144+00:00
 - Branch: New-graphic
-- HEAD: f807dd968629a51901ef24f5f90b0a8a388dbdb7
+- HEAD: c00760ef2d7b921f02c7d96c3301bfb05ac60fb2
 - main: 14cc70a32729c960d4fff745cd8ae847ce13633a
-- rev-list main...HEAD: 2	297
+- rev-list main...HEAD: 2	310
 
 ## Summary
 
@@ -56,13 +56,19 @@
 - `.github/workflows/release-grade9-v2.yml`
 - `.github/workflows/ship-ci-apk.yml`
 - `.github/workflows/upload-apk-arvan.yml`
+- `.patch-drop/part05.patch`
 - `.release-trigger/grade9-v2.5.7`
 - `RELEASES.md`
 - `apps/hamyar-app/build.gradle.kts`
+- `apps/hamyar-app/src/main/assets/book-covers/C908.jpg`
+- `apps/hamyar-app/src/main/assets/book-covers/C911.jpg`
 - `apps/hamyar-app/src/main/assets/content/app-content.tsv`
+- `apps/hamyar-app/src/main/assets/content/background-music.html`
+- `apps/hamyar-app/src/main/assets/practice-covers/hl-sleep-calm.jpg`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/HamyarApplication.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt`
+- `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicScreen.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookSkin.kt`
 - `apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/BookVisualEngine.kt`
@@ -100,6 +106,7 @@
 - `new-graphic-session/REPORT.md`
 - `new-graphic-session/parspack/graphic-assets.json`
 - `new-graphic-session/parspack/graphic-assets.md`
+- `scripts/generate_missing_tile_covers.py`
 - `scripts/new_graphic_compare.py`
 - `scripts/new_graphic_generate_assets.py`
 - `scripts/publish_grade9_update.py`
