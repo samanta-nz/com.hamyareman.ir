@@ -1,8 +1,9 @@
 name: New-graphic build validation
 
 on:
-  push:
-    branches: [New-graphic]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - 'new-graphic-session/**'
   workflow_dispatch:
