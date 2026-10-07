@@ -556,8 +556,6 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
         }
     }
 
-    SecureWebEffect("Screenshots are disabled in the private diary.")
-
     RealisticDeskFrame(
         backgroundKey = DesignAsset.DIARY_DESK,
         modifier = Modifier.fillMaxSize(),

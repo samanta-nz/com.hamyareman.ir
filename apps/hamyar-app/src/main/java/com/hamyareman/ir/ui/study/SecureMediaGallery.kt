@@ -113,7 +113,6 @@ fun SecureMediaGalleryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     var exporting by remember { mutableStateOf<SecureMediaItem?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    SecureWebEffect("Screenshots are disabled in the private album.")
 
     fun save(items: List<SecureMediaItem>) {
         media = items

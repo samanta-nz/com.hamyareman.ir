@@ -91,7 +91,6 @@ private data class SafeSection(val icon: ImageVector, val title: String, val sub
 @Composable
 fun SafeSpaceScreen(nav: NavController) {
     val context = LocalContext.current
-    com.hamyareman.ir.ui.study.SecureWebEffect("Screenshots are disabled in the private workspace.")
     val activity = LocalActivity.current as? FragmentActivity
     val safeLock = remember { SafeSpaceSession.lock(context) }
     val safeBiometric = remember { SafeSpaceSession.biometric(context) }
