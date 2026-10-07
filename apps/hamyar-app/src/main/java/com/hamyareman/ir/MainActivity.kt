@@ -400,12 +400,6 @@ class MainActivity : FragmentActivity() {
                             // ۲) وارد شده و قفل باز: اپ.
                             isUnlocked -> {
                             ZahraNavHost()
-
-                            // کانالِ آپدیت (v1.66): تنظیماتش روی سرور است (ردیفِ
-                            // `app_release` در `app_state`) و فایل در ریپوی عمومیِ
-                            // انتشار میماند. اگر نسخهٔ تازه‌تری باشد، همین‌جا پیام
-                            // داده می‌شود و دانلود/نصب از خودِ اپ انجام می‌گیرد.
-                            com.hamyareman.ir.ui.update.UpdateGateHost()
                             }
                             // ۳) وارد شده ولی قفل فعال: صفحه‌ی PIN.
                             else -> {
@@ -430,6 +424,10 @@ class MainActivity : FragmentActivity() {
                                 onUnlocked = { unlocked.value = true })
                             }
                         }
+                        // کانالِ آپدیت باید مستقل از لاگین، قفل و داشبورد باشد:
+                        // با اولین composition اجرای اپ، بررسی شبکه شروع می‌شود و
+                        // در صورت نسخهٔ تازه همان‌جا overlay/popup نمایش داده می‌شود.
+                        com.hamyareman.ir.ui.update.UpdateGateHost()
                     }
                 }
             }
