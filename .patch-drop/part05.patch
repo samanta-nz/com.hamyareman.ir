@@ -1,0 +1,473 @@
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt
+index 3ab66ff..50f454f 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/LinedNotebook.kt
+@@ -29,0 +30 @@ import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.ArrowDropDown
+@@ -426,0 +428,4 @@ fun NotebookAlignmentPicker(
++/**
++ * فیلد عنوان قابل ویرایش. فلش کنار فیلد عنوان‌های پیشنهادی را می‌دهد؛ انتخاب یکی از آن‌ها
++ * فقط فیلد را پر می‌کند و کاربر می‌تواند آزادانه تغییرش دهد.
++ */
+@@ -437,2 +442 @@ fun NotebookTitlePicker(
+-        add("عنوان جدید")
+-        suggestions.forEach { if (it != defaultTitle && it != "عنوان جدید") add(it) }
++        suggestions.forEach { if (it != defaultTitle) add(it) }
+@@ -440,9 +444 @@ fun NotebookTitlePicker(
+-    var expanded by remember(value) { mutableStateOf(false) }
+-    var customRequested by remember(value) {
+-        mutableStateOf(value.isNotBlank() && value !in presets)
+-    }
+-    val shown = when {
+-        customRequested -> if (value.isBlank()) "عنوان جدید" else value
+-        value.isBlank() -> defaultTitle
+-        else -> value
+-    }
++    var expanded by remember { mutableStateOf(false) }
+@@ -452,3 +448,2 @@ fun NotebookTitlePicker(
+-            value = shown,
+-            onValueChange = {},
+-            readOnly = true,
++            value = value,
++            onValueChange = { onValueChange(it.take(90)) },
+@@ -457,0 +453,9 @@ fun NotebookTitlePicker(
++            placeholder = { Text(defaultTitle) },
++            trailingIcon = {
++                IconButton(onClick = { expanded = true }) {
++                    Icon(
++                        androidx.compose.material.icons.Icons.Default.ArrowDropDown,
++                        contentDescription = "عنوان‌های پیشنهادی",
++                    )
++                }
++            },
+@@ -459 +463 @@ fun NotebookTitlePicker(
+-            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
++            modifier = Modifier.fillMaxWidth(),
+@@ -466 +470 @@ fun NotebookTitlePicker(
+-            presets.forEachIndexed { index, option ->
++            presets.forEach { option ->
+@@ -471,7 +475 @@ fun NotebookTitlePicker(
+-                        if (index == 1) {
+-                            customRequested = true
+-                            onValueChange("")
+-                        } else {
+-                            customRequested = false
+-                            onValueChange(option)
+-                        }
++                        onValueChange(option)
+@@ -482,12 +479,0 @@ fun NotebookTitlePicker(
+-        if (customRequested) {
+-            Column(Modifier.fillMaxWidth().padding(top = 72.dp)) {
+-                OutlinedTextField(
+-                    value = value,
+-                    onValueChange = { onValueChange(it.take(90)) },
+-                    label = { Text("عنوان جدید") },
+-                    singleLine = true,
+-                    maxLines = 1,
+-                    modifier = Modifier.fillMaxWidth(),
+-                )
+-            }
+-        }
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DraftKit.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DraftKit.kt
+new file mode 100644
+index 0000000..c6da342
+--- /dev/null
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DraftKit.kt
+@@ -0,0 +1,66 @@
++package com.hamyareman.ir.ui.components
++
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.DisposableEffect
++import androidx.compose.runtime.LaunchedEffect
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.rememberUpdatedState
++import androidx.lifecycle.Lifecycle
++import androidx.lifecycle.LifecycleEventObserver
++import androidx.lifecycle.compose.LocalLifecycleOwner
++import com.hamyareman.ir.platform.core.common.LocalStore
++import kotlinx.coroutines.delay
++import org.json.JSONObject
++
++/**
++ * پیش‌نویس خودکار دفترهای تایپی.
++ *
++ * [current] همان محتوای فعلیِ در حال تایپ (JSON) است و `null` یعنی چیزی برای نگه‌داشتن نیست
++ * (پیش‌نویس پاک می‌شود). ذخیره‌سازی چند لحظه بعد از آخرین تغییر انجام می‌شود و همچنین
++ * بلافاصله هنگام رفتن به پس‌زمینه، بستن صفحه یا خروج از اپ. تا وقتی [enabled] نشده
++ * (مثلاً پیش‌نویس قبلی هنوز بازگردانده نشده) چیزی نوشته نمی‌شود تا پیش‌نویس قدیمی با
++ * فرم خالی بازنویسی نشود.
++ */
++@Composable
++internal fun DraftAutoSave(
++    enabled: Boolean,
++    current: String?,
++    onSave: (String?) -> Unit,
++) {
++    val latest by rememberUpdatedState(current)
++    val latestEnabled by rememberUpdatedState(enabled)
++    val save by rememberUpdatedState(onSave)
++
++    LaunchedEffect(current, enabled) {
++        if (enabled) {
++            delay(400)
++            save(current)
++        }
++    }
++
++    val owner = LocalLifecycleOwner.current
++    DisposableEffect(owner) {
++        val observer = LifecycleEventObserver { _, event ->
++            if (latestEnabled && (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP)) {
++                save(latest)
++            }
++        }
++        owner.lifecycle.addObserver(observer)
++        onDispose {
++            owner.lifecycle.removeObserver(observer)
++            if (latestEnabled) save(latest)
++        }
++    }
++}
++
++/** پیش‌نویس رمزگذاری‌شده را می‌خواند؛ نبود یا خرابی = null. */
++internal fun readDraft(store: LocalStore, key: String, decrypt: (String) -> String?): JSONObject? {
++    val raw = store.getString(key)
++    if (raw.isBlank()) return null
++    return runCatching { JSONObject(decrypt(raw).orEmpty()) }.getOrNull()
++}
++
++/** پیش‌نویس را رمزگذاری‌شده می‌نویسد؛ [json] = null یعنی پاک‌کردن. */
++internal fun writeDraft(store: LocalStore, key: String, json: String?, encrypt: (String) -> String) {
++    if (json == null) store.remove(key) else store.putString(key, encrypt(json))
++}
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/CalendarOccasions.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/CalendarOccasions.kt
+index 98d6111..d871e7e 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/CalendarOccasions.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/home/CalendarOccasions.kt
+@@ -123,12 +123 @@ object CalendarOccasions {
+-        val noruz = if (isSchoolNoruzHoliday(j)) {
+-            listOf(
+-                CalEvent(
+-                    category = "تعطیل مدرسه",
+-                    title = "تعطیلات نوروزی مدرسه",
+-                    holiday = true,
+-                    shamsiDay = j.day,
+-                    shamsiMonth = j.month,
+-                )
+-            )
+-        } else emptyList()
+-        return noruz + events(ctx).filter { e ->
++        return events(ctx).filter { e ->
+@@ -152 +141 @@ object CalendarOccasions {
+-        return matching(ctx, date, lunarOffset).flatMap { e ->
++        val list = matching(ctx, date, lunarOffset).flatMap { e ->
+@@ -155,0 +145,3 @@ object CalendarOccasions {
++        return if (isSchoolNoruzHoliday(j)) {
++            list + Occasion("تعطیلات نوروزی مدرسه", OccasionKind.OFFICIAL, false)
++        } else list
+@@ -170,0 +163,18 @@ object CalendarOccasions {
++    /** رنگ خانهٔ تقویم: قرمز = تعطیل رسمی/جمعه/مناسبت، آبی = تعطیل مدرسه. */
++    enum class DayTone { RED, BLUE, NONE }
++
++    /**
++     * در بازهٔ تعطیلات نوروزی مدرسه (۱ تا ۱۳ فروردین): جمعه‌ها و روزهای دارای مناسبت قرمز،
++     * بقیهٔ روزهای بازه آبی. بیرون از این بازه: تعطیل رسمی قرمز و پنجشنبه آبی.
++     */
++    fun dayTone(ctx: Context, date: LocalDate, lunarOffset: Int = CalendarPrefs.lunarOffset(ctx)): DayTone {
++        val j = JalaliDate.toJalali(date.toString())
++        if (j != null && isSchoolNoruzHoliday(j)) {
++            val hasOccasion = matching(ctx, date, lunarOffset).isNotEmpty() ||
++                IranOfficialHolidays.occasion(j) != null
++            return if (date.dayOfWeek == DayOfWeek.FRIDAY || hasOccasion) DayTone.RED else DayTone.BLUE
++        }
++        if (isOfficialHoliday(ctx, date, lunarOffset)) return DayTone.RED
++        return if (isSchoolWeekend(date)) DayTone.BLUE else DayTone.NONE
++    }
++
+@@ -195 +205,4 @@ object CalendarOccasions {
+-            // روز خالی پنجشنبه/جمعه عمداً به «مناسبات این ماه» تزریق نمی‌شود.
++            // در بازهٔ نوروز، جمعه‌های بدون مناسبت هم ثبت می‌شوند تا دلیل قرمز بودنشان معلوم باشد.
++            if (month == 1 && d in 1..13 && matched.isEmpty() && date.dayOfWeek == DayOfWeek.FRIDAY) {
++                out += d to CalEvent(category = "تعطیل رسمی", title = "جمعه", holiday = true, shamsiDay = d, shamsiMonth = 1)
++            }
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt
+index 36e7a4f..cb48d1f 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PremiumMediaPlayer.kt
+@@ -63,0 +64 @@ data class PremiumMediaQueueItem(
++    val mime: String = "",
+@@ -94 +95,6 @@ fun PremiumMediaPlayer(
+-    LaunchedEffect(queueKey) {
++    // «تلاش دوباره» پخش را از ابتدای ترک و بدون موقعیت ذخیره‌شده دوباره می‌سازد.
++    var attempt by remember(queueKey) { mutableStateOf(0) }
++
++    LaunchedEffect(queueKey, attempt) {
++        // دروازهٔ پخش باید قبل از اتصال باز باشد، وگرنه سرویس پخش را بی‌صدا متوقف می‌کند.
++        com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
+@@ -99,0 +106 @@ fun PremiumMediaPlayer(
++                .apply { if (row.mime.isNotBlank()) setMimeType(row.mime) }
+@@ -109 +116,2 @@ fun PremiumMediaPlayer(
+-        val resume = store.getLong("resume_" + items[start].id, 0L)
++        // موقعیت ادامه فقط اگر معتبر باشد؛ ترکی که تا انتها رفته از اول پخش می‌شود.
++        val resume = if (attempt > 0) 0L else store.getLong("resume_" + items[start].id, 0L).coerceAtLeast(0L)
+@@ -113,0 +122,7 @@ fun PremiumMediaPlayer(
++            // اگر کمی بعد هنوز پخش نشده و خطایی هم نیست، فرمان پخش یک بار دیگر داده می‌شود.
++            delay(1_500L)
++            val now = playback.state.value
++            if (!now.playing && now.error == null) {
++                com.hamyareman.ir.platform.feature.playback.TeachGate.pulse()
++                playback.play()
++            }
+@@ -122 +137,5 @@ fun PremiumMediaPlayer(
+-            if (id != null) store.putLong("resume_" + id, position)
++            if (id != null) {
++                val dur = state.durationMs
++                // نزدیک انتهای ترک موقعیتی ذخیره نمی‌شود تا دفعهٔ بعد از اول شروع شود.
++                store.putLong("resume_" + id, if (dur > 0 && position >= dur - 3_000L) 0L else position)
++            }
+@@ -132 +151,5 @@ fun PremiumMediaPlayer(
+-            if (id != null) store.putLong("resume_" + id, playback.positionMs)
++            if (id != null) {
++                val dur = playback.durationMs
++                val pos = playback.positionMs
++                store.putLong("resume_" + id, if (dur > 0 && pos >= dur - 3_000L) 0L else pos)
++            }
+@@ -188,0 +212 @@ fun PremiumMediaPlayer(
++            androidx.compose.material3.TextButton(onClick = { attempt++ }) { Text("تلاش دوباره") }
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt
+index 8164630..42ee837 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/PdfScreen.kt
+@@ -100,0 +101 @@ import com.hamyareman.ir.platform.feature.hearttoheart.MediaFiles
++import com.hamyareman.ir.ui.components.DraftAutoSave
+@@ -101,0 +103,2 @@ import com.hamyareman.ir.ui.components.LinedNotebookInput
++import com.hamyareman.ir.ui.components.readDraft
++import com.hamyareman.ir.ui.components.writeDraft
+@@ -125,0 +129 @@ private const val KEY_NOTES = "lesson_notes_text"
++private const val NOTE_DRAFT_KEY = "draft_lesson_note"
+@@ -359,0 +364,18 @@ fun PdfUploadScreen(onBack: () -> Unit) {
++    var noteDraftReady by remember { mutableStateOf(false) }
++    fun noteDraftJson(): String? =
++        if (notes.isBlank()) null
++        else JSONObject().put("title", noteTitle).put("text", notes).toString()
++    fun restoreNoteDraft() {
++        val d = readDraft(store, NOTE_DRAFT_KEY) { container.encryptor.decrypt(it) } ?: return
++        noteTitle = d.optString("title", "")
++        notes = d.optString("text", "")
++    }
++    LaunchedEffect(Unit) {
++        restoreNoteDraft()
++        noteDraftReady = true
++    }
++    DraftAutoSave(
++        enabled = noteDraftReady && editingNoteId == null,
++        current = noteDraftJson(),
++        onSave = { writeDraft(store, NOTE_DRAFT_KEY, it) { s -> container.encryptor.encrypt(s) } },
++    )
+@@ -660,0 +683,2 @@ fun PdfUploadScreen(onBack: () -> Unit) {
++                val wasEditingNote = editingNoteId != null
++                if (!wasEditingNote) writeDraft(store, NOTE_DRAFT_KEY, null) { it }
+@@ -664,0 +689 @@ fun PdfUploadScreen(onBack: () -> Unit) {
++                if (wasEditingNote) restoreNoteDraft()
+@@ -693,0 +719 @@ fun PdfUploadScreen(onBack: () -> Unit) {
++                    restoreNoteDraft()
+@@ -701,0 +728,3 @@ fun PdfUploadScreen(onBack: () -> Unit) {
++                    if (editingNoteId == null) {
++                        writeDraft(store, NOTE_DRAFT_KEY, noteDraftJson()) { s -> container.encryptor.encrypt(s) }
++                    }
+@@ -927,0 +957 @@ fun PdfUploadScreen(onBack: () -> Unit) {
++                        restoreNoteDraft()
+@@ -1022,0 +1053 @@ private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
++                mime = item.mime,
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt
+index 4648ae3..28b1385 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/calmdown/BackgroundMusicTileHost.kt
+@@ -45,0 +46,21 @@ private val TILE_HEIGHT = 92.dp
++/**
++ * سقف ارتفاعِ بخش بازشده را مستقیماً از اپ به صفحه می‌دهیم. CSS خودِ فایل از
++ * `100dvh - 92px` استفاده می‌کند و وقتی WebView هنوز ۹۲dp است نتیجه صفر می‌شود؛
++ * کاربر با لمس کادر یک صفحهٔ خالی می‌دید. این سبک روی بایت‌های فایل باکت دست نمی‌زند.
++ */
++private fun WebView.applyTileExpandedHeight(hostDp: Float) {
++    val sheet = (hostDp - TILE_HEIGHT.value).toInt().coerceAtLeast(240)
++    evaluateJavascript(
++        """
++        (function(){
++          var s=document.getElementById('hamyar-tile-fix');
++          if(!s){s=document.createElement('style');s.id='hamyar-tile-fix';(document.head||document.documentElement).appendChild(s);}
++          s.textContent='body.tilemode .backdrop.open{max-height:${sheet}px!important;min-height:200px}'+
++            'body.tilemode .sheet{max-height:${sheet - 8}px!important}'+
++            'body.tilemode .catalog{overflow-y:auto;min-height:120px}';
++        })();
++        """.trimIndent(),
++        null,
++    )
++}
++
+@@ -98,0 +120,2 @@ fun BackgroundMusicTileHost(
++    val expandedHeight = (screenHeight * 0.78f).coerceIn(420.dp, 620.dp)
++    val expandedHeightDp = rememberUpdatedState(expandedHeight.value)
+@@ -132,0 +156 @@ fun BackgroundMusicTileHost(
++                            view.applyTileExpandedHeight(expandedHeightDp.value)
+@@ -175,0 +200,3 @@ fun BackgroundMusicTileHost(
++            LaunchedEffect(expanded, expandedHeightDp.value) {
++                if (expanded) web.applyTileExpandedHeight(expandedHeightDp.value)
++            }
+@@ -186,3 +213 @@ fun BackgroundMusicTileHost(
+-            val height = if (expanded) {
+-                (screenHeight * 0.78f).coerceIn(420.dp, 620.dp)
+-            } else TILE_HEIGHT
++            val height = if (expanded) expandedHeight else TILE_HEIGHT
+diff --git a/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt b/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt
+index 2152204..2d01ac8 100644
+--- a/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt
++++ b/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/QuietHours.kt
+@@ -260,0 +261,7 @@ object NotificationChannels {
++
++    /**
++     * کانال بی‌صدای آلارم مدرسه و دعوت خواب. صدای کانال قدیمی `school_alarm` بعد از ساخت
++     * قابل تغییر نیست و جدا از زنگ برنامه پخش می‌شد و با بستن اعلان قطع نمی‌شد؛ پس صدای
++     * آلارم فقط از AlarmRinger می‌آید و اینجا کانال بی‌صدا (با لرزش) است.
++     */
++    const val SCHOOL_ALARM_V2 = "school_alarm_v2"
+@@ -265 +272 @@ object NotificationChannels {
+-        MESSAGES, CALLS, REMINDERS, WEEKLY, SYNC, SCHOOL_ALARM, UPDATES, QUIET_STATUS,
++        MESSAGES, CALLS, REMINDERS, WEEKLY, SYNC, SCHOOL_ALARM_V2, UPDATES, QUIET_STATUS,
+@@ -276 +283 @@ object NotificationChannels {
+-        ChannelSpec(SCHOOL_ALARM, "آلارم مدرسه و خواب", NotificationManager.IMPORTANCE_HIGH),
++        ChannelSpec(SCHOOL_ALARM_V2, "آلارم مدرسه و خواب", NotificationManager.IMPORTANCE_HIGH),
+@@ -282,0 +290,2 @@ object NotificationChannels {
++        // کانال قدیمی با صدای پیش‌فرض سیستم حذف می‌شود.
++        runCatching { manager.deleteNotificationChannel(SCHOOL_ALARM) }
+@@ -290,0 +300,5 @@ object NotificationChannels {
++                if (spec.id == SCHOOL_ALARM_V2) {
++                    setSound(null, null)
++                    enableVibration(true)
++                    vibrationPattern = longArrayOf(0, 400, 250, 400)
++                }
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt
+index 0f4e794..41d08ce 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/AppearanceScreen.kt
+@@ -99,0 +100,8 @@ fun AppearanceScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
++            Text("تم پیش‌فرض", style = MaterialTheme.typography.titleMedium)
++            ThemeGroup(listOf(BrandTheme.HamyarNavy), prefs) { pendingTheme = it }
++            if (prefs.theme != BrandTheme.HamyarNavy) {
++                TextButton(onClick = { prefs.resetThemeToDefault() }) {
++                    Text("بازگشت به تم پیش‌فرض همیار")
++                }
++            }
++
+@@ -103 +111 @@ fun AppearanceScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
+-                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
++                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it != BrandTheme.HamyarNavy && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
+@@ -106 +114 @@ fun AppearanceScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
+-                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
++                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it != BrandTheme.HamyarNavy && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/MainActivity.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/MainActivity.kt
+index c65204d..5abe509 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/MainActivity.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/MainActivity.kt
+@@ -453,0 +454,23 @@ class MainActivity : FragmentActivity() {
++    /** اکشن/لمس اعلان آلارم یا دعوت خواب: زنگ قطع و اعلان بسته می‌شود. */
++    private fun dismissAlarmNotification(intent: android.content.Intent?) {
++        if (intent?.getBooleanExtra(
++                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_DISMISS_FROM_NOTIFICATION,
++                false,
++            ) != true
++        ) return
++        com.hamyareman.ir.platform.core.notifications.AlarmRinger.stop()
++        val nm = getSystemService(android.app.NotificationManager::class.java)
++        val nid = intent.getIntExtra(
++            com.hamyareman.ir.platform.core.notifications.AlarmStopReceiver.EXTRA_NOTIFICATION_ID,
++            Int.MIN_VALUE,
++        )
++        if (nid != Int.MIN_VALUE) nm?.cancel(nid)
++        intent.getStringExtra(com.hamyareman.ir.platform.core.notifications.AlarmStopReceiver.EXTRA_REMINDER_ID)
++            ?.let { id ->
++                val base = id.removeSuffix("_r")
++                nm?.cancel(base.hashCode())
++                nm?.cancel("${base}_r".hashCode())
++            }
++        intent.removeExtra(com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_DISMISS_FROM_NOTIFICATION)
++    }
++
+@@ -454,0 +478 @@ class MainActivity : FragmentActivity() {
++        dismissAlarmNotification(intent)
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt
+index 0f48070..2c923be 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/ClassPlanScreen.kt
+@@ -494,2 +494,4 @@ private fun ShamsiCalendarSection() {
+-                            val official = date != null && com.hamyareman.ir.ui.home.CalendarOccasions.isOfficialHoliday(ctx, date, offset)
+-                            val school = date != null && com.hamyareman.ir.ui.home.CalendarOccasions.isSchoolWeekend(date) && !official
++                            val tone = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.dayTone(ctx, it, offset) }
++                                ?: com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.NONE
++                            val official = tone == com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.RED
++                            val school = tone == com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.BLUE
+@@ -541,0 +544,6 @@ private fun ShamsiCalendarSection() {
++        if (month == 1) {
++            Text(
++                "۱ تا ۱۳ فروردین: تعطیلات نوروزی مدرسه (آبی). جمعه‌ها و روزهای دارای مناسبت قرمز هستند.",
++                style = MaterialTheme.typography.bodySmall,
++                color = Color(0xFF1D4ED8))
++        }
+diff --git a/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/AlarmStopReceiver.kt b/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/AlarmStopReceiver.kt
+index c3760ee..63f3f8d 100644
+--- a/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/AlarmStopReceiver.kt
++++ b/shared/core-notifications/src/main/java/com/hamyareman/ir/platform/core/notifications/AlarmStopReceiver.kt
+@@ -22 +22,8 @@ class AlarmStopReceiver : BroadcastReceiver() {
+-        intent?.getStringExtra(EXTRA_REMINDER_ID)?.let { cancelRepeat(context, it) }
++        intent?.getStringExtra(EXTRA_REMINDER_ID)?.let { id ->
++            cancelRepeat(context, id)
++            // اعلان تکراری (_r) و اصلی هر دو بسته شوند تا اعلان معلق نماند.
++            val base = id.removeSuffix("_r")
++            val nm = context.getSystemService(NotificationManager::class.java)
++            nm?.cancel(base.hashCode())
++            nm?.cancel("${base}_r".hashCode())
++        }
+@@ -25 +32,3 @@ class AlarmStopReceiver : BroadcastReceiver() {
+-        if (destination.isNotBlank()) {
++        // از اندروید ۱۲ باز کردن Activity از گیرندهٔ اعلان مسدود است؛ اکشن‌های باز کردن صفحه
++        // اکنون مستقیماً PendingIntent.getActivity هستند. این مسیر فقط برای نسخه‌های قدیمی‌تر است.
++        if (destination.isNotBlank() && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt
+index 31b867e..0fe5f66 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/components/DesignAssets.kt
+@@ -48,0 +49,7 @@ internal object DesignAsset {
++    /**
++     * جلد/ورق کتاب‌های PNG داخل خود APK امبد شده‌اند و بدون شبکه و بدون انتظار برای باکت
++     * نمایش داده می‌شوند (دفتر شعر چرمی و دفتر خاطرات سرمه‌ای).
++     */
++    fun isEmbeddedBook(key: String): Boolean =
++        key.endsWith(".png") && key.substringAfterLast('/').startsWith("cover-")
++
+@@ -86 +93,4 @@ fun RemoteDesignImage(
+-    var source by remember(key) { mutableStateOf<Any>(remote) }
++    val embedded = remember(key) { DesignAsset.isEmbeddedBook(key) }
++    var source by remember(key) {
++        mutableStateOf<Any>(if (embedded) DesignAsset.localUri(key) else remote)
++    }
+@@ -89 +99 @@ fun RemoteDesignImage(
+-        source = if (readable(remote)) remote else DesignAsset.localUri(key)
++        if (!embedded) source = if (readable(remote)) remote else DesignAsset.localUri(key)
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt
+index 6c83eaf..b9c1373 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/appearance/UiPrefs.kt
+@@ -89,0 +90,7 @@ class UiPrefs(context: Context) {
++    /** بازگشت به تم پیش‌فرض همیار (سرمه‌ای) و پاک‌کردن علامت «انتخاب دستی». */
++    fun resetThemeToDefault() {
++        theme = BrandTheme.HamyarNavy
++        store.putString(KEY_THEME, theme.name)
++        themeUserSet = false
++    }
++
+diff --git a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt
+index b65e7eb..1fad602 100644
+--- a/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt
++++ b/apps/hamyar-app/src/main/java/com/hamyareman/ir/ui/study/SecureMediaGallery.kt
+@@ -326,0 +327 @@ private fun SecureMedia3Player(
++            mime = it.mime,
