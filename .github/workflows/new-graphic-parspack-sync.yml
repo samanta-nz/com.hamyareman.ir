@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   sync:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[new-graphic-upload]')
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == 'New-graphic' || contains(github.event.head_commit.message, '[new-graphic-upload]')
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     env:
