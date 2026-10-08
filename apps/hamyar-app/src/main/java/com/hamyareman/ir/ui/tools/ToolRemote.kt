@@ -49,6 +49,22 @@ object ToolRemote {
     private fun plainDir(ctx: Context) = File(ctx.cacheDir, "hamyar-tools-plain").apply { mkdirs() }
     private fun plainFile(ctx: Context, toolId: String) = File(plainDir(ctx), fileId(toolId))
 
+    fun prepare(
+        ctx: Context,
+        toolId: String,
+        onProgress: ((Int, Int) -> Unit)? = null,
+        onStatus: ((LessonCache.Freshness) -> Unit)? = null,
+    ): LessonCache.PrepareResult? {
+        val id = fileId(toolId)
+        val key = ContentCatalog.keyFor(id) ?: return null
+        return LessonCache.prepare(
+            ctx = ctx,
+            url = ServerResolver.internal(key),
+            onProgress = onProgress,
+            onStatus = onStatus,
+        )
+    }
+
     /** plaintext فقط در cacheDir موقت WebView است؛ نسخهٔ ماندگار HMK1 می‌ماند. */
     fun ensure(ctx: Context, toolId: String): String? {
         val id = fileId(toolId)
