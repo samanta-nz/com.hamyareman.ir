@@ -1,0 +1,54 @@
+name: Pack diary assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/diary/**'
+      - '.github/workflows/pack-diary-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build diary-assets.zip
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
+          src = Path("assets/diary")
+          out = Path("apps/hamyar-app/src/main/assets/diary-assets.zip")
+          files = sorted(src.glob("*.png"))
+          required = {
+              "cover-leather-brown.png",
+              "cover-leather-brown-inside.png",
+              "cover-leather-brown-sheet.png",
+              "cover-navy-floral.png",
+              "cover-navy-floral-inside.png",
+              "cover-navy-floral-sheet.png",
+          }
+          names = {f.name for f in files}
+          if names != required:
+              raise SystemExit(f"Unexpected diary source set: {sorted(names)}")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          with ZipFile(out, "w", compression=ZIP_DEFLATED, compresslevel=9) as zf:
+              for f in files:
+                  zf.write(f, f"diary/{f.name}")
+          print(f"created {out} ({out.stat().st_size} bytes)")
+          PY
+      - name: Commit packed asset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/hamyar-app/src/main/assets/diary-assets.zip
+          if git diff --cached --quiet; then
+            echo "diary pack unchanged"
+          else
+            git commit -m "Pack diary assets"
+            git push
+          fi
