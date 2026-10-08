@@ -80,6 +80,7 @@ fun BookNodeScreen(
 @Composable
 private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
     val context = LocalContext.current
+    val container = com.hamyareman.ir.LocalAppContainer.current
     val url = ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY })
     var pageReadyUrl by remember(url) {
         mutableStateOf(url.takeIf { LessonCache.isCached(context, it) })
@@ -103,6 +104,10 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
         }
 
         withContext(Dispatchers.IO) {
+            if (!HtmlMediaKey.fetch(context, container.tables)) {
+                handler.post { error = "کلید دسترسی محتوا دریافت نشد. دوباره وارد حساب شو." }
+                return@withContext
+            }
             val prepared = LessonCache.prepare(
                 ctx = context,
                 url = url,
