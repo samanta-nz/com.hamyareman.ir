@@ -138,10 +138,6 @@ jobs:
           print(f"releaseNeeded={needed}")
           PY
 
-      - name: Stop on non-version build.gradle change
-        if: ${{ steps.version.outputs.release_needed == 'true' }}
-        run: echo "نسخه تغییر نکرده است؛ این اجرا فقط بررسی شد و Release جدید نمی‌سازد."
-
       - name: Verify release secrets
         if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
