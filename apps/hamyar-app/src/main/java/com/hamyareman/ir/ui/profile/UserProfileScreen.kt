@@ -327,6 +327,7 @@ fun UserProfileScreen(
                     val f = File(ctx.filesDir, "avatar.jpg")
                     f.outputStream().use { os -> out.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, os) }
                     StudentProfileState.saveAvatarMirror(ctx, f.absolutePath)
+                    AvatarSync.markDirty(ctx)
                     avatarPath = f.absolutePath
                     scope.launch {
                         val uid = profile?.userId.orEmpty()
