@@ -1064,6 +1064,7 @@ private fun SkinnedReflowedPages(
 fun NotebooksScreen(onBack: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val container = LocalAppContainer.current
+    val scope = rememberCoroutineScope()
     val store = remember { LocalStore(context, DIARY_STORE) }
     var notebooks by remember { mutableStateOf(readNotebooks(store)) }
     var selectedId by remember { mutableStateOf<String?>(null) }
