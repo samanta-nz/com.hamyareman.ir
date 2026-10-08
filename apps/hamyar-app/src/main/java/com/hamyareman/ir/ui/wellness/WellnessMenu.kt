@@ -720,9 +720,11 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "sp-body", "🧘", "آرام‌سازی بدنی قبل خواب", "۲۸ دقیقه", "۲۸ دقیقه",
+                    route = Screen.ContentHtml.of("sp-body"),
                 ),
                 i(
                     "sp-release", "🍵", "رهاکردن فکرهای روز", "۲۵ دقیقه", "۲۵ دقیقه",
+                    route = Screen.ContentHtml.of("sp-release"),
                 ),
             ),
         ),
@@ -743,8 +745,6 @@ object WellnessMenu {
     private val explicitPlaceholderItems = setOf(
         "pd-hips", "pd-heat", "pd-food-period", "pd-food-after", "pd-food-mid", "pd-food-pms",
         "hl-focus-food", "mf-body-scan", "mf-grounding", "mf-one-minute",
-        // HTML آن‌ها روی ParsPack ساخته می‌شود؛ تا آن موقع «به‌زودی».
-        "sp-body", "sp-release",
     )
 
     /** صفحات داخلیِ این شاخه‌ها عمداً بدون قاب عنوان/فلش خود صفحه نمایش داده می‌شوند. */
