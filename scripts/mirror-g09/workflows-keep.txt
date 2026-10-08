@@ -1,6 +1,5 @@
 android.yml
 arena-apk-urls.yml
-arena-arvan-diagnose.yml
 arena-bucket-sync.yml
 arena-compile-check.yml
 arena-encode-html-bucket.yml
@@ -26,4 +25,3 @@ arena-release-grade9-v2.4.yml
 arena-upload-tools-parspack.yml
 audit-hm-bckt.yml
 provision-grade9-v2.yml
-sync-arvan.yml
