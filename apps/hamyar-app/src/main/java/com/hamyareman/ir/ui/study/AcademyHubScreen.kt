@@ -33,7 +33,7 @@ private data class AcademySection(
 private fun lesson(id: String, title: String, coverId: String, published: String? = null) =
     AcademyLesson(id, title, coverId, published)
 
-/** فهرست نهایی آموزشگاه؛ فقط سه درس نخست محتوای تحویلی دارند. */
+/** فهرست نهایی آموزشگاه؛ هر ۳۴ درس به فایل HTML متناظر روی باکت متصل‌اند. */
 private val AcademySections = listOf(
     AcademySection("reading", "📚", "خواندن و نوشتن", listOf(
         lesson("speed", "سرعت خواندن", "sk-speed", "amz-01"),
