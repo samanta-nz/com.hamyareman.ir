@@ -24,6 +24,7 @@ interface StorageService {
     val isConfigured: Boolean
     suspend fun upload(bucketId: String, localPath: String, permissions: List<String> = emptyList(), fileId: String? = null): AppResult<StoredFile>
     suspend fun viewUrl(bucketId: String, fileId: String): String?
+    suspend fun download(bucketId: String, fileId: String): AppResult<ByteArray>
     suspend fun delete(bucketId: String, fileId: String): AppResult<Unit>
 }
 
@@ -66,6 +67,15 @@ class AppwriteStorageService(
         return runCatching {
             storage.getFileView(bucketId = bucketId, fileId = fileId).toString()
         }.getOrNull()
+    }
+
+    override suspend fun download(bucketId: String, fileId: String): AppResult<ByteArray> {
+        if (!provider.isConfigured) {
+            return AppResult.Err(AppError.Local("سرور برای دانلود رسانه در دسترس نیست."))
+        }
+        return runCatching {
+            AppResult.Ok(storage.getFileDownload(bucketId = bucketId, fileId = fileId))
+        }.getOrElse { AppResult.Err(AppwriteErrors.map(it, "دانلود رسانه ناموفق بود.")) }
     }
 
     override suspend fun delete(bucketId: String, fileId: String): AppResult<Unit> {
