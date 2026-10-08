@@ -35,6 +35,7 @@ import com.hamyareman.ir.platform.core.designsystem.SectionCard
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.navigation.Screen
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.PersianPaging
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -70,7 +71,7 @@ private fun readJournal(store: LocalStore): List<JournalEntry> = runCatching {
             val o = array.getJSONObject(i)
             add(JournalEntry(o.optString("id"), o.optLong("createdAt"), o.optString("cipher"), o.optString("title")))
         }
-    }.sortedByDescending { it.createdAt }
+    }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
 
 private fun writeJournal(store: LocalStore, entries: List<JournalEntry>) {
@@ -122,7 +123,7 @@ fun JournalScreen(onBack: () -> Unit) {
                     val id = editingId ?: UUID.randomUUID().toString()
                     val createdAt = entries.firstOrNull { it.id == id }?.createdAt ?: System.currentTimeMillis()
                     val changed = JournalEntry(id, createdAt, c.encryptor.encrypt(text.trim()), title.trim())
-                    entries = (listOf(changed) + entries.filterNot { it.id == id }).sortedByDescending { it.createdAt }
+                    entries = PersianPaging.oldestToNewest(entries.filterNot { it.id == changed.id } + changed) { it.createdAt }
                     writeJournal(c.store, entries)
                     title = ""; text = ""; editingId = null
                     notice = "دل‌نوشت ذخیره شد."
@@ -180,9 +181,9 @@ fun GratitudeJournalScreen(onBack: () -> Unit) {
                 if (text.isBlank()) {
                     notice = "اول یک جمله بنویس."
                 } else {
-                    val next = listOf(
-                        JournalEntry(UUID.randomUUID().toString(), System.currentTimeMillis(), container.encryptor.encrypt(text.trim())),
-                    ) + entries
+                    val next = PersianPaging.oldestToNewest(
+                        entries + JournalEntry(UUID.randomUUID().toString(), System.currentTimeMillis(), container.encryptor.encrypt(text.trim())),
+                    ) { it.createdAt }
                     writeEncryptedEntries(container.store, GRATITUDE_KEY, next)
                     entries = next
                     text = ""

@@ -102,6 +102,7 @@ import com.hamyareman.ir.ui.components.NotebookPaper
 import com.hamyareman.ir.ui.components.NotebookTitlePicker
 import com.hamyareman.ir.ui.components.oppositeTextAlign
 import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.PersianPaging
 import com.hamyareman.ir.ui.components.nextRegisteredTitle
 import com.hamyareman.ir.ui.components.notebookAlignmentWire
 import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
@@ -132,7 +133,7 @@ private fun readNotebooks(store: LocalStore): List<Notebook> = runCatching {
             val o = array.getJSONObject(i)
             add(Notebook(o.getString("id"), o.getString("title"), o.getLong("createdAt"), o.getString("cipher"), o.optString("alignment", "right")))
         }
-    }.sortedByDescending { it.createdAt }
+    }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
 
 private fun writeNotebooks(store: LocalStore, notebooks: List<Notebook>) {

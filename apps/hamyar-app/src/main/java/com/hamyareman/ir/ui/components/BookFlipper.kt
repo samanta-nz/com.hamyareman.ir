@@ -60,6 +60,13 @@ internal object PersianPaging {
         progress < -0.32f -> -1
         else -> 0
     }
+
+    /** ترتیب منطقی تمام دفترها: قدیمی در ابتدای داده و جدید در انتها؛ در RTL انتها سمت چپ است. */
+    fun <T> oldestToNewest(items: List<T>, createdAt: (T) -> Long): List<T> =
+        items.withIndex()
+            .sortedWith(compareBy<IndexedValue<T>> { createdAt(it.value) }.thenBy { it.index })
+            .map { it.value }
+
 }
 
 /**

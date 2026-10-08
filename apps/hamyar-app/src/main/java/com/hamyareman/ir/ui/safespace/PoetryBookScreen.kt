@@ -47,6 +47,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -67,6 +68,7 @@ import com.hamyareman.ir.ui.components.BookSkin
 import com.hamyareman.ir.ui.components.BookSkinCover
 import com.hamyareman.ir.ui.components.BookSkinSpread
 import com.hamyareman.ir.ui.components.BookFlipper
+import com.hamyareman.ir.ui.components.PersianPaging
 import com.hamyareman.ir.ui.components.DraftAutoSave
 import com.hamyareman.ir.ui.components.readDraft
 import com.hamyareman.ir.ui.components.writeDraft
@@ -136,7 +138,7 @@ private fun readPoems(container: com.hamyareman.ir.di.AppContainer): List<Poem> 
             val o = arr.getJSONObject(i)
             add(Poem(o.optString("id"), o.optLong("createdAt"), o.optString("title"), o.optString("type"), o.optString("cipher"), o.optString("alignment", "right")))
         }
-    }.sortedByDescending { it.createdAt }
+    }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
 
 private fun writePoems(container: com.hamyareman.ir.di.AppContainer, poems: List<Poem>) {
@@ -233,7 +235,7 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
             alignment = notebookAlignmentWire(alignment),
         )
         val wasEditing = editingId != null
-        poems = (listOf(changed) + poems.filterNot { it.id == changed.id }).sortedByDescending { it.createdAt }
+        poems = PersianPaging.oldestToNewest(poems.filterNot { it.id == changed.id } + changed) { it.createdAt }
         writePoems(container, poems)
         if (!wasEditing) writeDraft(draftStore, POEM_DRAFT_KEY, null) { it }
         reset()
@@ -453,7 +455,7 @@ private fun PoetryHemistichEditor(
             HorizontalPager(
                 state = pager,
                 modifier = Modifier.fillMaxWidth(),
-                reverseLayout = true,
+                reverseLayout = PersianPaging.pagerReverseLayout(LocalLayoutDirection.current),
                 beyondViewportPageCount = 1,
             ) { pageIndex ->
                 BookSkinSpread(poetrySkin) { line, _ ->

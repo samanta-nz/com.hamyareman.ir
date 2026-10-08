@@ -51,6 +51,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.TextRange
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.roundToPx
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
@@ -390,18 +392,23 @@ fun LinedNotebookInput(
                     }
                 }
             }
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+            androidx.compose.runtime.CompositionLocalProvider(
+                LocalLayoutDirection provides LayoutDirection.Ltr,
             ) {
-                TextButton(
-                    onClick = { scope.launch { flip.flipBackward() } },
-                    enabled = flip.current > 0,
-                ) { Text("صفحه قبل") }
-                TextButton(
-                    onClick = { scope.launch { flip.flipForward() } },
-                    enabled = flip.current < flip.pageCount - 1,
-                ) { Text("صفحه بعد") }
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    // در RTL فیزیکیِ دفتر: «بعد» همیشه چپ و «قبل» همیشه راست.
+                    TextButton(
+                        onClick = { scope.launch { flip.flipForward() } },
+                        enabled = flip.current < flip.pageCount - 1,
+                    ) { Text("صفحه بعد") }
+                    TextButton(
+                        onClick = { scope.launch { flip.flipBackward() } },
+                        enabled = flip.current > 0,
+                    ) { Text("صفحه قبل") }
+                }
             }
         }
     }

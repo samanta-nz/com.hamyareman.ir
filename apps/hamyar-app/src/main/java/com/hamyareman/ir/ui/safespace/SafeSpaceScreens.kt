@@ -79,6 +79,7 @@ import com.hamyareman.ir.platform.core.security.AppLock
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.PersianPaging
 import com.hamyareman.ir.ui.hub.layerTo
 import com.hamyareman.ir.ui.navigation.Screen
 import org.json.JSONArray
@@ -468,7 +469,7 @@ private fun readFreeWriting(container: com.hamyareman.ir.di.AppContainer): List<
             }
         }
     }.getOrDefault(emptyList())
-    if (parsed.isNotEmpty()) return parsed.sortedByDescending { it.createdAt }
+    if (parsed.isNotEmpty()) return parsed.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
     val oldCipher = container.store.getString(LEGACY_FREE_WRITING, "")
     if (container.encryptor.decrypt(oldCipher).isNullOrBlank()) return emptyList()
     return listOf(FreeWritingEntry("legacy-free-writing", System.currentTimeMillis(), "نوشتهٔ آزاد", oldCipher))
