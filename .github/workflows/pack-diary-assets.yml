@@ -52,3 +52,5 @@ jobs:
             git commit -m "Pack diary assets"
             git push
           fi
+
+# Deterministic pack: source set is validated above.
