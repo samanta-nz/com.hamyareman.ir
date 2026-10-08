@@ -13,7 +13,7 @@ import org.junit.Test
 class UpdatePlanTest {
 
     private val full = """
-        {"latest":67,"min":0,"url":"https://github.com/x/y/releases/download/v1.66/hamyar-1.66.apk",
+        {"latest":67,"min":0,"url":"https://c539776.parspack.net/apk/grade9/hamyar-grade9-1.66.apk",
          "size":28000000,"sha256":"abc","name":"1.66","notes":["پلیر صوت","ورود آفلاین"],
          "chan":"stable","packageName":"com.hamyareman.p09","gradeId":"grade9",
          "signingSha256":"def","rollout":100}
@@ -62,13 +62,21 @@ class UpdatePlanTest {
     }
 
     @Test
-    fun `dual server urls are parsed and can force an update without legacy url`() {
-        val info = UpdatePlan.parse(
-            """{"latest":100,"min":100,"externalUrl":"https://appwrite/x.apk","internalUrl":"https://arvan/x.apk"}""",
+    fun `only ParsPack update URLs are accepted`() {
+        val rejected = UpdatePlan.parse(
+            """{"latest":100,"min":100,"url":"https://legacy.example.invalid/x.apk","internalUrl":"https://storage.example.invalid/x.apk"}""",
         )
-        assertEquals("https://appwrite/x.apk", info.externalUrl)
-        assertEquals("https://arvan/x.apk", info.internalUrl)
-        assertTrue(UpdatePlan.decisionFor(99, info) is UpdateDecision.Forced)
+        assertTrue(UpdateSource.candidates(rejected).isEmpty())
+        assertEquals(UpdateDecision.None, UpdatePlan.decisionFor(99, rejected))
+
+        val accepted = UpdatePlan.parse(
+            """{"latest":100,"min":100,"internalUrl":"https://c539776.parspack.net/apk/grade9/hamyar-grade9-3.0.1.apk"}""",
+        )
+        assertEquals(
+            listOf("https://c539776.parspack.net/apk/grade9/hamyar-grade9-3.0.1.apk"),
+            UpdateSource.candidates(accepted),
+        )
+        assertTrue(UpdatePlan.decisionFor(99, accepted) is UpdateDecision.Forced)
     }
 
     @Test
@@ -82,21 +90,21 @@ class UpdatePlanTest {
 
     @Test
     fun `min makes it forced for old installs only`() {
-        val info = UpdatePlan.parse("""{"latest":70,"min":67,"url":"https://e/x.apk","rollout":100}""")
+        val info = UpdatePlan.parse("""{"latest":70,"min":67,"url":"https://c539776.parspack.net/x.apk","rollout":100}""")
         assertTrue(UpdatePlan.decisionFor(66, info) is UpdateDecision.Forced)
         assertTrue(UpdatePlan.decisionFor(67, info) is UpdateDecision.Optional)
     }
 
     @Test
     fun `rollout keeps out-of-bucket installs silent`() {
-        val info = UpdatePlan.parse("""{"latest":70,"min":0,"url":"https://e/x.apk","rollout":30}""")
+        val info = UpdatePlan.parse("""{"latest":70,"min":0,"url":"https://c539776.parspack.net/x.apk","rollout":30}""")
         assertTrue(UpdatePlan.decisionFor(66, info, bucket = 10) is UpdateDecision.Optional)
         assertEquals(UpdateDecision.None, UpdatePlan.decisionFor(66, info, bucket = 55))
     }
 
     @Test
     fun `other channels do not reach stable builds`() {
-        val info = UpdatePlan.parse("""{"latest":70,"url":"https://e/x.apk","chan":"beta"}""")
+        val info = UpdatePlan.parse("""{"latest":70,"url":"https://c539776.parspack.net/x.apk","chan":"beta"}""")
         assertEquals(UpdateDecision.None, UpdatePlan.decisionFor(66, info))
     }
 
