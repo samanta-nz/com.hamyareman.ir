@@ -7,33 +7,50 @@ import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * کش بایت‌های **رمزشدهٔ** درس‌ها روی دیسک.
+ * کش بایت‌های **رمزشدهٔ** HTML روی دیسک.
  *
- * قانون سفت: روی دیسک فقط `HMK1` می‌نشیند. متن‌ساده هیچ‌وقت نوشته نمی‌شود؛
- * رمزگشایی فقط لحظهٔ تحویل به WebView و در حافظه انجام می‌شود (`HtmlCodec`).
+ * روی دیسک فقط HMK1 می‌نشیند. متن ساده هیچ‌وقت به‌عنوان کش ماندگار ذخیره نمی‌شود؛
+ * رمزگشایی فقط هنگام تحویل به WebView و در حافظه انجام می‌شود.
  *
- * نکته: پروژه OkHttp ندارد، پس `HttpURLConnection` استفاده می‌شود. رفتار یکی است:
- * اول در `<key>.tmp` نوشته، بعد magic بررسی و تنها در صورت سالم بودن rename می‌شود،
- * تا فایل نیمه‌کاره یا صفحهٔ خطای سرور هرگز به‌جای درس کش نشود.
+ * برای تشخیص تغییر محتوا، قبل از هر نمایشِ HTML:
+ * ۱) ابتدا متادیتای سبک HTTP (ETag/Last-Modified/Length) بررسی می‌شود.
+ * ۲) اگر برای کش قدیمی متادیتا نداشتیم، فقط ابتدا و انتهای فایل با Range کوچک مقایسه می‌شود.
+ * ۳) اگر محتوا تغییر کرده باشد، فایل تازه کامل دانلود و اتمیک جایگزین می‌شود.
  */
 object LessonCache {
 
-    /** سقف رمزگشایی در حافظه. بزرگ‌ترین درس حدود ۱۴ مگابایت است. */
     const val MAX_DECRYPT_BYTES: Int = 32 * 1024 * 1024
+
+    enum class Freshness {
+        CACHED,
+        UPDATED,
+        DOWNLOADED,
+    }
+
+    data class PrepareResult(
+        val file: File,
+        val freshness: Freshness,
+    )
+
+    private data class RemoteMeta(
+        val contentLength: Long,
+        val etag: String,
+        val lastModified: Long,
+    )
 
     private const val DIR = "lessons"
     private const val CONNECT_TIMEOUT_MS = 12_000
     private const val READ_TIMEOUT_MS = 30_000
+    private const val PROBE_BYTES = 8 * 1024
+    private const val FRESH_CHECK_TTL_MS = 30_000L
 
-    /** قفل به‌ازای هر کلید: دانلود هم‌زمان یک URL فقط یک بار انجام می‌شود. */
     private val locks = ConcurrentHashMap<String, Any>()
+    private val recentChecks = ConcurrentHashMap<String, Long>()
 
-    // ---------------------------------------------------------------- کلید
-
-    /** URL بدون `#fragment` و بدون پارامترهای امضای `X-Amz-*`. */
     fun canonical(url: String): String {
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return url
         if (uri.isOpaque) return url.substringBefore('#')
@@ -47,51 +64,213 @@ object LessonCache {
     }
 
     fun keyOf(url: String): String {
-        val digest = MessageDigest.getInstance("SHA-256").digest(canonical(url).toByteArray())
-        return digest.joinToString("") { "%02x".format(it) }
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest(canonical(url).toByteArray(Charsets.UTF_8))
+        return digest.joinToString("") { "${%02x".format(it.toInt() and 0xFF) } 
     }
 
     private fun dir(ctx: Context): File = File(ctx.filesDir, DIR).apply { mkdirs() }
 
-    fun fileFor(ctx: Context, url: String): File = File(dir(ctx), keyOf(url) + ".bin")
+    fun fileFor(ctx: Context, url: String): File =
+        File(dir(ctx), keyOf(url) + ".bin")
 
-    /** فقط برای نشانگر «دانلود شده» روی کاشی‌ها. */
+    private fun metaFor(ctx: Context, url: String): File =
+        File(dir(ctx), keyOf(url) + ".meta")
+
     fun isCached(ctx: Context, url: String): Boolean {
         val f = fileFor(ctx, url)
-        return f.exists() && f.length() > HtmlCodec.MIN_WRAPPED_BYTES
+        return f.exists() && f.length() > HtmlCodec.MIN_WRAPPED_BYTES && looksWrapped(f)
     }
 
     fun evict(ctx: Context, url: String) {
+        val key = keyOf(url)
+        recentChecks.remove(key)
         runCatching { fileFor(ctx, url).delete() }
+        runCatching { metaFor(ctx, url).delete() }
     }
 
     fun clearAll(ctx: Context) {
+        recentChecks.clear()
         runCatching { dir(ctx).listFiles()?.forEach { it.delete() } }
     }
 
     fun cachedBytes(ctx: Context): Long =
-        runCatching { dir(ctx).listFiles()?.sumOf { it.length() } ?: 0L }.getOrDefault(0L)
+        runCatching { dir(ctx).listFiles()?.filter { it.extension == "bin" }?.sumOf { it.length() } ?: 0L }
+            .getOrDefault(0L)
 
-    // ------------------------------------------------------------- دریافت
+    fun prepare(
+        ctx: Context,
+        url: String,
+        onProgress: ((Int, Int) -> Unit)? = null,
+    ): PrepareResult? {
+        val canonicalUrl = canonical(url)
+        val target = fileFor(ctx, canonicalUrl)
+        val key = keyOf(canonicalUrl)
+        val lock = locks.getOrPut(key) { Any() }
 
-    /**
-     * فایل رمزشده را برمی‌گرداند؛ اگر نبود دانلود می‌کند.
-     * **همگام** است و باید روی نخ پس‌زمینه صدا زده شود (مثل `shouldInterceptRequest`).
-     *
-     * @return فایل سالم، یا `null` اگر دانلود نشد یا محتوای دریافتی معتبر نبود.
-     */
-    fun ensure(ctx: Context, url: String, onProgress: ((Int, Int) -> Unit)? = null): File? {
-        val target = fileFor(ctx, url)
-        if (target.exists() && target.length() > HtmlCodec.MIN_WRAPPED_BYTES) return target
-        val lock = locks.getOrPut(keyOf(url)) { Any() }
         synchronized(lock) {
-            // ممکن است نخ دیگری همین حالا تمامش کرده باشد.
-            if (target.exists() && target.length() > HtmlCodec.MIN_WRAPPED_BYTES) return target
-            return runCatching { download(url, target, onProgress) }.getOrNull()
+            val hasCache = isCached(ctx, canonicalUrl)
+            if (hasCache) {
+                val now = System.currentTimeMillis()
+                if (now - (recentChecks[key] ?: 0L) < FRESH_CHECK_TTL_MS) {
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+
+                val remote = fetchMeta(canonicalUrl)
+                if (remote == null) {
+                    recentChecks[key] = now
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+
+                if (isSameContent(ctx, canonicalUrl, target, remote)) {
+                    writeMeta(ctx, canonicalUrl, remote)
+                    recentChecks[key] = now
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+
+                val downloaded = runCatching {
+                    download(canonicalUrl, target, onProgress)
+                }.getOrNull() ?: return null
+
+                writeMeta(ctx, canonicalUrl, remote)
+                recentChecks[key] = now
+                return PrepareResult(downloaded, Freshness.UPDATED)
+            }
+
+            val downloaded = runCatching {
+                download(canonicalUrl, target, onProgress)
+            }.getOrNull() ?: return null
+
+            fetchMeta(canonicalUrl)?.let { writeMeta(ctx, canonicalUrl, it) }
+            recentChecks[key] = System.currentTimeMillis()
+            return PrepareResult(downloaded, Freshness.DOWNLOADED)
         }
     }
 
-    private fun download(url: String, target: File, onProgress: ((Int, Int) -> Unit)?): File? {
+    fun ensure(ctx: Context, url: String, onProgress: ((Int, Int) -> Unit)? = null): File? =
+        prepare(ctx, url, onProgress)?.file
+
+    private fun fetchMeta(url: String): RemoteMeta? =
+        runCatching {
+            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = CONNECT_TIMEOUT_MS
+                readTimeout = READ_TIMEOUT_MS
+                instanceFollowRedirects = true
+                requestMethod = "HEAD"
+                setRequestProperty("Accept-Encoding", "identity")
+            }
+            try {
+                if (conn.responseCode !in 200..299) return null
+                RemoteMeta(
+                    contentLength = conn.contentLengthLong,
+                    etag = conn.getHeaderField("ETag").orEmpty(),
+                    lastModified = conn.lastModified,
+                )
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrNull()
+
+    private fun isSameContent(
+        ctx: Context,
+        url: String,
+        local: File,
+        remote: RemoteMeta,
+    ): Boolean {
+        val meta = readMeta(ctx, url)
+        if (meta != null && meta.contentLength >= 0 && remote.contentLength >= 0 &&
+            meta.contentLength == remote.contentLength
+        ) {
+            if (meta.etag.isNotBlank() && remote.etag.isNotBlank() && meta.etag == remote.etag) return true
+            if (meta.lastModified > 0 && remote.lastModified > 0 && meta.lastModified == remote.lastModified) return true
+        }
+
+        if (remote.contentLength >= 0 && remote.contentLength != local.length()) return false
+
+        return compareRange(url, local, 0L, PROBE_BYTES) &&
+            compareRange(
+                url,
+                local,
+                (local.length() - PROBE_BYTES).coerceAtLeast(0L),
+                PROBE_BYTES,
+            )
+    }
+
+    private fun compareRange(url: String, local: File, start: Long, requested: Int): Boolean {
+        if (requested <= 0 || !local.exists() || local.length() < start) return false
+        val length = minOf(requested.toLong(), local.length() - start).toInt()
+        if (length <= 0) return false
+
+        val remoteBytes = runCatching {
+            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = CONNECT_TIMEOUT_MS
+                readTimeout = READ_TIMEOUT_MS
+                instanceFollowRedirects = true
+                requestMethod = "GET"
+                setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty(
+                    "Range",
+                    "bytes=${start-${start + length - 1}",
+                )
+            }
+            try {
+                if (conn.responseCode != HttpURLConnection.HTTP_PARTIAL) return false
+                conn.inputStream.use { input ->
+                    val bytes = ByteArray(length)
+                    var off = 0
+                    while (off < length) {
+                        val n = input.read(bytes, off, length - off)
+                        if (n <= 0) break
+                        off += n
+                    }
+                    if (off != length) return false
+                    bytes
+                }
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrNull() ?: return false
+
+        val localBytes = ByteArray(length)
+        val read = runCatching {
+            java.io.RandomAccessFile(local, "r").use {
+                it.seek(start)
+                it.read(localBytes)
+            }
+        }.getOrDefault(-1)
+        return read == length && localBytes.contentEquals(remoteBytes)
+    }
+
+    private fun readMeta(ctx: Context, url: String): RemoteMeta? =
+        runCatching {
+            val p = Properties()
+            metaFor(ctx, url).inputStream().use(p::load)
+            RemoteMeta(
+                contentLength = p.getProperty("length", "-1").toLong(),
+                etag = p.getProperty("etag", ""),
+                lastModified = p.getProperty("lastModified", "0").toLong(),
+            )
+        }.getOrNull()
+
+    private fun writeMeta(ctx: Context, url: String, remote: RemoteMeta) {
+        runCatching {
+            val meta = metaFor(ctx, url)
+            val tmp = File(meta.absolutePath + ".tmp")
+            val p = Properties()
+            p.setProperty("length", remote.contentLength.toString())
+            p.setProperty("etag", remote.etag)
+            p.setProperty("lastModified", remote.lastModified.toString())
+            tmp.outputStream().use { p.store(it, null) }
+            meta.delete()
+            tmp.renameTo(meta)
+        }
+    }
+
+    private fun download(
+        url: String,
+        target: File,
+        onProgress: ((Int, Int) -> Unit)?,
+    ): File? {
         val tmp = File(target.path + ".tmp")
         runCatching { tmp.delete() }
         var conn: HttpURLConnection? = null
@@ -104,6 +283,7 @@ object LessonCache {
                 setRequestProperty("Accept-Encoding", "identity")
             }
             if (conn.responseCode !in 200..299) return null
+
             val total = conn.contentLength
             var done = 0
             conn.inputStream.use { input ->
@@ -119,13 +299,17 @@ object LessonCache {
                     output.flush()
                 }
             }
-            // اعتبارسنجی پیش از rename: باید واقعاً یک فایل HMK1 سالم باشد.
+
             if (!looksWrapped(tmp)) {
                 tmp.delete()
                 return null
             }
+
             runCatching { target.delete() }
-            return if (tmp.renameTo(target)) target else { tmp.delete(); null }
+            return if (tmp.renameTo(target)) target else {
+                tmp.delete()
+                null
+            }
         } catch (_: Throwable) {
             runCatching { tmp.delete() }
             return null
@@ -134,7 +318,6 @@ object LessonCache {
         }
     }
 
-    /** چهار بایت اول فایل را می‌خواند و با magic می‌سنجد. */
     private fun looksWrapped(file: File): Boolean {
         if (!file.exists() || file.length() <= HtmlCodec.MIN_WRAPPED_BYTES) return false
         return runCatching {
