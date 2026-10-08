@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,75 +20,53 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hamyareman.ir.platform.core.common.toPersianDigits
-import com.hamyareman.ir.ui.study.ServerPrefs
 import com.hamyareman.ir.ui.study.ServerResolver
 import java.util.Locale
 
-/** انتخاب منبع محتوا همراه با تست واقعی Range برای همان گزینهٔ انتخاب‌شده. */
+/** وضعیت اتصال منبع محتوای راه‌دور؛ محتوای برنامه فقط از پارس‌پک دریافت می‌شود. */
 @Composable
 fun ServerOptionsSection() {
-    var mode by remember { mutableStateOf(ServerPrefs.mode) }
     var result by remember { mutableStateOf<ServerResolver.SelectionTest?>(null) }
     var testing by remember { mutableStateOf(false) }
     var retry by remember { mutableIntStateOf(0) }
 
-    fun setMode(value: ServerPrefs.Mode) {
-        mode = value
-        ServerPrefs.mode = value
-        result = null
-    }
-
-    LaunchedEffect(mode, retry) {
+    LaunchedEffect(retry) {
         testing = true
-        result = ServerResolver.testSelection(mode)
+        result = runCatching { ServerResolver.testSelection() }.getOrNull()
         testing = false
     }
 
     Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("منبع دانلود محتوا", style = MaterialTheme.typography.titleSmall)
             Text(
-                "محتوای تعاملی از منبع انتخاب‌شده دریافت می‌شود؛ کتاب و صوت از سرور ایران هستند.",
+                "تمام HTMLها و فایل‌های محتواییِ دارای مسیر باکت از پارس‌پک دریافت می‌شوند. آروان و باکت ذخیره‌سازی Appwrite منبع جایگزینِ محتوای HTML نیستند.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            ServerOption(
-                "۱. انتخاب خودکار",
-                "هر دو منبع سنجیده و مسیر سریع‌تر انتخاب می‌شود.",
-                ServerPrefs.Mode.FASTEST, mode, ::setMode,
-            )
-            ServerOption(
-                "۲. سرور ایران",
-                "فقط سرور ایران استفاده می‌شود.",
-                ServerPrefs.Mode.INTERNAL, mode, ::setMode,
-            )
-            ServerOption(
-                "۳. سرور خارجی",
-                "فقط سرور خارجی استفاده می‌شود.",
-                ServerPrefs.Mode.EXTERNAL, mode, ::setMode,
-            )
 
             if (testing) {
-                Text("در حال سنجش واقعی اتصال و سرعت…", style = MaterialTheme.typography.labelSmall)
+                Text("در حال آزمایش اتصال به پارس‌پک…", style = MaterialTheme.typography.labelSmall)
             } else {
-                result?.external?.let { ProbeLine("سرور خارجی", it) }
-                result?.internal?.let { ProbeLine("سرور ایران", it) }
-                if (mode == ServerPrefs.Mode.FASTEST) {
-                    val selected = when (result?.selected) {
-                        ServerPrefs.Origin.EXTERNAL -> "سرور خارجی"
-                        ServerPrefs.Origin.INTERNAL -> "سرور ایران"
-                        null -> "هیچ‌کدام"
-                    }
-                    Text("انتخاب فعلی: $selected", style = MaterialTheme.typography.labelMedium)
+                val probe = result?.internal
+                if (probe == null) {
+                    Text("آزمون اتصال اجرا نشد.", style = MaterialTheme.typography.labelSmall)
+                } else {
+                    ProbeLine("پارس‌پک", probe)
+                    Text(
+                        if (result?.selected != null) "مبدأ محتوای HTML: پارس‌پک" else "پارس‌پک در دسترس نبود.",
+                        style = MaterialTheme.typography.labelMedium,
+                    )
                 }
             }
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(enabled = !testing, onClick = { retry++ }) { Text("تست دوباره") }
+                TextButton(enabled = !testing, onClick = { retry++ }) { Text("آزمایش دوباره") }
                 Text(
-                    "آزمون با GET/Range انجام می‌شود، نه HEAD.",
+                    "آزمون از طریق GET/Range انجام می‌شود.",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -103,45 +79,9 @@ fun ServerOptionsSection() {
 private fun ProbeLine(name: String, probe: ServerResolver.Probe) {
     val detail = if (probe.ok) {
         val mbps = String.format(Locale.US, "%.1f", probe.bytesPerSecond / 1048576.0)
-        "${toPersianDigits(probe.latencyMs.toString())} ms • ${toPersianDigits(mbps)} MB/s ✅"
+        toPersianDigits(probe.latencyMs.toString()) + " ms • " + toPersianDigits(mbps) + " MB/s ✅"
     } else {
-        "ناموفق (${probe.error.ifBlank { "HTTP ${probe.status}" }}) ❌"
+        "ناموفق (" + probe.error.ifBlank { "HTTP " + probe.status } + ") ❌"
     }
-    Text("$name: $detail", style = MaterialTheme.typography.labelSmall)
-}
-
-@Composable
-private fun ServerOption(
-    title: String,
-    desc: String,
-    value: ServerPrefs.Mode,
-    selected: ServerPrefs.Mode,
-    onSelect: (ServerPrefs.Mode) -> Unit,
-) {
-    val isSelected = value == selected
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-            },
-        ),
-    ) {
-        Row(
-            Modifier.fillMaxWidth().padding(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RadioButton(selected = isSelected, onClick = { onSelect(value) })
-            Column(Modifier.weight(1f).padding(end = 8.dp)) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
-                Text(
-                    desc,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
+    Text(name + ": " + detail, style = MaterialTheme.typography.labelSmall)
 }
