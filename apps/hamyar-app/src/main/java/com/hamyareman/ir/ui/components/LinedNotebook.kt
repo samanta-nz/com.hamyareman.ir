@@ -360,7 +360,7 @@ fun LinedNotebookInput(
                         ?: if (header.isNotBlank()) header else ""
                     NotebookPaper(
                         header = resolvedHeader,
-                        headerAlign = TextAlign.Right,
+                        headerAlign = oppositeTextAlign(textAlign),
                         showVerticalGuides = showVerticalGuides,
                         headerOnFirstLine = headerOnFirstLine,
                         realistic = realistic,
