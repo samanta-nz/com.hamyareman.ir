@@ -215,7 +215,7 @@ object LessonCache {
                 setRequestProperty("Accept-Encoding", "identity")
                 setRequestProperty(
                     "Range",
-                    "bytes=${start-${start + length - 1}",
+                    "bytes=" + start + "-" + (start + length - 1),
                 )
             }
             try {
