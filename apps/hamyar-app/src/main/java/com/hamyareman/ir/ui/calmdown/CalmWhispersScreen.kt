@@ -88,6 +88,7 @@ private fun TextStyle.sleepTimerSmall(): TextStyle = copy(
 @Composable
 fun CalmWhispersScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val container = com.hamyareman.ir.LocalAppContainer.current
     val appearance = LocalUiPrefs.current
     val activity = context as? androidx.fragment.app.FragmentActivity
         ?: error("CalmWhispersScreen requires FragmentActivity")
@@ -112,7 +113,7 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
     }
 
     LaunchedEffect(Unit) {
-        player.ensureWebView(context, appearance)
+        player.ensureWebView(context, appearance, container.tables)
     }
 
     LaunchedEffect(appearance.darkMode, appearance.darkTheme) {
@@ -168,6 +169,23 @@ fun CalmWhispersScreen(onBack: () -> Unit) {
                 modifier = Modifier.align(Alignment.Center).size(46.dp),
                 color = Color(0xFF62D4A9),
             )
+        }
+
+        if (player.contentLoading.value) {
+            Box(
+                Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.82f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CircularProgressIndicator()
+                    Text(player.contentTitle.value, color = Color.White)
+                    val p = player.contentProgress.intValue
+                    if (p > 0) Text("$p٪", color = Color.White)
+                }
+            }
         }
 
         Column(
