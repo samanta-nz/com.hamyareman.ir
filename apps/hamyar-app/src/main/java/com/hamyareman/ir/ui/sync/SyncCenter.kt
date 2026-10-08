@@ -8,6 +8,7 @@ import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.ui.net.NetState
 import com.hamyareman.ir.ui.study.MediaVault
 import com.hamyareman.ir.ui.study.StateSync
+import com.hamyareman.ir.ui.profile.AvatarSync
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -182,6 +183,10 @@ object SyncCenter {
     suspend fun pushNow(ctx: Context, container: AppContainer) {
         runCatching { container.heart.pushPending() }
         runCatching { container.sync.pushAll() }
+        runCatching {
+            val uid = container.auth.cachedUserId().orEmpty()
+            if (uid.isNotBlank()) AvatarSync.push(ctx, container.storage, uid)
+        }
         runCatching { enforceCacheLimit(ctx) }
     }
 }
