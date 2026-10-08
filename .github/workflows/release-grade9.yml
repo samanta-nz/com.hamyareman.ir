@@ -161,7 +161,7 @@ jobs:
             :hamyar-app:assembleP09Release
 
       - name: Collect and verify APK
-        if: ${{ steps.version.outputs.release_needed == 'true' }}
+        if: ${{ github.event_name == 'push' || steps.version.outputs.release_needed == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p dist ci-report
@@ -190,6 +190,50 @@ jobs:
           echo "APK_SIZE=$APK_SIZE" >> "$GITHUB_ENV"
           echo "APK_SHA256=$APK_SHA256" >> "$GITHUB_ENV"
           printf '%s  %s\n' "$APK_SHA256" "$APK" > ci-report/apk.sha256
+
+      - name: Persist latest successful compile/build
+        if: ${{ success() }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-state
+          python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          state_path = Path("release-state/grade9-latest-success.json")
+          state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {
+              "schema": 1,
+              "channel": "grade9",
+              "latestCanonicalRelease": None
+          }
+
+          state["latestSuccessfulCompileBuild"] = {
+              "versionName": os.environ["VERSION_NAME"],
+              "versionCode": int(os.environ["VERSION_CODE"]),
+              "completedAt": datetime.now(timezone.utc).isoformat(),
+              "sourceCommit": os.environ["GITHUB_SHA"],
+              "run": os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"] + "/actions/runs/" + os.environ["GITHUB_RUN_ID"],
+              "asset": "hamyar-grade9-" + os.environ["VERSION_NAME"] + ".apk",
+              "size": int(os.environ["APK_SIZE"]),
+              "sha256": os.environ["APK_SHA256"],
+              "signingSha256": os.environ["SIGNER_SHA256"],
+              "status": {
+                  "compile": "success",
+                  "build": "success"
+              }
+          }
+          state_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git rebase origin/main
+          git add release-state/grade9-latest-success.json
+          git diff --cached --quiet || git commit -m "ثبت آخرین کامپایل و بیلد موفق نهم [skip-release]"
+          git push origin HEAD:main
 
       - name: Prepare release notes
         if: ${{ steps.version.outputs.release_needed == 'true' }}
