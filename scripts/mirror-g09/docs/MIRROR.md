@@ -22,7 +22,7 @@
   `arena-storage-maintenance`, `deploy-prompt-02/03/04`,
   `deploy-teach-stats`, `finalize-grade9-v2`, `publish-update`,
   `release-grade9-v2`, `setup-student-profiles`, `setup-study-tutor-ai`,
-  `ship-ci-apk`, `sync-hm-bckt-html`, `upload-apk-arvan`,
+  `ship-ci-apk`, `sync-hm-bckt-html`,
   `upload-lesson-audio`, `upload-lesson-pdfs`, `upload-prompt-01-media`.
 - تاریخچهٔ کامل گیت (≈۹۵۰ مگابایت شیء، شاملِ APKها و فایل‌های دورریختهٔ قدیمی).
   اینجا یک کامیتِ تمیز از وضعیتِ نهاییِ موفق است.
