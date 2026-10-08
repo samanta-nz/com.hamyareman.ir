@@ -53,11 +53,20 @@ open class HmkWebViewClient(
             return empty200()
         }
 
-        // فقط برای document اصلی ثبت می‌شود؛ این مقدار به میزبان موسیقی می‌گوید
-        // نشانگر کوتاه cache را نشان دهد یا پیشرفت واقعی شبکه را به خود HTML بسپارد.
-        val wasCached = LessonCache.isCached(appContext, url)
+        // هر HTML از همین‌جا freshness check می‌شود. برای document اصلی، UI پیشاپیش
+        // همین prepare را انجام داده و recentChecks مانع HEAD تکراری همان لحظه می‌شود.
+        val prepared = LessonCache.prepare(appContext, url)
+        if (prepared == null) {
+            if (request.isForMainFrame && isHtml) {
+                lastMessage = MSG_OFFLINE
+                onProblem(Problem.OFFLINE)
+                return errorPage(MSG_OFFLINE)
+            }
+            return null
+        }
+        val wasCached = prepared.freshness == LessonCache.Freshness.CACHED
         if (request.isForMainFrame && isHtml) mainDocumentFromCache = wasCached
-        val file = LessonCache.ensure(appContext, url)
+        val file = prepared.file
         if (file == null) {
             onProblem(Problem.OFFLINE)
             return if (request.isForMainFrame) errorPage(MSG_OFFLINE) else null
