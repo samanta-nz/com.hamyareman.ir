@@ -5,9 +5,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "apps/hamyar-app/src/main/assets"
-# تصویرهای واقعی (Gemini) در assets/ ریشه هستند و با sourceSets به APK می‌روند.
-# اگر فایلی همان‌جا باشد، نسخهٔ رسم‌شده با کد ساخته نمی‌شود تا Gradle خطای
-# «Duplicate resources» ندهد؛ فقط جای فایل‌های ناموجود fallback ساخته می‌شود.
+# تصاویر واقعی در assets/ ریشه «منبع» هستند؛ برای جلوگیری از بسته‌بندی کل درخت،
+# فقط فایل‌های موردنیاز به assets خود اپ کپی می‌شوند.
 REAL = ROOT / "assets"
 
 
@@ -141,14 +140,13 @@ assets = {
 }
 
 for relative, make in assets.items():
-    if (REAL / relative).exists():
-        print(f"skip {relative}: real image exists in assets/")
-        stale = OUT / relative
-        if stale.exists():
-            stale.unlink()
-        continue
-    image = make()
+    source = REAL / relative
     target = OUT / relative
     target.parent.mkdir(parents=True, exist_ok=True)
+    if source.exists():
+        target.write_bytes(source.read_bytes())
+        print(f"copied {source} -> {target} ({target.stat().st_size} bytes)")
+        continue
+    image = make()
     image.save(target, "JPEG", quality=82, optimize=True, progressive=True)
     print(f"generated {target} ({target.stat().st_size} bytes)")
