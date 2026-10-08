@@ -515,7 +515,7 @@ fun SafeFreeWritingScreen(onBack: () -> Unit) {
                     val id = editingId ?: UUID.randomUUID().toString()
                     val created = entries.firstOrNull { it.id == id }?.createdAt ?: System.currentTimeMillis()
                     val changed = FreeWritingEntry(id, created, title.trim(), container.encryptor.encrypt(text.trim()))
-                    entries = (listOf(changed) + entries.filterNot { it.id == id }).sortedByDescending { it.createdAt }
+                    entries = PersianPaging.oldestToNewest(entries.filterNot { it.id == changed.id } + changed) { it.createdAt }
                     writeFreeWriting(container, entries)
                     title = ""; text = ""; editingId = null
                     notice = "با رمزگذاری دستگاه ذخیره شد."

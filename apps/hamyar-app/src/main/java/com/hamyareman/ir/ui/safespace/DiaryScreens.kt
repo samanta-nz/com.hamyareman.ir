@@ -501,7 +501,7 @@ fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                 title = heading,
                 cipher = container.encryptor.encrypt(encodePayload(pages)),
             )
-            entries = listOf(entry) + entries
+            entries = PersianPaging.oldestToNewest(entries + entry) { it.createdAt }
         } else {
             val pages = decodePayload(currentEntry.cipher) { container.encryptor.decrypt(it).orEmpty() }.pages.toMutableList()
             while (pages.size <= editingPageIndex) pages += DiaryPageModel("")
