@@ -1,20 +1,25 @@
 package com.hamyareman.ir.ui.update
 
-import com.hamyareman.ir.ui.study.ServerPrefs
+import java.net.URI
 
-/** انتخاب APK آپدیت با دقیقاً همان قرارداد انتخاب سرورِ محتوای اپ. */
+/** دانلود APK فقط از URL عمومی پارس‌پک؛ نشانی‌های خارجی یا تاریخی نادیده گرفته می‌شوند. */
 object UpdateSource {
+    private const val PARSPACK_HOST = "c539776.parspack.net"
+
     fun candidates(info: UpdateInfo): List<String> {
-        val external = info.externalUrl.ifBlank { info.url }.takeIf { it.isNotBlank() }
-        val internal = info.internalUrl.takeIf { it.isNotBlank() }
-        // از ۲٫۳ فایل نصبی همیشه اول از سرور داخلی (پارس‌پک، دیتاسنتر تهران)
-        // گرفته می‌شود؛ سرور بیرونی فقط پشتیبان است. حالت دستی EXTERNAL همچنان
-        // محترم است تا کسی که عمداً بیرونی را انتخاب کرده غافلگیر نشود.
-        return when (ServerPrefs.mode) {
-            ServerPrefs.Mode.EXTERNAL -> listOfNotNull(external, internal)
-            else -> listOfNotNull(internal, external)
-        }.distinct()
+        // internalUrl مسیر اصلی است. url فقط اگر خودش URL پارس‌پک باشد، سازگاری قدیمی دارد.
+        return listOf(info.internalUrl, info.url)
+            .map { it.trim() }
+            .filter { it.isNotBlank() && isParspackUrl(it) }
+            .distinct()
     }
 
     fun primary(info: UpdateInfo): String = candidates(info).firstOrNull().orEmpty()
+
+    private fun isParspackUrl(value: String): Boolean = runCatching {
+        val uri = URI(value)
+        uri.scheme.equals("https", ignoreCase = true) &&
+            uri.host.equals(PARSPACK_HOST, ignoreCase = true) &&
+            !uri.path.isNullOrBlank()
+    }.getOrDefault(false)
 }
