@@ -454,7 +454,12 @@ fun PdfUploadScreen(onBack: () -> Unit) {
         val uid = container.auth.cachedUserId()
             ?: runCatching { container.auth.currentUserId() }.getOrNull().orEmpty()
         if (uid.isBlank()) return@LaunchedEffect
-        when (val remote = container.tables.get(TableIds.LESSON_NOTES, "notes_$uid")) {
+        val canonicalNoteRowId = StateSync.rowId(uid, "lesson_notes")
+        val remote = when (val primary = container.tables.get(TableIds.LESSON_NOTES, canonicalNoteRowId)) {
+            is AppResult.Ok -> primary
+            is AppResult.Err -> container.tables.get(TableIds.LESSON_NOTES, "notes_$uid")
+        }
+        when (remote) {
             is AppResult.Ok -> {
                 val row = remote.value ?: return@LaunchedEffect
                 val remoteText = row.string("payload").ifBlank { row.string("text") }
@@ -729,10 +734,11 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                         "text" to encoded.take(7000),
                         "updatedAt" to now)
                     val perms = AppwriteClientProvider.ownerOnly(uid)
-                    when (val saved = container.tables.upsert(TableIds.LESSON_NOTES, "notes_$uid", payload, perms)) {
+                    val noteRowId = StateSync.rowId(uid, "lesson_notes")
+                    when (val saved = container.tables.upsert(TableIds.LESSON_NOTES, noteRowId, payload, perms)) {
                         is AppResult.Ok -> notice = "نکات ذخیره شد و با سرور همگام شد."
                         is AppResult.Err -> {
-                            container.sync.enqueue(TableIds.LESSON_NOTES, "notes_$uid", payload)
+                            container.sync.enqueue(TableIds.LESSON_NOTES, noteRowId, payload)
                             runCatching { container.sync.pushAll() }
                             notice = "نکات روی دستگاه ماند؛ صف سینک: ${saved.error.userMessage}"
                         }
