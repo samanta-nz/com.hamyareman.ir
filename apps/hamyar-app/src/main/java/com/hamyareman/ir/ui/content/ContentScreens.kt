@@ -242,7 +242,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         progress = 100
                         pageUrl = url
                     }
-                    prepared?.freshness == com.hamyyareman.ir.ui.study.LessonCache.Freshness.UPDATED ||
+                    prepared?.freshness == com.hamyareman.ir.ui.study.LessonCache.Freshness.UPDATED ||
                     prepared?.freshness == com.hamyareman.ir.ui.study.LessonCache.Freshness.DOWNLOADED -> {
                         pageWasCached = false
                         progress = 100
@@ -293,6 +293,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                                 // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()
                                 // صفحه‌ای را که همین الان بار شده دوباره لود نکند.
                                 view.tag = url.substringBefore('#')
+                                refreshing = false
                                 ContentCatalog.itemIdForRelativeFile(
                                     url.substringBefore('#').substringBefore('?').substringAfterLast('/'),
                                 )?.let { if (it != activeId) activeId = it }
@@ -311,8 +312,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         cacheHit = pageWasCached,
                     )
                     val target = pageUrl
-                    if (target != null && view.tag != "$"+"target#$"+"reloadToken") {
-                        view.tag = "$"+"target#$"+"reloadToken"
+                    if (target != null && view.tag != (target + "#" + reloadToken)) {
+                        view.tag = target + "#" + reloadToken
                         view.loadUrl(target)
                     }
                 },
