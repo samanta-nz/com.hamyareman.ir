@@ -201,12 +201,43 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     val premium = StudentProfileState.isPaid()
     var pageUrl by remember(toolId) { mutableStateOf<String?>(null) }
     var loadErr by remember(toolId) { mutableStateOf<String?>(null) }
+    var loadingTransfer by remember(toolId) { mutableStateOf(false) }
+    var transferTitle by remember(toolId) { mutableStateOf("محتوا در حال دانلود") }
+    var transferProgress by remember(toolId) { mutableStateOf(0) }
     LaunchedEffect(toolId) {
         loadErr = null
+        loadingTransfer = false
+        transferProgress = 0
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val local = runCatching {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-                if (!keyReady) null else ToolRemote.ensure(ctx, toolId)
+                if (!keyReady) return@withContext null
+                ToolRemote.prepare(
+                    ctx = ctx,
+                    toolId = toolId,
+                    onProgress = { done, total ->
+                        if (total > 0) {
+                            val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                            handler.post { transferProgress = p }
+                        }
+                    },
+                    onStatus = { status ->
+                        if (status == com.hamyareman.ir.ui.study.LessonCache.Freshness.UPDATED) {
+                            handler.post {
+                                loadingTransfer = true
+                                transferTitle = "محتوا در حال بروزرسانی"
+                            }
+                        } else if (status == com.hamyareman.ir.ui.study.LessonCache.Freshness.DOWNLOADED) {
+                            handler.post {
+                                loadingTransfer = true
+                                transferTitle = "محتوا در حال دانلود"
+                            }
+                        }
+                    },
+                ) ?: return@withContext null
+
+                ToolRemote.ensure(ctx, toolId)
             }
         }.getOrNull()
         pageUrl = when {
@@ -220,6 +251,8 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                 null
             }
         }
+        loadingTransfer = false
+        transferProgress = 100
     }
     DisposableEffect(toolId) {
         onDispose { ToolRemote.release(ctx, toolId) }
@@ -268,7 +301,16 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             when {
                 pageUrl == null && loadErr != null -> Text(loadErr.orEmpty(), color = MaterialTheme.colorScheme.error)
-                pageUrl == null -> CircularProgressIndicator()
+                pageUrl == null -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(transferTitle, style = MaterialTheme.typography.titleMedium)
+                        if (transferProgress > 0) Text(transferProgress.toString() + "٪", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
                 else -> {
                     val url = pageUrl.orEmpty()
                     AndroidView(
@@ -315,6 +357,23 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                     },
                     onRelease = { it.stopManagedMedia(); webRef[0] = null; it.destroy() })
                 }
+            }
+            if (loadingTransfer && pageUrl != null) {
+                                if (loadingTransfer) {
+                                    Box(
+                                        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                                        ) {
+                                            CircularProgressIndicator()
+                                            Text(transferTitle, style = MaterialTheme.typography.titleMedium)
+                                            if (transferProgress > 0) Text(transferProgress.toString() + "٪", style = MaterialTheme.typography.bodySmall)
+                                        }
+                                    }
+                                }
             }
         }
     }
