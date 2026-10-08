@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   android:
-    if: github.event_name == 'pull_request' || github.ref_name == 'main' || contains(github.event.head_commit.message, '[ci-build]')
+    if: github.event_name == 'pull_request' || github.ref_name == 'main' || github.ref_name == 'New-graphic' || contains(github.event.head_commit.message, '[ci-build]')
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
