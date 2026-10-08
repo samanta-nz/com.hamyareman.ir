@@ -387,6 +387,7 @@ private fun DiaryImageWrapPicker(
 fun DiaryScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val container = LocalAppContainer.current
+    val scope = rememberCoroutineScope()
     val store = remember { LocalStore(context, DIARY_STORE) }
     var entries by remember { mutableStateOf(readDiary(store)) }
     var coverId by remember { mutableStateOf(store.getString(DIARY_COVER, diaryCovers.first().id)) }
@@ -1234,7 +1235,6 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                 notebooks = notebooks.filterNot { it.id == notebookItem.id }
                                 writeNotebooks(store, notebooks)
                                 queueSnapshot(notebooks)
-                                scope.launch { runCatching { container.sync.pushAll() } }
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف دفترچه")
                             }
