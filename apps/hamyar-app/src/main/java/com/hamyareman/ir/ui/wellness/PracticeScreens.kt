@@ -367,6 +367,8 @@ internal fun openPractice(nav: NavController, item: PracticeItem) {
         // پل خودهیپنوز به صفحهٔ بشنو و بخواب: همیشه ابزار داخلی (FIX)، نه متن مرحله‌ای.
         item.id == "hyp-sleep" -> nav.layerTo(Screen.SleepNight.route)
         item.childGroupId.isNotBlank() -> nav.layerTo(Screen.PracticeGroup.of(item.childGroupId))
+        // Every ContentHtml route bypasses local placeholder/body/steps and uses ParsPack + LessonCache + HMK1.
+        item.route.startsWith("content-html/") -> nav.layerTo(item.route)
         item.route.isNotBlank() && item.steps.isEmpty() && item.body.isBlank() && item.wellnessSlug.isBlank() ->
             nav.layerTo(item.route)
         item.wellnessSlug.isNotBlank() && item.steps.isEmpty() && item.body.isBlank() ->
