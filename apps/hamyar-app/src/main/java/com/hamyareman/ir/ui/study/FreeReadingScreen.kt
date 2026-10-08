@@ -382,24 +382,120 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
 
         if (book.htmlKey.isNotBlank()) {
+            val tocUrl = remember(book.htmlKey) {
+                StudyMedia.viewUrl(book.htmlKey).takeIf { LessonCache.isCached(ctx, it) }
+            }
+            var readyTocUrl by remember(book.htmlKey, tocUrl) { mutableStateOf(tocUrl) }
+            var tocLoading by remember(book.htmlKey) { mutableStateOf(false) }
+            var tocTitle by remember(book.htmlKey) { mutableStateOf("محتوا در حال دانلود") }
+            var tocProgress by remember(book.htmlKey) { mutableIntStateOf(0) }
+            var tocReload by remember(book.htmlKey) { mutableIntStateOf(0) }
+
+            LaunchedEffect(book.htmlKey) {
+                val url = StudyMedia.viewUrl(book.htmlKey)
+                val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                withContext(Dispatchers.IO) {
+                    val prepared = LessonCache.prepare(
+                        ctx = ctx,
+                        url = url,
+                        onProgress = { done, total ->
+                            if (total > 0) {
+                                handler.post {
+                                    tocProgress = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                                }
+                            }
+                        },
+                        onStatus = { status ->
+                            when (status) {
+                                LessonCache.Freshness.CACHED -> handler.post { tocLoading = false }
+                                LessonCache.Freshness.UPDATED -> handler.post {
+                                    tocTitle = "محتوا در حال بروزرسانی"
+                                    tocLoading = true
+                                }
+                                LessonCache.Freshness.DOWNLOADED -> handler.post {
+                                    tocTitle = "محتوا در حال دانلود"
+                                    tocLoading = true
+                                }
+                            }
+                        },
+                    )
+                    handler.post {
+                        when {
+                            prepared == null -> {
+                                if (!LessonCache.isCached(ctx, url)) readyTocUrl = null
+                                tocLoading = false
+                            }
+                            prepared.freshness == LessonCache.Freshness.CACHED -> {
+                                readyTocUrl = url
+                                tocLoading = false
+                            }
+                            else -> {
+                                readyTocUrl = url
+                                tocReload++
+                            }
+                        }
+                    }
+                }
+            }
+
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth().padding(10.dp)) {
                     Text("فهرست مطالب صوتی", style = MaterialTheme.typography.titleMedium)
-                    AndroidView(
-                        factory = { context ->
-                            android.webkit.WebView(context).apply {
-                                settings.javaScriptEnabled = true
-                                settings.domStorageEnabled = true
-                                addJavascriptInterface(AudioSeekBridge { ms ->
-                                    playback.seekTo(ms)
-                                    playback.play()
-                                }, "HamyarAudio")
-                                webViewClient = HmkWebViewClient(context.applicationContext, HmkWebViewClient.bucketHost())
-                                loadUrl(StudyMedia.viewUrl(book.htmlKey))
+                    Box(Modifier.fillMaxWidth().height(260.dp)) {
+                        if (readyTocUrl == null) {
+                            Column(
+                                Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+                            ) {
+                                CircularProgressIndicator()
+                                Text(tocTitle, style = MaterialTheme.typography.bodyMedium)
+                                if (tocProgress > 0) Text(tocProgress.toString() + "٪")
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth().height(260.dp),
-                    )
+                        } else {
+                            AndroidView(
+                                factory = { context ->
+                                    android.webkit.WebView(context).apply {
+                                        settings.javaScriptEnabled = true
+                                        settings.domStorageEnabled = true
+                                        addJavascriptInterface(AudioSeekBridge { ms ->
+                                            playback.seekTo(ms)
+                                            playback.play()
+                                        }, "HamyarAudio")
+                                        webViewClient = HmkWebViewClient(
+                                            context.applicationContext,
+                                            HmkWebViewClient.bucketHost(),
+                                        )
+                                        tag = readyTocUrl + "#0"
+                                        loadUrl(readyTocUrl!!)
+                                    }
+                                },
+                                update = { view ->
+                                    val tag = readyTocUrl + "#" + tocReload
+                                    if (view.tag != tag) {
+                                        view.tag = tag
+                                        view.loadUrl(readyTocUrl!!)
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                            if (tocLoading) {
+                                Box(
+                                    Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.90f)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    ) {
+                                        CircularProgressIndicator()
+                                        Text(tocTitle, style = MaterialTheme.typography.bodyMedium)
+                                        if (tocProgress > 0) Text(tocProgress.toString() + "٪")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
