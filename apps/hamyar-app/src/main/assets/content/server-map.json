@@ -1895,6 +1895,106 @@
    "id": "spaceholder.html",
    "key": "Bucket/Html-files/spaceholder.html",
    "mime": "text/html"
+  },
+  {
+   "id": "cj-01",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-01.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "cj-02",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-02.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "cj-03",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-03.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "cj-04",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-04.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "cj-05",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-05.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "cj-06",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-06.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-study-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-study-01.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-study-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-study-02.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-study-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-study-03.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-exam-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-exam-01.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-exam-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-exam-02.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-exam-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-exam-03.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-thoughts-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-thoughts-01.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-thoughts-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-thoughts-02.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-thoughts-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-thoughts-03.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-social-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-social-01.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-social-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-social-02.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "mh-social-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-social-03.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "sp-body",
+   "key": "Bucket/Html-files/app/health/sleep/preparation/01-pre-sleep-body-relaxation.html",
+   "mime": "text/html"
+  },
+  {
+   "id": "sp-release",
+   "key": "Bucket/Html-files/app/health/sleep/preparation/02-release-day-thoughts.html",
+   "mime": "text/html"
   }
  ]
 }

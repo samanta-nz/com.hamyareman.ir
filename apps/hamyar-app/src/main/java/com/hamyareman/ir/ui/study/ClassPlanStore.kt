@@ -410,9 +410,11 @@ object ClassPlanStore {
 
     fun isSchoolHoliday(snap: Snapshot, date: LocalDate, ctx: Context? = null): Boolean {
         val idx = SchoolShift.dayIndex(date)
-        if (idx >= 6) return true // پنجشنبه و جمعه
-        if (ctx != null && CalendarOccasions.isOfficialHoliday(ctx, date, snap.lunarOffset)) return true
+        if (idx >= 6) return true
+        // تعطیلات نوروز مدرسه: از ۱ تا ۱۳ فروردین.
         val j = JalaliDate.toJalali(date.toString()) ?: return false
+        if (j.month == 1 && j.day in 1..13) return true
+        if (ctx != null && CalendarOccasions.isOfficialHoliday(ctx, date, snap.lunarOffset)) return true
         if (IranOfficialHolidays.occasion(j) != null) return true
         return lunarOccasion(j, snap.lunarOffset) != null
     }
@@ -444,6 +446,8 @@ object ClassPlanStore {
     }
 
     fun holidayRoutine(date: LocalDate): String {
+        val j = JalaliDate.toJalali(date.toString())
+        if (j != null && j.month == 1 && j.day in 1..13) return "تعطیلات نوروز مدرسه"
         return when (SchoolShift.dayIndex(date)) {
             6 -> "امروز پنجشنبه است؛ مرور سبک درس‌ها و کمی استراحت."
             7 -> "امروز جمعه است؛ خانواده، بازی و خواب کافی."
@@ -545,14 +549,20 @@ object ClassPlanStore {
         StudyActivity.add(ctx, packId, "school_exam", "گزارش امتحان مدرسه ($iso): $text")
     }
 
+    /**
+     * زمان بیداری/آماده‌شدن کاملاً مشتق از دو ورودی بالادستی است:
+     * ساعت حضور همان شیفت و مدت آماده‌سازی پیش از حرکت.
+     * بنابراین با تغییر هرکدام، مقدار نمایشی و آلارم واقعی هر دو شیفت بلافاصله تغییر می‌کنند.
+     */
     fun wakeHourMinute(snap: Snapshot, shift: Shift): Pair<Int, Int> {
-        return if (shift == Shift.MORNING) {
-            var m = snap.morningHour * 60 + snap.morningMinute - snap.wakeLeadMin
-            if (m < 0) m = 0
-            (m / 60) to (m % 60)
+        val arrivalMin = if (shift == Shift.MORNING) {
+            snap.morningHour * 60 + snap.morningMinute
         } else {
-            snap.noonHour to snap.noonMinute
+            snap.noonHour * 60 + snap.noonMinute
         }
+        val lead = snap.wakeLeadMin.coerceIn(0, 12 * 60)
+        val m = (arrivalMin - lead).coerceAtLeast(0)
+        return (m / 60) to (m % 60)
     }
 
     fun sleepText(snap: Snapshot, shift: Shift): String =

@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Card
-import androidx.compose.ui.text.style.TextAlign
 import com.hamyareman.ir.ui.AppTypography
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.material3.CircularProgressIndicator
@@ -81,6 +80,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -98,7 +98,13 @@ import com.hamyareman.ir.platform.core.common.toPersianDigits
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.platform.feature.hearttoheart.MediaFiles
+import com.hamyareman.ir.ui.components.DraftAutoSave
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.notebookAlignmentWire
+import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
+import com.hamyareman.ir.ui.components.readDraft
+import com.hamyareman.ir.ui.components.writeDraft
 import com.hamyareman.ir.ui.profile.StudentProfileState
 import com.hamyareman.ir.ui.profile.loadOrientedBitmap
 import kotlinx.coroutines.Dispatchers
@@ -123,6 +129,7 @@ internal data class NoteFile(
 
 private const val KEY_FILES = "study_pdfs"
 private const val KEY_NOTES = "lesson_notes_text"
+private const val NOTE_DRAFT_KEY = "draft_lesson_note"
 private const val KEY_NOTES_AT = "lesson_notes_at"
 private const val FREE_FILE_CAP = 10
 private val GalleryGroups = listOf("عکس", "ویدیو", "صوت", "PDF", "متن", "سایر")
@@ -179,7 +186,9 @@ internal data class LessonNote(
     val id: String,
     val title: String,
     val text: String,
-    val updatedAt: Long)
+    val updatedAt: Long,
+    val alignment: String = "right",
+)
 
 private val DEFAULT_NOTE_TITLES = listOf(
     "نکته مهم",
@@ -217,7 +226,8 @@ internal fun readNotes(store: LocalStore): List<LessonNote> = runCatching {
                     id = o.optString("id"),
                     title = o.optString("title"),
                     text = o.optString("text"),
-                    updatedAt = o.optLong("updatedAt")))
+                    updatedAt = o.optLong("updatedAt"),
+                    alignment = o.optString("alignment", "right")))
         }
     }.sortedByDescending { it.updatedAt }
 }.getOrDefault(emptyList())
@@ -230,7 +240,8 @@ internal fun writeNotes(store: LocalStore, notes: List<LessonNote>) {
                 .put("id", n.id)
                 .put("title", n.title)
                 .put("text", n.text)
-                .put("updatedAt", n.updatedAt))
+                .put("updatedAt", n.updatedAt)
+                .put("alignment", n.alignment))
     }
     store.putString(KEY_NOTES_ITEMS, arr.toString())
 }
@@ -244,7 +255,8 @@ internal fun encodeNotesForServer(notes: List<LessonNote>): String {
                 .put("id", n.id)
                 .put("title", n.title)
                 .put("text", n.text)
-                .put("updatedAt", n.updatedAt))
+                .put("updatedAt", n.updatedAt)
+                .put("alignment", n.alignment))
     }
     return arr.toString()
 }
@@ -261,7 +273,8 @@ internal fun decodeNotesFromServer(raw: String): List<LessonNote> {
                         id = o.optString("id").ifBlank { "n_${System.currentTimeMillis()}_$i" },
                         title = o.optString("title"),
                         text = o.optString("text"),
-                        updatedAt = o.optLong("updatedAt")))
+                        updatedAt = o.optLong("updatedAt"),
+                        alignment = o.optString("alignment", "right")))
             }
         }
     }.getOrNull()
@@ -355,8 +368,32 @@ fun PdfUploadScreen(onBack: () -> Unit) {
     var noteItems by remember { mutableStateOf(readNotes(store)) }
     var noteTitles by remember { mutableStateOf(readNoteTitles(store)) }
     var noteTitle by remember { mutableStateOf("") }
+    var noteAlignment by remember { mutableStateOf(TextAlign.Right) }
     var editingNoteId by remember { mutableStateOf<String?>(null) }
     var notesOpen by remember { mutableStateOf(false) }
+    var noteDraftReady by remember { mutableStateOf(false) }
+    fun noteDraftJson(): String? =
+        if (notes.isBlank()) null
+        else JSONObject()
+            .put("title", noteTitle)
+            .put("text", notes)
+            .put("alignment", notebookAlignmentWire(noteAlignment))
+            .toString()
+    fun restoreNoteDraft() {
+        val d = readDraft(store, NOTE_DRAFT_KEY) { container.encryptor.decrypt(it) } ?: return
+        noteTitle = d.optString("title", "")
+        notes = d.optString("text", "")
+        noteAlignment = notebookTextAlignFromWire(d.optString("alignment", "right"))
+    }
+    LaunchedEffect(Unit) {
+        restoreNoteDraft()
+        noteDraftReady = true
+    }
+    DraftAutoSave(
+        enabled = noteDraftReady && editingNoteId == null,
+        current = noteDraftJson(),
+        onSave = { writeDraft(store, NOTE_DRAFT_KEY, it) { s -> container.encryptor.encrypt(s) } },
+    )
     var askDeleteNote by remember { mutableStateOf<LessonNote?>(null) }
     var pdfView by remember { mutableStateOf<NoteFile?>(null) }
     var editTarget by remember { mutableStateOf<NoteFile?>(null) }
@@ -647,21 +684,37 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     }
                     noteTitle = title
                 })
+            NotebookAlignmentPicker(noteAlignment, { noteAlignment = it })
             LinedNotesPaper(
                 value = notes,
-                onValueChange = { notes = it })
+                onValueChange = { notes = it },
+                header = noteTitle.trim(),
+                textAlign = noteAlignment,
+            )
             PrimaryButton(if (editingNoteId == null) "ذخیره نکات و همگام با سرور" else "به‌روزرسانی نکته") {
                 val now = System.currentTimeMillis()
                 val title = noteTitle.trim().ifBlank { "بدون عنوان" }
                 val id = editingNoteId ?: "n_${System.currentTimeMillis()}"
-                val next = listOf(LessonNote(id, title, notes, now)) +
+                val next = listOf(
+                    LessonNote(
+                        id = id,
+                        title = title,
+                        text = notes,
+                        updatedAt = now,
+                        alignment = notebookAlignmentWire(noteAlignment),
+                    ),
+                ) +
                     noteItems.filterNot { it.id == id }
                 noteItems = next.sortedByDescending { it.updatedAt }
                 writeNotes(store, noteItems)
+                val wasEditingNote = editingNoteId != null
+                if (!wasEditingNote) writeDraft(store, NOTE_DRAFT_KEY, null) { it }
                 editingNoteId = null
                 // پس از ذخیره، دفترچه و عنوان خالی می‌شوند.
                 noteTitle = ""
                 notes = ""
+                noteAlignment = TextAlign.Right
+                if (wasEditingNote) restoreNoteDraft()
                 scope.launch {
                     val uid = container.auth.cachedUserId()
                         ?: runCatching { container.auth.currentUserId() }.getOrNull().orEmpty()
@@ -691,6 +744,8 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                     editingNoteId = null
                     noteTitle = ""
                     notes = ""
+                    noteAlignment = TextAlign.Right
+                    restoreNoteDraft()
                 }) { Text("لغو ویرایش") }
             }
 
@@ -699,9 +754,13 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                 expanded = notesOpen,
                 onToggle = { notesOpen = !notesOpen },
                 onPick = { n ->
+                    if (editingNoteId == null) {
+                        writeDraft(store, NOTE_DRAFT_KEY, noteDraftJson()) { s -> container.encryptor.encrypt(s) }
+                    }
                     editingNoteId = n.id
                     noteTitle = n.title
                     notes = n.text
+                    noteAlignment = notebookTextAlignFromWire(n.alignment)
                     notice = "«${n.title}» در دفتر بارگذاری شد."
                 },
                 onDelete = { askDeleteNote = it })
@@ -925,6 +984,7 @@ fun PdfUploadScreen(onBack: () -> Unit) {
                         editingNoteId = null
                         noteTitle = ""
                         notes = ""
+                        restoreNoteDraft()
                     }
                     askDeleteNote = null
                     scope.launch {
@@ -1014,42 +1074,39 @@ fun PdfUploadScreen(onBack: () -> Unit) {
  */
 @Composable
 private fun NotebookMediaViewer(item: NoteFile, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val playback = remember(item.id) { com.hamyareman.ir.platform.feature.playback.PlaybackController(context) }
-    val state by playback.state.collectAsState()
-    LaunchedEffect(item.id) {
-        if (playback.connect()) {
-            val media = androidx.media3.common.MediaItem.Builder()
-                .setMediaId(item.id)
-                .setUri(android.net.Uri.fromFile(File(item.localPath)))
-                .setMediaMetadata(androidx.media3.common.MediaMetadata.Builder().setTitle(item.title).build())
-                .build()
-            playback.setMediaItems(listOf(media), 0)
-        }
-    }
-    DisposableEffect(playback) {
-        onDispose { runCatching { playback.stop() }; playback.release() }
-    }
-    Column(modifier.fillMaxSize().background(Color.Black), horizontalAlignment = Alignment.CenterHorizontally) {
-        AndroidView(
-            factory = { ctx -> androidx.media3.ui.PlayerView(ctx).apply { useController = true; player = playback.asPlayer() } },
-            update = { it.player = playback.asPlayer() },
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            onRelease = { it.player = null },
-        )
-        Text(if (state.playing) "در حال پخش" else "مکث", color = Color.White, style = MaterialTheme.typography.labelSmall)
-    }
+    PremiumMediaPlayer(
+        items = listOf(
+            PremiumMediaQueueItem(
+                id = item.id,
+                title = item.title,
+                uri = android.net.Uri.fromFile(File(item.localPath)),
+                mime = item.mime,
+            ),
+        ),
+        initialIndex = 0,
+        video = isVideoItem(item),
+        modifier = modifier.fillMaxSize(),
+        autoPlay = true,
+    )
 }
 
 @Composable
-private fun LinedNotesPaper(value: String, onValueChange: (String) -> Unit) {
-    LinedNotebookInput(value = value, onValueChange = onValueChange)
+private fun LinedNotesPaper(
+    value: String,
+    onValueChange: (String) -> Unit,
+    header: String = "",
+    textAlign: TextAlign = TextAlign.Right,
+) {
+    LinedNotebookInput(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+        header = header,
+        textAlign = textAlign,
+        showVerticalGuides = true,
+    )
 }
 
-/**
- * آکاردیونِ نکات — پیش‌فرض بسته؛ نکته‌ها بر حسب عنوان دسته‌بندی می‌شوند.
- * لمسِ هر نکته آن را در همان دفترِ بالا بار می‌کند.
- */
 @Composable
 private fun NotesAccordion(
     notes: List<LessonNote>,
@@ -1115,8 +1172,11 @@ private fun NotesAccordion(
                                     Text(
                                         n.text.take(60),
                                         maxLines = 2,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        textAlign = TextAlign.Right)
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            textAlign = notebookTextAlignFromWire(n.alignment),
+                                        ),
+                                        textAlign = notebookTextAlignFromWire(n.alignment),
+                                    )
                                     Text(
                                         JalaliDate.toJalali(
                                             java.time.Instant.ofEpochMilli(n.updatedAt)

@@ -80,6 +80,7 @@ import com.hamyareman.ir.ui.settings.PrivacySettingsScreen
 import com.hamyareman.ir.ui.settings.RemindersScreen
 import com.hamyareman.ir.ui.settings.SettingsScreen
 import com.hamyareman.ir.ui.settings.SyncScreen
+import com.hamyareman.ir.ui.settings.UserGuideScreen
 import com.hamyareman.ir.ui.study.AcademyHubScreen
 import com.hamyareman.ir.ui.study.AcademySoonScreen
 import com.hamyareman.ir.ui.study.AudiobookScreen
@@ -238,7 +239,9 @@ fun ZahraNavHost() {
                 ClassPlanScreen(
                     onBack = { nav.popBackStack() },
                     initialTab = 2,
-                    onVirtualHours = { nav.navigate(Screen.VirtualClass.route) })
+                    onVirtualHours = { nav.navigate(Screen.VirtualClass.route) },
+                    onHelp = { nav.navigate(Screen.UserGuide.of("school")) },
+                )
             }
             composable(Screen.ClassPlanCalendar.route) {
                 ClassPlanScreen(
@@ -255,7 +258,12 @@ fun ZahraNavHost() {
             composable(Screen.Meds.route) { MedsScreen { nav.popBackStack() } }
             composable(Screen.SleepLog.route) { SleepLogScreen { nav.popBackStack() } }
             composable(Screen.ReadingCorner.route) { ReadingCornerScreen { nav.popBackStack() } }
-            composable(Screen.Appearance.route) { AppearanceScreen { nav.popBackStack() } }
+            composable(Screen.Appearance.route) {
+                AppearanceScreen(
+                    onBack = { nav.popBackStack() },
+                    onHelp = { nav.navigate(Screen.UserGuide.of("appearance")) },
+                )
+            }
             composable(Screen.CycleCal.route) { com.hamyareman.ir.ui.cycle.CycleCalScreen { nav.popBackStack() } }
             composable(Screen.CycleLog.route) { com.hamyareman.ir.ui.cycle.CycleLogScreen { nav.popBackStack() } }
             composable(Screen.CycleToday.route) { com.hamyareman.ir.ui.cycle.CycleTodayScreen(nav) { nav.popBackStack() } }
@@ -299,7 +307,7 @@ fun ZahraNavHost() {
             composable(Screen.Diary.route) {
                 SafeContentGuard(onLocked = {
                     nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Diary.route) { inclusive = true } }
-                }) { DiaryScreen { nav.popBackStack() } }
+                }) { DiaryScreen(onBack = { nav.popBackStack() }, onHelp = { nav.navigate(Screen.UserGuide.of("diary")) }) }
             }
             composable(Screen.Notebooks.route) {
                 SafeContentGuard(onLocked = {
@@ -309,7 +317,7 @@ fun ZahraNavHost() {
             composable(Screen.Poetry.route) {
                 SafeContentGuard(onLocked = {
                     nav.navigate(Screen.SafeSpace.route) { popUpTo(Screen.Poetry.route) { inclusive = true } }
-                }) { PoetryBookScreen { nav.popBackStack() } }
+                }) { PoetryBookScreen(onBack = { nav.popBackStack() }, onHelp = { nav.navigate(Screen.UserGuide.of("poetry")) }) }
             }
             composable(Screen.SafeFreeWriting.route) {
                 SafeContentGuard(onLocked = {
@@ -322,7 +330,7 @@ fun ZahraNavHost() {
                 }) {
                     SecureMediaGalleryScreen(
                         onBack = { nav.popBackStack() },
-                        onOpenDiary = { nav.navigate(Screen.Diary.route) },
+                        onHelp = { nav.navigate(Screen.UserGuide.of("album")) },
                     )
                 }
             }
@@ -426,6 +434,15 @@ fun ZahraNavHost() {
             }
             composable(Screen.Water.route) { WaterScreen() }
             composable(Screen.Settings.route) { SettingsScreen(nav) }
+            composable(
+                Screen.UserGuide.route,
+                listOf(navArgument("section") { type = NavType.StringType; defaultValue = "" }),
+            ) { entry ->
+                UserGuideScreen(
+                    onBack = { nav.popBackStack() },
+                    initialSection = entry.arguments?.getString("section").orEmpty(),
+                )
+            }
             composable(Screen.UserProfile.route) {
                 val container = LocalAppContainer.current
                 val ctx = androidx.compose.ui.platform.LocalContext.current

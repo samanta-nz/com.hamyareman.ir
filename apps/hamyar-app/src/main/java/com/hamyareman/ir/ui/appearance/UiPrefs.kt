@@ -19,8 +19,8 @@ class UiPrefs(context: Context) {
     private val store = LocalStore(context, "hamyar_appearance")
 
     var theme by mutableStateOf(
-        runCatching { BrandTheme.valueOf(store.getString(KEY_THEME, BrandTheme.OceanPulse.name)) }
-            .getOrDefault(BrandTheme.OceanPulse)
+        runCatching { BrandTheme.valueOf(store.getString(KEY_THEME, BrandTheme.HamyarNavy.name)) }
+            .getOrDefault(BrandTheme.HamyarNavy)
     )
         private set
 
@@ -64,6 +64,11 @@ class UiPrefs(context: Context) {
 
     init {
         // تایپ قفل‌شده در AppTypography؛ فلوتر و بکاپ فونت اعمال نمی‌شود.
+        // گرافیک جدید (۲.۵.۶): کاربری که تم را دستی انتخاب نکرده به تم یکدست همیار می‌رود.
+        if (!themeUserSet && theme != BrandTheme.HamyarNavy) {
+            theme = BrandTheme.HamyarNavy
+            store.putString(KEY_THEME, theme.name)
+        }
     }
 
     fun updateTheme(value: BrandTheme) {
@@ -72,11 +77,21 @@ class UiPrefs(context: Context) {
         themeUserSet = true
     }
 
-    /** پیش‌فرض تم بر اساس جنسیت — فقط اگر کاربر هنوز تم را دستی عوض نکرده. */
+    /**
+     * پیش‌فرض تم — فقط اگر کاربر هنوز تم را دستی عوض نکرده. با گرافیک جدید، رنگ‌ها در
+     * کل اپ یکدست‌اند و جنسیت دیگر تم را عوض نمی‌کند (آیکون لانچر همچنان بر اساس جنسیت است).
+     */
     fun applyDefaultForGender(genderId: String) {
         if (themeUserSet) return
-        theme = if (genderId == "girl") BrandTheme.PetalBloom else BrandTheme.OceanPulse
+        theme = BrandTheme.HamyarNavy
         store.putString(KEY_THEME, theme.name)
+    }
+
+    /** بازگشت به تم پیش‌فرض همیار (سرمه‌ای) و پاک‌کردن علامت «انتخاب دستی». */
+    fun resetThemeToDefault() {
+        theme = BrandTheme.HamyarNavy
+        store.putString(KEY_THEME, theme.name)
+        themeUserSet = false
     }
 
     fun updateDarkMode(value: String) {
@@ -92,6 +107,15 @@ class UiPrefs(context: Context) {
     fun updateTextSizeOffset(value: Int) {
         textSizeOffset = value.coerceIn(-6, 6)
         store.putString(KEY_SIZE, textSizeOffset.toString())
+    }
+
+    fun resetFontTheme() {
+        val reset = FontTheme()
+        fontTheme = reset
+        store.putString(KEY_FONT_THEME, reset.toJson().toString())
+        fontKey = ""
+        store.putString(KEY_FONT, "")
+        AppTypography.apply(reset)
     }
 
     fun updateFontTheme(value: FontTheme) {

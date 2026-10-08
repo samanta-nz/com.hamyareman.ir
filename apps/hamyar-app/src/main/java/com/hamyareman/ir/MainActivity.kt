@@ -400,12 +400,6 @@ class MainActivity : FragmentActivity() {
                             // ۲) وارد شده و قفل باز: اپ.
                             isUnlocked -> {
                             ZahraNavHost()
-
-                            // کانالِ آپدیت (v1.66): تنظیماتش روی سرور است (ردیفِ
-                            // `app_release` در `app_state`) و فایل در ریپوی عمومیِ
-                            // انتشار میماند. اگر نسخهٔ تازه‌تری باشد، همین‌جا پیام
-                            // داده می‌شود و دانلود/نصب از خودِ اپ انجام می‌گیرد.
-                            com.hamyareman.ir.ui.update.UpdateGateHost()
                             }
                             // ۳) وارد شده ولی قفل فعال: صفحه‌ی PIN.
                             else -> {
@@ -430,6 +424,10 @@ class MainActivity : FragmentActivity() {
                                 onUnlocked = { unlocked.value = true })
                             }
                         }
+                        // کانالِ آپدیت باید مستقل از لاگین، قفل و داشبورد باشد:
+                        // با اولین composition اجرای اپ، بررسی شبکه شروع می‌شود و
+                        // در صورت نسخهٔ تازه همان‌جا overlay/popup نمایش داده می‌شود.
+                        com.hamyareman.ir.ui.update.UpdateGateHost()
                     }
                 }
             }
@@ -451,7 +449,31 @@ class MainActivity : FragmentActivity() {
         captureSleepIntent(intent)
     }
 
+    /** اکشن/لمس اعلان آلارم یا دعوت خواب: زنگ قطع و اعلان بسته می‌شود. */
+    private fun dismissAlarmNotification(intent: android.content.Intent?) {
+        if (intent?.getBooleanExtra(
+                com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_DISMISS_FROM_NOTIFICATION,
+                false,
+            ) != true
+        ) return
+        com.hamyareman.ir.platform.core.notifications.AlarmRinger.stop()
+        val nm = getSystemService(android.app.NotificationManager::class.java)
+        val nid = intent.getIntExtra(
+            com.hamyareman.ir.platform.core.notifications.AlarmStopReceiver.EXTRA_NOTIFICATION_ID,
+            Int.MIN_VALUE,
+        )
+        if (nid != Int.MIN_VALUE) nm?.cancel(nid)
+        intent.getStringExtra(com.hamyareman.ir.platform.core.notifications.AlarmStopReceiver.EXTRA_REMINDER_ID)
+            ?.let { id ->
+                val base = id.removeSuffix("_r")
+                nm?.cancel(base.hashCode())
+                nm?.cancel("${base}_r".hashCode())
+            }
+        intent.removeExtra(com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_DISMISS_FROM_NOTIFICATION)
+    }
+
     private fun captureSleepIntent(intent: android.content.Intent?) {
+        dismissAlarmNotification(intent)
         val destination = intent?.getStringExtra(
             com.hamyareman.ir.platform.core.notifications.ReminderReceiver.EXTRA_SLEEP_DESTINATION,
         )
@@ -502,10 +524,18 @@ class MainActivity : FragmentActivity() {
 
     override fun onPause() {
         super.onPause()
-        // شروع شمارندهٔ پس‌زمینه؛ قفل فوری قبلی باعث می‌شد انتخاب‌های ۳۰ث/۱د/۵د بی‌اثر باشند.
-        (application as HamyarApplication).container.lock.onBackgrounded()
         // فضای امن policy و نشست مستقل دارد؛ فقط حالت «قفل صفحه» اینجا بسته می‌شود.
+        // شمارندهٔ قفل اصلی در onStop شروع می‌شود تا دیالوگ‌ها/پنجره‌های موقت باعث قفل ناخواسته نشوند.
         com.hamyareman.ir.ui.safespace.SafeSpaceSession.onAppBackgrounded(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // onStop نشان می‌دهد Activity واقعاً از دید کاربر خارج شده است؛ onPause ممکن است
+        // فقط به‌خاطر یک Dialog/پنجرهٔ موقت رخ دهد.
+        if (!isChangingConfigurations) {
+            (application as HamyarApplication).container.lock.onBackgrounded()
+        }
     }
 
     /** خروج از حساب — صفحه‌ی ورود دوباره نشان داده می‌شود. */

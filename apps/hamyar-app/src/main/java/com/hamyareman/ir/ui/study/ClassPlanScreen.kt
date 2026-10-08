@@ -85,10 +85,25 @@ private fun TimePickText(label: String, value: String, onPick: (String) -> Unit)
 
 
 @Composable
-fun ClassPlanScreen(onBack: () -> Unit, initialTab: Int = 0, onVirtualHours: (() -> Unit)? = null) {
+private fun DerivedAlarmTime(
+    label: String,
+    hour: Int,
+    minute: Int,
+    onHelp: () -> Unit,
+) {
+    OutlinedButton(onClick = onHelp, modifier = Modifier.fillMaxWidth()) {
+        Text(
+            "$label  ${toPersianDigits("%02d:%02d".format(hour, minute))}  ·  خودکار",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+@Composable
+fun ClassPlanScreen(onBack: () -> Unit, initialTab: Int = 0, onVirtualHours: (() -> Unit)? = null, onHelp: () -> Unit = {}) {
     var tab by remember { mutableIntStateOf(initialTab.coerceIn(0, 2)) }
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("برنامه کلاسی مدرسه", onBack)
+        AppTopBar("برنامه کلاسی مدرسه", onBack, onHelp = onHelp)
         ScrollableTabRow(selectedTabIndex = tab, edgePadding = 8.dp) {
             listOf("هفتگی", "تقویم", "شیفت مدرسه").forEachIndexed { i, label ->
                 Tab(selected = tab == i, onClick = { tab = i }, text = {
@@ -476,8 +491,10 @@ private fun ShamsiCalendarSection() {
                             val iso = JalaliDate.toGregorianIso(JalaliDate.Jalali(year, month, day))
                             val date = iso?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
                             val evs = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.matching(ctx, it, offset) }.orEmpty()
-                            val official = date != null && com.hamyareman.ir.ui.home.CalendarOccasions.isOfficialHoliday(ctx, date, offset)
-                            val school = date != null && com.hamyareman.ir.ui.home.CalendarOccasions.isSchoolWeekend(date) && !official
+                            val tone = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.dayTone(ctx, it, offset) }
+                                ?: com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.NONE
+                            val official = tone == com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.RED
+                            val school = tone == com.hamyareman.ir.ui.home.CalendarOccasions.DayTone.BLUE
                             val isToday = year == todayJ.year && month == todayJ.month && day == todayJ.day
                             val g = date
                             val h = date?.let { com.hamyareman.ir.ui.home.CalendarOccasions.hijriOf(it) }
@@ -524,6 +541,12 @@ private fun ShamsiCalendarSection() {
                 repeat(7 - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
+        if (month == 1) {
+            Text(
+                "۱ تا ۱۳ فروردین: تعطیلات نوروزی مدرسه (آبی). جمعه‌ها و روزهای دارای مناسبت قرمز هستند.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF1D4ED8))
+        }
         Text("مناسبات این ماه", fontWeight = FontWeight.Bold)
         val monthOcc = com.hamyareman.ir.ui.home.CalendarOccasions.monthOccasions(ctx, year, month, dim, offset)
         // پنجشنبه و جمعهٔ بدون رویداد واقعی در «مناسبات این ماه» ردیف ندارند.
@@ -562,6 +585,7 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
     var shiftSettings by remember { mutableStateOf(false) }
     var ranges by remember { mutableStateOf(ClassPlanStore.virtualRanges(ctx)) }
     val current = ClassPlanStore.shiftOf(snap, today)
+    var derivedHelp by remember { mutableStateOf(false) }
 
     fun flushAlarm(next: SchoolAlarmStore.Prefs = alarm) {
         SchoolAlarmStore.save(ctx, next)
@@ -587,10 +611,20 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
             }
         }
         Text("شیفت صبح — سه کادر ساعت", fontWeight = FontWeight.Bold)
-        TimePick("آلارم بیداری", alarm.wakeMH, alarm.wakeMM) { h, m -> flushAlarm(alarm.copy(wakeMH = h, wakeMM = m)) }
+        DerivedAlarmTime(
+            label = "آلارم بیداری شیفت صبح",
+            hour = ClassPlanStore.wakeHourMinute(snap, Shift.MORNING).first,
+            minute = ClassPlanStore.wakeHourMinute(snap, Shift.MORNING).second,
+            onHelp = { derivedHelp = true },
+        )
         TimePick("حضور در سرویس", alarm.busMH, alarm.busMM) { h, m -> flushAlarm(alarm.copy(busMH = h, busMM = m)) }
         Text("شیفت ظهر — سه کادر ساعت", fontWeight = FontWeight.Bold)
-        TimePick("آماده شدن ظهر", alarm.wakeNH, alarm.wakeNM) { h, m -> flushAlarm(alarm.copy(wakeNH = h, wakeNM = m)) }
+        DerivedAlarmTime(
+            label = "آلارم آماده‌شدن شیفت ظهر",
+            hour = ClassPlanStore.wakeHourMinute(snap, Shift.EVENING).first,
+            minute = ClassPlanStore.wakeHourMinute(snap, Shift.EVENING).second,
+            onHelp = { derivedHelp = true },
+        )
         TimePick("حضور در سرویس", alarm.busNH, alarm.busNM) { h, m -> flushAlarm(alarm.copy(busNH = h, busNM = m)) }
         Text("خواب — دعوت به خواب آرام", fontWeight = FontWeight.Bold)
         TimePick("خواب شیفت صبح", alarm.sleepMH, alarm.sleepMM) { h, m -> flushAlarm(alarm.copy(sleepMH = h, sleepMM = m)) }
@@ -663,6 +697,21 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
         }
     }
 
+    if (derivedHelp) {
+        AlertDialog(
+            onDismissRequest = { derivedHelp = false },
+            title = { Text("زمان‌های محاسبه‌شده") },
+            text = {
+                Text(
+                    "این دو زمان قابل تنظیم مستقیم نیستند. ابتدا شیفت مدرسه و ساعت حضور همان شیفت تعیین می‌شود؛ سپس زمان آماده‌سازی پیش از حرکت از آن کم می‌شود. " +
+                        "تغییر ساعت حضور یا مدت آماده‌سازی، هر دو آلارم بیداری را خودکار دوباره محاسبه می‌کند."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { derivedHelp = false }) { Text("متوجه شدم") }
+            },
+        )
+    }
     if (shiftSettings) {
         AlertDialog(
             onDismissRequest = { shiftSettings = false },
@@ -777,6 +826,19 @@ private fun ShiftSection(onVirtualHours: (() -> Unit)? = null) {
                 }) { Text("ذخیره") }
             },
             dismissButton = { TextButton(onClick = { shiftSettings = false }) { Text("بستن") } })
+    }
+    if (derivedHelp) {
+        AlertDialog(
+            onDismissRequest = { derivedHelp = false },
+            title = { Text("آلارم خودکار") },
+            text = {
+                Text(
+                    "این دو زمان عمداً قابل تنظیم مستقیم نیستند. زمان بیداری از ساعت حضور همان شیفت منهای مدت آماده‌سازی قبل از حرکت به دست می‌آید. بنابراین تغییر ساعت ورود شیفت یا مدت آماده‌سازی، زمان بیداری همان شیفت و آلارم واقعی آن را هم‌زمان تغییر می‌دهد.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = { TextButton(onClick = { derivedHelp = false }) { Text("متوجه شدم") } },
+        )
     }
     if (settingsOpen) {
         val sounds = remember(ctx) { AlarmRinger.deviceSounds(ctx) }

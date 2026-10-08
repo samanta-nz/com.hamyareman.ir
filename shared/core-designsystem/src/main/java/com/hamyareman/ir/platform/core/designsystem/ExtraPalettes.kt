@@ -18,6 +18,7 @@ val BrandTheme.themeGender: ThemeGender
     }
 
 fun BrandTheme.swatches(): List<Color> = when (this) {
+    BrandTheme.HamyarNavy -> listOf(Color(0xFF1E3A5F), Color(0xFF3D8BFF), Color(0xFFB88A4A))
     BrandTheme.PetalBloom -> listOf(Color(0xFFD34D7B), Color(0xFF8B63C7), Color(0xFFE0A15D))
     BrandTheme.LilacAir -> listOf(Color(0xFF7E57C2), Color(0xFF46A79D), Color(0xFFB47AE0))
     BrandTheme.BerryGlow -> listOf(Color(0xFFB83272), Color(0xFFE47B9E), Color(0xFFE9B949))
@@ -42,8 +43,40 @@ fun BrandTheme.swatches(): List<Color> = when (this) {
     BrandTheme.ThunderLime -> listOf(Color(0xFF8BE000), Color(0xFF3D5A80), Color(0xFF1B263B))
 }
 
+/**
+ * تم یکدست «همیار» (گرافیک جدید): سرمه‌ای عمیق + آبی نورانی الگو/دکمه‌ها + طلاییِ چرم،
+ * روی زمینهٔ کاغذی گرم. در حالت تاریک همان سرمه‌ای شب. ساختار هر منو مختص خودش است؛
+ * رنگ‌ها در کل اپ یکی‌اند.
+ */
+private val HamyarNavyLight = lightColorScheme(
+    primary = Color(0xFF1E3A5F), onPrimary = Color.White,
+    primaryContainer = Color(0xFFD9E6F7), onPrimaryContainer = Color(0xFF0B1F38),
+    secondary = Color(0xFF3D8BFF), onSecondary = Color.White,
+    secondaryContainer = Color(0xFFDCE9FF), onSecondaryContainer = Color(0xFF0B2A5C),
+    tertiary = Color(0xFFB88A4A), onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFF3E4C8), onTertiaryContainer = Color(0xFF3A2A0C),
+    background = Color(0xFFF5F1E8), onBackground = Color(0xFF14233A),
+    surface = Color(0xFFFBF8F1), onSurface = Color(0xFF14233A),
+    surfaceVariant = Color(0xFFE6EAF0), onSurfaceVariant = Color(0xFF4A5A70),
+    outline = Color(0xFFB7C2D3), error = Color(0xFFBA1A1A),
+)
+
+private val HamyarNavyDark = darkColorScheme(
+    primary = Color(0xFF8DB8F2), onPrimary = Color(0xFF0A2142),
+    primaryContainer = Color(0xFF1B3556), onPrimaryContainer = Color(0xFFD9E6F7),
+    secondary = Color(0xFF6FA8FF), onSecondary = Color(0xFF06214D),
+    secondaryContainer = Color(0xFF1B3F7A), onSecondaryContainer = Color(0xFFDCE9FF),
+    tertiary = Color(0xFFE0BC84), onTertiary = Color(0xFF3A2A0C),
+    tertiaryContainer = Color(0xFF55411B), onTertiaryContainer = Color(0xFFF3E4C8),
+    background = Color(0xFF08121F), onBackground = Color(0xFFE4ECF7),
+    surface = Color(0xFF0D1B2E), onSurface = Color(0xFFE4ECF7),
+    surfaceVariant = Color(0xFF1F3048), onSurfaceVariant = Color(0xFFB7C4D8),
+    outline = Color(0xFF5E7088), error = Color(0xFFFFB4AB),
+)
+
 /** پالت‌های ۱۱ تم جدید — روشن/تاریک. */
 fun extraScheme(brand: BrandTheme, dark: Boolean): ColorScheme? = when (brand) {
+    BrandTheme.HamyarNavy -> if (dark) HamyarNavyDark else HamyarNavyLight
     BrandTheme.PetalBloom -> trio(
         dark, 0xFFD34D7B, 0xFF8B63C7, 0xFFE0A15D,
         0xFFFFF8FB, 0xFF2A141E, 0xFF24121A, 0xFFF9D8E5, 0xFF482132,

@@ -21,11 +21,17 @@ data class ContentItem(
     val gender: String, // all | boy | girl
     val aw: String,     // شناسهٔ فایل روی Appwrite
     val key: String,    // کلید (مسیر) روی سرور ایرانی
+    val sub: String = "", // توضیح کوتاه زیر عنوان (مثلاً مدت قصه)
 )
 
 /**
  * کاتالوگ بسته‌شده در assets/content/catalog.json —
  * ساخته‌شده از SandBoxFiles/content-map.json (۱۰۸ فایل).
+ *
+ * فایل‌های HTML جدید «ساختار نهایی» (خواب، چرخه، آرامش، خودهیپنوز، ۶۰ قصه) در
+ * assets/content/app-content.tsv ثبت شده‌اند: id|جنسیت|پوشه|فایل|عنوان|توضیح
+ * و زیر Bucket/Html-files/app/ قرار می‌گیرند. این دسته (cat = app) در منوی «محتوای همیار» دیده نمی‌شود؛
+ * فقط از صفحه‌های خودشان با ContentHtml باز می‌شود.
  */
 object ContentCatalog {
 
@@ -69,6 +75,27 @@ object ContentCatalog {
                     )
                     map[item.id] = item
                 }
+                // HTMLهای ساختار نهایی (سلامتی/آرامش/ذهن‌آگاهی/قصه‌ها).
+                runCatching {
+                    ctx.applicationContext.assets.open("content/app-content.tsv")
+                        .bufferedReader().use { reader ->
+                            reader.forEachLine { line ->
+                                val p = line.trim().split('|')
+                                if (p.size < 6) return@forEachLine
+                                val item = ContentItem(
+                                    id = p[0],
+                                    cat = "app",
+                                    kind = "html",
+                                    title = p[4],
+                                    gender = p[1],
+                                    aw = p[0],
+                                    key = "Bucket/Html-files/app/" + p[2] + "/" + p[3] + ".html",
+                                    sub = p[5],
+                                )
+                                map[item.id] = item
+                            }
+                        }
+                }
                 val mirrors = mutableMapOf<String, String>()
                 // catalog مرجع UI است؛ server-map همهٔ payloadهای مشترک از جمله
                 // صوت/PDF/HTML تدریس را پوشش می‌دهد.
@@ -97,7 +124,17 @@ object ContentCatalog {
 
     fun categories(): List<ContentCat> = cats
 
+    /** پایه‌ی APK ← بازهٔ قصه‌ها: ۴–۶، ۷–۹، ۱۰–۱۲. */
+    private fun storyBand(grade: Int): String = when {
+        grade <= 6 -> "46"
+        grade <= 9 -> "79"
+        else -> "1012"
+    }
+
     private fun belongsToEdition(item: ContentItem): Boolean {
+        Regex("^story-(46|79|1012)-").find(item.id)?.let { m ->
+            return storyBand(AppEdition.grade.num) == m.groupValues[1]
+        }
         val lab = Regex("^lab-(\\d{2})-").find(item.id) ?: return true
         return lab.groupValues[1].toIntOrNull() == AppEdition.grade.num
     }
@@ -108,6 +145,17 @@ object ContentCatalog {
             .filter {
                 it.cat == cat && it.kind == "html" && belongsToEdition(it) &&
                     (it.gender == "all" || it.gender == gender)
+            }
+            .sortedBy { it.id }
+
+    /**
+     * ده قصهٔ این پایه و این جنسیت (منطق مقطع + جنسیت). جنسیت فقط فیلتر محتواست:
+     * هیچ داستانی در کد hard-code نشده؛ همه از فهرست app-content.tsv می‌آیند.
+     */
+    fun storiesFor(gender: String): List<ContentItem> =
+        itemsById.values
+            .filter {
+                it.id.startsWith("story-") && belongsToEdition(it) && it.gender == gender
             }
             .sortedBy { it.id }
 
@@ -126,7 +174,7 @@ object ContentCatalog {
 
     /** یک فایل واقعیِ موجود روی هر دو origin برای سنجش Range و سرعت. */
     fun sampleHtmlItem(): ContentItem? =
-        itemsById.values.filter { it.kind == "html" }.minByOrNull { it.id }
+        itemsById.values.filter { it.kind == "html" && it.cat != "app" }.minByOrNull { it.id }
 
     fun sampleHtmlKey(): String? = sampleHtmlItem()?.key
 

@@ -45,19 +45,28 @@ import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 /** صفحه‌ی ظاهر: تم رنگ و اندازهٔ نوشته. فونت قفل است. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearanceScreen(onBack: () -> Unit) {
+fun AppearanceScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
     val prefs = LocalUiPrefs.current
     var pendingTheme by remember { mutableStateOf<BrandTheme?>(null) }
 
     Column(Modifier.fillMaxSize()) {
-        AppTopBar("ظاهر", onBack)
+        AppTopBar("ظاهر", onBack, onHelp = onHelp)
         Column(
             Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("تم‌های تازهٔ هماهنگ با هویت همیار من، همراه با اندازهٔ نوشتهٔ سراسری ✨", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-            Text("اندازهٔ نوشتهٔ سراسری", style = MaterialTheme.typography.titleMedium)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("اندازهٔ نوشتهٔ سراسری", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = { prefs.resetFontTheme() }) {
+                    Text("بازگردانی فونت پیش‌فرض")
+                }
+            }
             Text(
                 if (prefs.textSizeOffset == 0) "استاندارد (۱۳)"
                 else {
@@ -88,13 +97,21 @@ fun AppearanceScreen(onBack: () -> Unit) {
                 }
             }
 
+            Text("تم پیش‌فرض", style = MaterialTheme.typography.titleMedium)
+            ThemeGroup(listOf(BrandTheme.HamyarNavy), prefs) { pendingTheme = it }
+            if (prefs.theme != BrandTheme.HamyarNavy) {
+                TextButton(onClick = { prefs.resetThemeToDefault() }) {
+                    Text("بازگشت به تم پیش‌فرض همیار")
+                }
+            }
+
             val girl = com.hamyareman.ir.ui.profile.StudentProfileState.gender.equals("girl", ignoreCase = true)
             if (girl) {
                 Text("تم‌های دخترانه", style = MaterialTheme.typography.titleMedium)
-                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
+                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it != BrandTheme.HamyarNavy && it.themeGender == ThemeGender.GIRL }, prefs) { pendingTheme = it }
             } else {
                 Text("تم‌های پسرانه", style = MaterialTheme.typography.titleMedium)
-                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
+                ThemeGroup(BrandTheme.entries.filter { it.visibleInAppearance && it != BrandTheme.HamyarNavy && it.themeGender == ThemeGender.BOY }, prefs) { pendingTheme = it }
             }
 
             pendingTheme?.let { brand ->

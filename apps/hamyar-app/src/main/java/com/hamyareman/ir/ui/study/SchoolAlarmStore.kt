@@ -47,9 +47,10 @@ object SchoolAlarmStore {
             volume = s.getInt("alarm_volume", 80).coerceIn(0, 100),
             repeat = s.getInt("alarm_repeat", 2).coerceIn(1, 5),
             crescendo = s.getBool("alarm_crescendo", false),
-            wakeMH = s.getInt("wake_m_h", wh), wakeMM = s.getInt("wake_m_m", wm),
+            // wakeMH/wakeMM فقط مقدار مشتق‌شده از برنامهٔ شیفت است؛ از ذخیرهٔ مستقل نسخه‌های قدیمی استفاده نمی‌کنیم.
+            wakeMH = wh, wakeMM = wm,
             busMH = s.getInt("bus_m_h", 6), busMM = s.getInt("bus_m_m", 45),
-            wakeNH = s.getInt("wake_n_h", nh), wakeNM = s.getInt("wake_n_m", nm),
+            wakeNH = nh, wakeNM = nm,
             busNH = s.getInt("bus_n_h", 11), busNM = s.getInt("bus_n_m", 45),
             sleepMH = s.getInt("sleep_m_h", smh), sleepMM = s.getInt("sleep_m_m", smm),
             sleepNH = s.getInt("sleep_n_h", snh), sleepNM = s.getInt("sleep_n_m", snm))
@@ -61,9 +62,10 @@ object SchoolAlarmStore {
         s.putInt("alarm_volume", p.volume)
         s.putInt("alarm_repeat", p.repeat)
         s.putBool("alarm_crescendo", p.crescendo)
-        s.putInt("wake_m_h", p.wakeMH); s.putInt("wake_m_m", p.wakeMM)
+        // زمان‌های بیداری مستقل ذخیره نمی‌شوند؛ منبع حقیقت ClassPlanStore است.
+        s.remove("wake_m_h"); s.remove("wake_m_m")
         s.putInt("bus_m_h", p.busMH); s.putInt("bus_m_m", p.busMM)
-        s.putInt("wake_n_h", p.wakeNH); s.putInt("wake_n_m", p.wakeNM)
+        s.remove("wake_n_h"); s.remove("wake_n_m")
         s.putInt("bus_n_h", p.busNH); s.putInt("bus_n_m", p.busNM)
         s.putInt("sleep_m_h", p.sleepMH); s.putInt("sleep_m_m", p.sleepMM)
         s.putInt("sleep_n_h", p.sleepNH); s.putInt("sleep_n_m", p.sleepNM)
@@ -79,6 +81,7 @@ object SchoolAlarmStore {
     fun sync(ctx: Context, reminders: ReminderScheduler, snap: ClassPlanStore.Snapshot, date: LocalDate) {
         ClassPlanStore.refreshOffCache(ctx)
         val p = load(ctx)
+        // زمان‌های بیداری از ClassPlanStore مشتق می‌شوند و هیچ ورودی مستقل قدیمی ندارند.
         val target = if (ClassPlanStore.isSchoolOff(ctx, snap, date)) {
             ClassPlanStore.firstSchoolDay(snap, date.plusDays(1), ctx)
         } else date

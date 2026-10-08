@@ -765,6 +765,186 @@
    "gender": "all",
    "aw": "tool-ti-nspire.html",
    "key": "Bucket/Html-files/جعبه ابزار های ریاضی/TI-Nspire CX II-T CAS .html"
+  },
+  {
+   "id": "cj-01",
+   "cat": "calm",
+   "kind": "html",
+   "title": "جنگل آرام",
+   "gender": "all",
+   "aw": "cj-01",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-01.html"
+  },
+  {
+   "id": "cj-02",
+   "cat": "calm",
+   "kind": "html",
+   "title": "ساحل و امواج",
+   "gender": "all",
+   "aw": "cj-02",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-02.html"
+  },
+  {
+   "id": "cj-03",
+   "cat": "calm",
+   "kind": "html",
+   "title": "کلبه‌ی کوهستانی برفی",
+   "gender": "all",
+   "aw": "cj-03",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-03.html"
+  },
+  {
+   "id": "cj-04",
+   "cat": "calm",
+   "kind": "html",
+   "title": "باغ مخفی",
+   "gender": "all",
+   "aw": "cj-04",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-04.html"
+  },
+  {
+   "id": "cj-05",
+   "cat": "calm",
+   "kind": "html",
+   "title": "قایق روی رودخانه‌ی آرام",
+   "gender": "all",
+   "aw": "cj-05",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-05.html"
+  },
+  {
+   "id": "cj-06",
+   "cat": "calm",
+   "kind": "html",
+   "title": "پیاده‌روی زیر باران بهاری",
+   "gender": "all",
+   "aw": "cj-06",
+   "key": "Bucket/Html-files/سفرهای ذهنی/cj-06.html"
+  },
+  {
+   "id": "mh-study-01",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "من می‌تونم تمرکز کنم",
+   "gender": "all",
+   "aw": "mh-study-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-study-01.html"
+  },
+  {
+   "id": "mh-study-02",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "تجسم کامل‌کردن یک فصل",
+   "gender": "all",
+   "aw": "mh-study-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-study-02.html"
+  },
+  {
+   "id": "mh-study-03",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "رهاسازی اهمال‌کاری",
+   "gender": "all",
+   "aw": "mh-study-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-study-03.html"
+  },
+  {
+   "id": "mh-exam-01",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "تجسم ورود آروم به جلسه",
+   "gender": "all",
+   "aw": "mh-exam-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-exam-01.html"
+  },
+  {
+   "id": "mh-exam-02",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "حافظه‌ام در دسترسمه",
+   "gender": "all",
+   "aw": "mh-exam-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-exam-02.html"
+  },
+  {
+   "id": "mh-exam-03",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "مدیریت اضطراب پیش از امتحان",
+   "gender": "all",
+   "aw": "mh-exam-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-exam-03.html"
+  },
+  {
+   "id": "mh-thoughts-01",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "بازنویسی فکر منفی",
+   "gender": "all",
+   "aw": "mh-thoughts-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-thoughts-01.html"
+  },
+  {
+   "id": "mh-thoughts-02",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "تلقین عزت‌نفس",
+   "gender": "all",
+   "aw": "mh-thoughts-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-thoughts-02.html"
+  },
+  {
+   "id": "mh-thoughts-03",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "رهاسازی مقایسه با دیگران",
+   "gender": "all",
+   "aw": "mh-thoughts-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-thoughts-03.html"
+  },
+  {
+   "id": "mh-social-01",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "آرامش پیش از گفت‌وگوی سخت",
+   "gender": "all",
+   "aw": "mh-social-01",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-social-01.html"
+  },
+  {
+   "id": "mh-social-02",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "دیدن از زاویه‌ی دیگری",
+   "gender": "all",
+   "aw": "mh-social-02",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-social-02.html"
+  },
+  {
+   "id": "mh-social-03",
+   "cat": "hypnosis",
+   "kind": "html",
+   "title": "رهاسازی خشم کوچک",
+   "gender": "all",
+   "aw": "mh-social-03",
+   "key": "Bucket/Html-files/خودهیپنوتیزم/mh-social-03.html"
+  },
+  {
+   "id": "sp-body",
+   "cat": "sleep",
+   "kind": "html",
+   "title": "آرام‌سازی بدنی قبل خواب",
+   "gender": "all",
+   "aw": "sp-body",
+   "key": "Bucket/Html-files/app/health/sleep/preparation/01-pre-sleep-body-relaxation.html"
+  },
+  {
+   "id": "sp-release",
+   "cat": "sleep",
+   "kind": "html",
+   "title": "رهاکردن فکرهای روز",
+   "gender": "all",
+   "aw": "sp-release",
+   "key": "Bucket/Html-files/app/health/sleep/preparation/02-release-day-thoughts.html"
   }
  ]
 }

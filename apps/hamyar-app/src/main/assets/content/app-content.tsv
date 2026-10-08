@@ -1,0 +1,120 @@
+hs-prep-01|all|health/sleep/preparation|01-pre-sleep-body-relaxation|آرام‌سازی بدنی قبل خواب|۲۸ دقیقه
+hs-prep-02|all|health/sleep/preparation|02-release-day-thoughts|رهاکردن فکرهای روز|۲۵ دقیقه
+hn-focus-01|all|health/nutrition|01-focus-nutrition|تغذیه‌ی سالم برای تمرکز|راهنمای ساده، نه رژیم
+hc-breath-03|girl|health/cycle/breath|03-period-breath-4-7-8|تنفس ۴-۷-۸|دم ۴، نگه ۷، بازدم ۸
+hc-yoga-01|girl|health/cycle/yoga|01-period-cat-cow|گربه–گاو|یوگای ملایم قاعدگی
+hc-yoga-02|girl|health/cycle/yoga|02-period-child-pose|حالت کودک|یوگای ملایم قاعدگی
+hc-yoga-03|girl|health/cycle/yoga|03-reclined-butterfly|پروانه‌ی خوابیده|یوگای ملایم قاعدگی
+hc-yoga-04|girl|health/cycle/yoga|04-supine-twist|پیچش خوابیده|یوگای ملایم قاعدگی
+hc-yoga-05|girl|health/cycle/yoga|05-legs-up-the-wall|پا به دیوار|یوگای ملایم قاعدگی
+hc-stretch-01|girl|health/cycle/stretch|01-lower-back-hips|کشش کمر و لگن|ملایم، بدون فشار
+hc-stretch-02|girl|health/cycle/stretch|02-warm-compress-relief|کمپرس گرم + وضعیت تسکین|گرما + دراز کشیدن
+hc-food-01|girl|health/cycle/nutrition|01-menstruation-phase|فاز قاعدگی|آهن و گرما
+hc-food-02|girl|health/cycle/nutrition|02-after-menstruation|بعد از قاعدگی|انرژی آرام برمی‌گردد
+hc-food-03|girl|health/cycle/nutrition|03-mid-cycle|میانه‌ی چرخه|تمرکز بهتر
+hc-food-04|girl|health/cycle/nutrition|04-pms|پیش‌قاعدگی|منیزیم و خواب
+cp-pmr-01|all|calm/pmr|01-full-body-pmr|نسخه‌ی کامل سر تا پا|آرام‌سازی عضلانی پیش‌رونده
+cp-pmr-02|all|calm/pmr|02-hands-shoulders-pmr|نسخه‌ی کوتاه دست و شانه|وسط روز، پشت میز
+cj-01|all|calm/journey|01-calm-forest|جنگل آرام|سفر ذهنی
+cj-02|all|calm/journey|02-beach-waves|ساحل و امواج|سفر ذهنی
+cj-03|all|calm/journey|03-mountain-cabin|کلبه کوهستانی|سفر ذهنی
+cj-04|all|calm/journey|04-secret-garden|باغ مخفی|سفر ذهنی
+cj-05|all|calm/journey|05-river-boat|قایق روی رودخانه|سفر ذهنی
+cj-06|all|calm/journey|06-rain-walk|پیاده‌روی زیر باران|سفر ذهنی
+cj-07|all|calm/journey|07-sensory-forest|جنگل حسی|سفر ذهنی
+cj-08|all|calm/journey|08-safe-mental-refuge|پناهگاه امن ذهنی|سفر ذهنی
+cj-09|all|calm/journey|09-urban-green-space|فضای سبز شهری|سفر ذهنی
+cj-10|all|calm/journey|10-five-senses-garden|باغ پنج‌حس|سفر ذهنی
+cj-11|all|calm/journey|11-calm-blue-space|فضای آبی آرام|سفر ذهنی
+cj-12|all|calm/journey|12-virtual-nature|طبیعت مجازی|سفر ذهنی
+cs-study-01|all|calm/sounds/study|01-study-instrumental|موسیقی بدون کلام|موسیقی مطالعه
+cs-study-02|all|calm/sounds/study|02-low-distraction-study|موسیقی کم‌حواس‌پرتی|موسیقی مطالعه
+cs-study-03|all|calm/sounds/study|03-deep-study|موسیقی مطالعه عمیق|موسیقی مطالعه
+cs-stress-01|all|calm/sounds/stress|01-calm-stress-relief|موسیقی آرام|کاهش استرس
+cs-stress-02|all|calm/sounds/stress|02-nature-stress-relief|موسیقی طبیعت|کاهش استرس
+cs-stress-03|all|calm/sounds/stress|03-breath-paced-music|موسیقی تنفس|کاهش استرس
+cs-nature-01|all|calm/sounds/nature|01-rain|باران|صدای طبیعت
+cs-nature-02|all|calm/sounds/nature|02-forest|جنگل|صدای طبیعت
+cs-nature-03|all|calm/sounds/nature|03-river|رودخانه|صدای طبیعت
+cs-nature-04|all|calm/sounds/nature|04-ocean|دریا|صدای طبیعت
+cs-noise-01|all|calm/sounds/noise|01-white-noise|نویز سفید|نویز
+cs-noise-02|all|calm/sounds/noise|02-pink-noise|نویز صورتی|نویز
+cs-noise-03|all|calm/sounds/noise|03-brown-noise|نویز قهوه‌ای|نویز
+cs-freq-01|all|calm/sounds/frequency|01-432hz-evidence|432Hz|شواهد و مرجع tuning
+cs-freq-02|all|calm/sounds/frequency|02-440hz-reference|440Hz|مرجع tuning
+cs-freq-03|all|calm/sounds/frequency|03-binaural-theta|Binaural / Theta|شواهد محدود یا متناقض
+cs-freq-04|all|calm/sounds/frequency|04-binaural-alpha|Binaural / Alpha|شواهد محدود یا متناقض
+cs-freq-05|all|calm/sounds/frequency|05-other-frequency-evidence|سایر فرکانس‌ها|آنچه شواهد نشان می‌دهد
+mh-study-01|all|mindfulness/hypnosis/study|01-i-can-focus|من می‌تونم تمرکز کنم|خودهیپنوز سالم
+mh-study-02|all|mindfulness/hypnosis/study|02-visualize-finishing-chapter|تجسم کامل‌کردن فصل|خودهیپنوز سالم
+mh-study-03|all|mindfulness/hypnosis/study|03-release-procrastination|رهاسازی اهمال‌کاری|خودهیپنوز سالم
+mh-exam-01|all|mindfulness/hypnosis/exam|01-calm-entry-to-exam|ورود آرام به جلسه|خودهیپنوز سالم
+mh-exam-02|all|mindfulness/hypnosis/exam|02-memory-available|حافظه‌ام در دسترسمه|خودهیپنوز سالم
+mh-exam-03|all|mindfulness/hypnosis/exam|03-pre-exam-anxiety|مدیریت اضطراب پیش از امتحان|خودهیپنوز سالم
+mh-thoughts-01|all|mindfulness/hypnosis/thoughts|01-rewrite-negative-thought|بازنویسی فکر منفی|خودهیپنوز سالم
+mh-thoughts-02|all|mindfulness/hypnosis/thoughts|02-self-esteem-suggestion|تلقین عزت‌نفس|خودهیپنوز سالم
+mh-thoughts-03|all|mindfulness/hypnosis/thoughts|03-release-comparison|رهاسازی مقایسه|خودهیپنوز سالم
+mh-social-01|all|mindfulness/hypnosis/social|01-calm-before-hard-talk|آرامش پیش از گفت‌وگوی سخت|خودهیپنوز سالم
+mh-social-02|all|mindfulness/hypnosis/social|02-another-perspective|دیدن از زاویه دیگری|خودهیپنوز سالم
+mh-social-03|all|mindfulness/hypnosis/social|03-release-small-anger|رهاسازی خشم کوچک|خودهیپنوز سالم
+mp-pomodoro-01|all|mindfulness/learning|01-pomodoro|پومودورو|محتوای آموزشی
+story-46-girl-01|girl|stories/grade-4-6/girls|01-cinderella|سیندرلا|≈ ۲۴–۲۷ دقیقه
+story-46-girl-02|girl|stories/grade-4-6/girls|02-little-red-riding-hood|شنل قرمزی|≈ ۲۲–۲۵ دقیقه
+story-46-girl-03|girl|stories/grade-4-6/girls|03-rapunzel|راپانزل|≈ ۲۵–۲۸ دقیقه
+story-46-girl-04|girl|stories/grade-4-6/girls|04-princess-and-the-pea|شاهزاده‌خانم و نخود|≈ ۲۱–۲۳ دقیقه
+story-46-girl-05|girl|stories/grade-4-6/girls|05-sleeping-beauty|زیبای خفته|≈ ۲۵–۲۹ دقیقه
+story-46-girl-06|girl|stories/grade-4-6/girls|06-twelve-dancing-princesses|دوازده شاهزاده‌خانم رقصان|≈ ۲۶–۳۰ دقیقه
+story-46-girl-07|girl|stories/grade-4-6/girls|07-peasants-wise-daughter|دختر دانای دهقان|≈ ۲۴–۲۸ دقیقه
+story-46-girl-08|girl|stories/grade-4-6/girls|08-girl-and-the-frog|دختر و قورباغه|≈ ۲۲–۲۵ دقیقه
+story-46-girl-09|girl|stories/grade-4-6/girls|09-alice-in-wonderland|آلیس در سرزمین عجایب|≈ ۲۸–۳۴ دقیقه
+story-46-girl-10|girl|stories/grade-4-6/girls|10-ugly-duckling|جوجه‌اردک زشت|≈ ۲۳–۲۶ دقیقه
+story-46-boy-01|boy|stories/grade-4-6/boys|01-pinocchio|پینوکیو|≈ ۲۸–۳۴ دقیقه
+story-46-boy-02|boy|stories/grade-4-6/boys|02-jack-and-the-beanstalk|جک و لوبیای سحرآمیز|≈ ۲۳–۲۷ دقیقه
+story-46-boy-03|boy|stories/grade-4-6/boys|03-robin-hood|رابین هود|≈ ۲۷–۳۲ دقیقه
+story-46-boy-04|boy|stories/grade-4-6/boys|04-aladdin|علاءالدین|≈ ۲۵–۳۰ دقیقه
+story-46-boy-05|boy|stories/grade-4-6/boys|05-sinbad|سندباد|≈ ۲۷–۳۲ دقیقه
+story-46-boy-06|boy|stories/grade-4-6/boys|06-gullivers-travels|سفرهای گالیور|≈ ۳۰–۳۶ دقیقه
+story-46-boy-07|boy|stories/grade-4-6/boys|07-prince-and-the-pauper|شاهزاده و گدا|≈ ۲۹–۳۴ دقیقه
+story-46-boy-08|boy|stories/grade-4-6/boys|08-tom-sawyer|تام سایر|≈ ۳۰–۳۶ دقیقه
+story-46-boy-09|boy|stories/grade-4-6/boys|09-puss-in-boots|گربه چکمه‌پوش|≈ ۲۲–۲۵ دقیقه
+story-46-boy-10|boy|stories/grade-4-6/boys|10-glass-man-and-curious-boy|مرد شیشه‌ای و پسرک کنجکاو|≈ ۲۱–۲۴ دقیقه
+story-79-girl-01|girl|stories/grade-7-9/girls|01-little-women|زنان کوچک|≈ ۳۰–۳۶ دقیقه
+story-79-girl-02|girl|stories/grade-7-9/girls|02-anne-of-green-gables|آن در گرین گیبلز|≈ ۳۰–۳۶ دقیقه
+story-79-girl-03|girl|stories/grade-7-9/girls|03-heidi|هایدی|≈ ۲۸–۳۴ دقیقه
+story-79-girl-04|girl|stories/grade-7-9/girls|04-the-secret-garden|باغ مخفی|≈ ۳۰–۳۶ دقیقه
+story-79-girl-05|girl|stories/grade-7-9/girls|05-the-little-prince|شاهزاده کوچک|≈ ۲۴–۲۹ دقیقه
+story-79-girl-06|girl|stories/grade-7-9/girls|06-pollyanna|پلیانا|≈ ۲۹–۳۵ دقیقه
+story-79-girl-07|girl|stories/grade-7-9/girls|07-jane-eyre|جین ایر|≈ ۳۱–۳۷ دقیقه
+story-79-girl-08|girl|stories/grade-7-9/girls|08-dorothy-in-the-land-of-oz|دوروتی در سرزمین اُز|≈ ۲۸–۳۴ دقیقه
+story-79-girl-09|girl|stories/grade-7-9/girls|09-the-red-shoes|کفش‌های قرمز|≈ ۲۲–۲۵ دقیقه
+story-79-girl-10|girl|stories/grade-7-9/girls|10-scheherazade|شهرزاد و قصه‌گویی|≈ ۲۸–۳۴ دقیقه
+story-79-boy-01|boy|stories/grade-7-9/boys|01-treasure-island|جزیره گنج|≈ ۳۱–۳۷ دقیقه
+story-79-boy-02|boy|stories/grade-7-9/boys|02-robinson-crusoe|رابینسون کروزوئه|≈ ۳۰–۳۶ دقیقه
+story-79-boy-03|boy|stories/grade-7-9/boys|03-twenty-thousand-leagues-under-the-sea|بیست هزار فرسنگ زیر دریا|≈ ۳۱–۳۷ دقیقه
+story-79-boy-04|boy|stories/grade-7-9/boys|04-journey-to-the-center-of-the-earth|سفر به مرکز زمین|≈ ۳۰–۳۶ دقیقه
+story-79-boy-05|boy|stories/grade-7-9/boys|05-around-the-world-in-80-days|دور دنیا در هشتاد روز|≈ ۳۰–۳۷ دقیقه
+story-79-boy-06|boy|stories/grade-7-9/boys|06-prince-and-the-pauper|شاهزاده و گدا|≈ ۲۹–۳۴ دقیقه
+story-79-boy-07|boy|stories/grade-7-9/boys|07-tom-sawyer|تام سایر|≈ ۳۰–۳۶ دقیقه
+story-79-boy-08|boy|stories/grade-7-9/boys|08-huckleberry-finn|هاکلبری فین|≈ ۳۰–۳۷ دقیقه
+story-79-boy-09|boy|stories/grade-7-9/boys|09-three-musketeers|سه تفنگدار|≈ ۳۲–۳۸ دقیقه
+story-79-boy-10|boy|stories/grade-7-9/boys|10-last-of-the-mohicans|آخرین موهیکان|≈ ۳۲–۳۸ دقیقه
+story-1012-girl-01|girl|stories/grade-10-12/girls|01-pride-and-prejudice|غرور و تعصب|≈ ۳۲–۳۸ دقیقه
+story-1012-girl-02|girl|stories/grade-10-12/girls|02-emma|اما|≈ ۳۲–۳۸ دقیقه
+story-1012-girl-03|girl|stories/grade-10-12/girls|03-little-women|زنان کوچک|≈ ۳۱–۳۷ دقیقه
+story-1012-girl-04|girl|stories/grade-10-12/girls|04-jane-eyre|جین ایر|≈ ۳۲–۳۸ دقیقه
+story-1012-girl-05|girl|stories/grade-10-12/girls|05-anne-shirley|آن شرلی|≈ ۲۹–۳۵ دقیقه
+story-1012-girl-06|girl|stories/grade-10-12/girls|06-dorothy-and-the-emerald-city|دوروتی و شهر زمرد|≈ ۲۸–۳۴ دقیقه
+story-1012-girl-07|girl|stories/grade-10-12/girls|07-gordafarid|گردآفرید|≈ ۲۴–۲۹ دقیقه
+story-1012-girl-08|girl|stories/grade-10-12/girls|08-manijeh|منیژه|≈ ۲۴–۲۹ دقیقه
+story-1012-girl-09|girl|stories/grade-10-12/girls|09-rudabeh|رودابه|≈ ۲۴–۲۹ دقیقه
+story-1012-girl-10|girl|stories/grade-10-12/girls|10-katayoun|کتایون|≈ ۲۴–۲۹ دقیقه
+story-1012-boy-01|boy|stories/grade-10-12/boys|01-zal-and-simurgh|زال و سیمرغ|≈ ۲۵–۳۰ دقیقه
+story-1012-boy-02|boy|stories/grade-10-12/boys|02-rostam-and-sohrab|رستم و سهراب|≈ ۲۸–۳۴ دقیقه
+story-1012-boy-03|boy|stories/grade-10-12/boys|03-siavash|سیاوش|≈ ۲۸–۳۴ دقیقه
+story-1012-boy-04|boy|stories/grade-10-12/boys|04-esfandiar|اسفندیار|≈ ۲۹–۳۵ دقیقه
+story-1012-boy-05|boy|stories/grade-10-12/boys|05-arash-the-archer|آرش کمانگیر|≈ ۲۳–۲۷ دقیقه
+story-1012-boy-06|boy|stories/grade-10-12/boys|06-jamshid|جمشید|≈ ۲۶–۳۱ دقیقه
+story-1012-boy-07|boy|stories/grade-10-12/boys|07-kay-khosrow|کیخسرو|≈ ۲۹–۳۵ دقیقه
+story-1012-boy-08|boy|stories/grade-10-12/boys|08-sam-and-the-dragon|سام و اژدها|≈ ۲۵–۳۰ دقیقه
+story-1012-boy-09|boy|stories/grade-10-12/boys|09-goudarz-and-giv|گودرز و گیو|≈ ۲۷–۳۲ دقیقه
+story-1012-boy-10|boy|stories/grade-10-12/boys|10-bijan-and-manijeh|بیژن و منیژه|≈ ۲۹–۳۵ دقیقه

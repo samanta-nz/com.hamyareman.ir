@@ -30,7 +30,7 @@ data class UpdateInfo(
     val url: String = "",
     /** APK روی Appwrite برای حالت خارجی. */
     val externalUrl: String = "",
-    /** همان APK روی آروان برای حالت ایرانی. */
+    /** همان APK روی ParsPack برای حالت داخلی ایران. */
     val internalUrl: String = "",
     /** حجمِ تقریبیِ فایل (بایت) برای نمایش؛ `0` = نامعلوم. */
     val size: Long = 0L,

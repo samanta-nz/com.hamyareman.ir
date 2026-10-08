@@ -129,6 +129,10 @@ sealed class Screen(val route: String) {
     data object Water : Screen("water")
     data object Call : Screen("call")
     data object Settings : Screen("settings")
+    data object UserGuide : Screen("user-guide?section={section}") {
+        fun of(section: String = "") =
+            if (section.isBlank()) "user-guide" else "user-guide?section=" + Uri.encode(section)
+    }
     data object UserProfile : Screen("user-profile")
     data object Privacy : Screen("privacy")
     data object Badges : Screen("badges")

@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -25,6 +26,9 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.designsystem.PrimaryButton
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.notebookAlignmentWire
+import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
 import com.hamyareman.ir.ui.study.StateSync
 import com.hamyareman.ir.ui.wellness.PracticeHubScreen
 import com.hamyareman.ir.ui.wellness.WellnessMenu
@@ -86,7 +90,12 @@ private val SelfQuestions = listOf(
     "الان، همین لحظه، چه چیزی می‌تواند حالت را یک درجه بهتر کند؟",
 )
 
-private data class SelfReflection(val date: String, val question: String, val answer: String)
+private data class SelfReflection(
+    val date: String,
+    val question: String,
+    val answer: String,
+    val alignment: String = "right",
+)
 
 private fun readSelfReflections(store: LocalStore): List<SelfReflection> = runCatching {
     val root = JSONObject(store.getString("self_answers", "{}"))
@@ -94,7 +103,14 @@ private fun readSelfReflections(store: LocalStore): List<SelfReflection> = runCa
         root.keys().forEach { date ->
             val item = root.optJSONObject(date) ?: return@forEach
             val answer = item.optString("answer")
-            if (answer.isNotBlank()) add(SelfReflection(date, item.optString("question"), answer))
+            if (answer.isNotBlank()) add(
+                SelfReflection(
+                    date = date,
+                    question = item.optString("question"),
+                    answer = answer,
+                    alignment = item.optString("alignment", "right"),
+                ),
+            )
         }
     }.sortedByDescending { it.date }
 }.getOrDefault(emptyList())
@@ -122,6 +138,7 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
     val dateKey = remember(today) { today.toString() }
     val question = remember(today) { dailySelfQuestion(today) }
     var answer by remember(dateKey) { mutableStateOf(store.getString("self_answer_$dateKey", "")) }
+    var alignment by remember(dateKey) { mutableStateOf(TextAlign.Right) }
     var editingDate by remember(dateKey) { mutableStateOf(dateKey) }
     var editingQuestion by remember(dateKey) { mutableStateOf(question) }
     var reflections by remember { mutableStateOf(readSelfReflections(store)) }
@@ -136,6 +153,9 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
                 val remoteAnswer = remote.optJSONObject(dateKey)?.optString("answer").orEmpty()
                 if (answer.isBlank() && remoteAnswer.isNotBlank()) {
                     answer = remoteAnswer
+                    alignment = notebookTextAlignFromWire(
+                        remote.optJSONObject(dateKey)?.optString("alignment", "right") ?: "right",
+                    )
                     store.putString("self_answer_$dateKey", remoteAnswer)
                 }
                 val local = runCatching { JSONObject(store.getString("self_answers", "{}")) }.getOrDefault(JSONObject())
@@ -162,13 +182,25 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(editingQuestion, style = MaterialTheme.typography.bodyLarge)
-                    LinedNotebookInput(answer, { answer = it })
+                    NotebookAlignmentPicker(alignment, { alignment = it })
+                    LinedNotebookInput(
+                        answer,
+                        { answer = it },
+                        header = editingQuestion,
+                        textAlign = alignment,
+                    )
                     PrimaryButton(if (editingDate == dateKey) "ذخیره و همگام‌سازی" else "ذخیرهٔ ویرایش و همگام‌سازی") {
                         val saveDate = editingDate
                         val saveQuestion = editingQuestion
                         store.putString("self_answer_$saveDate", answer)
                         val all = runCatching { JSONObject(store.getString("self_answers", "{}")) }.getOrDefault(JSONObject())
-                        all.put(saveDate, JSONObject().put("question", saveQuestion).put("answer", answer))
+                        all.put(
+                            saveDate,
+                            JSONObject()
+                                .put("question", saveQuestion)
+                                .put("answer", answer)
+                                .put("alignment", notebookAlignmentWire(alignment)),
+                        )
                         store.putString("self_answers", all.toString())
                         reflections = readSelfReflections(store)
                         scope.launch {

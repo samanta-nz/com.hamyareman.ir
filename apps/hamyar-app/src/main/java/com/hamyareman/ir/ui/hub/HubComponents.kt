@@ -28,6 +28,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -75,32 +80,43 @@ fun HubCard(
     slotId: String = FontCatalog.ROLE_TILE,
     onClick: () -> Unit,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    val shape = RoundedCornerShape(16.dp)
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(7.dp, shape)
+            .clip(shape)
+            .background(
+                androidx.compose.ui.graphics.Brush.linearGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .82f),
+                    ),
+                ),
+            )
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f), shape)
+            .clickable(
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
-        Row(Modifier.padding(horizontal = 8.dp, vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Box(
-                Modifier.size(40.dp),
+                Modifier
+                    .size(46.dp)
+                    .shadow(3.dp, CircleShape)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(emoji, style = MaterialTheme.typography.titleLarge)
-                }
-                Icon(
-                    Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                    modifier = Modifier.size(10.dp).align(Alignment.TopEnd),
-                )
+                Text(emoji, style = MaterialTheme.typography.titleLarge)
             }
-            Spacer(Modifier.width(9.dp))
-            Column(Modifier.weight(1f).height(46.dp)) {
+            Spacer(Modifier.width(11.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 AutoShrinkTileText(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
@@ -121,6 +137,12 @@ fun HubCard(
                     maxLines = 2,
                 )
             }
+            Icon(
+                Icons.Outlined.AutoAwesome,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = .48f),
+                modifier = Modifier.size(16.dp),
+            )
         }
     }
 }
@@ -173,65 +195,67 @@ fun HubCoverGrid(tiles: List<HubCoverTile>, slotId: String = "hub.practice.item"
 private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String) {
     val ctx = LocalContext.current
     val cover = remember(tile.id) { loadPracticeCover(ctx, tile.id) }
-    Card(modifier = modifier.clickable(onClick = tile.onClick)) {
-        Column {
-            if (cover != null) {
-                Image(
-                    bitmap = cover,
-                    contentDescription = tile.title,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
-                    // تصاویر حرکات با نسبت واقعی خود نمایش داده می‌شوند؛ crop فقط نقش
-                    // محافظ را برای کاورهای مربعی دارد و بدن/حرکت را قطع نمی‌کند.
-                    contentScale = ContentScale.Fit,
-                )
-            } else {
+    val shape = RoundedCornerShape(14.dp)
+    Column(
+        modifier
+            .shadow(8.dp, shape)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f), shape)
+            .clickable(role = Role.Button, onClick = tile.onClick),
+    ) {
+        if (cover != null) {
+            Image(
+                bitmap = cover,
+                contentDescription = tile.title,
+                modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                contentScale = ContentScale.Fit,
+            )
+        } else {
+            Box(
+                Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                contentAlignment = Alignment.Center,
+            ) {
                 Box(
-                    Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
+                    Modifier.size(58.dp).background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        CircleShape,
+                    ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Box(
-                        Modifier.size(58.dp).background(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            CircleShape,
-                        ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            Icons.Outlined.AutoAwesome,
-                            contentDescription = tile.title,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(30.dp),
-                        )
-                    }
-                }
-            }
-            // ارتفاع متن ثابت: یک سطر عنوان + دو سطر توضیح. فونت فقط کوچک می‌شود
-            // و برای متن کوتاه هرگز از اندازهٔ طراحی بزرگ‌تر نمی‌شود.
-            Column(
-                Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 7.dp, vertical = 5.dp),
-                verticalArrangement = Arrangement.spacedBy(1.dp),
-            ) {
-                AutoShrinkTileText(
-                    text = tile.title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontFamily = AppTypography.cardTitle.family,
-                        fontWeight = AppTypography.cardTitle.weight,
-                        fontSize = AppTypography.cardTitle.size,
-                    ),
-                    maxLines = 1,
-                )
-                if (tile.subtitle.isNotBlank()) {
-                    AutoShrinkTileText(
-                        text = tile.subtitle,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontFamily = AppTypography.cardSub.family,
-                            fontWeight = AppTypography.cardSub.weight,
-                            fontSize = AppTypography.cardSub.size,
-                        ),
-                        maxLines = 2,
+                    Icon(
+                        Icons.Outlined.AutoAwesome,
+                        contentDescription = tile.title,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp),
                     )
                 }
+            }
+        }
+        Column(
+            Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 7.dp, vertical = 5.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
+        ) {
+            AutoShrinkTileText(
+                text = tile.title,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = AppTypography.cardTitle.family,
+                    fontWeight = AppTypography.cardTitle.weight,
+                    fontSize = AppTypography.cardTitle.size,
+                ),
+                maxLines = 1,
+            )
+            if (tile.subtitle.isNotBlank()) {
+                AutoShrinkTileText(
+                    text = tile.subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = AppTypography.cardSub.family,
+                        fontWeight = AppTypography.cardSub.weight,
+                        fontSize = AppTypography.cardSub.size,
+                    ),
+                    maxLines = 2,
+                )
             }
         }
     }
@@ -263,10 +287,6 @@ internal fun loadPracticeCover(ctx: android.content.Context, id: String) = runCa
 
 /** گروه تاشوی منوی هاب — دسته‌بندی در تو در تو (مشترک بین مدرسه/آموزشگاه/سلامتی). */
 @Composable
-/**
- * گروه منوی هاب — نسخه‌ی مستقل (حافظه‌دارِ خودش) یا کنترل‌شده برای آکاردئون:
- * اگر open/onToggle داده شود، وضعیتش را والد نگه می‌دارد («یکی باز شد، اونیکی بسته»).
- */
 fun HubMenuGroup(
     title: String,
     subtitle: String,
@@ -277,20 +297,52 @@ fun HubMenuGroup(
 ) {
     var selfOpen by rememberSaveable { mutableStateOf(false) }
     val isOpen = open ?: selfOpen
-    Card(modifier = Modifier.fillMaxWidth().clickable {
-        if (onToggle != null) onToggle() else selfOpen = !selfOpen
-    }) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.weight(1f)) {
-                    Text(title, style = MaterialTheme.typography.titleMedium, fontFamily = AppTypography.accordionTitle.family, fontWeight = AppTypography.accordionTitle.weight, fontSize = AppTypography.accordionTitle.size)
-                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = AppTypography.accordionSub.family, fontWeight = AppTypography.accordionSub.weight, fontSize = AppTypography.accordionSub.size)
-                }
-                Icon(if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, contentDescription = if (isOpen) "بستن" else "بازکردن")
+    val shape = RoundedCornerShape(16.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .shadow(5.dp, shape)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .45f), shape)
+            .clickable(
+                role = Role.Button,
+                onClick = { if (onToggle != null) onToggle() else selfOpen = !selfOpen },
+            )
+            .padding(12.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = AppTypography.accordionTitle.family,
+                    fontWeight = AppTypography.accordionTitle.weight,
+                    fontSize = AppTypography.accordionTitle.size,
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = AppTypography.accordionSub.family,
+                    fontWeight = AppTypography.accordionSub.weight,
+                    fontSize = AppTypography.accordionSub.size,
+                )
             }
-            AnimatedVisibility(visible = isOpen) {
-                Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
-            }
+            Icon(
+                if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                contentDescription = if (isOpen) "بستن" else "بازکردن",
+            )
+        }
+        AnimatedVisibility(visible = isOpen) {
+            Column(
+                Modifier.padding(top = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) { content() }
         }
     }
 }
+

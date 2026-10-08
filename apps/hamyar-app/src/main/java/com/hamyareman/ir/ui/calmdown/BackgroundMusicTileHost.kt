@@ -44,6 +44,27 @@ private val MUSIC_TILE_URL = HmkWebViewClient.bucketUrl(MUSIC_TILE_KEY)
 private val TILE_HEIGHT = 92.dp
 
 /**
+ * سقف ارتفاعِ بخش بازشده را مستقیماً از اپ به صفحه می‌دهیم. CSS خودِ فایل از
+ * `100dvh - 92px` استفاده می‌کند و وقتی WebView هنوز ۹۲dp است نتیجه صفر می‌شود؛
+ * کاربر با لمس کادر یک صفحهٔ خالی می‌دید. این سبک روی بایت‌های فایل باکت دست نمی‌زند.
+ */
+private fun WebView.applyTileExpandedHeight(hostDp: Float) {
+    val sheet = (hostDp - TILE_HEIGHT.value).toInt().coerceAtLeast(240)
+    evaluateJavascript(
+        """
+        (function(){
+          var s=document.getElementById('hamyar-tile-fix');
+          if(!s){s=document.createElement('style');s.id='hamyar-tile-fix';(document.head||document.documentElement).appendChild(s);}
+          s.textContent='body.tilemode .backdrop.open{max-height:${sheet}px!important;min-height:200px}'+
+            'body.tilemode .sheet{max-height:${sheet - 8}px!important}'+
+            'body.tilemode .catalog{overflow-y:auto;min-height:120px}';
+        })();
+        """.trimIndent(),
+        null,
+    )
+}
+
+/**
  * دستگیرهٔ کنترل پلیر موسیقی از بیرون tile (مثلاً دکمه‌های پایین «بشنو و بخواب»
  * و تایمر خواب). قبلاً آن دکمه‌ها فقط PlaybackController بومی را کنترل می‌کردند که
  * هیچ ترکی نداشت؛ پس روی صدای واقعی (Web Audio داخل tile) اثری نداشتند.
@@ -96,6 +117,8 @@ fun BackgroundMusicTileHost(
     var keyReady by remember { mutableStateOf<Boolean?>(null) }
     var pageReady by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+    val expandedHeight = (screenHeight * 0.78f).coerceIn(420.dp, 620.dp)
+    val expandedHeightDp = rememberUpdatedState(expandedHeight.value)
 
     LaunchedEffect(Unit) {
         keyReady = runCatching { HtmlMediaKey.fetch(context, container.tables) }.getOrDefault(false)
@@ -130,6 +153,7 @@ fun BackgroundMusicTileHost(
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
                             view.post { pageReady = true }
+                            view.applyTileExpandedHeight(expandedHeightDp.value)
                             view.publishHamyarAppearance(
                                 liveAppearance.value.darkMode,
                                 liveAppearance.value.darkTheme,
@@ -173,6 +197,9 @@ fun BackgroundMusicTileHost(
             LaunchedEffect(appearance.darkMode, appearance.darkTheme) {
                 web.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
             }
+            LaunchedEffect(expanded, expandedHeightDp.value) {
+                if (expanded) web.applyTileExpandedHeight(expandedHeightDp.value)
+            }
             if (expanded) {
                 BackHandler {
                     web.evaluateJavascript(
@@ -183,7 +210,7 @@ fun BackgroundMusicTileHost(
             }
 
             // فقط یک اندازهٔ نهایی؛ بدون انیمیشنِ چندچرخه‌ای روی Android WebView.
-            val height = if (expanded) (screenHeight - 24.dp).coerceAtLeast(420.dp) else TILE_HEIGHT
+            val height = if (expanded) expandedHeight else TILE_HEIGHT
             Box(modifier.fillMaxWidth().height(height)) {
                 AndroidView(
                     factory = { web },

@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "apps/hamyar-app/src/main/assets/practice-covers"
 SIZE = 512
 
+# Legacy asset intentionally removed from the current wellness catalog.
+FORBIDDEN_IDS = {"hl-sleep-calm"}
+
 MOTIFS = {
     "hl-cycle": "calendar", "pd-child": "rest", "pd-diaph": "breath", "pd-478": "breath",
     "th-strengths": "journal", "mu-pitch": "piano", "mu-staff": "staff",
@@ -205,6 +208,19 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
+    forbidden_in_generator = FORBIDDEN_IDS.intersection(MOTIFS)
+    if forbidden_in_generator:
+        raise SystemExit(
+            "forbidden legacy practice-cover IDs present in generator: "
+            + ", ".join(sorted(forbidden_in_generator))
+        )
+
+    for legacy_id in sorted(FORBIDDEN_IDS):
+        stale = OUTPUT / f"{legacy_id}.jpg"
+        if stale.exists():
+            stale.unlink()
+            print("removed legacy", stale.relative_to(ROOT))
+
     made = skipped = 0
     for tile_id in sorted(MOTIFS):
         target = OUTPUT / f"{tile_id}.jpg"

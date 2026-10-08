@@ -1,10 +1,16 @@
 package com.hamyareman.ir
 
 import android.app.Application
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import com.hamyareman.ir.platform.core.designsystem.LockBackdrop
+import com.hamyareman.ir.platform.core.designsystem.LockVariant
 import com.hamyareman.ir.platform.core.notifications.NotificationChannels
 import com.hamyareman.ir.platform.core.notifications.Reminder
 import com.hamyareman.ir.di.AppContainer
 import com.hamyareman.ir.ui.ailearning.AI_LESSON_REMINDER_ID
+import com.hamyareman.ir.ui.components.DesignAsset
+import com.hamyareman.ir.ui.components.RemoteDesignImage
 import com.hamyareman.ir.ui.study.SchoolAlarmStore
 
 class HamyarApplication : Application() {
@@ -23,6 +29,13 @@ class HamyarApplication : Application() {
             previous?.uncaughtException(thread, error)
         }
         container = AppContainer(this)
+        // پس‌زمینهٔ تصویریِ دو قفل مستقل (اپ / فضای امن) از باکت؛ زیر آن صحنهٔ رسم‌شده با کد است.
+        LockBackdrop.provider = { variant ->
+            RemoteDesignImage(
+                key = if (variant == LockVariant.SafeSpace) DesignAsset.LOCK_SAFE else DesignAsset.LOCK_APP,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
         // اگر process نسخهٔ قبلی پیش از callback نصب بسته شد، نسخهٔ تازه در همین
         // شروع فایل APK/part را بعد از تطبیق versionCode حذف می‌کند.
         runCatching { com.hamyareman.ir.ui.update.ApkUpdate.cleanupAfterSuccessfulInstall(this) }
