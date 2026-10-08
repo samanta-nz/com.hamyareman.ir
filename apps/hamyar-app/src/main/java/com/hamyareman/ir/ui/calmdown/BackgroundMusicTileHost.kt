@@ -305,21 +305,6 @@ fun BackgroundMusicTileHost(
                     }
                 }
             }
-            else {
-                Box(
-                    modifier.fillMaxWidth().height(TILE_HEIGHT),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        CircularProgressIndicator()
-                        Text(transferTitle)
-                        if (transferProgress > 0) Text(transferProgress.toString() + "٪")
-                    }
-                }
-            }
         }
         }
     }
