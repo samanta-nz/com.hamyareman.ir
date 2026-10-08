@@ -79,60 +79,175 @@ fun BookNodeScreen(
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
 private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
+    val context = LocalContext.current
+    val url = ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY })
+    var pageReadyUrl by remember(url) {
+        mutableStateOf(url.takeIf { LessonCache.isCached(context, it) })
+    }
+    var cachedDocument by remember(url) { mutableStateOf(pageReadyUrl != null) }
+    var transferLoading by remember(url) { mutableStateOf(false) }
+    var transferTitle by remember(url) { mutableStateOf("محتوا در حال دانلود") }
+    var transferProgress by remember(url) { mutableStateOf(0) }
+    var error by remember(url) { mutableStateOf<String?>(null) }
+    var reloadToken by remember(url) { mutableIntStateOf(0) }
+
     SecureWebEffect()
-    AndroidView(
-        factory = { context ->
-            ZoomResetWebView(context).apply {
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                settings.useWideViewPort = true
-                settings.loadWithOverviewMode = true
-                settings.setSupportZoom(true)
-                settings.builtInZoomControls = true
-                settings.displayZoomControls = false
-                if (audioKey.isNotBlank()) addJavascriptInterface(TeachHtmlBridge(), "HamyarPlayer")
-                webViewClient = object : HmkWebViewClient(
-                    context.applicationContext,
-                    HmkWebViewClient.bucketHost(),
-                ) {
-                    override fun onPageFinished(view: android.webkit.WebView, url: String) {
-                        super.onPageFinished(view, url)
-                        if (audioKey.isNotBlank()) {
-                            view.evaluateJavascript(
-                                """
-                                (function(){
-                                  if(window.__hamyarSeekBound)return;
-                                  window.__hamyarSeekBound=true;
-                                  function bind(){
-                                    document.querySelectorAll('[data-seek-ms]').forEach(function(el){
-                                      if(el.dataset.hamyarSeekBound)return;
-                                      el.dataset.hamyarSeekBound='1';
-                                      el.addEventListener('click',function(ev){
-                                        var ms=parseInt(this.getAttribute('data-seek-ms')||'',10);
-                                        if(!Number.isFinite(ms)||ms<0)return;
-                                        ev.preventDefault();ev.stopPropagation();
-                                        if(window.HamyarPlayer&&window.HamyarPlayer.seek)window.HamyarPlayer.seek(ms);
-                                      },false);
-                                    });
-                                  }
-                                  bind();
-                                  new MutationObserver(bind).observe(document.documentElement,{subtree:true,childList:true});
-                                })();
-                                """.trimIndent(),
-                                null,
-                            )
+
+    LaunchedEffect(url) {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val hasCache = LessonCache.isCached(context, url)
+        if (hasCache && pageReadyUrl == null) {
+            pageReadyUrl = url
+            cachedDocument = true
+        }
+
+        withContext(Dispatchers.IO) {
+            val prepared = LessonCache.prepare(
+                ctx = context,
+                url = url,
+                onProgress = { done, total ->
+                    if (total > 0) {
+                        handler.post {
+                            transferProgress = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
                         }
-                        // محتوای HTML کتاب «سند چاپی» است؛ عمداً از تم اپ مستقل است.
+                    }
+                },
+                onStatus = { status ->
+                    when (status) {
+                        LessonCache.Freshness.CACHED -> handler.post { transferLoading = false }
+                        LessonCache.Freshness.UPDATED -> handler.post {
+                            transferTitle = "محتوا در حال بروزرسانی"
+                            transferLoading = true
+                        }
+                        LessonCache.Freshness.DOWNLOADED -> handler.post {
+                            transferTitle = "محتوا در حال دانلود"
+                            transferLoading = true
+                        }
+                    }
+                },
+            )
+            handler.post {
+                when {
+                    prepared == null && !hasCache -> {
+                        pageReadyUrl = null
+                        error = "دریافت این محتوا ممکن نشد."
+                        transferLoading = false
+                    }
+                    prepared == null && hasCache -> {
+                        transferLoading = false
+                    }
+                    prepared?.freshness == LessonCache.Freshness.CACHED -> {
+                        pageReadyUrl = url
+                        cachedDocument = true
+                        transferLoading = false
+                    }
+                    else -> {
+                        pageReadyUrl = url
+                        cachedDocument = false
+                        reloadToken++
                     }
                 }
-                loadUrl(ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY }))
             }
-        },
-        update = { },
-        modifier = Modifier.fillMaxSize(),
-        onRelease = { it.destroy() },
-    )
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (pageReadyUrl != null && error == null) {
+            AndroidView(
+                factory = { c ->
+                    ZoomResetWebView(c).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                        settings.useWideViewPort = true
+                        settings.loadWithOverviewMode = true
+                        settings.setSupportZoom(true)
+                        settings.builtInZoomControls = true
+                        settings.displayZoomControls = false
+                        if (audioKey.isNotBlank()) addJavascriptInterface(TeachHtmlBridge(), "HamyarPlayer")
+                        webViewClient = object : HmkWebViewClient(
+                            c.applicationContext,
+                            HmkWebViewClient.bucketHost(),
+                        ) {
+                            override fun onPageFinished(view: android.webkit.WebView, loadedUrl: String) {
+                                super.onPageFinished(view, loadedUrl)
+                                transferLoading = false
+                                if (audioKey.isNotBlank()) {
+                                    view.evaluateJavascript(
+                                        """
+                                        (function(){
+                                          if(window.__hamyarSeekBound)return;
+                                          window.__hamyarSeekBound=true;
+                                          function bind(){
+                                            document.querySelectorAll('[data-seek-ms]').forEach(function(el){
+                                              if(el.dataset.hamyarSeekBound)return;
+                                              el.dataset.hamyarSeekBound='1';
+                                              el.addEventListener('click',function(ev){
+                                                var ms=parseInt(this.getAttribute('data-seek-ms')||'',10);
+                                                if(!Number.isFinite(ms)||ms<0)return;
+                                                ev.preventDefault();ev.stopPropagation();
+                                                if(window.HamyarPlayer&&window.HamyarPlayer.seek)window.HamyarPlayer.seek(ms);
+                                              },false);
+                                            });
+                                          }
+                                          bind();
+                                          new MutationObserver(bind).observe(document.documentElement,{subtree:true,childList:true});
+                                        })();
+                                        """.trimIndent(),
+                                        null,
+                                    )
+                                }
+                            }
+                        }
+                        loadUrl(url)
+                    }
+                },
+                update = { view ->
+                    val tag = url + "#" + reloadToken
+                    if (view.tag != tag) {
+                        view.tag = tag
+                        view.loadUrl(url)
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+                onRelease = { it.destroy() },
+            )
+        }
+
+        when {
+            error != null -> Column(
+                Modifier.fillMaxSize().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
+                TextButton(onClick = { error = null; reloadToken++ }) { Text("تلاش دوباره") }
+            }
+            transferLoading -> Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator()
+                    Text(transferTitle, style = MaterialTheme.typography.titleMedium)
+                    if (transferProgress > 0) Text(
+                        transferProgress.toString() + "٪",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+            pageReadyUrl == null -> Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center,
+            ) {
+                androidx.compose.material3.CircularProgressIndicator()
+                Text("محتوا در حال دانلود", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
 }
 
 private sealed interface BookPdfState {
