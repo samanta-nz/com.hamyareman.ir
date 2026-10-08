@@ -12,7 +12,7 @@ data class ContentCat(
     val order: Int,
 )
 
-/** یک فایل محتوا با هر دو نشانی (Appwrite + کلید آروان). */
+/** یک فایل محتوا با شناسهٔ Appwrite و کلید مسیرِ سرور داخلی. */
 data class ContentItem(
     val id: String,
     val cat: String,
@@ -165,7 +165,7 @@ object ContentCatalog {
 
     fun item(id: String): ContentItem? = itemsById[id]?.takeIf(::belongsToEdition)
 
-    /** نگاشت همهٔ payloadهای عمومی Appwrite ← کلید قطعی و اتمیک آروان. */
+    /** نگاشت همهٔ payloadهای عمومی Appwrite ← کلید قطعی سرور داخلی. */
     fun keyFor(fileId: String): String? = mirrorKeys[fileId]
 
     /** مقصد لینک نسبی در HTMLهای آموزشی، مثل 02-handwriting.html. */
