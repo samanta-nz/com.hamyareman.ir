@@ -26,11 +26,9 @@ data class UpdateInfo(
     val name: String = "",
     /** پایین‌تر از این `versionCode` آپدیت **اجباری** می‌شود؛ `0` = هیچ‌وقت. */
     val min: Int = 0,
-    /** URL قدیمی/عمومی؛ برای payloadهای قبلی fallback منبع خارجی است. */
+    /** URL عمومی قدیمی؛ فقط اگر میزبان آن پارس‌پک باشد پذیرفته می‌شود. */
     val url: String = "",
-    /** APK روی Appwrite برای حالت خارجی. */
-    val externalUrl: String = "",
-    /** همان APK روی ParsPack برای حالت داخلی ایران. */
+    /** APK روی ParsPack؛ تنها میزبان قابل‌قبول برای دانلود نصب‌کننده. */
     val internalUrl: String = "",
     /** حجمِ تقریبیِ فایل (بایت) برای نمایش؛ `0` = نامعلوم. */
     val size: Long = 0L,
@@ -72,7 +70,6 @@ object UpdatePlan {
         name = str(json, "name"),
         min = num(json, "min").toInt(),
         url = str(json, "url"),
-        externalUrl = str(json, "externalUrl"),
         internalUrl = str(json, "internalUrl"),
         size = num(json, "size"),
         sha256 = str(json, "sha256"),
@@ -98,7 +95,7 @@ object UpdatePlan {
      * نمی‌شود (پس انتشارِ ردیفِ ناقص بی‌خطر است).
      */
     fun decisionFor(current: Int, info: UpdateInfo, bucket: Int = 0): UpdateDecision {
-        if (info.latest <= 0 || (info.url.isBlank() && info.externalUrl.isBlank() && info.internalUrl.isBlank())) {
+        if (info.latest <= 0 || UpdateSource.candidates(info).isEmpty()) {
             return UpdateDecision.None
         }
         if (info.chan != CHANNEL) return UpdateDecision.None
