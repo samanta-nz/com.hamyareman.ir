@@ -251,7 +251,6 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                 null
             }
         }
-        loadingTransfer = false
         transferProgress = 100
     }
     DisposableEffect(toolId) {
@@ -337,6 +336,7 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
                                 override fun onPageFinished(view: WebView, url: String) {
+                                    loadingTransfer = false
                                     view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
                                     view.evaluateJavascript(toolPageJs(toolId, premium), null)
                                     view.post { applyLabViewport(view) }
@@ -359,21 +359,19 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
                 }
             }
             if (loadingTransfer && pageUrl != null) {
-                                if (loadingTransfer) {
-                                    Box(
-                                        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                                        ) {
-                                            CircularProgressIndicator()
-                                            Text(transferTitle, style = MaterialTheme.typography.titleMedium)
-                                            if (transferProgress > 0) Text(transferProgress.toString() + "٪", style = MaterialTheme.typography.bodySmall)
-                                        }
-                                    }
-                                }
+                Box(
+                    Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(transferTitle, style = MaterialTheme.typography.titleMedium)
+                        if (transferProgress > 0) Text(transferProgress.toString() + "٪", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
     }
