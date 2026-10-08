@@ -256,7 +256,8 @@ internal fun encodeNotesForServer(notes: List<LessonNote>): String {
                 .put("id", n.id)
                 .put("title", n.title)
                 .put("text", n.text)
-                .put("updatedAt", n.updatedAt))
+                .put("updatedAt", n.updatedAt)
+                .put("alignment", n.alignment))
     }
     return arr.toString()
 }
