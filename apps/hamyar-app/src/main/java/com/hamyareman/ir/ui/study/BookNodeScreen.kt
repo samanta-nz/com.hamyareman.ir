@@ -89,11 +89,12 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
     var transferTitle by remember(url) { mutableStateOf("محتوا در حال دانلود") }
     var transferProgress by remember(url) { mutableStateOf(0) }
     var error by remember(url) { mutableStateOf<String?>(null) }
+    var retry by remember(url) { mutableIntStateOf(0) }
     var reloadToken by remember(url) { mutableIntStateOf(0) }
 
     SecureWebEffect()
 
-    LaunchedEffect(url) {
+    LaunchedEffect(url, retry) {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val hasCache = LessonCache.isCached(context, url)
         if (hasCache && pageReadyUrl == null) {
@@ -221,7 +222,7 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
-                TextButton(onClick = { error = null; reloadToken++ }) { Text("تلاش دوباره") }
+                TextButton(onClick = { error = null; retry++ }) { Text("تلاش دوباره") }
             }
             transferLoading -> Box(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
