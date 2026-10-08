@@ -155,8 +155,8 @@ object LessonCache {
     fun ensure(ctx: Context, url: String, onProgress: ((Int, Int) -> Unit)? = null): File? =
         prepare(ctx, url, onProgress)?.file
 
-    private fun fetchMeta(url: String): RemoteMeta? =
-        runCatching {
+    private fun fetchMeta(url: String): RemoteMeta? {
+        val head = runCatching {
             val conn = (URL(url).openConnection() as HttpURLConnection).apply {
                 connectTimeout = CONNECT_TIMEOUT_MS
                 readTimeout = READ_TIMEOUT_MS
@@ -165,8 +165,8 @@ object LessonCache {
                 setRequestProperty("Accept-Encoding", "identity")
             }
             try {
-                if (conn.responseCode !in 200..299) return null
-                RemoteMeta(
+                if (conn.responseCode !in 200..299) null
+                else RemoteMeta(
                     contentLength = conn.contentLengthLong,
                     etag = conn.getHeaderField("ETag").orEmpty(),
                     lastModified = conn.lastModified,
@@ -175,6 +175,35 @@ object LessonCache {
                 conn.disconnect()
             }
         }.getOrNull()
+
+        if (head != null) return head
+
+        // اگر HEAD رد شد، یک GET با Range کوچک طول واقعی را از Content-Range می‌گیرد.
+        return runCatching {
+            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = CONNECT_TIMEOUT_MS
+                readTimeout = READ_TIMEOUT_MS
+                instanceFollowRedirects = true
+                requestMethod = "GET"
+                setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Range", "bytes=0-" + (PROBE_BYTES - 1))
+            }
+            try {
+                if (conn.responseCode !in 200..299) return null
+                val range = conn.getHeaderField("Content-Range").orEmpty()
+                val total = range.substringAfterLast("/", "").toLongOrNull()
+                    ?: conn.contentLengthLong.takeIf { it >= 0L }
+                    ?: return null
+                conn.inputStream.use { input ->
+                    val buffer = ByteArray(PROBE_BYTES)
+                    input.read(buffer)
+                }
+                RemoteMeta(total, "", 0L)
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrNull()
+    }
 
     private fun isSameContent(
         ctx: Context,
