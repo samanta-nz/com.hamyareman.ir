@@ -93,6 +93,7 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.platform.core.common.JalaliDate
 import com.hamyareman.ir.platform.core.common.LocalStore
 import com.hamyareman.ir.platform.core.common.TableIds
+import com.hamyareman.ir.ui.study.StateSync
 import com.hamyareman.ir.platform.core.designsystem.AppTopBar
 import com.hamyareman.ir.ui.appearance.EmbeddedFonts
 import com.hamyareman.ir.ui.components.LinedNotebookInput
@@ -141,6 +142,50 @@ private fun writeNotebooks(store: LocalStore, notebooks: List<Notebook>) {
         array.put(JSONObject().put("id", n.id).put("title", n.title).put("createdAt", n.createdAt).put("cipher", n.cipher).put("alignment", n.alignment))
     }
     store.putString(NOTEBOOKS, array.toString())
+}
+
+private fun encodeNotebooks(notebooks: List<Notebook>): String =
+    JSONArray().apply {
+        notebooks.forEach { n ->
+            put(
+                JSONObject()
+                    .put("id", n.id)
+                    .put("title", n.title)
+                    .put("createdAt", n.createdAt)
+                    .put("cipher", n.cipher)
+                    .put("alignment", n.alignment),
+            )
+        }
+    }.toString()
+
+private fun decodeNotebooks(payload: String): List<Notebook> = runCatching {
+    val array = JSONArray(payload)
+    buildList {
+        for (i in 0 until array.length()) {
+            val o = array.getJSONObject(i)
+            add(
+                Notebook(
+                    id = o.getString("id"),
+                    title = o.optString("title", "یادداشت‌های روزانه"),
+                    createdAt = o.optLong("createdAt", System.currentTimeMillis()),
+                    cipher = o.optString("cipher"),
+                    alignment = o.optString("alignment", "right"),
+                ),
+            )
+        }
+    }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
+}.getOrDefault(emptyList())
+
+private fun mergeNotebooks(local: List<Notebook>, remote: List<Notebook>): List<Notebook> {
+    val byId = linkedMapOf<String, Notebook>()
+    remote.forEach { byId[it.id] = it }
+    local.forEach { localItem ->
+        val remoteItem = byId[localItem.id]
+        if (remoteItem == null || localItem.createdAt >= remoteItem.createdAt) {
+            byId[localItem.id] = localItem
+        }
+    }
+    return PersianPaging.oldestToNewest(byId.values.toList()) { item -> item.createdAt }
 }
 private const val DIARY_ENTRIES = "entries"
 private const val DIARY_COVER = "cover"
@@ -1058,25 +1103,60 @@ fun NotebooksScreen(onBack: () -> Unit) {
         },
     )
 
-    fun rowId(id: String): String =
-        "notebook_" + container.auth.cachedUserId().orEmpty().take(32) + "_" + id.take(32)
+    fun queueSnapshot(snapshot: List<Notebook>) {
+        val uid = container.auth.cachedUserId()
+            ?: runCatching { kotlinx.coroutines.runBlocking { container.auth.currentUserId() } }.getOrNull().orEmpty()
+        if (uid.isBlank()) return
+        val now = System.currentTimeMillis()
+        val payload = encodeNotebooks(snapshot)
+        StateSync.markLocal(context, StateSync.KEY_NOTEBOOKS)
+        container.sync.enqueue(
+            TableIds.APP_STATE,
+            StateSync.rowId(uid, StateSync.KEY_NOTEBOOKS),
+            mapOf(
+                "userId" to uid,
+                "key" to StateSync.KEY_NOTEBOOKS,
+                "payload" to payload,
+                "updatedAt" to now,
+            ),
+        )
+    }
 
-    fun queue(notebook: Notebook) {
-        val uid = container.auth.cachedUserId().orEmpty()
-        if (uid.isNotBlank()) {
-            container.sync.enqueue(
-                TableIds.APP_STATE,
-                rowId(notebook.id),
-                mapOf(
-                    "userId" to uid,
-                    "key" to "private_notebook",
-                    "notebookId" to notebook.id,
-                    "title" to notebook.title,
-                    "createdAt" to notebook.createdAt,
-                    "cipher" to notebook.cipher,
-                    "updatedAt" to System.currentTimeMillis(),
-                ),
-            )
+    LaunchedEffect(Unit) {
+        val uid = container.auth.cachedUserId()
+            ?: runCatching { kotlinx.coroutines.runBlocking { container.auth.currentUserId() } }.getOrNull().orEmpty()
+        if (uid.isBlank()) return@LaunchedEffect
+        val local = readNotebooks(store)
+        val localAt = StateSync.localAt(context, StateSync.KEY_NOTEBOOKS)
+        val remote = StateSync.pull(context, container.tables, uid, StateSync.KEY_NOTEBOOKS)
+        if (remote == null) {
+            if (local.isNotEmpty()) queueSnapshot(local)
+            return@LaunchedEffect
+        }
+
+        val remoteList = decodeNotebooks(remote.first)
+        if (localAt == 0L && local.isNotEmpty()) {
+            val merged = mergeNotebooks(local, remoteList)
+            if (merged != remoteList) {
+                notebooks = merged
+                writeNotebooks(store, merged)
+                queueSnapshot(merged)
+            } else if (notebooks != remoteList) {
+                notebooks = remoteList
+                writeNotebooks(store, remoteList)
+                StateSync.markSyncedAt(context, StateSync.KEY_NOTEBOOKS, remote.second)
+            }
+        } else if (remote.second > localAt) {
+            notebooks = remoteList
+            writeNotebooks(store, remoteList)
+            StateSync.markSyncedAt(context, StateSync.KEY_NOTEBOOKS, remote.second)
+        } else if (localAt > remote.second && local.isNotEmpty()) {
+            queueSnapshot(local)
+        } else if (remoteList != local) {
+            val merged = mergeNotebooks(local, remoteList)
+            notebooks = merged
+            writeNotebooks(store, merged)
+            queueSnapshot(merged)
         }
     }
 
@@ -1113,7 +1193,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                     )
                                     notebooks = listOf(item) + notebooks
                                     writeNotebooks(store, notebooks)
-                                    queue(item)
+                                    queueSnapshot(notebooks)
                                     selectedId = item.id
                                     title = ""
                                 },
@@ -1154,11 +1234,8 @@ fun NotebooksScreen(onBack: () -> Unit) {
                             IconButton(onClick = {
                                 notebooks = notebooks.filterNot { it.id == notebookItem.id }
                                 writeNotebooks(store, notebooks)
-                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                                    runCatching {
-                                        container.tables.delete(TableIds.APP_STATE, rowId(notebookItem.id))
-                                    }
-                                }
+                                queueSnapshot(notebooks)
+                                scope.launch { runCatching { container.sync.pushAll() } }
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف دفترچه")
                             }
@@ -1192,7 +1269,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                                         )
                                         notebooks = notebooks.map { if (it.id == changed.id) changed else it }
                                         writeNotebooks(store, notebooks)
-                                        queue(changed)
+                                        queueSnapshot(notebooks)
                                         writeDraft(store, NOTEBOOK_DRAFT_PREFIX + selected.id, null) { it }
                                         text = ""
                                         selectedId = null
