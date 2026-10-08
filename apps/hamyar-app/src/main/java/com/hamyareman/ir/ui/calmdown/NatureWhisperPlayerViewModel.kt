@@ -9,9 +9,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.appearance.UiPrefs
 import com.hamyareman.ir.ui.study.HmkWebViewClient
 import com.hamyareman.ir.ui.study.HtmlAudioKeepAliveService
+import com.hamyareman.ir.ui.study.HtmlMediaKey
+import com.hamyareman.ir.ui.study.LessonCache
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
@@ -36,52 +39,106 @@ class NatureWhisperPlayerViewModel : ViewModel() {
 
     val pageReady = mutableStateOf(false)
     val webViewReady = mutableStateOf(false)
+    val contentLoading = mutableStateOf(false)
+    val contentTitle = mutableStateOf("محتوا در حال دانلود")
+    val contentProgress = mutableIntStateOf(0)
     val selectedMinutes = mutableIntStateOf(0)
     val secondsLeft = mutableIntStateOf(0)
 
     private var timerJob: Job? = null
+    private var reloadToken = 0
 
     @SuppressLint("SetJavaScriptEnabled")
     fun ensureWebView(context: Context, appearance: UiPrefs) {
-        webView?.let {
-            it.onResume()
-            it.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
+        if (webView != null) {
+            webView?.onResume()
+            webView?.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
             return
         }
 
-        val web = WebView(context).apply {
-            installHamyarAppearanceBridge(appearance)
-            addJavascriptInterface(KeepAliveBridge(context.applicationContext), "HamyarHost")
-            installManagedMediaLifecycle()
+        val appContainer = LocalAppContainer.currentFor(context)
+        val hasCache = LessonCache.isCached(context, MUSIC_FULL_URL)
 
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.mediaPlaybackRequiresUserGesture = false
-            settings.cacheMode = WebSettings.LOAD_NO_CACHE
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+        viewModelScope.launch {
+            val handler = android.os.Handler(android.os.Looper.getMainLooper())
+            val prepared = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val keyReady = runCatching {
+                    HtmlMediaKey.fetch(context, appContainer.tables)
+                }.getOrDefault(false)
+                if (!keyReady) return@withContext null
 
-            webViewClient = object : HmkWebViewClient(
-                context.applicationContext,
-                HmkWebViewClient.bucketHost(),
-            ) {
-                override fun onPageFinished(view: WebView, url: String) {
-                    super.onPageFinished(view, url)
-                    view.publishHamyarAppearance(
-                        appearance.darkMode,
-                        appearance.darkTheme,
-                        cacheHit = mainDocumentWasLoadedFromCache(),
-                    )
-                    view.bindManagedMediaLifecycle(watchWebAudio = true)
-                    pageReady.value = true
+                LessonCache.prepare(
+                    ctx = context,
+                    url = MUSIC_FULL_URL,
+                    onProgress = { done, total ->
+                        if (total > 0) {
+                            val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                            handler.post { contentProgress.intValue = p }
+                        }
+                    },
+                    onStatus = { status ->
+                        when (status) {
+                            LessonCache.Freshness.CACHED -> handler.post {
+                                contentLoading.value = false
+                            }
+                            LessonCache.Freshness.UPDATED -> handler.post {
+                                contentTitle.value = "محتوا در حال بروزرسانی"
+                                contentLoading.value = true
+                            }
+                            LessonCache.Freshness.DOWNLOADED -> handler.post {
+                                contentTitle.value = "محتوا در حال دانلود"
+                                contentLoading.value = true
+                            }
+                        }
+                    },
+                )
+            }
+
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                if (prepared == null) {
+                    if (!hasCache) contentLoading.value = false
+                    return@withContext
+                }
+
+                if (webView == null) {
+                    val web = WebView(context).apply {
+                        installHamyarAppearanceBridge(appearance)
+                        addJavascriptInterface(KeepAliveBridge(context.applicationContext), "HamyarHost")
+                        installManagedMediaLifecycle()
+                        setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.mediaPlaybackRequiresUserGesture = false
+                        settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+
+                        webViewClient = object : HmkWebViewClient(
+                            context.applicationContext,
+                            HmkWebViewClient.bucketHost(),
+                        ) {
+                            override fun onPageFinished(view: WebView, url: String) {
+                                super.onPageFinished(view, url)
+                                view.publishHamyarAppearance(
+                                    appearance.darkMode,
+                                    appearance.darkTheme,
+                                    cacheHit = mainDocumentWasLoadedFromCache(),
+                                )
+                                view.bindManagedMediaLifecycle(watchWebAudio = true)
+                                pageReady.value = true
+                                contentLoading.value = false
+                            }
+                        }
+                    }
+                    webView = web
+                    webViewReady.value = true
+                    pageReady.value = false
+                    web.loadUrl(MUSIC_FULL_URL)
+                } else if (prepared.freshness != LessonCache.Freshness.CACHED) {
+                    reloadToken++
+                    webView?.loadUrl(MUSIC_FULL_URL)
                 }
             }
         }
-
-        webView = web
-        webViewReady.value = true
-        pageReady.value = false
-        web.loadUrl(MUSIC_FULL_URL)
     }
 
     fun updateAppearance(appearance: UiPrefs) {
