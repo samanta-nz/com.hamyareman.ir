@@ -79,6 +79,9 @@ import com.hamyareman.ir.platform.core.security.AppLock
 import com.hamyareman.ir.platform.core.security.BiometricPromptRunner
 import com.hamyareman.ir.platform.core.security.BiometricStatus
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.notebookAlignmentWire
+import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
 import com.hamyareman.ir.ui.components.PersianPaging
 import com.hamyareman.ir.ui.hub.layerTo
 import com.hamyareman.ir.ui.navigation.Screen
@@ -455,6 +458,7 @@ private data class FreeWritingEntry(
     val createdAt: Long,
     val title: String,
     val cipher: String,
+    val alignment: String = "right",
 )
 
 private const val FREE_WRITING_ENTRIES = "safe_free_writing_entries"
@@ -465,20 +469,43 @@ private fun readFreeWriting(container: com.hamyareman.ir.di.AppContainer): List<
         val a = JSONArray(container.store.getString(FREE_WRITING_ENTRIES, "[]"))
         buildList {
             for (i in 0 until a.length()) a.getJSONObject(i).let { o ->
-                add(FreeWritingEntry(o.optString("id"), o.optLong("createdAt"), o.optString("title"), o.optString("cipher")))
+                add(
+                    FreeWritingEntry(
+                        id = o.optString("id"),
+                        createdAt = o.optLong("createdAt"),
+                        title = o.optString("title"),
+                        cipher = o.optString("cipher"),
+                        alignment = o.optString("alignment", "right"),
+                    ),
+                )
             }
         }
     }.getOrDefault(emptyList())
     if (parsed.isNotEmpty()) return parsed.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
     val oldCipher = container.store.getString(LEGACY_FREE_WRITING, "")
     if (container.encryptor.decrypt(oldCipher).isNullOrBlank()) return emptyList()
-    return listOf(FreeWritingEntry("legacy-free-writing", System.currentTimeMillis(), "نوشتهٔ آزاد", oldCipher))
+    return listOf(
+        FreeWritingEntry(
+            id = "legacy-free-writing",
+            createdAt = System.currentTimeMillis(),
+            title = "نوشتهٔ آزاد",
+            cipher = oldCipher,
+            alignment = "right",
+        ),
+    )
 }
 
 private fun writeFreeWriting(container: com.hamyareman.ir.di.AppContainer, entries: List<FreeWritingEntry>) {
     val a = JSONArray()
     entries.forEach { e ->
-        a.put(JSONObject().put("id", e.id).put("createdAt", e.createdAt).put("title", e.title).put("cipher", e.cipher))
+        a.put(
+            JSONObject()
+                .put("id", e.id)
+                .put("createdAt", e.createdAt)
+                .put("title", e.title)
+                .put("cipher", e.cipher)
+                .put("alignment", e.alignment),
+        )
     }
     container.store.putString(FREE_WRITING_ENTRIES, a.toString())
     container.store.remove(LEGACY_FREE_WRITING)
@@ -490,6 +517,7 @@ fun SafeFreeWritingScreen(onBack: () -> Unit) {
     val container = LocalAppContainer.current
     var title by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
+    var alignment by remember { mutableStateOf(TextAlign.Right) }
     var editingId by remember { mutableStateOf<String?>(null) }
     var entries by remember { mutableStateOf(readFreeWriting(container)) }
     var notice by remember { mutableStateOf<String?>(null) }
@@ -507,17 +535,29 @@ fun SafeFreeWritingScreen(onBack: () -> Unit) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            LinedNotebookInput(text, { text = it })
+            NotebookAlignmentPicker(alignment, { alignment = it })
+            LinedNotebookInput(
+                text,
+                { text = it },
+                header = title.trim(),
+                textAlign = alignment,
+            )
             PrimaryButton(if (editingId == null) "ذخیرهٔ امن" else "ذخیرهٔ ویرایش") {
                 if (text.isBlank()) {
                     notice = "اول چیزی بنویس."
                 } else {
                     val id = editingId ?: UUID.randomUUID().toString()
                     val created = entries.firstOrNull { it.id == id }?.createdAt ?: System.currentTimeMillis()
-                    val changed = FreeWritingEntry(id, created, title.trim(), container.encryptor.encrypt(text.trim()))
+                    val changed = FreeWritingEntry(
+                        id = id,
+                        createdAt = created,
+                        title = title.trim(),
+                        cipher = container.encryptor.encrypt(text.trim()),
+                        alignment = notebookAlignmentWire(alignment),
+                    )
                     entries = PersianPaging.oldestToNewest(entries.filterNot { it.id == changed.id } + changed) { it.createdAt }
                     writeFreeWriting(container, entries)
-                    title = ""; text = ""; editingId = null
+                    title = ""; text = ""; alignment = TextAlign.Right; editingId = null
                     notice = "با رمزگذاری دستگاه ذخیره شد."
                 }
             }
@@ -531,16 +571,20 @@ fun SafeFreeWritingScreen(onBack: () -> Unit) {
                     editingId = entry.id
                     title = entry.title
                     text = plain
+                    alignment = notebookTextAlignFromWire(entry.alignment)
                     notice = "این نوشته برای ویرایش باز شد."
                 }) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(entry.title.ifBlank { "بدون عنوان" }, style = MaterialTheme.typography.titleSmall)
                         Text(JalaliDate.stampFa(entry.createdAt), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                        Text(plain, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            plain,
+                            style = MaterialTheme.typography.bodyMedium.copy(textAlign = notebookTextAlignFromWire(entry.alignment)),
+                        )
                         TextButton(onClick = {
                             entries = entries.filterNot { it.id == entry.id }
                             writeFreeWriting(container, entries)
-                            if (editingId == entry.id) { editingId = null; title = ""; text = "" }
+                            if (editingId == entry.id) { editingId = null; title = ""; text = ""; alignment = TextAlign.Right }
                         }) { Text("حذف") }
                     }
                 }
