@@ -5,7 +5,10 @@ import android.graphics.Color
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,6 +32,7 @@ import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.appearance.LocalUiPrefs
 import com.hamyareman.ir.ui.study.HmkWebViewClient
 import com.hamyareman.ir.ui.study.HtmlMediaKey
+import com.hamyareman.ir.ui.study.LessonCache
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
@@ -241,7 +245,7 @@ fun BackgroundMusicTileHost(
                         }
                     }
                     installManagedMediaLifecycle()
-                    loadUrl(MUSIC_TILE_URL)
+                    tag = MUSIC_TILE_URL + "#0"
                 }
             }
             handle?.web = web
@@ -273,6 +277,13 @@ fun BackgroundMusicTileHost(
             Box(modifier.fillMaxWidth().height(height)) {
                 AndroidView(
                     factory = { web },
+                    update = { view ->
+                        val tag = MUSIC_TILE_URL + "#" + reloadToken
+                        if (view.tag != tag) {
+                            view.tag = tag
+                            view.loadUrl(MUSIC_TILE_URL)
+                        }
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
                 if (!pageReady) {
@@ -283,9 +294,9 @@ fun BackgroundMusicTileHost(
                         Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.76f)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        androidx.compose.foundation.layout.Column(
+                        Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             CircularProgressIndicator()
                             Text(transferTitle)
@@ -293,8 +304,6 @@ fun BackgroundMusicTileHost(
                         }
                     }
                 }
-            }
-            }
             }
         }
         }
