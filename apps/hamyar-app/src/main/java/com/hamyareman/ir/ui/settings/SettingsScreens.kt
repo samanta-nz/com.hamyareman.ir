@@ -262,8 +262,10 @@ fun AppLockScreen(onBack: () -> Unit) {
                     } else {
                         val cleared = runCatching {
                             // clearPin خودش hash، salt، pattern و timeout را اتمیک از SharedPreferences حذف می‌کند.
-                            lock.clearPin()
                             bio.clear()
+                            lock.clearPin()
+                            // این session همین‌جا unlocked می‌ماند؛ state قدیمیِ lifecycle نباید قفل را برگرداند.
+                            lock.markUnlocked()
                         }.isSuccess
                         if (cleared) {
                             hasPin = false
