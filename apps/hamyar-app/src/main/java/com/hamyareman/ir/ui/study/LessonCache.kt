@@ -102,6 +102,7 @@ object LessonCache {
         ctx: Context,
         url: String,
         onProgress: ((Int, Int) -> Unit)? = null,
+        onStatus: ((Freshness) -> Unit)? = null,
     ): PrepareResult? {
         val canonicalUrl = canonical(url)
         val target = fileFor(ctx, canonicalUrl)
@@ -113,6 +114,7 @@ object LessonCache {
             if (hasCache) {
                 val now = System.currentTimeMillis()
                 if (now - (recentChecks[key] ?: 0L) < FRESH_CHECK_TTL_MS) {
+                    onStatus?.invoke(Freshness.CACHED)
                     return PrepareResult(target, Freshness.CACHED)
                 }
 
@@ -125,9 +127,11 @@ object LessonCache {
                 if (isSameContent(ctx, canonicalUrl, target, remote)) {
                     writeMeta(ctx, canonicalUrl, remote)
                     recentChecks[key] = now
+                    onStatus?.invoke(Freshness.CACHED)
                     return PrepareResult(target, Freshness.CACHED)
                 }
 
+                onStatus?.invoke(Freshness.UPDATED)
                 val downloaded = runCatching {
                     download(canonicalUrl, target, onProgress)
                 }.getOrNull() ?: return null
@@ -137,6 +141,7 @@ object LessonCache {
                 return PrepareResult(downloaded, Freshness.UPDATED)
             }
 
+            onStatus?.invoke(Freshness.DOWNLOADED)
             val downloaded = runCatching {
                 download(canonicalUrl, target, onProgress)
             }.getOrNull() ?: return null
