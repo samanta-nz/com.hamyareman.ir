@@ -4,7 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/hamyar-app/build.gradle.kts"
+      - "apps/hamyar-app/**"
+      - "shared/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
   workflow_dispatch:
     inputs:
       force_update:
@@ -123,6 +128,10 @@ jobs:
               out.write(f"VERSION_NAME={name}\n")
               out.write(f"VERSION_CODE={code}\n")
               out.write(f"RELEASE_NEEDED={'true' if needed else 'false'}\n")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"version_name={name}\n")
+              out.write(f"version_code={code}\n")
+              out.write(f"release_needed={'true' if needed else 'false'}\n")
 
           print(f"version={name}")
           print(f"versionCode={code}")
@@ -130,11 +139,11 @@ jobs:
           PY
 
       - name: Stop on non-version build.gradle change
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         run: echo "نسخه تغییر نکرده است؛ این اجرا فقط بررسی شد و Release جدید نمی‌سازد."
 
       - name: Verify release secrets
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
@@ -146,7 +155,7 @@ jobs:
           test -n "\${PARSPACK_SECRET_KEY:-}" || { echo "::error::PARSPACK_SECRET_KEY تنظیم نشده است"; exit 1; }
 
       - name: Test, compile and build release APK
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' || github.event_name == 'push' }}
         run: |
           set -euo pipefail
           ./gradlew --console=plain --stacktrace \
@@ -156,7 +165,7 @@ jobs:
             :hamyar-app:assembleP09Release
 
       - name: Collect and verify APK
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p dist ci-report
@@ -187,7 +196,7 @@ jobs:
           printf '%s  %s\n' "$APK_SHA256" "$APK" > ci-report/apk.sha256
 
       - name: Prepare release notes
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
           RELEASE_NOTES_INPUT: ${{ inputs.release_notes }}
         run: |
@@ -205,7 +214,7 @@ jobs:
           } >> release-notes.md
 
       - name: Publish and archive GitHub Release
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -226,7 +235,7 @@ jobs:
           echo "EXTERNAL_URL=$URL" >> "$GITHUB_ENV"
 
       - name: Upload to ParsPack and verify anonymous read
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
           PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
@@ -241,7 +250,7 @@ jobs:
             --env-name INTERNAL_URL
 
       - name: Publish update state to Appwrite and verify read-back
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
@@ -293,7 +302,7 @@ jobs:
           PY
 
       - name: Persist successful release state
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -362,7 +371,7 @@ jobs:
           git push origin HEAD:main
 
       - name: Final success summary
-        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        if: ${{ steps.version.outputs.release_needed == 'true' }}
         run: |
           echo "COMPILE=SUCCESS"
           echo "BUILD=SUCCESS"
