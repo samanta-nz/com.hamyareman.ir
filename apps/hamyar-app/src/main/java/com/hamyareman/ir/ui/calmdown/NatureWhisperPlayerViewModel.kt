@@ -15,6 +15,7 @@ import com.hamyareman.ir.ui.study.HmkWebViewClient
 import com.hamyareman.ir.ui.study.HtmlAudioKeepAliveService
 import com.hamyareman.ir.ui.study.HtmlMediaKey
 import com.hamyareman.ir.ui.study.LessonCache
+import com.hamyareman.ir.platform.core.appwrite.TablesDbService
 import com.hamyareman.ir.ui.study.bindManagedMediaLifecycle
 import com.hamyareman.ir.ui.study.installHamyarAppearanceBridge
 import com.hamyareman.ir.ui.study.installManagedMediaLifecycle
@@ -46,24 +47,21 @@ class NatureWhisperPlayerViewModel : ViewModel() {
     val secondsLeft = mutableIntStateOf(0)
 
     private var timerJob: Job? = null
-    private var reloadToken = 0
-
     @SuppressLint("SetJavaScriptEnabled")
-    fun ensureWebView(context: Context, appearance: UiPrefs) {
+    fun ensureWebView(context: Context, appearance: UiPrefs, tables: TablesDbService) {
         if (webView != null) {
             webView?.onResume()
             webView?.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
             return
         }
 
-        val appContainer = LocalAppContainer.currentFor(context)
         val hasCache = LessonCache.isCached(context, MUSIC_FULL_URL)
 
         viewModelScope.launch {
             val handler = android.os.Handler(android.os.Looper.getMainLooper())
             val prepared = withContext(kotlinx.coroutines.Dispatchers.IO) {
                 val keyReady = runCatching {
-                    HtmlMediaKey.fetch(context, appContainer.tables)
+                    HtmlMediaKey.fetch(context, tables)
                 }.getOrDefault(false)
                 if (!keyReady) return@withContext null
 
@@ -134,7 +132,6 @@ class NatureWhisperPlayerViewModel : ViewModel() {
                     pageReady.value = false
                     web.loadUrl(MUSIC_FULL_URL)
                 } else if (prepared.freshness != LessonCache.Freshness.CACHED) {
-                    reloadToken++
                     webView?.loadUrl(MUSIC_FULL_URL)
                 }
             }
