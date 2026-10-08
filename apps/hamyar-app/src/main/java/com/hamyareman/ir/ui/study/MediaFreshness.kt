@@ -4,26 +4,12 @@ import android.content.Context
 import com.hamyareman.ir.platform.core.common.LocalStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * «تازه‌بودنِ محتوای دانلودشده» — کانالِ محتواییِ آپدیت، بدونِ APK.
- *
- * مسئله: فایل‌های صوتی/PDFِ تدریس روی سرور عوض می‌شوند (بازنویسیِ درس، اصلاحِ
- * PDF، صوتِ بهتر). نسخه‌ی دانلودشده‌ی روی گوشی بی‌خبر کهنه می‌ماند و کاربر
- * فکر می‌کند محتوا همان است.
- *
- * راه‌حل: Appwrite برای هر فایل یک `signature` (اثرِ انگشتِ محتوا) و
- * `sizeOriginal` می‌دهد و همین متادیتا **بدونِ کلیدِ API** خوانده می‌شود
- * (آزمونِ زنده: `GET /storage/buckets/<b>/files/<f>` با فقط هدرِ project و بدونِ
- * احراز هویت، ۲۰۰ می‌دهد). پس:
- *  ۱. هنگامِ هر دانلودِ موفق، اثرِ انگشتِ سرور برای آن کلید ذخیره می‌شود؛
- *  ۲. هنگامِ بررسی، اثرِ انگشتِ فعلیِ سرور با ذخیره‌شده مقایسه می‌شود؛
- *  ۳. تفاوت ⇒ فقط همان فایل «کهنه» است و فقط همان دانلود می‌شود.
- *
- * یعنی «فقط فایل‌های تغییریافته» — نه کلِ اپ، نه کلِ محتوا.
+ * بررسی تازه‌بودن دانلودهای صوتی/PDF با متادیتای HTTP سرور پارس‌پک.
+ * هیچ درخواست فایل به آدرس باکت Appwrite یا آروان ارسال نمی‌شود.
  */
 object MediaFreshness {
 
@@ -34,15 +20,12 @@ object MediaFreshness {
     private const val P_PDF = "p_"
     private const val KEY_LAST = "last_check"
 
-    /** عمرِ بررسی: شش ساعت (تا هر بار بازکردنِ صفحه، چند درخواست بی‌مورد نرود). */
+    /** عمر بررسی: شش ساعت. */
     const val TTL_MS = 6L * 60L * 60L * 1000L
 
-    /** یک فایلِ دانلودشده که می‌تواند کهنه شود. */
     data class Item(
-        /** کلیدِ وضعیت در صفحهٔ دانلود (همان `statusKey`). */
         val key: String,
         val fileId: String,
-        /** کلیدِ گاوصندوق برای صوت؛ برای PDF بی‌استفاده. */
         val cacheKey: String,
         val isPdf: Boolean,
     )
@@ -60,35 +43,39 @@ object MediaFreshness {
     fun lastCheckAt(ctx: Context): Long = store(ctx).getLong(KEY_LAST, 0L)
     fun isFresh(ctx: Context): Boolean = System.currentTimeMillis() - lastCheckAt(ctx) < TTL_MS
 
-    /** نشانیِ **متادیتا** (نه `view`): همان چیزی که اثرِ انگشت را برمی‌گرداند. */
+    /** URL جاری همان فایل روی پارس‌پک، نه API متادیتای باکت Appwrite. */
     private fun metaUrl(fileId: String): String =
-        // metadata JSON فقط از API Appwrite خوانده می‌شود؛ freshness از مبدأ حقیقت می‌آید.
-        StudyMedia.externalUrl(StudyMedia.resolveFileId(fileId)).substringBefore("/view")
+        StudyMedia.viewUrl(StudyMedia.resolveFileId(fileId))
 
     /**
-     * اثرِ انگشتِ محتوای فایل روی سرور — `signature|size|updatedAt`.
-     * `null` = نشد (آفلاین/نبودِ فایل).
+     * امضای HTTP با ETag، طول فایل و Last-Modified.
+     * null یعنی URL یا متادیتای قابل‌استفاده در دسترس نیست.
      */
     fun remoteSignatureBlocking(fileId: String): String? = runCatching {
-        val conn = (URL(metaUrl(fileId)).openConnection() as HttpURLConnection).apply {
+        val url = metaUrl(fileId).takeIf { it.isNotBlank() } ?: return@runCatching null
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
             connectTimeout = 8000
             readTimeout = 8000
             instanceFollowRedirects = true
+            requestMethod = "HEAD"
+            setRequestProperty("Accept-Encoding", "identity")
         }
         try {
-            conn.connect()
             if (conn.responseCode !in 200..299) return@runCatching null
-            val body = conn.inputStream.use { String(it.readBytes(), Charsets.UTF_8) }
-            val o = JSONObject(body)
-            val sig = o.optString("signature").trim()
-            if (sig.isEmpty()) null
-            else sig + "|" + o.optLong("sizeOriginal") + "|" + o.optString("\$updatedAt")
+            val etag = conn.getHeaderField("ETag").orEmpty().trim()
+            val size = conn.getHeaderField("Content-Length")?.toLongOrNull()
+                ?: conn.contentLengthLong
+            val modified = conn.getHeaderField("Last-Modified").orEmpty().ifBlank {
+                conn.lastModified.takeIf { it > 0L }?.toString().orEmpty()
+            }
+            if (etag.isBlank() && size < 0L && modified.isBlank()) return@runCatching null
+            listOf(etag, size.toString(), modified).joinToString("|")
         } finally {
             runCatching { conn.disconnect() }
         }
     }.getOrNull()
 
-    /** ثبتِ یک دانلودِ موفق: شناسه‌ها + اثرِ انگشتِ سرور در همان لحظه. */
+    /** ثبت دانلود موفق: شناسه‌ها و امضای HTTP فعلی. */
     fun rememberDownload(ctx: Context, key: String, fileId: String, cacheKey: String, isPdf: Boolean) {
         val s = store(ctx)
         s.putString(P_ID + key, fileId)
@@ -97,7 +84,7 @@ object MediaFreshness {
         remoteSignatureBlocking(fileId)?.let { s.putString(P_SIG + key, it) }
     }
 
-    /** فهرستِ فایل‌هایی که تا حالا دانلود شده‌اند. */
+    /** فهرست فایل‌هایی که تا حالا دانلود شده‌اند. */
     fun downloaded(ctx: Context): List<Item> = store(ctx)
         .keysWithPrefix(P_ID)
         .mapNotNull { k ->
@@ -116,12 +103,7 @@ object MediaFreshness {
         store(ctx).remove(P_ID + key, P_CK + key, P_PDF + key, P_SIG + key)
     }
 
-    /**
-     * بررسیِ همه‌ی فایل‌های دانلودشده: کدام‌ها روی سرور عوض شده‌اند؟
-     *
-     * اثرِ انگشتِ سرور همان چیزی است که هنگامِ دانلود ثبت شده؛ اگر نداشته باشیم
-     * (مثلاً دانلودِ نسخه‌های قدیمیِ اپ) فقط ثبت می‌شود و «کهنه» اعلام نمی‌شود.
-     */
+    /** بررسی همه دانلودهای ثبت‌شده؛ اختلاف امضا یعنی فایل کهنه است. */
     suspend fun findStale(ctx: Context): Check = withContext(Dispatchers.IO) {
         val s = store(ctx)
         val items = downloaded(ctx)
