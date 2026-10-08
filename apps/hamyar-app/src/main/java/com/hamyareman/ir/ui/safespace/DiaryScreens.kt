@@ -106,7 +106,6 @@ import com.hamyareman.ir.ui.components.PersianPaging
 import com.hamyareman.ir.ui.components.nextRegisteredTitle
 import com.hamyareman.ir.ui.components.notebookAlignmentWire
 import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
-import com.hamyareman.ir.ui.study.SecureWebEffect
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -211,7 +210,7 @@ private fun readDiary(store: LocalStore): List<DiaryEntry> = runCatching {
                 ),
             )
         }
-    }.sortedByDescending { it.createdAt }
+    }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
 
 private fun writeDiary(store: LocalStore, entries: List<DiaryEntry>) {

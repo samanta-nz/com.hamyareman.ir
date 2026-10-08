@@ -25,4 +25,13 @@ class PersianPagingTest {
         assertEquals(1, PersianPaging.indexAfterSwipe(current = 2, count = 4, forward = false))
         assertEquals(0, PersianPaging.indexAfterSwipe(current = 0, count = 4, forward = false))
     }
+    @Test
+    fun `oldest first keeps newest item on the physical left in rtl`() {
+        data class Entry(val id: String, val createdAt: Long)
+        val ordered = PersianPaging.oldestToNewest(
+            listOf(Entry("new", 30), Entry("old", 10), Entry("mid", 20)),
+        ) { it.createdAt }
+        assertEquals(listOf("old", "mid", "new"), ordered.map { it.id })
+    }
+
 }

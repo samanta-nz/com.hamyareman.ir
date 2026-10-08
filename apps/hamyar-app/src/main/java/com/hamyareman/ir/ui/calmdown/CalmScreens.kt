@@ -210,7 +210,7 @@ private fun readEncryptedEntries(store: LocalStore, key: String): List<JournalEn
             val row = array.getJSONObject(i)
             add(JournalEntry(row.optString("id"), row.optLong("createdAt"), row.optString("cipher")))
         }
-    }.sortedByDescending { it.createdAt }
+    }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
 
 private fun writeEncryptedEntries(store: LocalStore, key: String, entries: List<JournalEntry>) {
