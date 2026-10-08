@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, New-graphic]
   workflow_dispatch:
 
 # یک جاب، فقط نهمِ دیباگ — بدون ادمین/R8/lint/تست تکراری تا سهمیهٔ Actions زود تمام نشود.
@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   android:
+    if: github.ref_name == 'main' || contains(github.event.head_commit.message, '[ci-build]')
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
@@ -47,7 +48,7 @@ jobs:
           echo "ASSET=$ASSET" >> "$GITHUB_ENV"
           ls -l "dist/$ASSET"
       - name: انتشارِ APK روی Release (ci-apk)
-        if: success()
+        if: success() && github.ref_name == 'main'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
