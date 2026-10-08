@@ -6,14 +6,13 @@ import java.net.URL
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
-/** نقشهٔ رسانه‌های کتاب و صوت روی سرور داخلی و شناسهٔ فضای ذخیره‌سازی جاری. */
+/** مسیر رسانه‌های کتاب و صوت؛ فایل‌های محتوایی روی پارس‌پک هستند. */
 object StudyMedia {
+    // باکت Appwrite فقط برای ارسال فیش اشتراک استفاده می‌شود؛ نه HTMLهای محتوا.
     const val BUCKET = "6abb564d00155cc56d65"
 
     fun videoIds(packId: String): List<String> =
-        listOf("${packId.replace("_", "-")}-V01.mp4")
-
-    fun externalUrl(fileId: String): String = ServerResolver.external(fileId)
+        listOf(packId.replace("_", "-") + "-V01.mp4")
 
     /**
      * کلید cache امن و یکتا برای یک شیء باکت.
@@ -32,8 +31,8 @@ object StudyMedia {
     }
 
     /**
-     * نشانی فایل روی پارس‌پک. فایل‌های کتابِ تازه با کلید واقعی باکت پاس داده
-     * می‌شوند؛ legacy IDs همچنان از server-map پیدا می‌شوند.
+     * URL فایل روی پارس‌پک. کلید کامل باکت مستقیم و شناسه‌های قدیمی از server-map
+     * به کلید مسیر فعلی تبدیل می‌شوند؛ هیچ URL خارجی برای محتوا ساخته نمی‌شود.
      */
     fun candidateUrls(fileId: String): List<String> = when {
         fileId.startsWith("Bucket/") -> listOf(ServerResolver.internal(fileId))
@@ -44,8 +43,6 @@ object StudyMedia {
 
     fun candidateIds(fileId: String): List<String> {
         if (fileId.isBlank()) return emptyList()
-        // کلید کامل، خودِ شناسهٔ قطعی است؛ تغییر نام‌های قدیمی نباید روی آن
-        // حدس اضافه کند.
         if (fileId.startsWith("Bucket/")) return listOf(fileId)
 
         val out = linkedSetOf(fileId)
@@ -62,13 +59,9 @@ object StudyMedia {
     }
 
     private val resolved = ConcurrentHashMap<String, String>()
-    /** فایل‌هایی که روی سرور نیستند — تا هر بار درخواستِ بی‌هوده نفرستیم. */
     private val missing = ConcurrentHashMap.newKeySet<String>()
 
-    /**
-     * آیا هیچ‌کدام از نام‌های محتمل این صوت روی باکت هست؟
-     * (پیش‌نمایش قبل از پخش تا پلیر روی فایلِ غایب گیر نکند.)
-     */
+    /** آیا هیچ‌کدام از نام‌های محتمل این صوت روی باکت هست؟ */
     fun audioExists(fileId: String): Boolean {
         if (fileId.isBlank()) return false
         if (missing.contains(fileId)) return false
@@ -77,7 +70,6 @@ object StudyMedia {
         return ok
     }
 
-    /** پاک‌کردن حافظه‌ی «نیست» — برای دکمه‌ی بررسی دوباره. */
     fun forgetMissing(fileId: String) { missing.remove(fileId) }
 
     fun resolveFileId(fileId: String): String {
