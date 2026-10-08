@@ -67,6 +67,9 @@ object StateSync {
     ): Boolean = withContext(Dispatchers.IO) {
         if (uid.isBlank()) return@withContext false
         val now = System.currentTimeMillis()
+        // snapshot محلی پیش از تماس شبکه نگه داشته می‌شود؛ قطع شبکه نباید تغییرات را از Sync cache حذف کند.
+        store(ctx).putString("local_$key", payload)
+        store(ctx).putLong("at_$key", now)
         val res = tables.upsert(
             TABLE,
             rowId(uid, key),
@@ -80,8 +83,6 @@ object StateSync {
         )
         val ok = res is AppResult.Ok
         if (ok) {
-            store(ctx).putString("local_$key", payload)
-            store(ctx).putLong("at_$key", now)
             store(ctx).putLong(KEY_LAST, now)
             store(ctx).remove("err_$key")
         } else {
