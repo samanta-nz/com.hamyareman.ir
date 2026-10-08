@@ -1104,8 +1104,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
     )
 
     fun queueSnapshot(snapshot: List<Notebook>) {
-        val uid = container.auth.cachedUserId()
-            ?: runCatching { kotlinx.coroutines.runBlocking { container.auth.currentUserId() } }.getOrNull().orEmpty()
+        val uid = container.auth.cachedUserId().orEmpty()
         if (uid.isBlank()) return
         val now = System.currentTimeMillis()
         val payload = encodeNotebooks(snapshot)
@@ -1120,6 +1119,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
                 "updatedAt" to now,
             ),
         )
+        scope.launch { runCatching { container.sync.pushAll() } }
     }
 
     LaunchedEffect(Unit) {
