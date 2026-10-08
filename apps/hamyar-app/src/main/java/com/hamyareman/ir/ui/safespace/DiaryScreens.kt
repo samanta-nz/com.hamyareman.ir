@@ -1123,8 +1123,7 @@ fun NotebooksScreen(onBack: () -> Unit) {
     }
 
     LaunchedEffect(Unit) {
-        val uid = container.auth.cachedUserId()
-            ?: runCatching { kotlinx.coroutines.runBlocking { container.auth.currentUserId() } }.getOrNull().orEmpty()
+        val uid = container.auth.cachedUserId().orEmpty()
         if (uid.isBlank()) return@LaunchedEffect
         val local = readNotebooks(store)
         val localAt = StateSync.localAt(context, StateSync.KEY_NOTEBOOKS)
