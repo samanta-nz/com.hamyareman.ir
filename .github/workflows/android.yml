@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main, New-graphic]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 # یک جاب، فقط نهمِ دیباگ — بدون ادمین/R8/lint/تست تکراری تا سهمیهٔ Actions زود تمام نشود.
@@ -12,7 +14,7 @@ permissions:
 
 jobs:
   android:
-    if: github.ref_name == 'main' || contains(github.event.head_commit.message, '[ci-build]')
+    if: github.event_name == 'pull_request' || github.ref_name == 'main' || contains(github.event.head_commit.message, '[ci-build]')
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
