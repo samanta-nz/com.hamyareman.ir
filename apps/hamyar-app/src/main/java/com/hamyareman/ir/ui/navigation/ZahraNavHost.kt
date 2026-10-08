@@ -459,7 +459,7 @@ fun ZahraNavHost() {
                             ctx, fetched.grade, true, fetched.firstName, fetched.subscription, fetched.gender)
                     }
                     if (uid.isNotBlank()) {
-                        runCatching { com.hamyareman.ir.ui.profile.AvatarSync.pull(ctx, uid) }
+                        runCatching { com.hamyareman.ir.ui.profile.AvatarSync.pull(ctx, container.storage, uid) }
                     }
                     loading = false
                 }
