@@ -600,6 +600,14 @@ private fun FreeAudioReader(book: FreeStudyBook) {
 private fun FreeHtmlReader(book: FreeStudyBook) {
     val ctx = LocalContext.current
     val container = LocalAppContainer.current
+    val url = StudyMedia.viewUrl(book.htmlKey)
+    var readyUrl by remember(book.htmlKey) {
+        mutableStateOf(url.takeIf { it.isNotBlank() && LessonCache.isCached(ctx, it) })
+    }
+    var transferLoading by remember(book.htmlKey) { mutableStateOf(false) }
+    var transferTitle by remember(book.htmlKey) { mutableStateOf("محتوا در حال دانلود") }
+    var transferProgress by remember(book.htmlKey) { mutableIntStateOf(0) }
+    var reloadToken by remember(book.htmlKey) { mutableIntStateOf(0) }
     var scrollY by remember { mutableIntStateOf(FreeReadingState.pos(ctx, book.id).toInt()) }
 
     LaunchedEffect(book.id) {
@@ -607,29 +615,126 @@ private fun FreeHtmlReader(book: FreeStudyBook) {
             delay(15_000L)
             FreeReadingState.save(ctx, book.id, scrollY.toLong(), 100L, if (scrollY > 0) "reading" else "unread")
             val uid = container.auth.cachedUserId().orEmpty()
-            if (uid.isNotBlank()) FreeStudyCatalog.queueProgress(container.sync, uid, book, scrollY.toLong(), 100L, "reading")
+            if (uid.isNotBlank()) {
+                FreeStudyCatalog.queueProgress(
+                    container.sync, uid, book, scrollY.toLong(), 100L, "reading",
+                )
+            }
         }
     }
 
-    AndroidView(
-        factory = { context ->
-            ZoomResetWebView(context).apply {
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.cacheMode = android.webkit.WebSettings.LOAD_CACHE_ELSE_NETWORK
-                webViewClient = object : HmkWebViewClient(context.applicationContext, HmkWebViewClient.bucketHost()) {
-                    override fun onPageFinished(view: android.webkit.WebView, url: String) {
-                        super.onPageFinished(view, url)
-                        view.scrollTo(0, scrollY)
+    LaunchedEffect(book.htmlKey) {
+        if (url.isBlank()) return@LaunchedEffect
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        withContext(Dispatchers.IO) {
+            val prepared = LessonCache.prepare(
+                ctx = ctx,
+                url = url,
+                onProgress = { done, total ->
+                    if (total > 0) {
+                        handler.post {
+                            transferProgress = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                        }
+                    }
+                },
+                onStatus = { status ->
+                    when (status) {
+                        LessonCache.Freshness.CACHED -> handler.post { transferLoading = false }
+                        LessonCache.Freshness.UPDATED -> handler.post {
+                            transferTitle = "محتوا در حال بروزرسانی"
+                            transferLoading = true
+                        }
+                        LessonCache.Freshness.DOWNLOADED -> handler.post {
+                            transferTitle = "محتوا در حال دانلود"
+                            transferLoading = true
+                        }
+                    }
+                },
+            )
+            handler.post {
+                when {
+                    prepared == null && !LessonCache.isCached(ctx, url) -> {
+                        readyUrl = null
+                        transferLoading = false
+                    }
+                    prepared?.freshness == LessonCache.Freshness.CACHED -> {
+                        readyUrl = url
+                        transferLoading = false
+                    }
+                    prepared != null -> {
+                        readyUrl = url
+                        reloadToken++
                     }
                 }
-                setOnScrollChangeListener { _, _, y, _, _ -> scrollY = y }
-                loadUrl(StudyMedia.viewUrl(book.htmlKey))
             }
-        },
-        modifier = Modifier.fillMaxSize(),
-        onRelease = { it.destroy() },
-    )
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (readyUrl != null) {
+            AndroidView(
+                factory = { context ->
+                    ZoomResetWebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
+                        webViewClient = object : HmkWebViewClient(
+                            context.applicationContext,
+                            HmkWebViewClient.bucketHost(),
+                        ) {
+                            override fun onPageFinished(view: android.webkit.WebView, loadedUrl: String) {
+                                super.onPageFinished(view, loadedUrl)
+                                transferLoading = false
+                                view.scrollTo(0, scrollY)
+                            }
+                        }
+                        setOnScrollChangeListener { _, _, y, _, _ -> scrollY = y }
+                        tag = url + "#0"
+                        loadUrl(url)
+                    }
+                },
+                update = { view ->
+                    val tag = url + "#" + reloadToken
+                    if (view.tag != tag) {
+                        view.tag = tag
+                        view.loadUrl(url)
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+                onRelease = { it.destroy() },
+            )
+
+            if (transferLoading) {
+                Box(
+                    Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(transferTitle, style = MaterialTheme.typography.titleMedium)
+                        if (transferProgress > 0) Text(transferProgress.toString() + "٪")
+                    }
+                }
+            }
+        } else {
+            Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CircularProgressIndicator()
+                    Text(transferTitle, style = MaterialTheme.typography.titleMedium)
+                    if (transferProgress > 0) Text(transferProgress.toString() + "٪")
+                }
+            }
+        }
+    }
     Spacer(Modifier.height(10.dp))
     BookCommentsPanel(bookId = book.id, modifier = Modifier.fillMaxWidth())
 }
