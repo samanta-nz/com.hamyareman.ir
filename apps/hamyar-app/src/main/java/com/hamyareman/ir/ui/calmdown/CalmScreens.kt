@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.hamyareman.ir.platform.core.common.JalaliDate
@@ -35,6 +36,9 @@ import com.hamyareman.ir.platform.core.designsystem.SectionCard
 import com.hamyareman.ir.LocalAppContainer
 import com.hamyareman.ir.ui.navigation.Screen
 import com.hamyareman.ir.ui.components.LinedNotebookInput
+import com.hamyareman.ir.ui.components.NotebookAlignmentPicker
+import com.hamyareman.ir.ui.components.notebookAlignmentWire
+import com.hamyareman.ir.ui.components.notebookTextAlignFromWire
 import com.hamyareman.ir.ui.components.PersianPaging
 import org.json.JSONArray
 import org.json.JSONObject
@@ -60,6 +64,7 @@ private data class JournalEntry(
     val createdAt: Long,
     val cipher: String,
     val title: String = "",
+    val alignment: String = "right",
 )
 
 private const val JOURNAL_KEY = "journal_entries"
@@ -69,7 +74,15 @@ private fun readJournal(store: LocalStore): List<JournalEntry> = runCatching {
     buildList {
         for (i in 0 until array.length()) {
             val o = array.getJSONObject(i)
-            add(JournalEntry(o.optString("id"), o.optLong("createdAt"), o.optString("cipher"), o.optString("title")))
+            add(
+                JournalEntry(
+                    id = o.optString("id"),
+                    createdAt = o.optLong("createdAt"),
+                    cipher = o.optString("cipher"),
+                    title = o.optString("title"),
+                    alignment = o.optString("alignment", "right"),
+                ),
+            )
         }
     }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
@@ -82,7 +95,8 @@ private fun writeJournal(store: LocalStore, entries: List<JournalEntry>) {
                 .put("id", entry.id)
                 .put("createdAt", entry.createdAt)
                 .put("cipher", entry.cipher)
-                .put("title", entry.title),
+                .put("title", entry.title)
+                .put("alignment", entry.alignment),
         )
     }
     store.putString(JOURNAL_KEY, array.toString())
@@ -93,6 +107,7 @@ fun JournalScreen(onBack: () -> Unit) {
     val c = LocalAppContainer.current
     var title by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
+    var alignment by remember { mutableStateOf(TextAlign.Right) }
     var entries by remember { mutableStateOf(readJournal(c.store)) }
     var editingId by remember { mutableStateOf<String?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
@@ -115,17 +130,29 @@ fun JournalScreen(onBack: () -> Unit) {
                 label = { Text("عنوان") },
                 singleLine = true,
             )
-            LinedNotebookInput(text, { text = it })
+            NotebookAlignmentPicker(alignment, { alignment = it })
+            LinedNotebookInput(
+                text,
+                { text = it },
+                header = title.trim(),
+                textAlign = alignment,
+            )
             PrimaryButton(if (editingId == null) "ذخیرهٔ رمزشده" else "ذخیرهٔ ویرایش") {
                 if (text.isBlank()) {
                     notice = "اول چیزی بنویس."
                 } else {
                     val id = editingId ?: UUID.randomUUID().toString()
                     val createdAt = entries.firstOrNull { it.id == id }?.createdAt ?: System.currentTimeMillis()
-                    val changed = JournalEntry(id, createdAt, c.encryptor.encrypt(text.trim()), title.trim())
+                    val changed = JournalEntry(
+                        id = id,
+                        createdAt = createdAt,
+                        cipher = c.encryptor.encrypt(text.trim()),
+                        title = title.trim(),
+                        alignment = notebookAlignmentWire(alignment),
+                    )
                     entries = PersianPaging.oldestToNewest(entries.filterNot { it.id == changed.id } + changed) { it.createdAt }
                     writeJournal(c.store, entries)
-                    title = ""; text = ""; editingId = null
+                    title = ""; text = ""; alignment = TextAlign.Right; editingId = null
                     notice = "دل‌نوشت ذخیره شد."
                 }
             }
@@ -140,16 +167,20 @@ fun JournalScreen(onBack: () -> Unit) {
                     editingId = entry.id
                     title = entry.title
                     text = plain
+                    alignment = notebookTextAlignFromWire(entry.alignment)
                     notice = "این دل‌نوشت برای ویرایش باز شد."
                 }) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(entry.title.ifBlank { "بدون عنوان" }, style = MaterialTheme.typography.titleSmall)
                         Text(JalaliDate.stampFa(entry.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                        Text(plain, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            plain,
+                            style = MaterialTheme.typography.bodyMedium.copy(textAlign = notebookTextAlignFromWire(entry.alignment)),
+                        )
                         TextButton(onClick = {
                             entries = entries.filterNot { it.id == entry.id }
                             writeJournal(c.store, entries)
-                            if (editingId == entry.id) { editingId = null; title = ""; text = "" }
+                            if (editingId == entry.id) { editingId = null; title = ""; text = ""; alignment = TextAlign.Right }
                         }) { Text("پاک‌کردن") }
                     }
                 }
@@ -166,6 +197,7 @@ private const val GRATITUDE_KEY = "gratitude_journal_entries"
 fun GratitudeJournalScreen(onBack: () -> Unit) {
     val container = LocalAppContainer.current
     var text by remember { mutableStateOf("") }
+    var alignment by remember { mutableStateOf(TextAlign.Right) }
     var entries by remember { mutableStateOf(readEncryptedEntries(container.store, GRATITUDE_KEY)) }
     var notice by remember { mutableStateOf<String?>(null) }
 
@@ -176,17 +208,29 @@ fun GratitudeJournalScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text("امروز بابت چه چیزی—even کوچک—قدردانی می‌کنی؟", style = MaterialTheme.typography.titleMedium)
-            LinedNotebookInput(text, { text = it })
+            NotebookAlignmentPicker(alignment, { alignment = it })
+            LinedNotebookInput(
+                text,
+                { text = it },
+                header = "دفترچه شکرگزاری",
+                textAlign = alignment,
+            )
             PrimaryButton("ذخیره در دفترچه") {
                 if (text.isBlank()) {
                     notice = "اول یک جمله بنویس."
                 } else {
                     val next = PersianPaging.oldestToNewest(
-                        entries + JournalEntry(UUID.randomUUID().toString(), System.currentTimeMillis(), container.encryptor.encrypt(text.trim())),
+                        entries + JournalEntry(
+                            id = UUID.randomUUID().toString(),
+                            createdAt = System.currentTimeMillis(),
+                            cipher = container.encryptor.encrypt(text.trim()),
+                            alignment = notebookAlignmentWire(alignment),
+                        ),
                     ) { it.createdAt }
                     writeEncryptedEntries(container.store, GRATITUDE_KEY, next)
                     entries = next
                     text = ""
+                    alignment = TextAlign.Right
                     notice = "در دفترچه شکرگزاری ذخیره شد."
                 }
             }
@@ -195,7 +239,10 @@ fun GratitudeJournalScreen(onBack: () -> Unit) {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(JalaliDate.stampFa(entry.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                        Text(container.encryptor.decrypt(entry.cipher).orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            container.encryptor.decrypt(entry.cipher).orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium.copy(textAlign = notebookTextAlignFromWire(entry.alignment)),
+                        )
                     }
                 }
             }
@@ -208,7 +255,14 @@ private fun readEncryptedEntries(store: LocalStore, key: String): List<JournalEn
     buildList {
         for (i in 0 until array.length()) {
             val row = array.getJSONObject(i)
-            add(JournalEntry(row.optString("id"), row.optLong("createdAt"), row.optString("cipher")))
+            add(
+                JournalEntry(
+                    id = row.optString("id"),
+                    createdAt = row.optLong("createdAt"),
+                    cipher = row.optString("cipher"),
+                    alignment = row.optString("alignment", "right"),
+                ),
+            )
         }
     }.let { PersianPaging.oldestToNewest(it) { item -> item.createdAt } }
 }.getOrDefault(emptyList())
@@ -216,7 +270,13 @@ private fun readEncryptedEntries(store: LocalStore, key: String): List<JournalEn
 private fun writeEncryptedEntries(store: LocalStore, key: String, entries: List<JournalEntry>) {
     val array = JSONArray()
     entries.forEach { entry ->
-        array.put(JSONObject().put("id", entry.id).put("createdAt", entry.createdAt).put("cipher", entry.cipher))
+        array.put(
+            JSONObject()
+                .put("id", entry.id)
+                .put("createdAt", entry.createdAt)
+                .put("cipher", entry.cipher)
+                .put("alignment", entry.alignment),
+        )
     }
     store.putString(key, array.toString())
 }
