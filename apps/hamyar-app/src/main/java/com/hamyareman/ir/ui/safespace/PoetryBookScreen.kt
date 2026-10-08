@@ -209,6 +209,11 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
         notice = null
     }
 
+    fun startNewPoem() {
+        reset()
+        notice = "صفحهٔ تازه آمادهٔ نوشتن است."
+    }
+
     fun edit(poem: Poem) {
         if (editingId == null) {
             writeDraft(draftStore, POEM_DRAFT_KEY, draftSnapshot()) { s -> container.encryptor.encrypt(s) }
@@ -257,7 +262,45 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
             item {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("دفتر شعر", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            if (editingId == null) "کتاب شعر" else "ویرایش شعر",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            Column(
+                                Modifier.fillMaxWidth(0.44f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                BookSkinCover(
+                                    poetrySkin,
+                                    Modifier.fillMaxWidth(),
+                                    "دفتر شعر من",
+                                )
+                                Text(
+                                    "جلد چرمی فعلی",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = ::startNewPoem,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Icon(Icons.Default.MenuBook, contentDescription = null)
+                                Text(" صفحهٔ تازه")
+                            }
+                            OutlinedButton(
+                                onClick = { viewer = poems.firstOrNull() },
+                                enabled = poems.isNotEmpty(),
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Icon(Icons.Default.AutoStories, contentDescription = null)
+                                Text(" تورق کتاب")
+                            }
+                        }
                         PoetryTypePicker(
                             value = type,
                             onValueChange = { selected ->
@@ -265,11 +308,11 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                                 if (editingId == null) title = selected
                             },
                         )
-                        androidx.compose.material3.OutlinedTextField(
+                        com.hamyareman.ir.ui.components.NotebookTitlePicker(
                             value = title,
-                            onValueChange = { title = it.take(90) },
-                            label = { Text("عنوان شعر (قابل ویرایش)") },
-                            singleLine = true,
+                            defaultTitle = type,
+                            suggestions = listOf("شعر امروز", "غزل من", "دوبیتی من", "شعر آزاد"),
+                            onValueChange = { title = it },
                             modifier = Modifier.fillMaxWidth(),
                         )
                         NotebookAlignmentPicker(alignment, { alignment = it })
@@ -292,7 +335,7 @@ fun PoetryBookScreen(onBack: () -> Unit, onHelp: () -> Unit = {}) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = ::save, modifier = Modifier.weight(2f)) {
                                 Icon(Icons.Default.MenuBook, contentDescription = null)
-                                Text(" ذخیره")
+                                Text(" ذخیره و برگشت به کتاب")
                             }
                             OutlinedButton(
                                 onClick = ::reset,
