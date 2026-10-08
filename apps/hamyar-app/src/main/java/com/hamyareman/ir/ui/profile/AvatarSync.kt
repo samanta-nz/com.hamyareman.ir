@@ -69,6 +69,7 @@ object AvatarSync {
     }
 
     suspend fun push(ctx: Context, storage: StorageService, userId: String): Boolean {
+        if (!isDirty(ctx)) return false
         val src = localFile(ctx)
         if (!src.exists() || src.length() < 400 || userId.isBlank() || !storage.isConfigured) return false
         val fid = fileId(userId)
