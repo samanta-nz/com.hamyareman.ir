@@ -115,13 +115,68 @@ fun BackgroundMusicTileHost(
     val liveAppearance = rememberUpdatedState(appearance)
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var keyReady by remember { mutableStateOf<Boolean?>(null) }
+    var contentReady by remember {
+        mutableStateOf(LessonCache.isCached(context, MUSIC_TILE_URL))
+    }
     var pageReady by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+    var transferLoading by remember { mutableStateOf(false) }
+    var transferTitle by remember { mutableStateOf("محتوا در حال دانلود") }
+    var transferProgress by remember { mutableStateOf(0) }
+    var reloadToken by remember { mutableStateOf(0) }
     val expandedHeight = (screenHeight * 0.78f).coerceIn(420.dp, 620.dp)
     val expandedHeightDp = rememberUpdatedState(expandedHeight.value)
 
     LaunchedEffect(Unit) {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val hasCache = LessonCache.isCached(context, MUSIC_TILE_URL)
         keyReady = runCatching { HtmlMediaKey.fetch(context, container.tables) }.getOrDefault(false)
+        if (keyReady != true) return@LaunchedEffect
+
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val prepared = LessonCache.prepare(
+                ctx = context,
+                url = MUSIC_TILE_URL,
+                onProgress = { done, total ->
+                    if (total > 0) {
+                        val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                        handler.post { transferProgress = p }
+                    }
+                },
+                onStatus = { status ->
+                    when (status) {
+                        LessonCache.Freshness.CACHED -> Unit
+                        LessonCache.Freshness.UPDATED -> handler.post {
+                            transferLoading = true
+                            transferTitle = "محتوا در حال بروزرسانی"
+                        }
+                        LessonCache.Freshness.DOWNLOADED -> handler.post {
+                            transferLoading = true
+                            transferTitle = "محتوا در حال دانلود"
+                        }
+                    }
+                },
+            )
+            handler.post {
+                when {
+                    prepared == null && !hasCache -> {
+                        contentReady = false
+                    }
+                    prepared == null && hasCache -> {
+                        transferLoading = false
+                        contentReady = true
+                    }
+                    prepared != null -> {
+                        contentReady = true
+                        if (prepared.freshness == LessonCache.Freshness.CACHED) {
+                            transferLoading = false
+                        } else {
+                            reloadToken++
+                        }
+                    }
+                }
+            }
+        }
     }
     LaunchedEffect(expanded) { onExpandedChanged(expanded) }
 
@@ -133,6 +188,7 @@ fun BackgroundMusicTileHost(
             Text("دریافت پخش‌کننده ممکن نشد؛ اتصال اینترنت را بررسی کن.")
         }
         true -> {
+            if (contentReady) {
             val web = remember {
                 WebView(context).apply {
                     // هم پل ظاهر همیار و هم HamyarHost (قرارداد خودِ فایل‌های موسیقی)
@@ -152,7 +208,10 @@ fun BackgroundMusicTileHost(
                     ) {
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
-                            view.post { pageReady = true }
+                            view.post {
+                                pageReady = true
+                                transferLoading = false
+                            }
                             view.applyTileExpandedHeight(expandedHeightDp.value)
                             view.publishHamyarAppearance(
                                 liveAppearance.value.darkMode,
@@ -219,7 +278,25 @@ fun BackgroundMusicTileHost(
                 if (!pageReady) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 }
+                if (transferLoading) {
+                    Box(
+                        Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.76f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        androidx.compose.foundation.layout.Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+                        ) {
+                            CircularProgressIndicator()
+                            Text(transferTitle)
+                            if (transferProgress > 0) Text(transferProgress.toString() + "٪")
+                        }
+                    }
+                }
             }
+            }
+            }
+        }
         }
     }
 }
