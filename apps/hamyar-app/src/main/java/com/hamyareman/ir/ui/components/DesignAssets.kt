@@ -15,12 +15,16 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipInputStream
 
 /**
  * کلیدِ هر تصویر همان مسیر روی باکت است: https://c539776.parspack.net/ + کلید.
  * نسخهٔ محلیِ داخل APK (در صورت وجود) زیر `src/main/assets/` و بدون پیشوند `assets/` است.
  */
 internal object DesignAsset {
+    const val DIARY_PACK = "diary-assets.zip"
     // قفل‌ها (۱۰۸۰×۲۳۴۰) — اگر روی باکت نباشند، صحنهٔ رسم‌شده با کد دیده می‌شود.
     const val LOCK_APP = "assets/lock/app-lock-bg.jpg"
     const val LOCK_SAFE = "assets/lock/safespace-lock-bg.jpg"
@@ -82,6 +86,47 @@ private suspend fun readable(url: String): Boolean = withContext(Dispatchers.IO)
  * طراحی از باکت داخلی/سرور اولویت دارد؛ در صورت قطع سرور، همان asset محلی به‌عنوان
  * fallback استفاده می‌شود تا UI هرگز به جای تصویر سفید یا placeholder نرود.
  */
+private fun diaryFileName(key: String): String =
+    key.substringAfterLast('/').takeIf { it.endsWith(".png") && !it.contains("..") } ?: ""
+
+private fun extractDiaryAsset(context: android.content.Context, key: String): String? {
+    if (!DesignAsset.isEmbeddedBook(key)) return null
+    val name = diaryFileName(key)
+    if (name.isBlank()) return null
+    val dir = File(context.cacheDir, "hamyar-diary-assets")
+    val target = File(dir, name)
+    if (target.exists() && target.length() > 1024L) {
+        return target.toURI().toString()
+    }
+
+    return runCatching {
+        dir.mkdirs()
+        ZipInputStream(context.assets.open(DesignAsset.DIARY_PACK).buffered()).use { zis ->
+            var found = false
+            while (true) {
+                val entry = zis.nextEntry ?: break
+                val entryName = entry.name
+                if (!entry.isDirectory &&
+                    entryName == "diary/$name" &&
+                    entryName.substringAfterLast('/').equals(name)
+                ) {
+                    val tmp = File(dir, ".$name.tmp")
+                    FileOutputStream(tmp).use { out -> zis.copyTo(out) }
+                    if (tmp.length() <= 0L) error("empty diary asset")
+                    if (!tmp.renameTo(target)) {
+                        tmp.copyTo(target, overwrite = true)
+                        tmp.delete()
+                    }
+                    found = true
+                    break
+                }
+            }
+            if (!found) return@runCatching null
+        }
+        target.takeIf { it.exists() && it.length() > 1024L }?.toURI()?.toString()
+    }.getOrNull()
+}
+
 @Composable
 fun RemoteDesignImage(
     key: String,
@@ -91,12 +136,19 @@ fun RemoteDesignImage(
 ) {
     val remote = remember(key) { DesignAsset.remoteUrl(key) }
     val embedded = remember(key) { DesignAsset.isEmbeddedBook(key) }
+    val context = androidx.compose.ui.platform.LocalContext.current
     var source by remember(key) {
-        mutableStateOf<Any>(if (embedded) DesignAsset.localUri(key) else remote)
+        mutableStateOf<Any>(remote)
     }
 
     LaunchedEffect(key) {
-        if (!embedded) source = if (readable(remote)) remote else DesignAsset.localUri(key)
+        source = if (embedded) {
+            withContext(Dispatchers.IO) {
+                extractDiaryAsset(context, key)
+            } ?: remote
+        } else {
+            if (readable(remote)) remote else DesignAsset.localUri(key)
+        }
     }
 
     AsyncImage(
