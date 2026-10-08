@@ -28,6 +28,8 @@ object StateSync {
     const val KEY_CHECKS = "daily_checks"
     const val KEY_LEAVES = "class_plan_leaves"
     const val KEY_NOTE_TITLES = "note_titles"
+    /** تمام دفترچه‌های کاربر؛ هر کاربر یک snapshot رمز‌شده در app_state دارد. */
+    const val KEY_NOTEBOOKS = "private_notebooks"
     /** برنامهٔ شخصی هفتگی (جدول زمانی جدا از برنامهٔ کلاسی). */
     const val KEY_WEEK_PLAN = "week_plan"
 
