@@ -136,16 +136,25 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     var musicOverlayOpen by remember { mutableStateOf(false) }
     BackHandler(enabled = musicOverlayOpen) { webRef[0]?.closeMusicFrameOverlay() }
     var activeId by remember(itemId) { mutableStateOf(itemId) }
-    var pageUrl by remember(activeId) { mutableStateOf<String?>(null) }
     var error by remember(activeId) { mutableStateOf<String?>(null) }
     var progress by remember(activeId) { mutableStateOf(0) }
     var retry by remember(activeId) { mutableStateOf(0) }
-    // برای موسیقی، cache قدیمی و دریافت شبکه دو مسیر دیداری متفاوت دارند.
-    // این state قبل از ensure ثبت می‌شود تا cache شدن همان navigationِ تازه،
-    // به اشتباه «بارگذاری از cache» تلقی نشود.
-    var pageWasCached by remember(activeId) { mutableStateOf(false) }
+    var refreshing by remember(activeId) { mutableStateOf(false) }
+    var loadTitle by remember(activeId) { mutableStateOf("محتوا در حال دانلود") }
+    var reloadToken by remember(activeId) { mutableStateOf(0) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
+    val initialUrl = remember(activeId, item?.key) {
+        item?.key?.let { com.hamyareman.ir.ui.study.ServerResolver.internal(it) }
+    }
+    var pageUrl by remember(activeId, initialUrl) {
+        mutableStateOf(
+            initialUrl?.takeIf { com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, it) },
+        )
+    }
+    var pageWasCached by remember(activeId, initialUrl) {
+        mutableStateOf(pageUrl != null)
+    }
     // پالت دوم فقط برای iframeهای موسیقیِ فایل‌های «حرکات ورزشی» است.
     // یوگا و همهٔ دسته‌های دیگر همان سبز استاندارد پلیر را نگه می‌دارند.
     val musicPalette = if (item?.cat == "sport") {
@@ -156,37 +165,92 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
 
     LaunchedEffect(activeId, retry) {
         val current = item
-        pageUrl = null
         error = null
         progress = 0
-        pageWasCached = false
+        refreshing = false
         if (current == null) {
+            pageUrl = null
             error = "این فایل در کاتالوگ نیست."
             return@LaunchedEffect
         }
+
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val url = com.hamyareman.ir.ui.study.ServerResolver.internal(current.key)
-        // بایت‌های رمزشده را از قبل می‌گیریم تا نوار پیشرفت معنا داشته باشد؛
-        // رمزگشایی بعداً و فقط لحظهٔ تحویل به WebView انجام می‌شود.
-        val ready = withContext(Dispatchers.IO) {
+        val hasCache = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
+        if (hasCache && pageUrl == null) {
+            pageUrl = url
+            pageWasCached = true
+        }
+
+        withContext(Dispatchers.IO) {
             val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-            if (!keyReady) return@withContext "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو." to false
-            val alreadyCached = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
-            if (alreadyCached) return@withContext null to true
-            val file = com.hamyareman.ir.ui.study.LessonCache.ensure(ctx, url) { done, total ->
-                if (total > 0) {
-                    val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
-                    handler.post { progress = p }
+            if (!keyReady) {
+                handler.post {
+                    if (!hasCache) {
+                        error = "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو."
+                    }
+                }
+                return@withContext
+            }
+
+            val prepared = com.hamyareman.ir.ui.study.LessonCache.prepare(
+                ctx = ctx,
+                url = url,
+                onProgress = { done, total ->
+                    if (total > 0) {
+                        val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                        handler.post { progress = p }
+                    }
+                },
+                onStatus = { status ->
+                    when (status) {
+                        com.hamyareman.ir.ui.study.LessonCache.Freshness.CACHED -> {
+                            handler.post {
+                                refreshing = false
+                                progress = 100
+                                pageWasCached = true
+                            }
+                        }
+                        com.hamyareman.ir.ui.study.LessonCache.Freshness.UPDATED -> {
+                            handler.post {
+                                refreshing = true
+                                loadTitle = "محتوا در حال بروزرسانی"
+                            }
+                        }
+                        com.hamyareman.ir.ui.study.LessonCache.Freshness.DOWNLOADED -> {
+                            handler.post {
+                                refreshing = true
+                                loadTitle = "محتوا در حال دانلود"
+                            }
+                        }
+                    }
+                },
+            )
+
+            handler.post {
+                when {
+                    prepared == null && !hasCache -> {
+                        pageUrl = null
+                        error = "برای بار اول باز کردن این محتوا به اینترنت نیاز است."
+                    }
+                    prepared == null && hasCache -> {
+                        refreshing = false
+                    }
+                    prepared?.freshness == com.hamyareman.ir.ui.study.LessonCache.Freshness.CACHED -> {
+                        refreshing = false
+                        pageWasCached = true
+                        progress = 100
+                        pageUrl = url
+                    }
+                    prepared?.freshness == com.hamyyareman.ir.ui.study.LessonCache.Freshness.UPDATED ||
+                    prepared?.freshness == com.hamyareman.ir.ui.study.LessonCache.Freshness.DOWNLOADED -> {
+                        pageWasCached = false
+                        progress = 100
+                        pageUrl = url
+                        reloadToken++
+                    }
                 }
             }
-            (if (file == null) "برای بار اول باز کردن این درس به اینترنت نیاز است." else null) to false
-        }
-        pageWasCached = ready.second
-        if (ready.first != null) {
-            error = ready.first
-        } else {
-            progress = 100
-            pageUrl = url
         }
     }
 
@@ -247,8 +311,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         cacheHit = pageWasCached,
                     )
                     val target = pageUrl
-                    if (target != null && view.tag != target) {
-                        view.tag = target
+                    if (target != null && view.tag != "$"+"target#$"+"reloadToken") {
+                        view.tag = "$"+"target#$"+"reloadToken"
                         view.loadUrl(target)
                     }
                 },
@@ -271,8 +335,28 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
             }
             pageUrl == null -> Box(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center,
             ) {
-                com.hamyareman.ir.ui.study.HtmlPercentLoader(progress)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    com.hamyareman.ir.ui.study.HtmlPercentLoader(progress)
+                    Text(loadTitle, style = MaterialTheme.typography.titleMedium)
+                }
+            }
+            refreshing -> Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator()
+                    Text(loadTitle, style = MaterialTheme.typography.titleMedium)
+                    if (progress > 0) Text(faNum(progress) + "٪", style = MaterialTheme.typography.bodySmall)
+                }
             }
             else -> Unit
         }
