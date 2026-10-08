@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Card
-import androidx.compose.ui.text.style.TextAlign
 import com.hamyareman.ir.ui.AppTypography
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.material3.CircularProgressIndicator
