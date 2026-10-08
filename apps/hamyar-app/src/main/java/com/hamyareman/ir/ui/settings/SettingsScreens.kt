@@ -225,6 +225,7 @@ fun AppLockScreen(onBack: () -> Unit) {
                     pin != confirm -> message = "تکرار PIN با PIN جدید یکسان نیست."
                     else -> {
                         val changingExistingPin = hasPin
+                        // نتیجهٔ ذخیره بررسی می‌شود تا شکست persistence هرگز UI را به crash نکشاند.
                         val stored = runCatching { lock.setPin(pin) }.getOrDefault(false)
                         if (!stored) {
                             message = "ذخیرهٔ PIN انجام نشد؛ دوباره تلاش کن."
