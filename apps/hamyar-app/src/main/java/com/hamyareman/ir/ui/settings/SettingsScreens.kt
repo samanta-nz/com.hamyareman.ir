@@ -225,13 +225,17 @@ fun AppLockScreen(onBack: () -> Unit) {
                     pin != confirm -> message = "تکرار PIN با PIN جدید یکسان نیست."
                     else -> {
                         val changingExistingPin = hasPin
-                        lock.setPin(pin)
-                        hasPin = true
-                        currentPin = ""
-                        pin = ""
-                        confirm = ""
-                        message = if (changingExistingPin) "PIN با موفقیت تغییر کرد." else "قفل برنامه فعال شد."
-                        if (!changingExistingPin && bioStatus == BiometricStatus.READY && activity != null) {
+                        val stored = runCatching { lock.setPin(pin) }.getOrDefault(false)
+                        if (!stored) {
+                            message = "ذخیرهٔ PIN انجام نشد؛ دوباره تلاش کن."
+                        } else {
+                            hasPin = true
+                            currentPin = ""
+                            pin = ""
+                            confirm = ""
+                            message = if (changingExistingPin) "PIN با موفقیت تغییر کرد." else "قفل برنامه فعال شد."
+                        }
+                        if (stored && !changingExistingPin && bioStatus == BiometricStatus.READY && activity != null) {
                             // همان لحظهٔ ساخت PIN، یک بار اجازهٔ سیستم را می‌گیریم؛
                             // فعال‌سازی خاموش/روشنِ بی‌تأیید مجاز نیست.
                             BiometricPromptRunner.show(
@@ -255,13 +259,22 @@ fun AppLockScreen(onBack: () -> Unit) {
                     if (!lock.verify(currentPin)) {
                         message = "برای غیرفعال‌کردن، PIN فعلی را وارد کن."
                     } else {
-                        lock.clearPin()
-                        lock.clearPattern()
-                        bio.clear()
-                        hasPin = false
-                        currentPin = ""
-                        bioState = false
-                        message = "قفل برنامه غیرفعال شد."
+                        val cleared = runCatching {
+                            // clearPin خودش hash، salt، pattern و timeout را اتمیک از SharedPreferences حذف می‌کند.
+                            lock.clearPin()
+                            bio.clear()
+                        }.isSuccess
+                        if (cleared) {
+                            hasPin = false
+                            currentPin = ""
+                            pin = ""
+                            confirm = ""
+                            pattern = ""
+                            bioState = false
+                            message = "قفل برنامه غیرفعال شد."
+                        } else {
+                            message = "غیرفعال‌کردن قفل انجام نشد؛ دوباره تلاش کن."
+                        }
                     }
                 }
             }
