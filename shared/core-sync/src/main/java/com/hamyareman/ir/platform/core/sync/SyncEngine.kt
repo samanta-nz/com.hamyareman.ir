@@ -135,7 +135,10 @@ class SyncEngine(
 
         survivors.addAll(queue.drop(batchSize.coerceAtMost(queue.size)))
         persist(survivors)
-        store.putLong(KEY_LAST_SYNC, System.currentTimeMillis())
+        // «last sync» فقط وقتی معتبر است که کل batch بدون خطای باقی‌مانده تمام شده باشد.
+        if (failed == 0 && survivors.isEmpty()) {
+            store.putLong(KEY_LAST_SYNC, System.currentTimeMillis())
+        }
         return SyncReport(pushed, failed, skipped, survivors.size)
     }
 
