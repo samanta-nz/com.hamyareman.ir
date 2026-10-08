@@ -1,6 +1,7 @@
 name: Release grade 9 v3.0.1 (optional)
 
 # انتشار عمومی ۳٫۰٫۱ پایهٔ نهم — آپدیت اختیاری (min=0).
+# Release trigger commit; no forced update.
 # ترتیب: ساخت و اعتبارسنجی → GitHub Release → ParsPack → اعلام Appwrite.
 on:
   push:
