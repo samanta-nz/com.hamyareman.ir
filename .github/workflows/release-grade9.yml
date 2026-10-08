@@ -1,0 +1,373 @@
+name: Grade 9 release — build, ParsPack, GitHub Release, Appwrite
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/hamyar-app/build.gradle.kts"
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: "نسخه را برای نصب‌های قدیمی‌تر اجباری اعلام کن"
+        required: false
+        default: false
+        type: boolean
+      rollout:
+        description: "درصد rollout"
+        required: false
+        default: "100"
+        type: string
+      release_notes:
+        description: "یادداشت Release؛ در حالت خالی از commit جاری استفاده می‌شود"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: grade9-release
+  cancel-in-progress: false
+
+env:
+  PACKAGE: com.hamyareman.p09
+  GRADE_ID: grade9
+  ROW_ID: app_release_grade9
+  VERSION_FILE: apps/hamyar-app/build.gradle.kts
+  PARSPACK_KEY_PREFIX: apk/grade9
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: never
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve and validate version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          version_file = Path(os.environ["VERSION_FILE"])
+          text = version_file.read_text(encoding="utf-8")
+
+          def parse(source: str):
+              code_m = re.search(r"^\s*versionCode\s*=.*\?:\s*(\d+)\s*$", source, re.M)
+              name_m = re.search(r'^\s*versionName\s*=.*\?:\s*"([^"]+)"\s*$', source, re.M)
+              if not code_m or not name_m:
+                  raise SystemExit("versionCode/versionName قابل استخراج نیست.")
+              return int(code_m.group(1)), name_m.group(1).strip()
+
+          code, name = parse(text)
+          if code <= 0 or not re.fullmatch(r"\d+\.\d+\.\d+", name):
+              raise SystemExit(f"نسخه نامعتبر است: {name} / {code}")
+
+          event = os.environ["EVENT_NAME"]
+          before = os.environ.get("BEFORE_SHA", "")
+          needed = True
+
+          if event == "push" and re.fullmatch(r"[0-9a-f]{40}", before or ""):
+              try:
+                  previous = subprocess.check_output(
+                      ["git", "show", f"{before}:{version_file.as_posix()}"],
+                      text=True,
+                      stderr=subprocess.DEVNULL,
+                  )
+              except subprocess.CalledProcessError:
+                  previous = ""
+              if previous:
+                  previous_code, previous_name = parse(previous)
+                  if code == previous_code and name == previous_name:
+                      needed = False
+                  elif code <= previous_code:
+                      raise SystemExit(
+                          f"versionCode باید افزایشی باشد: قبلی {previous_code} → فعلی {code}"
+                      )
+
+          if event == "workflow_dispatch":
+              needed = True
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as out:
+              out.write(f"VERSION_NAME={name}\n")
+              out.write(f"VERSION_CODE={code}\n")
+              out.write(f"RELEASE_NEEDED={'true' if needed else 'false'}\n")
+
+          print(f"version={name}")
+          print(f"versionCode={code}")
+          print(f"releaseNeeded={needed}")
+          PY
+
+      - name: Stop on non-version build.gradle change
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        run: echo "نسخه تغییر نکرده است؛ این اجرا فقط بررسی شد و Release جدید نمی‌سازد."
+
+      - name: Verify release secrets
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "\${APPWRITE_API_KEY:-}" || { echo "::error::APPWRITE_API_KEY تنظیم نشده است"; exit 1; }
+          test -n "\${PARSPACK_ACCESS_KEY:-}" || { echo "::error::PARSPACK_ACCESS_KEY تنظیم نشده است"; exit 1; }
+          test -n "\${PARSPACK_SECRET_KEY:-}" || { echo "::error::PARSPACK_SECRET_KEY تنظیم نشده است"; exit 1; }
+
+      - name: Test, compile and build release APK
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        run: |
+          set -euo pipefail
+          ./gradlew --console=plain --stacktrace \
+            :core-common:testDebugUnitTest \
+            :hamyar-app:testP09DebugUnitTest \
+            :hamyar-app:compileP09ReleaseKotlin \
+            :hamyar-app:assembleP09Release
+
+      - name: Collect and verify APK
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist ci-report
+          mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/release -type f -name '*.apk' -print)
+          test "\${#files[@]}" -eq 1
+          APK="dist/hamyar-grade9-$VERSION_NAME.apk"
+          cp -f "\${files[0]}" "$APK"
+          test -s "$APK"
+
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          BADGING="$("$AAPT" dump badging "$APK" | head -1)"
+          echo "$BADGING"
+          grep -F "name='$PACKAGE'" <<<"$BADGING"
+          grep -F "versionCode='$VERSION_CODE'" <<<"$BADGING"
+          grep -F "versionName='$VERSION_NAME'" <<<"$BADGING"
+
+          SIGNER="$("$APKSIGNER" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ': ' | tr 'A-F' 'a-f')"
+          EXPECTED="$(tr -d '[:space:]' < config/release-signing-sha256.txt | tr -d ':-' | tr 'A-F' 'a-f')"
+          test -n "$SIGNER"
+          test "$SIGNER" = "$EXPECTED"
+
+          APK_SIZE="$(stat -c%s "$APK")"
+          APK_SHA256="$(sha256sum "$APK" | cut -d' ' -f1)"
+          echo "SIGNER_SHA256=$SIGNER" >> "$GITHUB_ENV"
+          echo "APK_SIZE=$APK_SIZE" >> "$GITHUB_ENV"
+          echo "APK_SHA256=$APK_SHA256" >> "$GITHUB_ENV"
+          printf '%s  %s\n' "$APK_SHA256" "$APK" > ci-report/apk.sha256
+
+      - name: Prepare release notes
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        env:
+          RELEASE_NOTES_INPUT: ${{ inputs.release_notes }}
+        run: |
+          set -euo pipefail
+          if [ -n "\${RELEASE_NOTES_INPUT:-}" ]; then
+            printf '%s\n' "$RELEASE_NOTES_INPUT" > release-notes.md
+          else
+            git log -1 --pretty=%B > release-notes.md
+          fi
+          {
+            echo
+            echo "---"
+            echo "نسخه: $VERSION_NAME"
+            echo "پکیج: $PACKAGE"
+          } >> release-notes.md
+
+      - name: Publish and archive GitHub Release
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="grade9-v$VERSION_NAME"
+          APK="dist/hamyar-grade9-$VERSION_NAME.apk"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "همیار من نهم $VERSION_NAME" \
+              --notes-file release-notes.md
+          fi
+          gh release upload "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --clobber
+          URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK"
+          curl --fail --silent --show-error --location --range 0-1023 "$URL" -o /tmp/github-apk-head.bin
+          test "$(head -c 2 /tmp/github-apk-head.bin)" = "PK"
+          echo "GITHUB_RELEASE_URL=https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_ENV"
+          echo "EXTERNAL_URL=$URL" >> "$GITHUB_ENV"
+
+      - name: Upload to ParsPack and verify anonymous read
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        env:
+          PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+          PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --quiet boto3 requests
+          python3 scripts/put_public_object.py \
+            --file "dist/hamyar-grade9-$VERSION_NAME.apk" \
+            --key "$PARSPACK_KEY_PREFIX/hamyar-grade9-$VERSION_NAME.apk" \
+            --provider parspack \
+            --content-type application/vnd.android.package-archive \
+            --env-name INTERNAL_URL
+
+      - name: Publish update state to Appwrite and verify read-back
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          FORCE_UPDATE_INPUT: ${{ inputs.force_update }}
+          ROLLOUT_INPUT: ${{ inputs.rollout }}
+        run: |
+          set -euo pipefail
+          MIN_CODE=0
+          if [ "\${FORCE_UPDATE_INPUT:-false}" = "true" ]; then
+            MIN_CODE="$VERSION_CODE"
+          fi
+          ROLLOUT="\${ROLLOUT_INPUT:-100}"
+          case "$ROLLOUT" in ''|*[!0-9]*) ROLLOUT=100 ;; esac
+          ROLLOUT=$((ROLLOUT < 1 ? 1 : ROLLOUT))
+          ROLLOUT=$((ROLLOUT > 100 ? 100 : ROLLOUT))
+
+          NOTES="$(python3 - <<'PY'
+          from pathlib import Path
+          lines = Path("release-notes.md").read_text(encoding="utf-8").splitlines()
+          useful = [x.strip() for x in lines if x.strip() and x.strip() != "---"]
+          print("|".join(useful[:12]))
+          PY
+          )"
+
+          python3 scripts/publish_grade9_update.py \
+            --apk "dist/hamyar-grade9-$VERSION_NAME.apk" \
+            --version-code "$VERSION_CODE" \
+            --version-name "$VERSION_NAME" \
+            --min-code "$MIN_CODE" \
+            --rollout "$ROLLOUT" \
+            --external-url "$EXTERNAL_URL" \
+            --internal-url "$INTERNAL_URL" \
+            --signer-sha256 "$SIGNER_SHA256" \
+            --row-id "$ROW_ID" \
+            --package "$PACKAGE" \
+            --grade-id "$GRADE_ID" \
+            --notes "$NOTES" \
+            --out ci-report/release.json
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("ci-report/release.json").read_text(encoding="utf-8"))
+          assert report["published"] is True
+          assert report["checks"]["internal"] in {"HTTP 200", "HTTP 206"}
+          assert report["checks"]["external"] in {"HTTP 200", "HTTP 206"}
+          assert int(report["payload"]["latest"]) > int(report["previous"]["latest"])
+          print("APPWRITE_RELEASE_STATE_VERIFIED")
+          PY
+
+      - name: Persist successful release state
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-state
+          python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          report = json.loads(Path("ci-report/release.json").read_text(encoding="utf-8"))
+          payload = report["payload"]
+          release = {
+              "versionName": report["versionName"],
+              "versionCode": int(report["versionCode"]),
+              "publishedAt": datetime.now(timezone.utc).isoformat(),
+              "sourceCommit": os.environ["GITHUB_SHA"],
+              "run": os.environ["RUN_URL"],
+              "githubReleaseUrl": os.environ["GITHUB_RELEASE_URL"],
+              "githubDownloadUrl": os.environ["EXTERNAL_URL"],
+              "parspackUrl": os.environ["INTERNAL_URL"],
+              "asset": f"hamyar-grade9-{report['versionName']}.apk",
+              "size": int(report["size"]),
+              "sha256": report["sha256"],
+              "signingSha256": report["payload"]["signingSha256"],
+              "min": int(payload["min"]),
+              "rollout": int(payload["rollout"]),
+              "status": {
+                  "compile": "success",
+                  "build": "success",
+                  "githubRelease": "success",
+                  "parspackUpload": "success",
+                  "parspackAnonymousRead": "success",
+                  "appwriteReadWriteReadBack": "success",
+                  "updateStateCommitted": "pending"
+              }
+          }
+
+          history_path = Path("release-state/grade9-history.json")
+          history = json.loads(history_path.read_text(encoding="utf-8")) if history_path.exists() else {
+              "schema": 1,
+              "channel": "grade9",
+              "sourceOfTruth": "GitHub Releases",
+              "releases": []
+          }
+          releases = [x for x in history.get("releases", []) if int(x.get("versionCode", -1)) != release["versionCode"]]
+          releases.append(release)
+          releases.sort(key=lambda x: int(x.get("versionCode", 0)))
+          history["releases"] = releases
+          history_path.write_text(json.dumps(history, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+          latest_path = Path("release-state/grade9-latest-success.json")
+          latest_path.write_text(
+              json.dumps({"schema": 1, "channel": "grade9", "latestSuccessfulRelease": release}, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git rebase origin/main
+          git add release-state/grade9-history.json release-state/grade9-latest-success.json
+          git diff --cached --quiet || git commit -m "ثبت انتشار موفق نهم $VERSION_NAME [skip-release]"
+          git push origin HEAD:main
+
+      - name: Final success summary
+        if: ${{ env.RELEASE_NEEDED == 'true' }}
+        run: |
+          echo "COMPILE=SUCCESS"
+          echo "BUILD=SUCCESS"
+          echo "GITHUB_RELEASE=SUCCESS"
+          echo "PARSPACK_UPLOAD=SUCCESS"
+          echo "PARSPACK_READ=SUCCESS"
+          echo "APPWRITE_UPDATE=SUCCESS"
+          echo "RELEASE_STATE=COMMITTED"

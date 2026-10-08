@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "channel": "grade9",
+  "latestCanonicalRelease": {
+    "versionName": "2.5.7",
+    "versionCode": 257,
+    "tag": "grade9-v2.5.7",
+    "publishedAt": "2026-10-05T17:39:56Z",
+    "asset": "hamyar-grade9-2.5.7.apk",
+    "size": 46884748,
+    "sha256": "5e4e36ab2c2740ddebf284d451a3759b1e92b9712d95f093d511d3ba293b0470"
+  },
+  "latestKnownSuccessfulBuildArtifact": {
+    "versionName": "3.0.1",
+    "versionCode": 301,
+    "archive": "ci-apk",
+    "asset": "hamyar-grade9-3.0.1.apk",
+    "size": 40498530,
+    "sha256": "26641d80704c533e402aeef5a107a7ad3010d7ce681f2ad1f81edafe1b081983",
+    "canonicalRelease": false
+  },
+  "verifiedReleaseState": null,
+  "note": "فقط داده‌ای که از وضعیت پایدار ریپو/Release قابل اثبات بود نگه داشته شده است؛ وضعیت کامل ParsPack و Appwrite از این به بعد فقط بعد از موفقیت واقعی Workflow ثبت می‌شود."
+}

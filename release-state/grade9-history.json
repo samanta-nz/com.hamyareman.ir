@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "channel": "grade9",
+  "sourceOfTruth": "GitHub Releases",
+  "releases": [
+    {
+      "versionName": "2.0",
+      "tag": "grade9-v2.0",
+      "publishedAt": "2026-09-29T03:48:52Z",
+      "asset": "hamyar-grade9-2.0.apk",
+      "size": 47387648,
+      "sha256": "4696a65e76e2889812ce0be35374c933b22f4ec1a2b567d276dc8e25d7cc3cba"
+    },
+    {
+      "versionName": "2.1",
+      "tag": "grade9-v2.1",
+      "publishedAt": "2026-09-29T08:16:31Z",
+      "asset": "hamyar-grade9-2.1.apk",
+      "size": 47404032,
+      "sha256": "02d00244638c73b0e573e495a57d29071589e7867891bafdd74f0d753d95fc7d"
+    },
+    {
+      "versionName": "2.5.7",
+      "versionCode": 257,
+      "tag": "grade9-v2.5.7",
+      "publishedAt": "2026-10-05T17:39:56Z",
+      "asset": "hamyar-grade9-2.5.7.apk",
+      "size": 46884748,
+      "sha256": "5e4e36ab2c2740ddebf284d451a3759b1e92b9712d95f093d511d3ba293b0470"
+    }
+  ]
+}
