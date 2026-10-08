@@ -244,7 +244,7 @@ jobs:
           if [ -n "\${RELEASE_NOTES_INPUT:-}" ]; then
             printf '%s\n' "$RELEASE_NOTES_INPUT" > release-notes.md
           else
-            git log -1 --pretty=%B > release-notes.md
+            git show -s --format=%B "$GITHUB_SHA" > release-notes.md
           fi
           {
             echo
