@@ -78,7 +78,9 @@ class AppLock(private val store: LocalStore) {
         return true
     }
 
+    @Synchronized
     fun clearPin() {
+        // Idempotent and serialized against set/verify calls during Activity lifecycle changes.
         store.remove(KEY_SALT, KEY_HASH, KEY_PATTERN_SALT, KEY_PATTERN_HASH, KEY_ENABLED, KEY_TIMEOUT)
         unlockedAtMs = 0L
         backgroundedAtMs = 0L
