@@ -524,10 +524,18 @@ class MainActivity : FragmentActivity() {
 
     override fun onPause() {
         super.onPause()
-        // شروع شمارندهٔ پس‌زمینه؛ قفل فوری قبلی باعث می‌شد انتخاب‌های ۳۰ث/۱د/۵د بی‌اثر باشند.
-        (application as HamyarApplication).container.lock.onBackgrounded()
         // فضای امن policy و نشست مستقل دارد؛ فقط حالت «قفل صفحه» اینجا بسته می‌شود.
+        // شمارندهٔ قفل اصلی در onStop شروع می‌شود تا دیالوگ‌ها/پنجره‌های موقت باعث قفل ناخواسته نشوند.
         com.hamyareman.ir.ui.safespace.SafeSpaceSession.onAppBackgrounded(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // onStop نشان می‌دهد Activity واقعاً از دید کاربر خارج شده است؛ onPause ممکن است
+        // فقط به‌خاطر یک Dialog/پنجرهٔ موقت رخ دهد.
+        if (!isChangingConfigurations) {
+            (application as HamyarApplication).container.lock.onBackgrounded()
+        }
     }
 
     /** خروج از حساب — صفحه‌ی ورود دوباره نشان داده می‌شود. */
