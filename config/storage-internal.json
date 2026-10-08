@@ -19,18 +19,6 @@
       "listObjectsVersion": 1,
       "datacenter": "Tehran 3"
     },
-    "arvan": {
-      "label": "آروان",
-      "endpoint": "https://s3.ir-thr-at1.arvanstorage.ir",
-      "region": "ir-thr-at1",
-      "bucket": "hamyar-e-man",
-      "publicUrlStyle": "virtual-host",
-      "accessKeyEnv": "ARVAN_ACCESS_KEY",
-      "secretKeyEnv": "ARVAN_SECRET_KEY",
-      "notes": "از ۲۰۲۶-۰۹-۳۰ باکت سمت ارائه‌دهنده فقط‌خواندنی شد؛ فقط منبع خواندن برای مهاجرت است.",
-      "addressingStyle": "virtual",
-      "signatureVersion": "s3v4",
-      "listObjectsVersion": 2
-    }
+
   }
 }
