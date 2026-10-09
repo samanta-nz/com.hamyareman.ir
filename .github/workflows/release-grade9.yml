@@ -82,6 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import json
           import os
           import re
           import subprocess
@@ -121,8 +122,25 @@ jobs:
                           ["git", "tag", "--list", f"grade9-v{name}"],
                           text=True,
                       ).strip()
-                      # Retry a version that has not actually been tagged/released yet.
-                      needed = not bool(tag)
+                      release_complete = False
+                      try:
+                          state = json.loads(Path("release-state/grade9-latest-success.json").read_text(encoding="utf-8"))
+                          release = state.get("latestSuccessfulRelease") or {}
+                          status = release.get("status") or {}
+                          release_complete = (
+                              release.get("versionName") == name
+                              and int(release.get("versionCode", -1)) == code
+                              and all(status.get(key) == "success" for key in (
+                                  "githubRelease",
+                                  "parspackUpload",
+                                  "parspackAnonymousRead",
+                                  "appwriteReadWriteReadBack",
+                              ))
+                          )
+                      except (OSError, ValueError, TypeError):
+                          release_complete = False
+                      # A tag alone isn't enough: all three publication destinations must be verified.
+                      needed = (not bool(tag)) or (not release_complete)
                   elif code <= previous_code:
                       raise SystemExit(
                           f"versionCode باید افزایشی باشد: قبلی {previous_code} → فعلی {code}"
@@ -277,7 +295,15 @@ jobs:
           fi
           gh release upload "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --clobber
           URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK"
-          curl --fail --silent --show-error --location --range 0-1023 "$URL" -o /tmp/github-apk-head.bin
+          READY=false
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --location --range 0-1023 "$URL" -o /tmp/github-apk-head.bin; then
+              READY=true
+              break
+            fi
+            sleep 5
+          done
+          test "$READY" = "true"
           test "$(head -c 2 /tmp/github-apk-head.bin)" = "PK"
           echo "GITHUB_RELEASE_URL=https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_ENV"
           echo "EXTERNAL_URL=$URL" >> "$GITHUB_ENV"
@@ -386,7 +412,7 @@ jobs:
                   "parspackUpload": "success",
                   "parspackAnonymousRead": "success",
                   "appwriteReadWriteReadBack": "success",
-                  "updateStateCommitted": "pending"
+                  "updateStateCommitted": "success"
               }
           }
 
