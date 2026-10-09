@@ -236,10 +236,10 @@ jobs:
 
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git fetch origin main
-          git rebase origin/main
           git add release-state/grade9-latest-success.json
           git diff --cached --quiet || git commit -m "ثبت آخرین کامپایل و بیلد موفق نهم [skip-release]"
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
 
       - name: Prepare release notes
@@ -412,10 +412,10 @@ jobs:
 
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git fetch origin main
-          git rebase origin/main
           git add release-state/grade9-history.json release-state/grade9-latest-success.json
           git diff --cached --quiet || git commit -m "ثبت انتشار موفق نهم $VERSION_NAME [skip-release]"
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
 
       - name: Final success summary
