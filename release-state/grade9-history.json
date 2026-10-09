@@ -27,6 +27,31 @@
       "asset": "hamyar-grade9-2.5.7.apk",
       "size": 46884748,
       "sha256": "5e4e36ab2c2740ddebf284d451a3759b1e92b9712d95f093d511d3ba293b0470"
+    },
+    {
+      "versionName": "3.0.3",
+      "versionCode": 303,
+      "publishedAt": "2026-10-09T01:27:22.113239+00:00",
+      "sourceCommit": "e14bc6880f141433afe8beec1f055704c2a01a6c",
+      "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/37869601022",
+      "githubReleaseUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/tag/grade9-v3.0.3",
+      "githubDownloadUrl": "https://github.com/samanta-nz/com.hamyareman.ir/releases/download/grade9-v3.0.3/hamyar-grade9-3.0.3.apk",
+      "parspackUrl": "https://c539776.parspack.net/apk/grade9/hamyar-grade9-3.0.3.apk",
+      "asset": "hamyar-grade9-3.0.3.apk",
+      "size": 52002015,
+      "sha256": "42712f7568620b2fcf769b4f1a3a62d333724b245b1f0856ad77ebf80729502f",
+      "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959",
+      "min": 0,
+      "rollout": 100,
+      "status": {
+        "compile": "success",
+        "build": "success",
+        "githubRelease": "success",
+        "parspackUpload": "success",
+        "parspackAnonymousRead": "success",
+        "appwriteReadWriteReadBack": "success",
+        "updateStateCommitted": "success"
+      }
     }
   ]
 }
