@@ -61,6 +61,7 @@ class UpdatePlanTest {
         assertEquals(UpdateDecision.None, UpdatePlan.decisionFor(66, info))
     }
 
+    // Release routing must reject external storage hosts rather than falling back to them.
     @Test
     fun `only ParsPack update URLs are accepted`() {
         val rejected = UpdatePlan.parse(
