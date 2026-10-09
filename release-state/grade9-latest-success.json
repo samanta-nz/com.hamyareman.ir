@@ -24,12 +24,12 @@
   "latestSuccessfulCompileBuild": {
     "versionName": "3.0.3",
     "versionCode": 303,
-    "completedAt": "2026-10-09T00:49:47.144858+00:00",
-    "sourceCommit": "a9f321f2db19c8a756f2c790b0d3d3a0eb9307a1",
-    "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/37866616851",
+    "completedAt": "2026-10-09T00:53:34.017742+00:00",
+    "sourceCommit": "c9838c96ee10adc5ceaaf725f3de773bf85ea557",
+    "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/37866884560",
     "asset": "hamyar-grade9-3.0.3.apk",
     "size": 52002015,
-    "sha256": "1c144b6e6585c89ffb975f10b254e1d99f43a038aec46ddc59ef4b5b1423f3a2",
+    "sha256": "47e35556ee06b6bbc900da02af03e9b6b0cab7db9331f84d70309ec6be9468db",
     "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959",
     "status": {
       "compile": "success",
