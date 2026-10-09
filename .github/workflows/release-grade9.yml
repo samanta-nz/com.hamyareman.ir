@@ -115,7 +115,12 @@ jobs:
               if previous:
                   previous_code, previous_name = parse(previous)
                   if code == previous_code and name == previous_name:
-                      needed = False
+                      tag = subprocess.check_output(
+                          ["git", "tag", "--list", f"grade9-v{name}"],
+                          text=True,
+                      ).strip()
+                      # Retry a version that has not actually been tagged/released yet.
+                      needed = not bool(tag)
                   elif code <= previous_code:
                       raise SystemExit(
                           f"versionCode باید افزایشی باشد: قبلی {previous_code} → فعلی {code}"
@@ -146,9 +151,9 @@ jobs:
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
         run: |
           set -euo pipefail
-          test -n "\${APPWRITE_API_KEY:-}" || { echo "::error::APPWRITE_API_KEY تنظیم نشده است"; exit 1; }
-          test -n "\${PARSPACK_ACCESS_KEY:-}" || { echo "::error::PARSPACK_ACCESS_KEY تنظیم نشده است"; exit 1; }
-          test -n "\${PARSPACK_SECRET_KEY:-}" || { echo "::error::PARSPACK_SECRET_KEY تنظیم نشده است"; exit 1; }
+          test -n "${APPWRITE_API_KEY:-}" || { echo "::error::APPWRITE_API_KEY تنظیم نشده است"; exit 1; }
+          test -n "${PARSPACK_ACCESS_KEY:-}" || { echo "::error::PARSPACK_ACCESS_KEY تنظیم نشده است"; exit 1; }
+          test -n "${PARSPACK_SECRET_KEY:-}" || { echo "::error::PARSPACK_SECRET_KEY تنظیم نشده است"; exit 1; }
 
       - name: Test, compile and build release APK
         if: ${{ steps.version.outputs.release_needed == 'true' || github.event_name == 'push' }}
@@ -166,9 +171,9 @@ jobs:
           set -euo pipefail
           mkdir -p dist ci-report
           mapfile -t files < <(find apps/hamyar-app/build/outputs/apk/p09/release -type f -name '*.apk' -print)
-          test "\${#files[@]}" -eq 1
+          test "${#files[@]}" -eq 1
           APK="dist/hamyar-grade9-$VERSION_NAME.apk"
-          cp -f "\${files[0]}" "$APK"
+          cp -f "${files[0]}" "$APK"
           test -s "$APK"
 
           AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
@@ -241,7 +246,7 @@ jobs:
           RELEASE_NOTES_INPUT: ${{ inputs.release_notes }}
         run: |
           set -euo pipefail
-          if [ -n "\${RELEASE_NOTES_INPUT:-}" ]; then
+          if [ -n "${RELEASE_NOTES_INPUT:-}" ]; then
             printf '%s\n' "$RELEASE_NOTES_INPUT" > release-notes.md
           else
             git show -s --format=%B "$GITHUB_SHA" > release-notes.md
@@ -265,7 +270,8 @@ jobs:
             gh release create "$TAG" \
               --repo "$GITHUB_REPOSITORY" \
               --title "همیار من نهم $VERSION_NAME" \
-              --notes-file release-notes.md
+              --notes-file release-notes.md \
+              --target "$GITHUB_SHA"
           fi
           gh release upload "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --clobber
           URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK"
@@ -299,10 +305,10 @@ jobs:
         run: |
           set -euo pipefail
           MIN_CODE=0
-          if [ "\${FORCE_UPDATE_INPUT:-false}" = "true" ]; then
+          if [ "${FORCE_UPDATE_INPUT:-false}" = "true" ]; then
             MIN_CODE="$VERSION_CODE"
           fi
-          ROLLOUT="\${ROLLOUT_INPUT:-100}"
+          ROLLOUT="${ROLLOUT_INPUT:-100}"
           case "$ROLLOUT" in ''|*[!0-9]*) ROLLOUT=100 ;; esac
           ROLLOUT=$((ROLLOUT < 1 ? 1 : ROLLOUT))
           ROLLOUT=$((ROLLOUT > 100 ? 100 : ROLLOUT))
