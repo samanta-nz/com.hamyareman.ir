@@ -24,7 +24,7 @@ class UpdatePlanTest {
         val info = UpdatePlan.parse(full)
         assertEquals(67, info.latest)
         assertEquals(0, info.min)
-        assertTrue(info.url.endsWith("hamyar-1.66.apk"))
+        assertTrue(info.url.endsWith("hamyar-grade9-1.66.apk"))
         assertEquals(28000000L, info.size)
         assertEquals("1.66", UpdatePlan.versionLabel(info))
         assertEquals("abc", info.sha256)
