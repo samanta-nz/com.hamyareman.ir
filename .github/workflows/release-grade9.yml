@@ -294,7 +294,8 @@ jobs:
               --target "$GITHUB_SHA"
           fi
           gh release upload "$TAG" "$APK" --repo "$GITHUB_REPOSITORY" --clobber
-          URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK"
+          ASSET="$(basename "$APK")"
+          URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$ASSET"
           READY=false
           for attempt in 1 2 3 4 5 6; do
             if curl --fail --silent --show-error --location --range 0-1023 "$URL" -o /tmp/github-apk-head.bin; then
