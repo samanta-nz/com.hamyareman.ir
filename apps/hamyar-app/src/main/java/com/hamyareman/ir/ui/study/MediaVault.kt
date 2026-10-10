@@ -294,7 +294,8 @@ object MediaVault {
                     savedEtag == current.etag
             savedModified.isNotBlank() && current.lastModified.isNotBlank() ->
                 (savedLength < 0L || current.length < 0L || savedLength == current.length) &&
-                    savedModified == current.lastModified
+                    savedModified == current.lastModified &&
+                    compareCachedSamples(ctx, currentUrl, cacheKey, current.length)
             savedEtag.isBlank() && savedModified.isBlank() && savedUrl.isNotBlank() ->
                 compareCachedSamples(ctx, currentUrl, cacheKey, current.length)
             else -> false
