@@ -118,9 +118,13 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
 }
 
 /**
- * نمایش HTML: انتخاب دقیق سرور → cache رمز → HMK1 → WebView.
+ * نمایش HTML: انتخاب دقیق سرور → cache → (HMK1 یا HTML ساده) → WebView.
  * فقط حالت «سریع‌ترین» هنگام خطای origin برنده، origin دوم را امتحان می‌کند؛
  * حالت‌های دستی هرگز بی‌صدا به سرور دیگر منتقل نمی‌شوند.
+ *
+ * اگر باکت صریحاً ۴۰۴/۴۱۰/۴۰۳ بدهد و چیزی در کش نباشد، همان تک‌فایل مشترک
+ * «در دست تولید» بار می‌شود (مثل منوی کتاب‌ها)؛ با آپلود فایل در همان آدرس،
+ * بار بعد خودش لود می‌شود.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -142,6 +146,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     var refreshing by remember(activeId) { mutableStateOf(false) }
     var loadTitle by remember(activeId) { mutableStateOf("محتوا در حال دانلود") }
     var reloadToken by remember(activeId) { mutableStateOf(0) }
+    // فایلِ هنوز آپلودنشده (۴۰۴ صریح و بدون کش) به‌جای خطا، تک‌فایل مشترک «در دست تولید» را نشان می‌دهد.
+    var missing by remember(activeId) { mutableStateOf(false) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
     val initialUrl = remember(activeId, item?.key) {
@@ -163,7 +169,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         MusicEmbedPalette.DEFAULT
     }
 
-    LaunchedEffect(activeId, retry) {
+    LaunchedEffect(activeId, retry, missing) {
         val current = item
         error = null
         progress = 0
@@ -175,7 +181,9 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         }
 
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
-        val url = com.hamyareman.ir.ui.study.ServerResolver.internal(current.key)
+        val url = com.hamyareman.ir.ui.study.ServerResolver.internal(
+            if (missing) com.hamyareman.ir.ui.study.BooksMenu.SPACEHOLDER_KEY else current.key,
+        )
         val hasCache = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
         if (hasCache && pageUrl == null) {
             pageUrl = url
@@ -227,8 +235,16 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                 },
             )
 
+            // نه در کش است و نه قابل دانلود: اگر باکت صریحاً ۴۰۴ می‌دهد یعنی هنوز آپلود نشده.
+            val gone = !missing && prepared == null && !hasCache &&
+                com.hamyareman.ir.ui.study.LessonCache.isRemoteMissing(url)
+
             handler.post {
                 when {
+                    gone -> {
+                        refreshing = false
+                        missing = true
+                    }
                     prepared == null && !hasCache -> {
                         pageUrl = null
                         error = "برای بار اول باز کردن این محتوا به اینترنت نیاز است."
