@@ -8,7 +8,7 @@ import com.hamyareman.ir.ui.study.LessonCache
 import com.hamyareman.ir.ui.study.ServerResolver
 import java.io.File
 
-/** ابزارهای HMK1 با انتخاب دقیق سرور و cache دائمیِ فقط-ciphertext. */
+/** ابزارهای HTML؛ cache مشترک payload اصلی را چه HMK1 باشد چه HTML عادی نگه می‌دارد. */
 object ToolRemote {
 
     private val labs = setOf("chemistry", "physics", "biology")
@@ -56,7 +56,7 @@ object ToolRemote {
         val key = ContentCatalog.keyFor(id) ?: return null
         val cached = LessonCache.ensure(ctx, ServerResolver.internal(key)) ?: return null
         val raw = runCatching { cached.readBytes() }.getOrNull() ?: return null
-        val plain = runCatching { HtmlCodec.unwrap(ctx, raw) }.getOrNull() ?: return null
+        val plain = runCatching { HtmlCodec.decodeHtml(ctx, raw) }.getOrNull() ?: return null
         val dest = plainFile(ctx, toolId)
         val part = File(dest.absolutePath + ".part")
         val offlineHtml = String(plain, Charsets.UTF_8).replace(
