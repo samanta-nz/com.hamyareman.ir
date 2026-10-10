@@ -23,8 +23,6 @@ object LessonCache {
 
     private data class RemoteMeta(
         val contentLength: Long,
-        val etag: String,
-        val lastModified: Long,
         val contentType: String,
     )
 
@@ -251,8 +249,6 @@ object LessonCache {
             if (length < 0L) return null
             RemoteMeta(
                 contentLength = length,
-                etag = "",
-                lastModified = 0L,
                 contentType = conn.contentType.orEmpty(),
             )
         } finally {
@@ -264,10 +260,8 @@ object LessonCache {
         val p = Properties()
         metaFor(ctx, url).inputStream().use(p::load)
         RemoteMeta(
-            p.getProperty("length", "-1").toLong(),
-            p.getProperty("etag", ""),
-            p.getProperty("lastModified", "0").toLong(),
-            p.getProperty("contentType", ""),
+            contentLength = p.getProperty("length", "-1").toLong(),
+            contentType = p.getProperty("contentType", ""),
         )
     }.getOrNull()
 
@@ -277,8 +271,6 @@ object LessonCache {
             val tmp = File(meta.absolutePath + ".tmp")
             val p = Properties()
             p.setProperty("length", remote.contentLength.toString())
-            p.setProperty("etag", remote.etag)
-            p.setProperty("lastModified", remote.lastModified.toString())
             p.setProperty("contentType", remote.contentType)
             tmp.outputStream().use { p.store(it, null) }
             if (!tmp.renameTo(meta)) {
@@ -358,10 +350,8 @@ object LessonCache {
                 ctx,
                 url,
                 RemoteMeta(
-                    conn.contentLengthLong,
-                    conn.getHeaderField("ETag").orEmpty(),
-                    conn.lastModified,
-                    conn.contentType.orEmpty(),
+                    contentLength = conn.contentLengthLong,
+                    contentType = conn.contentType.orEmpty(),
                 ),
             )
             lastFailures.remove(keyOf(url))
