@@ -274,8 +274,14 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         val key = book.mediaKey
         if (key.isNotBlank() && !state.hasMedia) {
             val cache = freeDownloadKey(book, key)
-            val uri = if (MediaVault.isVerified(ctx, cache)) MediaVault.localUrl(ctx, cache) else StudyMedia.viewUrl(key)
-            downloaded.value = MediaVault.isVerified(ctx, cache)
+            if (MediaVault.isVerified(ctx, cache)) {
+                withContext(Dispatchers.IO) {
+                    MediaVault.ensureFresh(ctx, StudyMedia.candidateUrls(key), cache)
+                }
+            }
+            val useLocal = MediaVault.isVerified(ctx, cache)
+            val uri = if (useLocal) MediaVault.localUrl(ctx, cache) else StudyMedia.viewUrl(key)
+            downloaded.value = useLocal
             playback.setMedia(uri, book.title, FreeReadingState.pos(ctx, book.id))
         }
         if (timerUntil > System.currentTimeMillis()) playback.setSleepTimer(timerUntil)
