@@ -1,54 +1,63 @@
 # نقشهٔ مسیرهای محتوای همیار — نسخهٔ هدف 3.0.4
 
-## دامنه و روش
+## دامنه و محدودیت
 
-این نقشه از ساختار واقعی منابع اپ ساخته شده است: `assets/content/server-map.json`، `catalog.json`، `app-content.tsv`، `books-menu.json` و `Read-Only-Books-Data/app-Parspack-upload-map.csv`. هر ردیف نشان‌دهندهٔ یک `object_key` یکتا است؛ چند شناسه یا منبعی که به یک مسیر می‌رسند در یک ردیف ادغام شده‌اند.
+این خروجی از منابع واقعی اپ ساخته شده است: `server-map.json`، `catalog.json`، `app-content.tsv`، `books-menu.json` و `Read-Only-Books-Data/app-Parspack-upload-map.csv`. هر ردیف یک `object_key` یکتا است و منابع مربوطه در ستون جداگانه آمده‌اند.
 
-**محدودیت مهم:** این خروجی فهرست زندهٔ ParsPack را نمی‌خواند؛ ستون `live_bucket_status` عمداً «بررسی زنده انجام نشده» است. «URL تعریف‌شده» یعنی مسیر در منابع اپ قابل استخراج است، نه اینکه فایل همین حالا روی باکت موجود باشد.
+**این خروجی فهرست زندهٔ ParsPack را نمی‌خواند.** ستون `live_bucket_status` عمداً «بررسی زنده انجام نشده» است؛ URL مورد انتظار با وجود واقعی فایل یکسان نیست.
 
 ## آمار
 
-- ردیف‌های CSV بیرونی: 237؛ وضعیت‌های CSV: active.
-- ورودی‌های server-map پیش از تغییر: 399.
-- نگاشت‌های MP3/MP4 افزوده‌شده: 504؛ ورودی‌های server-map پس از تغییر: 903.
-- رکوردهای catalog.json: 100.
-- ردیف‌های app-content.tsv: 120.
-- ارجاع‌های کلیددار مستقیم از منوی کتاب‌ها، از جمله key/teachKey/audioKey و tab: 345.
+- CSV بیرونی: 237 ردیف؛ همه با status برابر `active`.
+- ورودی‌های `server-map.json` قبل از افزوده‌شدن نگاشت رسانه: 399.
+- نگاشت‌های MP3/MP4 افزوده‌شده: 504؛ `server-map.json` اکنون 903 ورودی دارد.
+- `catalog.json`: 100 ورودی؛ `app-content.tsv`: 120 ردیف.
 - مسیرهای یکتای نقشه: 1001.
 - مسیرهای تعریف‌شده در منابع اپ: 1001.
-- مسیرهای موجود در CSV که در منابع بررسی‌شدهٔ اپ نگاشت پیدا نکردند: 0.
-- تعارض‌های شناسه در server-map: 15.
+- CSV-only در منابع بررسی‌شدهٔ اپ: 0.
+- شناسه‌های slug/فایل که به بیش از یک مسیر اشاره دارند: 34; ردیف‌های roadmap دارای تعارض: 67.
 
-### انواع فایل (مسیر یکتا)
+## نمونه تعارض شناسه
 
-- HTML: 237
-- MP3: 235
-- MP4: 233
-- PDF: 296
+- `g9-english-p01.pdf`: `Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p01.pdf`؛ `Bucket/Pdf-files/G09/g9-english/g9-english-p01.pdf`
+- `g9-english-p02.pdf`: `Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p02.pdf`؛ `Bucket/Pdf-files/G09/g9-english/g9-english-p02.pdf`
+- `g9-english-p03.pdf`: `Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p03.pdf`؛ `Bucket/Pdf-files/G09/g9-english/g9-english-p03.pdf`
+- `g9-english-p04.pdf`: `Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p04.pdf`؛ `Bucket/Pdf-files/G09/g9-english/g9-english-p04.pdf`
+- `g9-english-p05.pdf`: `Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p05.pdf`؛ `Bucket/Pdf-files/G09/g9-english/g9-english-p05.pdf`
+- `g9-english-p06.pdf`: `Bucket/Pdf-files/G09/g9-english-workbook/g9-english-p06.pdf`؛ `Bucket/Pdf-files/G09/g9-english/g9-english-p06.pdf`
+- `g9-hedy-p04.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p04.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p04.pdf`
+- `g9-hedy-p05.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p05.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p05.pdf`
+- `g9-hedy-p06.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p06.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p06.pdf`
+- `g9-hedy-p07.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p07.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p07.pdf`
+- `g9-hedy-p08.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p08.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p08.pdf`
+- `g9-hedy-p09.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p09.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p09.pdf`
+- `g9-hedy-p10.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p10.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p10.pdf`
+- `g9-hedy-p11.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p11.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p11.pdf`
+- `g9-hedy-p12.pdf`: `Bucket/Pdf-files/G09/g9-hedye/g9-hedy-p12.pdf`؛ `Bucket/Pdf-files/G09/g9-payam/g9-hedy-p12.pdf`
 
-## مسیر صوت و ویدیو
+تعارض‌های بالا خودکار یکی یا حذف نشده‌اند؛ ممکن است به دو فایل واقعی در دو مسیر کتاب اشاره کنند. داشبورد ستون و فیلتر جداگانه برای مشاهدهٔ این ردیف‌ها دارد.
 
-برای پک‌های مطالعهٔ شناخته‌شده، شناسه‌های صوت و ویدیو در `server-map.json` از قبل نگاشت شده‌اند تا `StudyMedia.candidateUrls(fileId)` همان مسیر را از کاتالوگ بیابد. قراردادهای جدید:
+## مسیرهای رسانه
 
 - MP3: `Bucket/Pdf-files/G09/<folder کتاب>/<شناسهٔ صوت>.mp3`.
-- MP4 آموزشی: `Bucket/Pdf-files/G09/<folder کتاب>/<packId با خط تیره>-V01.mp4`.
-- صوت‌های ریاضی نهم از مسیرهای مستقیم قبلی در `g9-math/exam/` مانند `ryazifNNdNN.mp3` و `ryazifNNreview.mp3` استفاده می‌کنند.
-- برای کدهای مطالعهٔ C908 و C911، فولدر مطابق کتاب متناظر در منوی اپ به صورت صریح نگاشت شده است.
-- این ردیف‌ها مسیرهای مورد انتظار را تعریف می‌کنند؛ این ممیزی تأیید نمی‌کند که همهٔ فایل‌های صوت/ویدیو همین حالا روی باکت موجودند.
+- MP4: `Bucket/Pdf-files/G09/<folder کتاب>/<packId با خط تیره>-V01.mp4`.
+- صوت ریاضی نهم با قراردادهای legacy در `g9-math/exam/` (مثل `ryazifNNdNN.mp3` و `ryazifNNreview.mp3`) تعریف شده است.
+- مسیرها از روی شناسه‌های مطالعه و قرارداد کد موجود در اپ تعریف شده‌اند؛ وجود همهٔ objectها روی باکت زنده هنوز تست نشده است.
 
-## منطق تازگی و کش
+## کش و تشخیص تغییر
 
-- **HTML رمز‌شدهٔ HMK1:** `LessonCache` در `main` از ETag، طول، Last-Modified و در نبود validator از Range ابتدایی/انتهایی استفاده می‌کند؛ فاصلهٔ بررسی حدود ۳۰ ثانیه است.
-- **PDF:** در شاخهٔ کاری، `StudyPdfCache` هنگام بازکردن کش، متادیتا/Range را بررسی می‌کند، ساختار PDF را اعتبارسنجی می‌کند و هنگام خطای شبکه نسخهٔ سالم قبلی را نگه می‌دارد. این تغییر هنوز build/test نشده است.
-- **MP3/MP4 دانلودشده:** `MediaVault/HMV1` برای کش محلی استفاده می‌شود و شاخهٔ کاری در شروع استفاده از کش محلی متادیتای HTTP را بررسی می‌کند. پخش استریم مستقیم مسیر جداگانه‌ای است.
-- **تصویر/فونت/CSS/JavaScript:** این انواع در مسیر WebView/شبکه‌اند؛ در کد بررسی‌شده، کش مستقل دارای متادیتای تازگی برای آن‌ها تأیید نشده است. این شکاف در ستون «منطق کش» علامت‌گذاری شده است.
+- **HTML رمز‌شدهٔ HMK1:** `LessonCache` در `main` از ETag، طول، Last-Modified و در نبود validator از Range ابتدای/انتهای فایل استفاده می‌کند؛ فاصلهٔ بررسی حدود ۳۰ ثانیه است.
+- **PDF:** در شاخهٔ کاری، `StudyPdfCache` هنگام بازکردن کش متادیتا/Range را بررسی می‌کند، PDF را اعتبارسنجی می‌کند و در خطای شبکه نسخهٔ سالم قبلی را نگه می‌دارد.
+- **MP3/MP4 دانلودشده:** `MediaVault/HMV1` کش محلی دارد؛ در شاخهٔ کاری تازگی کش دانلودشده با متادیتای HTTP بررسی می‌شود. پخش مستقیم استریم مسیر جداگانه‌ای است.
+- **تصویر/فونت/CSS/JavaScript:** از مسیر WebView/شبکه‌اند؛ در کد بررسی‌شده کش مستقل دارای metadata تازگی برای آن‌ها تأیید نشده است.
+- مقایسهٔ ابتدا و انتهای فایل، وقتی ETag/Last-Modified وجود ندارد، تضمین بررسی تمام بایت‌ها نیست؛ CDN و فایل هم‌طول باید با آزمایش واقعی بررسی شوند.
+- تغییرات کد در شاخهٔ کاری هنوز build/test نشده‌اند.
 
-## وضعیت اجرای انتشار 3.0.4
+## وضعیت انتشار 3.0.4
 
-در اجرای GitHub Actions با شناسهٔ [38018067039](https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/38018067039)، آزمون/کامپایل/ساخت APK، انتشار GitHub Release و آپلود ParsPack موفق بود؛ اما انتشار وضعیت آپدیت در Appwrite با `HTTP 403 Forbidden` شکست خورد. پس این اجرا «انتشار کاملاً موفق» محسوب نمی‌شود. گزارش هیچ مقدار secret یا کلید حساسی را افشا نمی‌کند.
+در اجرای [GitHub Actions 38018067039](https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/38018067039)، build/test APK، GitHub Release و آپلود ParsPack موفق بودند؛ اما به‌روزرسانی وضعیت نسخه در Appwrite با `HTTP 403 Forbidden` شکست خورد. بنابراین آن اجرا انتشار کاملاً موفق نیست.
 
-## فایل‌های خروجی
+## فایل‌ها
 
-- `content-upload-roadmap.html`: داشبورد فارسی فیلترپذیر؛ خروجی CSV دقیقاً از ردیف‌های فیلترشده تولید می‌شود.
-- `content-upload-roadmap.csv`: نقشهٔ کامل، یک ردیف برای هر مسیر یکتا.
-- ستون `expected_public_url` نشانی محاسبه‌شده از `server.base` و `object_key` است؛ کلید خام باکت در ستون کنار آن قرار دارد.
+- `content-upload-roadmap.html`: داشبورد فیلترپذیر فارسی با گزینهٔ تعارض شناسه؛ CSV صادراتی فقط نتایج فیلترشده و همهٔ ستون‌ها را شامل می‌شود.
+- `content-upload-roadmap.csv`: نقشهٔ کامل با یک ردیف برای هر مسیر یکتا.
