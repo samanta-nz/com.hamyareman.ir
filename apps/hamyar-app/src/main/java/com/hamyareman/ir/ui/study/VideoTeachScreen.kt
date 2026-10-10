@@ -107,16 +107,27 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     }
     androidx.activity.compose.BackHandler { onBack() }
 
-    // --- منبع پخش: سرور یا گاوصندوق محلی ---
-    var useLocal by remember(packId) { mutableStateOf(MediaVault.isCached(context, fileId)) }
+    // --- منبع پخش: نسخهٔ محلی تا پس از بررسی تازگی انتخاب نمی‌شود ---
+    var useLocal by remember(fileId) { mutableStateOf(MediaVault.isVerified(context, fileId)) }
+    var freshnessChecked by remember(fileId) { mutableStateOf(false) }
     var downloading by remember { mutableStateOf(false) }
     var progressPct by remember { mutableIntStateOf(-1) }
     var cacheTick by remember { mutableIntStateOf(0) }
     var msg by remember { mutableStateOf<String?>(null) }
 
     val remoteUris = StudyMedia.candidateUrls(fileId)
+    LaunchedEffect(fileId) {
+        withContext(Dispatchers.IO) {
+            if (MediaVault.isVerified(context, fileId)) {
+                MediaVault.ensureFresh(context, remoteUris, fileId)
+            }
+        }
+        useLocal = MediaVault.isVerified(context, fileId)
+        freshnessChecked = true
+        cacheTick++
+    }
     var remoteIndex by remember(fileId) { mutableIntStateOf(0) }
-    val uri = if (cacheTick >= 0 && useLocal && MediaVault.isCached(context, fileId)) {
+    val uri = if (freshnessChecked && useLocal && MediaVault.isVerified(context, fileId)) {
         MediaVault.localUrl(context, fileId)
     } else {
         remoteUris.getOrElse(remoteIndex) { remoteUris.first() }

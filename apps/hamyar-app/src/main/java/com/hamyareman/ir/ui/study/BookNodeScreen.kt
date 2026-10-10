@@ -315,10 +315,11 @@ private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
         result.onSuccess { pdf ->
             synchronized(lock) { renderer = pdf }
             state = BookPdfState.Ready(pdf.pageCount)
-        }.onFailure {
-            val message = it.message?.take(180) ?: "دریافت این فایل ممکن نشد."
-            // اگر باکت برای همهٔ آدرس‌ها صریحاً «نیست» بگوید، یعنی هنوز آپلود نشده.
-            val gone = withContext(Dispatchers.IO) {
+        }.onFailure { failure ->
+            val message = failure.message?.take(180) ?: "دریافت این فایل ممکن نشد."
+            // RemoteMissingException یعنی باکت صریحاً نبودن فایل را تأیید کرده؛
+            // کش قدیمی روی دیسک حفظ شده، اما UI باید spaceholder را نشان دهد.
+            val gone = failure is StudyPdfCache.RemoteMissingException || withContext(Dispatchers.IO) {
                 val urls = StudyMedia.candidateUrls(bucketKey).toList()
                 urls.isNotEmpty() && urls.all { u -> LessonCache.isRemoteMissing(u) }
             }
