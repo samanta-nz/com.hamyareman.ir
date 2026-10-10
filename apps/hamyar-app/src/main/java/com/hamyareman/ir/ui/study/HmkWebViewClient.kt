@@ -117,17 +117,20 @@ open class HmkWebViewClient(
     private fun decryptTwice(url: String, file: File, first: ByteArray): ByteArray? {
         runCatching { HtmlCodec.decodeHtml(appContext, first) }.onSuccess { return it }
 
-        if (HtmlMediaKey.get(appContext) == null) {
-            lastMessage = MSG_NO_KEY
-            onProblem(Problem.KEY_MISSING)
-            return null
-        }
-
+        // Refresh before asking for the shared key: the new remote version may now be
+        // ordinary HTML even when the stale cached version used HMK1.
         val refreshed = LessonCache.refresh(appContext, url)?.file ?: file
         val bytes = runCatching { refreshed.readBytes() }.getOrNull()
         if (bytes != null && bytes.size <= LessonCache.MAX_DECRYPT_BYTES) {
             if (!HtmlCodec.hasMagic(bytes) && HtmlCodec.isPlainHtml(bytes)) return bytes
-            runCatching { HtmlCodec.decodeHtml(appContext, bytes) }.onSuccess { return it }
+            if (HtmlCodec.hasMagic(bytes)) {
+                if (HtmlMediaKey.get(appContext) == null) {
+                    lastMessage = MSG_NO_KEY
+                    onProblem(Problem.KEY_MISSING)
+                    return null
+                }
+                runCatching { HtmlCodec.decodeHtml(appContext, bytes) }.onSuccess { return it }
+            }
         }
         lastMessage = MSG_CORRUPT
         onProblem(Problem.CORRUPT)
