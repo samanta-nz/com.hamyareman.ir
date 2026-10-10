@@ -164,6 +164,37 @@ object LessonCache {
     fun ensure(ctx: Context, url: String, onProgress: ((Int, Int) -> Unit)? = null): File? =
         prepare(ctx, url, onProgress)?.file
 
+    /**
+     * Force a fresh download after payload-level validation fails. This bypasses the
+     * freshness TTL, but still writes to a temporary file and preserves the old cache
+     * if the request or validation fails.
+     */
+    fun refresh(
+        ctx: Context,
+        url: String,
+        onProgress: ((Int, Int) -> Unit)? = null,
+    ): PrepareResult? {
+        val canonicalUrl = canonical(url)
+        val target = fileFor(ctx, canonicalUrl)
+        val key = keyOf(canonicalUrl)
+        val lock = locks.getOrPut(key) { Any() }
+        synchronized(lock) {
+            val hadCache = looksUsable(ctx, target, canonicalUrl)
+            val downloaded = runCatching {
+                download(canonicalUrl, target, onProgress)
+            }.getOrNull()
+            if (downloaded == null) {
+                return if (hadCache) PrepareResult(target, Freshness.CACHED) else null
+            }
+            fetchMeta(canonicalUrl)?.let { writeMeta(ctx, canonicalUrl, it) }
+            recentChecks[key] = System.currentTimeMillis()
+            return PrepareResult(
+                downloaded,
+                if (hadCache) Freshness.UPDATED else Freshness.DOWNLOADED,
+            )
+        }
+    }
+
     private fun fetchMeta(url: String): RemoteMeta? {
         val head = runCatching {
             val conn = (URL(url).openConnection() as HttpURLConnection).apply {
