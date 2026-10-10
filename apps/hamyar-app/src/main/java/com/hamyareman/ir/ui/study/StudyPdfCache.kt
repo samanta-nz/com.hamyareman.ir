@@ -134,7 +134,6 @@ object StudyPdfCache {
                     }
                     if (total > 0 && part.length() < total) throw IOException("دانلود ناقص ${part.length()}/$total")
                     if (!isValid(part)) throw IOException("PDF ناقص یا نامعتبر است")
-                    if (!isValid(part)) throw IOException("PDF ناقص یا نامعتبر است")
                     replaceVerified(part, target)
                     check(isValid(target)) { "اعتبارسنجی PDF نهایی شکست خورد." }
                     val finalMeta = probe(candidates).let { result ->
@@ -212,11 +211,38 @@ object StudyPdfCache {
             when {
                 status in 200..299 -> ProbeResult.Available(metaFrom(conn), url)
                 status == 403 || status == 404 || status == 410 -> ProbeResult.Missing(status)
+                status == 405 || status == 501 -> probeRange(url)
                 else -> ProbeResult.Unavailable
             }
         } catch (_: Throwable) {
             ProbeResult.Unavailable
         } finally {
+            runCatching { conn?.disconnect() }
+        }
+    }
+
+    private fun probeRange(url: String): ProbeResult {
+        var conn: HttpURLConnection? = null
+        return try {
+            conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 8_000
+                readTimeout = 8_000
+                instanceFollowRedirects = true
+                requestMethod = "GET"
+                setRequestProperty("Range", "bytes=0-0")
+                setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Cache-Control", "no-cache")
+                setRequestProperty("Pragma", "no-cache")
+            }
+            when (val status = conn.responseCode) {
+                HttpURLConnection.HTTP_PARTIAL -> ProbeResult.Available(metaFrom(conn), url)
+                403, 404, 410 -> ProbeResult.Missing(status)
+                else -> ProbeResult.Unavailable
+            }
+        } catch (_: Throwable) {
+            ProbeResult.Unavailable
+        } finally {
+            runCatching { conn?.inputStream?.close() }
             runCatching { conn?.disconnect() }
         }
     }
@@ -286,7 +312,7 @@ object StudyPdfCache {
     private fun readRemoteMeta(file: File): RemoteMeta? = runCatching {
         if (!file.isFile) return null
         val p = Properties()
-        file.inputStream().use(p::load)
+        file.inputStream().use { p.load(it) }
         RemoteMeta(
             length = p.getProperty("length", "-1").toLong(),
             etag = p.getProperty("etag", ""),
