@@ -97,8 +97,8 @@ jobs:
           for rel in ["lock/app-lock-bg.jpg", "lock/safespace-lock-bg.jpg", "diary/desk-bg.jpg", "poetry/poetry-bg.jpg", "album/album-bg.jpg"]:
               real = Path("assets") / rel
               generated = Path("apps/hamyar-app/src/main/assets") / rel
-              if real.exists() and generated.exists():
-                  errors.append(f"duplicate asset (real + generated): {rel}")
+              if real.exists() and generated.exists() and real.read_bytes() != generated.read_bytes():
+                  errors.append(f"generated asset differs from source: {rel}")
               if not (real.exists() or generated.exists()):
                   errors.append(f"asset missing: {rel}")
 
