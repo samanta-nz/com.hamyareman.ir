@@ -275,7 +275,9 @@ object StudyPdfCache {
             }
             if (saved.lastModified.isNotBlank() && remote.lastModified.isNotBlank()) {
                 if (saved.lastModified != remote.lastModified) return false
-                if (saved.length >= 0L && remote.length >= 0L) return saved.length == remote.length
+                if (saved.length >= 0L && remote.length >= 0L && saved.length != remote.length) return false
+                // Last-Modified معمولاً دقت ثانیه‌ای دارد؛ برابر بودنش به‌تنهایی
+                // جایگزینی هم‌طول در همان ثانیه را رد نمی‌کند، پس Range هم بررسی شود.
             }
         }
         return compareRange(url, file, 0L) &&
