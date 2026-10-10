@@ -115,7 +115,7 @@ open class HmkWebViewClient(
      * validated. A replacement may now be plain HTML, so classify it again.
      */
     private fun decryptTwice(url: String, file: File, first: ByteArray): ByteArray? {
-        runCatching { HtmlCodec.unwrap(appContext, first) }.onSuccess { return it }
+        runCatching { HtmlCodec.decodeHtml(appContext, first) }.onSuccess { return it }
 
         if (HtmlMediaKey.get(appContext) == null) {
             lastMessage = MSG_NO_KEY
@@ -127,7 +127,7 @@ open class HmkWebViewClient(
         val bytes = runCatching { refreshed.readBytes() }.getOrNull()
         if (bytes != null && bytes.size <= LessonCache.MAX_DECRYPT_BYTES) {
             if (!HtmlCodec.hasMagic(bytes) && HtmlCodec.isPlainHtml(bytes)) return bytes
-            runCatching { HtmlCodec.unwrap(appContext, bytes) }.onSuccess { return it }
+            runCatching { HtmlCodec.decodeHtml(appContext, bytes) }.onSuccess { return it }
         }
         lastMessage = MSG_CORRUPT
         onProblem(Problem.CORRUPT)
