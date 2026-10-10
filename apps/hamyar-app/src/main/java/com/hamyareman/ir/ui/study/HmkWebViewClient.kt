@@ -20,7 +20,7 @@ open class HmkWebViewClient(
     private val onProblem: (Problem) -> Unit = {},
 ) : WebViewClient() {
 
-    enum class Problem { KEY_MISSING, CORRUPT, OFFLINE }
+    enum class Problem { KEY_MISSING, CORRUPT, OFFLINE, NOT_FOUND }
 
     override fun shouldInterceptRequest(
         view: WebView,
@@ -47,9 +47,23 @@ open class HmkWebViewClient(
         val prepared = LessonCache.prepare(appContext, url)
         if (prepared == null) {
             if (request.isForMainFrame && isHtml) {
-                lastMessage = MSG_OFFLINE
-                onProblem(Problem.OFFLINE)
-                return errorPage(MSG_OFFLINE)
+                when (LessonCache.failureReason(url)) {
+                    LessonCache.FailureReason.INVALID_PAYLOAD -> {
+                        lastMessage = MSG_CORRUPT
+                        onProblem(Problem.CORRUPT)
+                        return errorPage(MSG_CORRUPT)
+                    }
+                    LessonCache.FailureReason.NOT_FOUND -> {
+                        lastMessage = MSG_NOT_FOUND
+                        onProblem(Problem.NOT_FOUND)
+                        return errorPage(MSG_NOT_FOUND)
+                    }
+                    LessonCache.FailureReason.NETWORK -> {
+                        lastMessage = MSG_OFFLINE
+                        onProblem(Problem.OFFLINE)
+                        return errorPage(MSG_OFFLINE)
+                    }
+                }
             }
             // Let WebView make its ordinary request for non-HTML resources or a
             // subframe when no validated cache payload could be prepared.
@@ -186,6 +200,7 @@ open class HmkWebViewClient(
 
     companion object {
         const val MSG_OFFLINE = "برای بار اول باز کردن این درس به اینترنت نیاز است."
+        const val MSG_NOT_FOUND = "این محتوا روی سرور در دسترس نیست یا هنوز بارگذاری نشده است."
         const val MSG_NO_KEY = "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو."
         const val MSG_CORRUPT = "فایل درس خراب است. دوباره تلاش کن."
         const val MSG_TOO_BIG = "این فایل برای باز شدن روی این دستگاه خیلی بزرگ است."
