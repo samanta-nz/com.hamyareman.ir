@@ -34,9 +34,9 @@ android {
         // انتشار عمومی از Android 10 به بعد؛ APIهای قدیمی‌تر در این محصول پشتیبانی نمی‌شوند.
         targetSdk = 36
         // نسخهٔ پیش‌فرض توسعه؛ workflow انتشار versionCode/versionName را برای هر انتشار override می‌کند.
-    // Release grade 9 v3.0.5
-        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 305
-        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "3.0.5"
+    // Release grade 9 v3.0.6
+        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 306
+        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "3.0.6"
         ndk {
             // فقط معماری‌های واقعیِ گوشی. x86/x86_64 (شبیه‌ساز) عمداً حذف‌اند:
             // کتابخانه‌ی بومیِ WebRTC برای هر معماری ~۶ تا ۱۲ مگابایت است و هر دو
@@ -104,7 +104,7 @@ android {
             // بدون applicationIdSuffix: هر اپ فقط یک «Platform» در کنسول Appwrite لازم دارد.
         }
         release {
-            // امضا با همان کلیدِ دیبagِ داخلِ ریپو (قراردادِ پروژه): بدونِ امضای
+            // امضا با همان کلیدِ دیباگِ داخلِ ریپو (قراردادِ پروژه): بدونِ امضای
             // یکسان، نصبِ نسخه‌ی تازه روی نصبِ قبلی رد می‌شود
             // (INSTALL_FAILED_UPDATE_INCOMPATIBLE) و کلِ کانالِ آپدیت می‌خوابد.
             signingConfig = signingConfigs.getByName("debug")

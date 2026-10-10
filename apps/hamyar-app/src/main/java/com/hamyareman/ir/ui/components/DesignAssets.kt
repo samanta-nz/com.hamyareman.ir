@@ -1,5 +1,6 @@
 package com.hamyareman.ir.ui.components
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,19 +13,18 @@ import coil.compose.AsyncImage
 import com.hamyareman.ir.ui.study.ServerResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
-import java.io.File
-import java.io.FileOutputStream
-import java.util.zip.ZipInputStream
+import java.util.concurrent.ConcurrentHashMap
 
 /**
- * کلیدِ هر تصویر همان مسیر روی باکت است: https://c539776.parspack.net/ + کلید.
+ * کلید هر تصویر همان مسیر روی باکت است: https://c539776.parspack.net/ + کلید.
  * نسخهٔ محلیِ داخل APK (در صورت وجود) زیر `src/main/assets/` و بدون پیشوند `assets/` است.
  */
 internal object DesignAsset {
-    const val DIARY_PACK = "diary-assets.zip"
     // قفل‌ها (۱۰۸۰×۲۳۴۰) — اگر روی باکت نباشند، صحنهٔ رسم‌شده با کد دیده می‌شود.
     const val LOCK_APP = "assets/lock/app-lock-bg.jpg"
     const val LOCK_SAFE = "assets/lock/safespace-lock-bg.jpg"
@@ -35,14 +35,14 @@ internal object DesignAsset {
     const val ALBUM_BG = "assets/album/album-bg.jpg"
     const val PAPER_CREAM = "assets/diary/paper-cream.jpg"
 
-    // کتاب‌های PNG دوربری‌شده (بوم مشترک ۱۰۵۹×۱۴۸۶، دقیقاً روی هم می‌نشینند):
-    // <name>.png جلد بسته، -inside کتاب باز، -sheet ورق تکی با خط‌های اندازه‌گیری‌شده.
-    const val COVER_NAVY_FLORAL = "assets/diary/cover-navy-floral.png"
-    const val COVER_NAVY_FLORAL_INSIDE = "assets/diary/cover-navy-floral-inside.png"
-    const val COVER_NAVY_FLORAL_SHEET = "assets/diary/cover-navy-floral-sheet.png"
-    const val COVER_LEATHER = "assets/diary/cover-leather-brown.png"
-    const val COVER_LEATHER_INSIDE = "assets/diary/cover-leather-brown-inside.png"
-    const val COVER_LEATHER_SHEET = "assets/diary/cover-leather-brown-sheet.png"
+    // کتاب‌های دوربری‌شده (WebP با شفافیت، بوم مشترک ۱۰۵۹×۱۴۸۶، دقیقاً روی هم می‌نشینند):
+    // <n>.webp جلد بسته، -inside کتاب باز، -sheet ورق تکی با خط‌های اندازه‌گیری‌شده.
+    const val COVER_NAVY_FLORAL = "assets/diary/cover-navy-floral.webp"
+    const val COVER_NAVY_FLORAL_INSIDE = "assets/diary/cover-navy-floral-inside.webp"
+    const val COVER_NAVY_FLORAL_SHEET = "assets/diary/cover-navy-floral-sheet.webp"
+    const val COVER_LEATHER = "assets/diary/cover-leather-brown.webp"
+    const val COVER_LEATHER_INSIDE = "assets/diary/cover-leather-brown-inside.webp"
+    const val COVER_LEATHER_SHEET = "assets/diary/cover-leather-brown-sheet.webp"
 
     // جلدهای قدیمی (برای سازگاری)
     const val COVER_CELESTIAL = "assets/diary/cover-celestial.jpg"
@@ -51,11 +51,11 @@ internal object DesignAsset {
     const val PAGE_LINED = "assets/diary/page-lined.jpg"
 
     /**
-     * جلد/ورق کتاب‌های PNG داخل خود APK امبد شده‌اند و بدون شبکه و بدون انتظار برای باکت
-     * نمایش داده می‌شوند (دفتر شعر چرمی و دفتر خاطرات سرمه‌ای).
+     * جلد/ورق کتاب‌های WebP (دفتر شعر چرمی و دفتر خاطرات سرمه‌ای): در APK نیستند؛ یک‌بار از
+     * باکت می‌آیند، روی دیسک می‌نشینند و با یک GET شرطی (ETag) تازه می‌مانند.
      */
     fun isEmbeddedBook(key: String): Boolean =
-        key.endsWith(".png") && key.substringAfterLast('/').startsWith("cover-")
+        key.endsWith(".webp") && key.substringAfterLast('/').startsWith("cover-")
 
     fun remoteUrl(key: String): String =
         ServerResolver.INTERNAL_PUBLIC.trimEnd('/') + "/" +
@@ -82,49 +82,73 @@ private suspend fun readable(url: String): Boolean = withContext(Dispatchers.IO)
     }.getOrDefault(false)
 }
 
+private val syncedThisProcess = ConcurrentHashMap.newKeySet<String>()
+
+private fun coverFile(context: Context, key: String): File {
+    val dir = File(context.filesDir, "design-covers").apply { mkdirs() }
+    return File(dir, key.substringAfterLast('/'))
+}
+
+/** نسخهٔ محلیِ موجود (اگر باشد) بدون هیچ شبکه‌ای. */
+private fun localCoverUri(context: Context, key: String): String? {
+    val file = coverFile(context, key)
+    return file.takeIf { it.exists() && it.length() > 1024L }?.toURI()?.toString()
+}
+
 /**
- * طراحی از باکت داخلی/سرور اولویت دارد؛ در صورت قطع سرور، همان asset محلی به‌عنوان
- * fallback استفاده می‌شود تا UI هرگز به جای تصویر سفید یا placeholder نرود.
+ * جلد را از باکت می‌گیرد و روی دیسک نگه می‌دارد. هر جلد در هر اجرای اپ یک‌بار با GET شرطی
+ * (`If-None-Match`) اعتبارسنجی می‌شود: ۳۰۴ یعنی همان نسخه، ۲۰۰ یعنی فایل تازه در همان آدرس.
+ * اشکال شبکه با نسخهٔ محلیِ موجود، همان نسخه را برمی‌گرداند؛ بدون نسخهٔ محلی `null`.
  */
-private fun diaryFileName(key: String): String =
-    key.substringAfterLast('/').takeIf { it.endsWith(".png") && !it.contains("..") } ?: ""
+private fun syncCover(context: Context, key: String): String? {
+    val target = coverFile(context, key)
+    val etagFile = File(target.path + ".etag")
+    val local = localCoverUri(context, key)
+    if (local != null && syncedThisProcess.contains(key)) return local
 
-private fun extractDiaryAsset(context: android.content.Context, key: String): String? {
-    if (!DesignAsset.isEmbeddedBook(key)) return null
-    val name = diaryFileName(key)
-    if (name.isBlank()) return null
-    val dir = File(context.cacheDir, "hamyar-diary-assets")
-    val target = File(dir, name)
-    if (target.exists() && target.length() > 1024L) {
-        return target.toURI().toString()
-    }
-
-    return runCatching {
-        dir.mkdirs()
-        ZipInputStream(context.assets.open(DesignAsset.DIARY_PACK).buffered()).use { zis ->
-            var found = false
-            while (true) {
-                val entry = zis.nextEntry ?: break
-                val entryName = entry.name
-                if (!entry.isDirectory &&
-                    entryName == "diary/$name" &&
-                    entryName.substringAfterLast('/').equals(name)
-                ) {
-                    val tmp = File(dir, ".$name.tmp")
-                    FileOutputStream(tmp).use { out -> zis.copyTo(out) }
-                    if (tmp.length() <= 0L) error("empty diary asset")
-                    if (!tmp.renameTo(target)) {
-                        tmp.copyTo(target, overwrite = true)
-                        tmp.delete()
-                    }
-                    found = true
-                    break
-                }
+    var conn: HttpURLConnection? = null
+    try {
+        conn = (URL(DesignAsset.remoteUrl(key)).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 4_000
+            readTimeout = 15_000
+            instanceFollowRedirects = true
+            useCaches = false
+            setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
+            if (local != null) {
+                val etag = runCatching { etagFile.readText().trim() }.getOrDefault("")
+                if (etag.isNotEmpty()) setRequestProperty("If-None-Match", etag)
             }
-            if (!found) return@runCatching null
         }
-        target.takeIf { it.exists() && it.length() > 1024L }?.toURI()?.toString()
-    }.getOrNull()
+        val code = conn.responseCode
+        if (code == HttpURLConnection.HTTP_NOT_MODIFIED && local != null) {
+            syncedThisProcess.add(key)
+            return local
+        }
+        if (code !in 200..299) return local
+
+        val etag = conn.getHeaderField("ETag").orEmpty()
+        val tmp = File(target.path + ".tmp")
+        runCatching { tmp.delete() }
+        conn.inputStream.use { input ->
+            FileOutputStream(tmp).use { output -> input.copyTo(output) }
+        }
+        if (tmp.length() <= 1024L) {
+            tmp.delete()
+            return local
+        }
+        if (!tmp.renameTo(target)) {
+            tmp.copyTo(target, overwrite = true)
+            tmp.delete()
+        }
+        runCatching { etagFile.writeText(etag) }
+        syncedThisProcess.add(key)
+        return localCoverUri(context, key)
+    } catch (_: Throwable) {
+        return local
+    } finally {
+        runCatching { conn?.disconnect() }
+    }
 }
 
 @Composable
@@ -138,14 +162,12 @@ fun RemoteDesignImage(
     val embedded = remember(key) { DesignAsset.isEmbeddedBook(key) }
     val context = androidx.compose.ui.platform.LocalContext.current
     var source by remember(key) {
-        mutableStateOf<Any>(remote)
+        mutableStateOf<Any?>(if (embedded) localCoverUri(context, key) else remote)
     }
 
     LaunchedEffect(key) {
         source = if (embedded) {
-            withContext(Dispatchers.IO) {
-                extractDiaryAsset(context, key)
-            } ?: remote
+            withContext(Dispatchers.IO) { syncCover(context, key) } ?: remote
         } else {
             if (readable(remote)) remote else DesignAsset.localUri(key)
         }
