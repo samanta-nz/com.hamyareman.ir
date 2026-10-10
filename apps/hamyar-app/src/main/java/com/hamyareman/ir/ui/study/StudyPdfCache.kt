@@ -54,6 +54,7 @@ object StudyPdfCache {
         cacheId: String,
         urls: List<String>,
         onProgress: (Int) -> Unit = {},
+        forceRefresh: Boolean = false,
     ): File {
         val target = file(ctx, cacheId)
         val part = File(target.absolutePath + ".part")
@@ -63,7 +64,7 @@ object StudyPdfCache {
 
         val hasValidCache = isValid(target)
         var expectedMeta: RemoteMeta? = null
-        if (hasValidCache) {
+        if (hasValidCache && !forceRefresh) {
             val oldMeta = readRemoteMeta(metaFile)
             val now = System.currentTimeMillis()
             if (oldMeta != null && now >= oldMeta.checkedAt && now - oldMeta.checkedAt < CHECK_TTL_MS) {
@@ -85,10 +86,13 @@ object StudyPdfCache {
                     part.delete()
                 }
             }
-        } else {
+        } else if (!hasValidCache) {
             target.delete()
             metaFile.delete()
             // A partial left by an earlier process has no proven version identity.
+            part.delete()
+        } else if (forceRefresh) {
+            // Force refresh never resumes a partial from an unknown prior version.
             part.delete()
         }
 
