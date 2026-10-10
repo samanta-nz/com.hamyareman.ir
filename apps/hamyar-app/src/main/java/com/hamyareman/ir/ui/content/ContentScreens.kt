@@ -169,8 +169,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         // payload را از قبل می‌گیریم تا نوار پیشرفت معنا داشته باشد؛
         // منبع می‌تواند HMK1 یا HTML عادی باشد و قالبِ فعلی هنگام تحویل تشخیص داده می‌شود.
         val ready = withContext(Dispatchers.IO) {
-            val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-            if (!keyReady) return@withContext "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو." to false
+            // Key fetch is best-effort: ordinary HTML does not require a key.
+            // If the current payload is HMK1, HmkWebViewClient handles a missing key
+            // after it has had a chance to refresh stale encrypted cache to plain HTML.
+            runCatching { com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables) }
             val alreadyCached = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
             if (alreadyCached) return@withContext null to true
             val file = com.hamyareman.ir.ui.study.LessonCache.ensure(ctx, url) { done, total ->
