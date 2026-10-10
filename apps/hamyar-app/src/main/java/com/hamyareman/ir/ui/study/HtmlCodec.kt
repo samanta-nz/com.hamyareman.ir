@@ -17,7 +17,7 @@ object HtmlCodec {
 
     private val MAGIC = byteArrayOf(0x48, 0x4D, 0x4B, 0x31) // HMK1
     private val HTML_TAG = Regex(
-        """<!doctype\s+html\b|<html(?:\s|>)|<(?:head|body|script|iframe|meta|title|div|main|section|style|article|p)(?:\s|/|>)""",
+        """<!doctype\s+html\b|<[a-z][a-z0-9:-]*(?:\s|/|>)""",
         RegexOption.IGNORE_CASE,
     )
 
