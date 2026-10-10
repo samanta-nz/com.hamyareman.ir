@@ -54,12 +54,26 @@ object ToolRemote {
         val id = fileId(toolId)
         // از همان لایهٔ مشترک درس‌ها می‌خوانیم؛ RemoteHtmlCache بازنشسته شد.
         val key = ContentCatalog.keyFor(id) ?: return null
-        val cached = LessonCache.ensure(ctx, ServerResolver.internal(key)) ?: return null
-        val raw = runCatching { cached.readBytes() }.getOrNull() ?: return null
-        val plain = runCatching { HtmlCodec.decodeHtml(ctx, raw) }.getOrNull() ?: return null
+        val url = ServerResolver.internal(key)
+        val cached = LessonCache.ensure(ctx, url) ?: return null
+
+        fun decode(file: File): ByteArray? {
+            val raw = runCatching { file.readBytes() }.getOrNull() ?: return null
+            if (raw.size > LessonCache.MAX_DECRYPT_BYTES) return null
+            return runCatching { HtmlCodec.decodeHtml(ctx, raw) }.getOrNull()
+        }
+
+        // A cached HMK1 file may have been replaced remotely by plain HTML.
+        // If the first payload cannot be decoded, force a safe refresh before giving up.
+        var plain = decode(cached)
+        if (plain == null) {
+            val refreshed = LessonCache.refresh(ctx, url)?.file
+            if (refreshed != null) plain = decode(refreshed)
+        }
+        val document = plain ?: return null
         val dest = plainFile(ctx, toolId)
         val part = File(dest.absolutePath + ".part")
-        val offlineHtml = String(plain, Charsets.UTF_8).replace(
+        val offlineHtml = String(document, Charsets.UTF_8).replace(
             Regex("""https://cdn\.jsdelivr\.net/[^"']*jalaali[^"']*\.js""", RegexOption.IGNORE_CASE),
             "file:///android_asset/tools/vendor/jalaali.min.js",
         )
