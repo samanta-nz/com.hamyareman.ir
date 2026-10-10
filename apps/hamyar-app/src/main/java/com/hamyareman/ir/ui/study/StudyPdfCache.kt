@@ -168,8 +168,8 @@ object StudyPdfCache {
         part.delete()
         // A valid old cache is still usable when an update download fails. It was never
         // removed while the replacement was being verified.
-        if (hasValidCache && isValid(target)) return target
-        throw IOException(last?.message ?: "دانلود PDF کامل نشد.", last)
+        if (hasValidCache && isValid(target) && !forceRefresh) return target
+        throw IOException(last?.message ?: "دانلود PDF کامل نشد؛ نسخهٔ قبلی حفظ شده است.", last)
     }
 
     private const val CHECK_TTL_MS = 30_000L
