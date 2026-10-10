@@ -133,7 +133,7 @@ object LessonCache {
                 val candidate = File(target.path + ".candidate")
                 runCatching { candidate.delete() }
                 val downloaded = runCatching {
-                    download(ctx, canonicalUrl, candidate, onProgress)
+                    download(ctx, canonicalUrl, candidate, onProgress, requireEncryptionKey = true)
                 }.getOrNull()
 
                 if (downloaded == null) {
@@ -196,7 +196,7 @@ object LessonCache {
         synchronized(lock) {
             val hadCache = looksUsable(ctx, target, canonicalUrl)
             val downloaded = runCatching {
-                download(ctx, canonicalUrl, target, onProgress)
+                download(ctx, canonicalUrl, target, onProgress, requireEncryptionKey = hadCache)
             }.getOrNull()
             if (downloaded == null) {
                 return if (hadCache) PrepareResult(target, Freshness.CACHED) else null
@@ -282,6 +282,7 @@ object LessonCache {
         url: String,
         target: File,
         onProgress: ((Int, Int) -> Unit)?,
+        requireEncryptionKey: Boolean = false,
     ): File? {
         val tmp = File(target.path + ".tmp")
         runCatching { tmp.delete() }
@@ -325,7 +326,12 @@ object LessonCache {
                 tmp.delete()
                 return null
             }
-            if (!looksUsable(ctx, tmp, url, conn.contentType.orEmpty(), verifyEncrypted = true)) {
+            if (!looksUsable(
+                    ctx, tmp, url, conn.contentType.orEmpty(),
+                    verifyEncrypted = true,
+                    requireEncryptionKey = requireEncryptionKey,
+                )
+            ) {
                 lastFailures[keyOf(url)] = FailureReason.INVALID_PAYLOAD
                 tmp.delete()
                 return null
@@ -364,6 +370,7 @@ object LessonCache {
         url: String,
         responseContentType: String = "",
         verifyEncrypted: Boolean = false,
+        requireEncryptionKey: Boolean = false,
     ): Boolean {
         if (!file.exists() || file.length() <= 0L || file.length() > MAX_DECRYPT_BYTES) return false
         val prefix = readPrefix(file, PROBE_BYTES)
@@ -374,7 +381,8 @@ object LessonCache {
             // envelope so a later authenticated session can decode it.
             val hasKey = ctx != null && runCatching { HtmlMediaKey.get(ctx) != null }
                 .getOrDefault(false)
-            if (!verifyEncrypted || ctx == null || !hasKey) return true
+            if (!verifyEncrypted) return true
+            if (ctx == null || !hasKey) return !requireEncryptionKey
             val wrapped = runCatching { file.readBytes() }.getOrNull() ?: return false
             val plain = runCatching { HtmlCodec.unwrap(ctx, wrapped) }.getOrNull() ?: return false
             return HtmlCodec.isPlainHtml(plain)
