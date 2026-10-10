@@ -173,15 +173,28 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
             // If the current payload is HMK1, HmkWebViewClient handles a missing key
             // after it has had a chance to refresh stale encrypted cache to plain HTML.
             runCatching { com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables) }
-            val alreadyCached = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
-            if (alreadyCached) return@withContext null to true
-            val file = com.hamyareman.ir.ui.study.LessonCache.ensure(ctx, url) { done, total ->
-                if (total > 0) {
-                    val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
-                    handler.post { progress = p }
+            val prepared = com.hamyareman.ir.ui.study.LessonCache.prepare(
+                ctx = ctx,
+                url = url,
+                onProgress = { done, total ->
+                    if (total > 0) {
+                        val p = ((done.toLong() * 100L) / total).toInt().coerceIn(0, 100)
+                        handler.post { progress = p }
+                    }
+                },
+            )
+            if (prepared == null) {
+                val message = when (com.hamyareman.ir.ui.study.LessonCache.failureReason(url)) {
+                    com.hamyareman.ir.ui.study.LessonCache.FailureReason.INVALID_PAYLOAD ->
+                        "محتوای دریافت‌شده HTML معتبر نیست."
+                    com.hamyareman.ir.ui.study.LessonCache.FailureReason.NOT_FOUND ->
+                        "این محتوا روی سرور در دسترس نیست یا هنوز بارگذاری نشده است."
+                    com.hamyareman.ir.ui.study.LessonCache.FailureReason.NETWORK ->
+                        "برای بار اول باز کردن این درس به اینترنت نیاز است."
                 }
+                return@withContext message to false
             }
-            (if (file == null) "برای بار اول باز کردن این درس به اینترنت نیاز است." else null) to false
+            null to (prepared.freshness == com.hamyareman.ir.ui.study.LessonCache.Freshness.CACHED)
         }
         pageWasCached = ready.second
         if (ready.first != null) {
