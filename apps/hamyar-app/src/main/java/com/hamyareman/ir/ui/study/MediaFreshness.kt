@@ -18,10 +18,11 @@ object MediaFreshness {
     private const val P_ID = "f_"
     private const val P_CK = "c_"
     private const val P_PDF = "p_"
+    private const val P_AT = "t_"
     private const val KEY_LAST = "last_check"
 
-    /** عمر بررسی: شش ساعت. */
-    const val TTL_MS = 6L * 60L * 60L * 1000L
+    /** هر ورودی کش، هنگام بازشدن یا آغاز پخش حداکثر هر ۳۰ ثانیه بررسی می‌شود. */
+    const val TTL_MS = 30_000L
 
     data class Item(
         val key: String,
@@ -53,27 +54,56 @@ object MediaFreshness {
      */
     fun remoteSignatureBlocking(fileId: String): String? = runCatching {
         val url = metaUrl(fileId).takeIf { it.isNotBlank() } ?: return@runCatching null
-        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 8000
-            readTimeout = 8000
+        val head = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 8_000
+            readTimeout = 8_000
             instanceFollowRedirects = true
             requestMethod = "HEAD"
             setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
+            setRequestProperty("Pragma", "no-cache")
+        }
+        val headSignature: String?
+        val headStatus: Int
+        try {
+            headStatus = head.responseCode
+            headSignature = if (headStatus in 200..299) signatureFrom(head, null) else null
+        } finally {
+            runCatching { head.disconnect() }
+        }
+        if (headSignature != null) return@runCatching headSignature
+        // Some object-storage/CDN configurations reject HEAD. A one-byte GET supplies
+        // the total object length through Content-Range while transferring minimal data.
+        if (headStatus != 405 && headStatus != 501) return@runCatching null
+        val range = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 8_000
+            readTimeout = 8_000
+            instanceFollowRedirects = true
+            requestMethod = "GET"
+            setRequestProperty("Range", "bytes=0-0")
+            setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
+            setRequestProperty("Pragma", "no-cache")
         }
         try {
-            if (conn.responseCode !in 200..299) return@runCatching null
-            val etag = conn.getHeaderField("ETag").orEmpty().trim()
-            val size = conn.getHeaderField("Content-Length")?.toLongOrNull()
-                ?: conn.contentLengthLong
-            val modified = conn.getHeaderField("Last-Modified").orEmpty().ifBlank {
-                conn.lastModified.takeIf { it > 0L }?.toString().orEmpty()
-            }
-            if (etag.isBlank() && size < 0L && modified.isBlank()) return@runCatching null
-            listOf(etag, size.toString(), modified).joinToString("|")
+            if (range.responseCode != HttpURLConnection.HTTP_PARTIAL) return@runCatching null
+            signatureFrom(range, range.getHeaderField("Content-Range")?.substringAfterLast("/", "")?.toLongOrNull())
         } finally {
-            runCatching { conn.disconnect() }
+            runCatching { range.inputStream.close() }
+            runCatching { range.disconnect() }
         }
     }.getOrNull()
+
+    private fun signatureFrom(conn: HttpURLConnection, rangeTotal: Long?): String? {
+        val etag = conn.getHeaderField("ETag").orEmpty().trim()
+        val size = rangeTotal ?: conn.getHeaderField("Content-Length")?.toLongOrNull()
+            ?: conn.contentLengthLong
+        val modified = conn.getHeaderField("Last-Modified").orEmpty().ifBlank {
+            conn.lastModified.takeIf { it > 0L }?.toString().orEmpty()
+        }
+        if (etag.isBlank() && size < 0L && modified.isBlank()) return null
+        return listOf(etag, size.toString(), modified).joinToString("|")
+    }
 
     /** ثبت دانلود موفق: شناسه‌ها و امضای HTTP فعلی. */
     fun rememberDownload(ctx: Context, key: String, fileId: String, cacheKey: String, isPdf: Boolean) {
@@ -82,6 +112,7 @@ object MediaFreshness {
         s.putString(P_CK + key, cacheKey)
         s.putString(P_PDF + key, if (isPdf) "1" else "0")
         remoteSignatureBlocking(fileId)?.let { s.putString(P_SIG + key, it) }
+        s.putLong(P_AT + key, System.currentTimeMillis())
     }
 
     /** فهرست فایل‌هایی که تا حالا دانلود شده‌اند. */
@@ -100,7 +131,85 @@ object MediaFreshness {
         }
 
     fun forget(ctx: Context, key: String) {
-        store(ctx).remove(P_ID + key, P_CK + key, P_PDF + key, P_SIG + key)
+        store(ctx).remove(P_ID + key, P_CK + key, P_PDF + key, P_SIG + key, P_AT + key)
+    }
+
+    /**
+     * Refresh a cached PDF or encrypted MediaVault resource when its remote signature changed.
+     * New payloads are staged and verified before replacing a working local copy.
+     *
+     * @return true only when a replacement was downloaded successfully.
+     */
+    suspend fun ensureCurrent(
+        ctx: Context,
+        key: String,
+        fileId: String,
+        cacheKey: String,
+        isPdf: Boolean,
+    ): Boolean = withContext(Dispatchers.IO) {
+        val s = store(ctx)
+        val cached = if (isPdf) {
+            StudyPdfCache.isValid(StudyPdfCache.file(ctx, cacheKey))
+        } else {
+            MediaVault.isVerified(ctx, cacheKey)
+        }
+        if (!cached) return@withContext false
+
+        val now = System.currentTimeMillis()
+        val checkedAt = s.getLong(P_AT + key, 0L)
+        val known = s.getString(P_SIG + key)
+        if (known.isNotBlank() && now >= checkedAt && now - checkedAt < TTL_MS) {
+            return@withContext false
+        }
+
+        val remote = remoteSignatureBlocking(fileId)
+        if (remote == null) {
+            // Don't thrash the server during a temporary outage; retain the old cache.
+            s.putLong(P_AT + key, now)
+            return@withContext false
+        }
+        if (known.isNotBlank() && known == remote) {
+            s.putLong(P_AT + key, now)
+            s.putString(P_ID + key, fileId)
+            s.putString(P_CK + key, cacheKey)
+            s.putString(P_PDF + key, if (isPdf) "1" else "0")
+            return@withContext false
+        }
+
+        try {
+            val urls = StudyMedia.candidateUrls(fileId).filter { it.isNotBlank() }
+            if (urls.isEmpty()) throw java.io.IOException("برای این رسانه URL تعریف نشده است.")
+            if (isPdf) {
+                // forceRefresh prevents a changed signature being hidden by a valid local PDF.
+                StudyPdfCache.obtain(ctx, cacheKey, urls, {}, true)
+            } else {
+                val stagedKey = StudyMedia.bookCacheKey("refresh", cacheKey)
+                MediaVault.delete(ctx, stagedKey)
+                try {
+                    MediaVault.downloadEncrypted(ctx, urls, stagedKey) { _, _ -> }
+                    if (!MediaVault.isVerified(ctx, stagedKey)) {
+                        throw java.io.IOException("فایل تازه پس از دانلود تأیید نشد.")
+                    }
+                    if (!MediaVault.replaceVerifiedCache(ctx, stagedKey, cacheKey)) {
+                        throw java.io.IOException("جایگزینی امن کش صوت/ویدیو انجام نشد.")
+                    }
+                } catch (error: Throwable) {
+                    MediaVault.delete(ctx, stagedKey)
+                    throw error
+                }
+            }
+            val confirmed = remoteSignatureBlocking(fileId) ?: remote
+            s.putString(P_ID + key, fileId)
+            s.putString(P_CK + key, cacheKey)
+            s.putString(P_PDF + key, if (isPdf) "1" else "0")
+            s.putString(P_SIG + key, confirmed)
+            s.putLong(P_AT + key, System.currentTimeMillis())
+            true
+        } catch (_: Throwable) {
+            // A failed update does not bless the old signature or remove the old usable copy.
+            s.putLong(P_AT + key, now)
+            false
+        }
     }
 
     /** بررسی همه دانلودهای ثبت‌شده؛ اختلاف امضا یعنی فایل کهنه است. */
@@ -111,6 +220,7 @@ object MediaFreshness {
         var failed = 0
         for (item in items) {
             val remote = remoteSignatureBlocking(item.fileId)
+            s.putLong(P_AT + item.key, System.currentTimeMillis())
             if (remote == null) {
                 failed++
                 continue

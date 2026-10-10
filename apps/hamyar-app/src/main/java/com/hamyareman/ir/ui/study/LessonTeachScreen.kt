@@ -295,6 +295,21 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         if (preferLocal && MediaVault.isVerified(context, t.cacheKey)) MediaVault.localUrl(context, t.cacheKey)
         else remoteUris(t).let { urls -> urls.getOrElse(remoteIndex) { urls.first() } }
 
+    // Refresh verified cached lessons before a user starts playback. Each item has its
+    // own signature/30-second check; failed network checks keep the working local copy.
+    LaunchedEffect(packId, tracks.map { it.cacheKey }) {
+        withContext(Dispatchers.IO) {
+            tracks.forEach { t ->
+                if (MediaVault.isVerified(context, t.cacheKey)) {
+                    val remoteId = StudyMedia.resolveFileId(t.fileId)
+                    MediaFreshness.ensureCurrent(
+                        context, "teach:${t.cacheKey}", remoteId, t.cacheKey, isPdf = false,
+                    )
+                }
+            }
+        }
+    }
+
     DisposableEffect(packId) {
         val p = ExoPlayer.Builder(context)
             .setMediaSourceFactory(
@@ -655,6 +670,9 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
                                         doneBytes = done
                                         totalBytes = total
                                     }
+                                    MediaFreshness.rememberDownload(
+                                        context, "teach:${track.cacheKey}", remoteId, track.cacheKey, isPdf = false,
+                                    )
                                 }
                                 note = "دانلود کامل شد؛ پخشِ بعدی آفلاین است."
                                 loadedLocal = true

@@ -191,20 +191,30 @@ fun DownloadsScreen(onBack: () -> Unit) = DownloadsTypography {
                 try {
                     withContext(Dispatchers.IO) {
                         when (item.kind) {
-                            DownloadKind.PDF -> StudyPdfCache.obtain(
-                                context,
-                                item.cacheKey,
-                                item.urls,
-                            ) { percent -> progress[item.statusKey] = percent }
+                            DownloadKind.PDF -> {
+                                StudyPdfCache.obtain(
+                                    context,
+                                    item.cacheKey,
+                                    item.urls,
+                                ) { percent -> progress[item.statusKey] = percent }
+                                MediaFreshness.rememberDownload(
+                                    context, item.statusKey, item.bucketKey, item.cacheKey, isPdf = true,
+                                )
+                            }
 
-                            DownloadKind.AUDIO -> MediaVault.downloadEncrypted(
-                                context,
-                                item.urls,
-                                item.cacheKey,
-                            ) { done, total ->
-                                progress[item.statusKey] = if (total > 0) {
-                                    ((done * 100L) / total).toInt().coerceIn(0, 100)
-                                } else 0
+                            DownloadKind.AUDIO -> {
+                                MediaVault.downloadEncrypted(
+                                    context,
+                                    item.urls,
+                                    item.cacheKey,
+                                ) { done, total ->
+                                    progress[item.statusKey] = if (total > 0) {
+                                        ((done * 100L) / total).toInt().coerceIn(0, 100)
+                                    } else 0
+                                }
+                                MediaFreshness.rememberDownload(
+                                    context, item.statusKey, item.bucketKey, item.cacheKey, isPdf = false,
+                                )
                             }
                         }
                     }

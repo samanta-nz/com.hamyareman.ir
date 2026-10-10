@@ -122,6 +122,18 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
         remoteUris.getOrElse(remoteIndex) { remoteUris.first() }
     }
 
+    LaunchedEffect(fileId) {
+        if (MediaVault.isVerified(context, fileId)) {
+            val updated = MediaFreshness.ensureCurrent(
+                context, "video:${fileId}", fileId, fileId, isPdf = false,
+            )
+            if (updated) {
+                useLocal = true
+                cacheTick++
+            }
+        }
+    }
+
     // --- سرعت (قفل تا اتمام دوره‌ی اول — همان قانون صوت) ---
     var speed by remember(packId) {
         val saved = store.getString("vid_${packId}_speed", "1").toFloatOrNull() ?: 1f
@@ -129,7 +141,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     }
 
     // --- پلیر ---
-    var player by remember(fileId, uri) { mutableStateOf<ExoPlayer?>(null) }
+    var player by remember(fileId, uri, cacheTick) { mutableStateOf<ExoPlayer?>(null) }
     var watchAccum by remember(fileId, uri) { mutableLongStateOf(0L) }
     var posMs by remember(fileId, uri) {
         mutableLongStateOf(store.getString("vid_${packId}_pos", "0").toLongOrNull() ?: 0L)
@@ -316,6 +328,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
                             try {
                                 withContext(Dispatchers.IO) {
                                     MediaVault.downloadEncrypted(context, StudyMedia.candidateUrls(fileId), fileId) { p, t -> progressPct = if (t > 0) ((p * 100) / t).toInt() else -1 }
+                                    MediaFreshness.rememberDownload(context, "video:${fileId}", fileId, fileId, isPdf = false)
                                 }
                                 downloading = false; cacheTick++; useLocal = true
                                 msg = "دانلود شد — پخش محلی رمزشده."
