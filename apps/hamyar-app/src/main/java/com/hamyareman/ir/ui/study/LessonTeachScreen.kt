@@ -388,7 +388,13 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         val p = player ?: return
         val pos = startMs ?: if (preferLocal && cached(t)) savedPos(t) else 0L
         scope.launch {
-            val uri = withContext(Dispatchers.IO) { uriFor(t, preferLocal = preferLocal) }
+            val uri = withContext(Dispatchers.IO) {
+                val urls = remoteUris(t)
+                if (MediaVault.isVerified(context, t.cacheKey)) {
+                    MediaVault.ensureFresh(context, urls, t.cacheKey)
+                }
+                uriFor(t, preferLocal = preferLocal)
+            }
             loadedLocal = uri.startsWith("vault://")
             loadedRemoteIndex = 0
             loadedKey = t.cacheKey
