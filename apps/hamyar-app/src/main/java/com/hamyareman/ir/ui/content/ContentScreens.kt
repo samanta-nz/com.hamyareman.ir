@@ -166,8 +166,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         }
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val url = com.hamyareman.ir.ui.study.ServerResolver.internal(current.key)
-        // بایت‌های رمزشده را از قبل می‌گیریم تا نوار پیشرفت معنا داشته باشد؛
-        // رمزگشایی بعداً و فقط لحظهٔ تحویل به WebView انجام می‌شود.
+        // payload را از قبل می‌گیریم تا نوار پیشرفت معنا داشته باشد؛
+        // منبع می‌تواند HMK1 یا HTML عادی باشد و قالبِ فعلی هنگام تحویل تشخیص داده می‌شود.
         val ready = withContext(Dispatchers.IO) {
             val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
             if (!keyReady) return@withContext "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو." to false
@@ -207,8 +207,8 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                         settings.useWideViewPort = true
                         settings.loadWithOverviewMode = true
                         // صفحه روی origin واقعی باکت باز می‌شود تا لینک نسبی «قبلی/بعدی»،
-                        // iframe موسیقی و localStorage کار کنند. میانجی، بایت HMK1 را
-                        // لحظهٔ تحویل رمزگشایی می‌کند و متن‌ساده روی دیسک نمی‌نشیند.
+                        // iframe موسیقی و localStorage کار کنند. میانجی، HMK1 را هنگام تحویل
+                        // رمزگشایی می‌کند و HTML عادی را مستقیم سرو می‌کند؛ کش، قالب منبع را نگه می‌دارد.
                         settings.cacheMode = WebSettings.LOAD_NO_CACHE
                         settings.mediaPlaybackRequiresUserGesture = false
                         webViewClient = object : com.hamyareman.ir.ui.study.HmkWebViewClient(
