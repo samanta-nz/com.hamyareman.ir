@@ -1,4 +1,4 @@
-name: Grade 9 release — build, ParsPack, GitHub Release, Appwrite
+name: Grade 9 release — build, ParsPack, GitHub Release, Appwrite (announce on demand)
 
 on:
   push:
@@ -13,13 +13,18 @@ on:
       - "gradle.properties"
   workflow_dispatch:
     inputs:
+      announce:
+        description: "اعلان نسخه به کاربران (ثبت در Appwrite). فقط با true ثبت می‌شود؛ پیش‌فرض: false"
+        required: false
+        default: false
+        type: boolean
       force_update:
-        description: "نسخه را برای نصب‌های قدیمی‌تر اجباری اعلام کن"
+        description: "نسخه را برای نصب‌های قدیمی‌تر اجباری اعلام کن (فقط همراه announce)"
         required: false
         default: false
         type: boolean
       rollout:
-        description: "درصد rollout"
+        description: "درصد rollout (فقط همراه announce)"
         required: false
         default: "100"
         type: string
@@ -42,6 +47,9 @@ env:
   ROW_ID: app_release_grade9
   VERSION_FILE: apps/hamyar-app/build.gradle.kts
   PARSPACK_KEY_PREFIX: apk/grade9
+  # سیاست انتشار: هر push فقط بیلد + GitHub Release + آپلود ParsPack می‌سازد.
+  # ثبت نسخه در Appwrite (اعلان به کاربران) فقط با اجرای دستی و announce=true انجام می‌شود.
+  ANNOUNCE: ${{ github.event_name == 'workflow_dispatch' && inputs.announce == true && 'true' || 'false' }}
 
 jobs:
   release:
@@ -134,12 +142,12 @@ jobs:
                                   "githubRelease",
                                   "parspackUpload",
                                   "parspackAnonymousRead",
-                                  "appwriteReadWriteReadBack",
                               ))
+                              # ثبت در Appwrite اختیاری است: «skipped» یعنی عمداً اعلام نشده.
+                              and status.get("appwriteReadWriteReadBack") in ("success", "skipped")
                           )
                       except (OSError, ValueError, TypeError):
                           release_complete = False
-                      # A tag alone isn't enough: all three publication destinations must be verified.
                       needed = (not bool(tag)) or (not release_complete)
                   elif code <= previous_code:
                       raise SystemExit(
@@ -171,9 +179,11 @@ jobs:
           PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
         run: |
           set -euo pipefail
-          test -n "${APPWRITE_API_KEY:-}" || { echo "::error::APPWRITE_API_KEY تنظیم نشده است"; exit 1; }
           test -n "${PARSPACK_ACCESS_KEY:-}" || { echo "::error::PARSPACK_ACCESS_KEY تنظیم نشده است"; exit 1; }
           test -n "${PARSPACK_SECRET_KEY:-}" || { echo "::error::PARSPACK_SECRET_KEY تنظیم نشده است"; exit 1; }
+          if [ "$ANNOUNCE" = "true" ]; then
+            test -n "${APPWRITE_API_KEY:-}" || { echo "::error::APPWRITE_API_KEY تنظیم نشده است"; exit 1; }
+          fi
 
       - name: Test, compile and build release APK
         if: ${{ steps.version.outputs.release_needed == 'true' || github.event_name == 'push' }}
@@ -324,8 +334,8 @@ jobs:
             --content-type application/vnd.android.package-archive \
             --env-name INTERNAL_URL
 
-      - name: Publish update state to Appwrite and verify read-back
-        if: ${{ steps.version.outputs.release_needed == 'true' }}
+      - name: Publish update state to Appwrite and verify read-back (announce only)
+        if: ${{ steps.version.outputs.release_needed == 'true' && env.ANNOUNCE == 'true' }}
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
@@ -389,30 +399,48 @@ jobs:
           from datetime import datetime, timezone
           from pathlib import Path
 
-          report = json.loads(Path("ci-report/release.json").read_text(encoding="utf-8"))
-          payload = report["payload"]
+          announced = os.environ.get("ANNOUNCE") == "true"
+          report_path = Path("ci-report/release.json")
+
+          if announced:
+              report = json.loads(report_path.read_text(encoding="utf-8"))
+              payload = report["payload"]
+              size = int(report["size"])
+              sha256 = report["sha256"]
+              signing = payload["signingSha256"]
+              min_code = int(payload["min"])
+              rollout = int(payload["rollout"])
+          else:
+              # اعلام نشده: فقط GitHub Release و ParsPack؛ هیچ ردیفی در Appwrite نوشته نشده است.
+              size = int(os.environ["APK_SIZE"])
+              sha256 = os.environ["APK_SHA256"]
+              signing = os.environ["SIGNER_SHA256"]
+              min_code = 0
+              rollout = 0
+
           release = {
-              "versionName": report["versionName"],
-              "versionCode": int(report["versionCode"]),
+              "versionName": os.environ["VERSION_NAME"],
+              "versionCode": int(os.environ["VERSION_CODE"]),
               "publishedAt": datetime.now(timezone.utc).isoformat(),
               "sourceCommit": os.environ["GITHUB_SHA"],
               "run": os.environ["RUN_URL"],
               "githubReleaseUrl": os.environ["GITHUB_RELEASE_URL"],
               "githubDownloadUrl": os.environ["EXTERNAL_URL"],
               "parspackUrl": os.environ["INTERNAL_URL"],
-              "asset": f"hamyar-grade9-{report['versionName']}.apk",
-              "size": int(report["size"]),
-              "sha256": report["sha256"],
-              "signingSha256": report["payload"]["signingSha256"],
-              "min": int(payload["min"]),
-              "rollout": int(payload["rollout"]),
+              "asset": "hamyar-grade9-" + os.environ["VERSION_NAME"] + ".apk",
+              "size": size,
+              "sha256": sha256,
+              "signingSha256": signing,
+              "min": min_code,
+              "rollout": rollout,
+              "announced": announced,
               "status": {
                   "compile": "success",
                   "build": "success",
                   "githubRelease": "success",
                   "parspackUpload": "success",
                   "parspackAnonymousRead": "success",
-                  "appwriteReadWriteReadBack": "success",
+                  "appwriteReadWriteReadBack": "success" if announced else "skipped",
                   "updateStateCommitted": "success"
               }
           }
@@ -453,5 +481,9 @@ jobs:
           echo "GITHUB_RELEASE=SUCCESS"
           echo "PARSPACK_UPLOAD=SUCCESS"
           echo "PARSPACK_READ=SUCCESS"
-          echo "APPWRITE_UPDATE=SUCCESS"
+          if [ "$ANNOUNCE" = "true" ]; then
+            echo "APPWRITE_UPDATE=SUCCESS"
+          else
+            echo "APPWRITE_UPDATE=SKIPPED (not announced)"
+          fi
           echo "RELEASE_STATE=COMMITTED"
