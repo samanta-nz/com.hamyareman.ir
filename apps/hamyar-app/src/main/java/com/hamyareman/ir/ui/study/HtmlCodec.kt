@@ -1,6 +1,7 @@
 package com.hamyareman.ir.ui.study
 
 import android.content.Context
+import java.io.File
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -33,6 +34,23 @@ object HtmlCodec {
 
     fun isWrapped(data: ByteArray): Boolean =
         data.size >= MIN_WRAPPED_BYTES && hasMagic(data)
+
+    /** Inspect only the cache file header when a caller needs to know if a key is required. */
+    fun isWrappedFile(file: File): Boolean {
+        if (!file.exists() || file.length() < MIN_WRAPPED_BYTES) return false
+        return runCatching {
+            file.inputStream().use { input ->
+                val head = ByteArray(MAGIC.size)
+                var offset = 0
+                while (offset < head.size) {
+                    val n = input.read(head, offset, head.size - offset)
+                    if (n <= 0) break
+                    offset += n
+                }
+                offset == head.size && hasMagic(head)
+            }
+        }.getOrDefault(false)
+    }
 
     /**
      * Validate an ordinary HTML document using only a bounded UTF-8 prefix.
