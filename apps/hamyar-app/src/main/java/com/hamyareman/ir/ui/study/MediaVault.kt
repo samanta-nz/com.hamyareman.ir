@@ -95,6 +95,7 @@ object MediaVault {
             verified.remove(stagedKey)
             verified += targetKey
             prefs.edit().putStringSet("verified", verified).apply()
+            LocalMediaServer.invalidate(targetKey)
             runCatching { backup.delete() }
             true
         }
@@ -720,6 +721,14 @@ object LocalMediaServer {
                 }.onFailure { runCatching { Thread.sleep(80) } }
             }
         }.apply { isDaemon = true; name = "hamyar-media-server" }.start()
+    }
+
+    @Synchronized
+    fun invalidate(cacheKey: String) {
+        if (lastKey == cacheKey) {
+            lastKey = null
+            lastBytes = null
+        }
     }
 
     fun urlFor(ctx: Context, cacheKey: String): String {
