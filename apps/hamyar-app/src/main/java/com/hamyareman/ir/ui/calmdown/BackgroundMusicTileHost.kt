@@ -37,8 +37,8 @@ import com.hamyareman.ir.ui.study.stopManagedMedia
 
 /** فایل tile کاملِ باکت (خودبسنده، همهٔ صداها داخل خودش). */
 // نشانی مستقیم و ثابتِ باکت: مسیر موسیقی عمداً از ServerResolver رد نمی‌شود تا
-// صفحه و هر درخواستِ داخلِ آن روی یک origin بمانند و حتماً از HmkWebViewClient
-// (برای HMK1 رمزگشایی و برای HTML عادی عبور مستقیم) عبور کنند.
+// صفحه و هر درخواستِ داخلِ آن روی یک origin بمانند و از HmkWebViewClient عبور کنند؛
+// میانجی HMK1 را رمزگشایی و HTML عادی را مستقیم تحویل می‌دهد.
 private const val MUSIC_TILE_KEY = "Bucket/Html-files/background-music-tile.html"
 private val MUSIC_TILE_URL = HmkWebViewClient.bucketUrl(MUSIC_TILE_KEY)
 private val TILE_HEIGHT = 92.dp
