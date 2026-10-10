@@ -75,8 +75,11 @@ open class HmkWebViewClient(
         val raw = runCatching { file.readBytes() }.getOrNull()
             ?: return if (request.isForMainFrame) errorPage(MSG_CORRUPT) else null
 
+        // HTML ساده (بدون HMK1) با همان هدرها و منطق HTML رمزگشایی‌شده تحویل می‌شود.
+        val plainHtml = isHtml && !HtmlCodec.hasMagic(raw) && HtmlCodec.looksLikeHtml(raw)
+
         // ۲-۲) غیررمزی (تصویر، فونت، …): همان‌طور عبور بده، با MIME حدس‌زده از نام.
-        if (!HtmlCodec.hasMagic(raw)) {
+        if (!plainHtml && !HtmlCodec.hasMagic(raw)) {
             val mime = URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream"
             return WebResourceResponse(mime, null, 200, "OK", passthroughHeaders(), ByteArrayInputStream(raw))
         }
@@ -85,7 +88,7 @@ open class HmkWebViewClient(
             return if (request.isForMainFrame) errorPage(MSG_TOO_BIG) else null
         }
 
-        val plain = decryptTwice(url, file, raw)
+        val plain = if (plainHtml) raw else decryptTwice(url, file, raw)
         if (plain == null) {
             return if (request.isForMainFrame) errorPage(lastMessage) else null
         }
