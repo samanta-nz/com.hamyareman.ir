@@ -213,7 +213,7 @@ object LessonCache {
      * Fast exact length check, followed by a complete byte-for-byte comparison.
      * Unlike ETag or sampling, this detects a changed byte anywhere in an equal-size file.
      */
-    private fun sameBytes(first: File, second: File): Boolean {
+    internal fun sameBytes(first: File, second: File): Boolean {
         if (!first.exists() || !second.exists() || first.length() != second.length()) return false
         return try {
             first.inputStream().buffered().use { left ->
@@ -365,7 +365,7 @@ object LessonCache {
         responseContentType: String = "",
         verifyEncrypted: Boolean = false,
     ): Boolean {
-        if (!file.exists() || file.length() <= 0L) return false
+        if (!file.exists() || file.length() <= 0L || file.length() > MAX_DECRYPT_BYTES) return false
         val prefix = readPrefix(file, PROBE_BYTES)
         if (HtmlCodec.hasMagic(prefix)) {
             if (file.length() < HtmlCodec.MIN_WRAPPED_BYTES) return false
@@ -374,9 +374,7 @@ object LessonCache {
             // envelope so a later authenticated session can decode it.
             val hasKey = ctx != null && runCatching { HtmlMediaKey.get(ctx) != null }
                 .getOrDefault(false)
-            if (!verifyEncrypted || ctx == null || !hasKey ||
-                file.length() > MAX_DECRYPT_BYTES
-            ) return true
+            if (!verifyEncrypted || ctx == null || !hasKey) return true
             val wrapped = runCatching { file.readBytes() }.getOrNull() ?: return false
             val plain = runCatching { HtmlCodec.unwrap(ctx, wrapped) }.getOrNull() ?: return false
             return HtmlCodec.isPlainHtml(plain)
