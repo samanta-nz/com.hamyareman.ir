@@ -34,9 +34,24 @@ object StudyMedia {
      * URL فایل روی پارس‌پک. کلید کامل باکت مستقیم و شناسه‌های قدیمی از server-map
      * به کلید مسیر فعلی تبدیل می‌شوند؛ هیچ URL خارجی برای محتوا ساخته نمی‌شود.
      */
-    fun candidateUrls(fileId: String): List<String> = when {
-        fileId.startsWith("Bucket/") -> listOf(ServerResolver.internal(fileId))
-        else -> ContentCatalog.keyFor(fileId)?.let { listOf(ServerResolver.internal(it)) }.orEmpty()
+    fun candidateUrls(fileId: String): List<String> {
+        if (fileId.isBlank()) return emptyList()
+        if (fileId.startsWith("Bucket/")) return listOf(ServerResolver.internal(fileId))
+
+        // Prefer the exact key declared in the packaged mirror map. Lesson audio/video
+        // ids are a separate, deterministic namespace and were not represented in the
+        // HTML/PDF-only server-map; resolve those without requiring a new APK per file.
+        ContentCatalog.keyFor(fileId)?.takeIf { it.isNotBlank() }?.let {
+            return listOf(ServerResolver.internal(it))
+        }
+
+        val name = fileId.substringAfterLast('/').takeIf { it.isNotBlank() } ?: return emptyList()
+        val ext = name.substringAfterLast('.', "").lowercase()
+        return when (ext) {
+            "mp3", "m4a", "aac", "ogg", "wav", "flac", "mp4", "m4v", "webm" ->
+                listOf(ServerResolver.internal("Bucket/Media-files/" + name))
+            else -> emptyList()
+        }
     }
 
     fun viewUrl(fileId: String): String = candidateUrls(fileId).firstOrNull().orEmpty()
