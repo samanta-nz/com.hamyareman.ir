@@ -66,7 +66,11 @@ object ToolRemote {
         // A cached HMK1 file may have been replaced remotely by plain HTML.
         // If the first payload cannot be decoded, force a safe refresh before giving up.
         var plain = decode(cached)
-        if (plain == null) {
+        // A missing key must not trigger a second full download of cached HMK1.
+        // Size-based freshness checks in LessonCache are responsible for normal updates.
+        val hasKey = runCatching { com.hamyareman.ir.ui.study.HtmlMediaKey.get(ctx) != null }
+            .getOrDefault(false)
+        if (plain == null && hasKey) {
             val refreshed = LessonCache.refresh(ctx, url)?.file
             if (refreshed != null) plain = decode(refreshed)
         }
