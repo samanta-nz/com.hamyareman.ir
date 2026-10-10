@@ -19,13 +19,15 @@ import java.util.concurrent.ConcurrentHashMap
  * قرارداد محتوا: هر فایل یک آدرس ثابت روی باکت دارد. کافی است فایل جدید دقیقاً در
  * همان آدرس آپلود شود؛ اپ بدون APK جدید تغییر را تشخیص می‌دهد و فایل تازه را می‌گیرد.
  *
- * برای تشخیص تغییر محتوا، قبل از هر نمایشِ HTML:
- * ۱) متادیتای سبک HTTP (ETag/Last-Modified/Length) بررسی می‌شود. اگر ETag هر دو طرف
- *    موجود باشد، همان تصمیم قطعی است (حتی وقتی طول فایل برابر باشد).
- * ۲) اگر برای کش قدیمی متادیتا نداشتیم، ابتدا و انتهای فایل با Range کوچک مقایسه می‌شود
- *    (IV تازهٔ هر رمزنگاری در ابتدای فایل است، پس بازآپلودِ هم‌طول هم دیده می‌شود).
- * ۳) اگر محتوا تغییر کرده باشد، فایل تازه کامل دانلود و اتمیک جایگزین می‌شود.
- * ۴) اگر دانلودِ نسخهٔ تازه شکست بخورد، نسخهٔ سالم قبلی نمایش داده می‌شود.
+ * تشخیص تغییر با **یک** درخواست شرطی HTTP (Conditional GET) انجام می‌شود:
+ * ۱) اگر کش داریم، GET با `If-None-Match: <ETag ذخیره‌شده>` (یا `If-Modified-Since`) زده می‌شود.
+ * ۲) پاسخ ۳۰۴: بدنه‌ای دریافت نمی‌شود (فقط هدر)؛ همان کش نمایش داده می‌شود.
+ * ۳) پاسخ ۲۰۰: همین پاسخ بدنهٔ تازه را دارد؛ اگر ETag با ذخیره‌شده برابر بود (سرور شرط را
+ *    نادیده گرفته) اتصال بدون خواندن بدنه بسته می‌شود، وگرنه بدنه در .tmp ذخیره، اعتبارسنجی
+ *    و اتمیک جایگزین می‌شود. ETag از همین پاسخ ثبت می‌شود (نه از یک HEAD جداگانه).
+ * ۴) بدون کش: یک GET ساده؛ متادیتا از همان پاسخ ثبت می‌شود (بدون HEAD اضافه).
+ * ۵) خطای شبکه/۴xx/۵xx با کش سالم: همان کش نمایش داده می‌شود و بار بعد دوباره بررسی می‌شود.
+ * ۶) سرور بدون ETag و Last-Modified: ابتدا و انتهای فایل با Range کوچک مقایسه می‌شود.
  */
 object LessonCache {
 
@@ -49,10 +51,12 @@ object LessonCache {
     )
 
     private const val DIR = "lessons"
-    private const val CONNECT_TIMEOUT_MS = 12_000
-    private const val READ_TIMEOUT_MS = 30_000
+    private const val CONNECT_TIMEOUT_MS = 4_000
+    private const val READ_TIMEOUT_MS = 15_000
     private const val PROBE_BYTES = 8 * 1024
-    private const val FRESH_CHECK_TTL_MS = 30_000L
+
+    /** جلوگیری از درخواست تکراری وقتی پیش‌بررسی صفحه و WebView هم‌زمان همان آدرس را می‌خواهند. */
+    private const val DEDUPE_MS = 4_000L
 
     private val locks = ConcurrentHashMap<String, Any>()
     private val recentChecks = ConcurrentHashMap<String, Long>()
@@ -72,7 +76,7 @@ object LessonCache {
     fun keyOf(url: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
             .digest(canonical(url).toByteArray(Charsets.UTF_8))
-        return digest.joinToString("") { "%02x".format(it.toInt() and 0xFF) } 
+        return digest.joinToString("") { "%02x".format(it.toInt() and 0xFF) }
     }
 
     private fun dir(ctx: Context): File = File(ctx.filesDir, DIR).apply { mkdirs() }
@@ -114,6 +118,7 @@ object LessonCache {
             connectTimeout = CONNECT_TIMEOUT_MS
             readTimeout = READ_TIMEOUT_MS
             instanceFollowRedirects = true
+            useCaches = false
             requestMethod = "HEAD"
             setRequestProperty("Accept-Encoding", "identity")
             setRequestProperty("Cache-Control", "no-cache")
@@ -133,145 +138,139 @@ object LessonCache {
         onStatus: ((Freshness) -> Unit)? = null,
     ): PrepareResult? {
         val canonicalUrl = canonical(url)
-        val target = fileFor(ctx, canonicalUrl)
         val key = keyOf(canonicalUrl)
         val lock = locks.getOrPut(key) { Any() }
-
-        synchronized(lock) {
-            val hasCache = isCached(ctx, canonicalUrl)
-            if (hasCache) {
-                val now = System.currentTimeMillis()
-                if (now - (recentChecks[key] ?: 0L) < FRESH_CHECK_TTL_MS) {
-                    onStatus?.invoke(Freshness.CACHED)
-                    return PrepareResult(target, Freshness.CACHED)
-                }
-
-                val remote = fetchMeta(canonicalUrl)
-                if (remote == null) {
-                    // آفلاین یا فایل از باکت برداشته شده: نسخهٔ سالم قبلی نمایش داده می‌شود.
-                    recentChecks[key] = now
-                    return PrepareResult(target, Freshness.CACHED)
-                }
-
-                if (isSameContent(ctx, canonicalUrl, target, remote)) {
-                    writeMeta(ctx, canonicalUrl, remote)
-                    recentChecks[key] = now
-                    onStatus?.invoke(Freshness.CACHED)
-                    return PrepareResult(target, Freshness.CACHED)
-                }
-
-                onStatus?.invoke(Freshness.UPDATED)
-                val downloaded = runCatching {
-                    download(canonicalUrl, target, onProgress)
-                }.getOrNull()
-
-                if (downloaded == null) {
-                    // دانلود نسخهٔ تازه شکست خورد. فایل قبلی دست‌نخورده مانده
-                    // (جایگزینی فقط پس از اعتبارسنجی انجام می‌شود)، پس همان نمایش داده
-                    // می‌شود. recentChecks عمداً ثبت نمی‌شود تا بار بعد دوباره تلاش شود.
-                    return if (isCached(ctx, canonicalUrl)) {
-                        PrepareResult(target, Freshness.CACHED)
-                    } else {
-                        null
-                    }
-                }
-
-                writeMeta(ctx, canonicalUrl, remote)
-                recentChecks[key] = now
-                return PrepareResult(downloaded, Freshness.UPDATED)
-            }
-
-            onStatus?.invoke(Freshness.DOWNLOADED)
-            // متادیتا پیش از دانلود گرفته می‌شود: اگر وسط کار فایل عوض شود، متادیتای
-            // قدیمی‌تر ثبت می‌شود و بررسی بعدی تغییر را می‌بیند (نه برعکس).
-            val remoteBefore = fetchMeta(canonicalUrl)
-            val downloaded = runCatching {
-                download(canonicalUrl, target, onProgress)
-            }.getOrNull() ?: return null
-
-            remoteBefore?.let { writeMeta(ctx, canonicalUrl, it) }
-            recentChecks[key] = System.currentTimeMillis()
-            return PrepareResult(downloaded, Freshness.DOWNLOADED)
+        return synchronized(lock) {
+            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus)
         }
     }
 
     fun ensure(ctx: Context, url: String, onProgress: ((Int, Int) -> Unit)? = null): File? =
         prepare(ctx, url, onProgress)?.file
 
-    private fun fetchMeta(url: String): RemoteMeta? {
-        val head = runCatching {
-            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = CONNECT_TIMEOUT_MS
-                readTimeout = READ_TIMEOUT_MS
-                instanceFollowRedirects = true
-                requestMethod = "HEAD"
-                setRequestProperty("Accept-Encoding", "identity")
-                setRequestProperty("Cache-Control", "no-cache")
-            }
-            try {
-                if (conn.responseCode !in 200..299) null
-                else RemoteMeta(
-                    contentLength = conn.contentLengthLong,
-                    etag = conn.getHeaderField("ETag").orEmpty(),
-                    lastModified = conn.lastModified,
-                )
-            } finally {
-                conn.disconnect()
-            }
-        }.getOrNull()
-
-        if (head != null) return head
-
-        // اگر HEAD رد شد، یک GET با Range کوچک طول واقعی را از Content-Range می‌گیرد.
-        return runCatching {
-            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = CONNECT_TIMEOUT_MS
-                readTimeout = READ_TIMEOUT_MS
-                instanceFollowRedirects = true
-                requestMethod = "GET"
-                setRequestProperty("Accept-Encoding", "identity")
-                setRequestProperty("Cache-Control", "no-cache")
-                setRequestProperty("Range", "bytes=0-" + (PROBE_BYTES - 1))
-            }
-            try {
-                if (conn.responseCode !in 200..299) return null
-                val range = conn.getHeaderField("Content-Range").orEmpty()
-                val total = range.substringAfterLast("/", "").toLongOrNull()
-                    ?: conn.contentLengthLong.takeIf { it >= 0L }
-                    ?: return null
-                conn.inputStream.use { input ->
-                    val buffer = ByteArray(PROBE_BYTES)
-                    input.read(buffer)
-                }
-                RemoteMeta(total, "", 0L)
-            } finally {
-                conn.disconnect()
-            }
-        }.getOrNull()
-    }
-
-    private fun isSameContent(
+    private fun prepareLocked(
         ctx: Context,
-        url: String,
-        local: File,
-        remote: RemoteMeta,
-    ): Boolean {
-        // طول متفاوت یعنی قطعاً محتوای دیگر.
-        if (remote.contentLength >= 0 && remote.contentLength != local.length()) return false
+        canonicalUrl: String,
+        key: String,
+        onProgress: ((Int, Int) -> Unit)?,
+        onStatus: ((Freshness) -> Unit)?,
+    ): PrepareResult? {
+        val target = fileFor(ctx, canonicalUrl)
+        val hasCache = isCached(ctx, canonicalUrl)
+        val now = System.currentTimeMillis()
 
-        val meta = readMeta(ctx, url)
-        if (meta != null) {
-            // ETag هر دو طرف موجود: تصمیم قطعی. ETag متفاوت = فایل بازآپلود شده،
-            // حتی اگر طول دقیقاً برابر باشد.
-            if (meta.etag.isNotBlank() && remote.etag.isNotBlank()) {
-                return meta.etag == remote.etag
-            }
-            if (meta.lastModified > 0 && remote.lastModified > 0) {
-                return meta.lastModified == remote.lastModified
-            }
+        if (hasCache && now - (recentChecks[key] ?: 0L) < DEDUPE_MS) {
+            onStatus?.invoke(Freshness.CACHED)
+            return PrepareResult(target, Freshness.CACHED)
         }
 
-        // متادیتای قابل‌اتکا نداریم (کش قدیمی یا سرور بدون ETag): ابتدا و انتها مقایسه شود.
+        val stored = if (hasCache) readMeta(ctx, canonicalUrl) else null
+        var conn: HttpURLConnection? = null
+        try {
+            conn = openGet(canonicalUrl, stored)
+            val code = conn.responseCode
+
+            // تغییری نکرده: بدون دریافت بدنه.
+            if (code == HttpURLConnection.HTTP_NOT_MODIFIED && hasCache) {
+                recentChecks[key] = now
+                onStatus?.invoke(Freshness.CACHED)
+                return PrepareResult(target, Freshness.CACHED)
+            }
+
+            // ۴۰۴/۴۰۳/۵xx و مانند آن: نسخهٔ سالم قبلی می‌ماند؛ recentChecks ثبت نمی‌شود
+            // تا بار بعد دوباره بررسی شود.
+            if (code !in 200..299) {
+                if (!hasCache) return null
+                onStatus?.invoke(Freshness.CACHED)
+                return PrepareResult(target, Freshness.CACHED)
+            }
+
+            val remote = RemoteMeta(
+                contentLength = conn.contentLengthLong,
+                etag = conn.getHeaderField("ETag").orEmpty(),
+                lastModified = conn.lastModified,
+            )
+
+            // سرور شرط را نادیده گرفته ولی محتوا همان است: اتصال بدون خواندن بدنه بسته می‌شود.
+            if (hasCache && isUnchanged(canonicalUrl, target, stored, remote)) {
+                writeMeta(ctx, canonicalUrl, remote)
+                recentChecks[key] = now
+                onStatus?.invoke(Freshness.CACHED)
+                return PrepareResult(target, Freshness.CACHED)
+            }
+
+            val freshness = if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED
+            onStatus?.invoke(freshness)
+
+            val saved = saveBody(conn, target, onProgress)
+            if (saved == null) {
+                // دانلود شکست خورد؛ فایل قبلی دست‌نخورده مانده (جایگزینی فقط پس از اعتبارسنجی).
+                if (hasCache && isCached(ctx, canonicalUrl)) {
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+                return null
+            }
+
+            writeMeta(ctx, canonicalUrl, remote)
+            recentChecks[key] = now
+            return PrepareResult(saved, freshness)
+        } catch (_: Throwable) {
+            // آفلاین/timeout: کش سالم همان‌جا نمایش داده می‌شود.
+            if (hasCache && isCached(ctx, canonicalUrl)) {
+                return PrepareResult(target, Freshness.CACHED)
+            }
+            return null
+        } finally {
+            runCatching { conn?.disconnect() }
+        }
+    }
+
+    private fun openGet(url: String, stored: RemoteMeta?): HttpURLConnection {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.connectTimeout = CONNECT_TIMEOUT_MS
+        conn.readTimeout = READ_TIMEOUT_MS
+        conn.instanceFollowRedirects = true
+        conn.useCaches = false
+        conn.requestMethod = "GET"
+        conn.setRequestProperty("Accept-Encoding", "identity")
+        conn.setRequestProperty("Cache-Control", "no-cache")
+        if (stored != null) {
+            if (stored.etag.isNotBlank()) {
+                conn.setRequestProperty("If-None-Match", stored.etag)
+            } else if (stored.lastModified > 0L) {
+                conn.setRequestProperty("If-Modified-Since", httpDate(stored.lastModified))
+            }
+        }
+        return conn
+    }
+
+    private fun httpDate(millis: Long): String =
+        java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", java.util.Locale.US)
+            .apply { timeZone = java.util.TimeZone.getTimeZone("GMT") }
+            .format(java.util.Date(millis))
+
+    /**
+     * پاسخ ۲۰۰ آمد؛ آیا محتوا همان کش است؟
+     * طول متفاوت = قطعاً عوض شده. با ETag هر دو طرف، تصمیم قطعی است (حتی با طول برابر).
+     * کش قدیمی بدون متادیتا (stored == null) و هم‌طول: پذیرفته می‌شود و متادیتا ثبت می‌شود.
+     */
+    private fun isUnchanged(
+        url: String,
+        local: File,
+        stored: RemoteMeta?,
+        remote: RemoteMeta,
+    ): Boolean {
+        if (remote.contentLength >= 0 && remote.contentLength != local.length()) return false
+        if (stored == null) return true
+
+        if (stored.etag.isNotBlank() && remote.etag.isNotBlank()) {
+            return stored.etag == remote.etag
+        }
+        if (stored.lastModified > 0L && remote.lastModified > 0L) {
+            return stored.lastModified == remote.lastModified
+        }
+
+        // سرور اعتبارسنج ندارد: ابتدا و انتها مقایسه شود (IV تازهٔ هر رمزنگاری در ابتدای فایل است).
         return compareRange(url, local, 0L, PROBE_BYTES) &&
             compareRange(
                 url,
@@ -291,6 +290,7 @@ object LessonCache {
                 connectTimeout = CONNECT_TIMEOUT_MS
                 readTimeout = READ_TIMEOUT_MS
                 instanceFollowRedirects = true
+                useCaches = false
                 requestMethod = "GET"
                 setRequestProperty("Accept-Encoding", "identity")
                 setRequestProperty("Cache-Control", "no-cache")
@@ -352,25 +352,15 @@ object LessonCache {
         }
     }
 
-    private fun download(
-        url: String,
+    /** بدنهٔ پاسخ ۲۰۰ را در .tmp می‌ریزد، اعتبار HMK1 را می‌سنجد و اتمیک جایگزین می‌کند. */
+    private fun saveBody(
+        conn: HttpURLConnection,
         target: File,
         onProgress: ((Int, Int) -> Unit)?,
     ): File? {
         val tmp = File(target.path + ".tmp")
         runCatching { tmp.delete() }
-        var conn: HttpURLConnection? = null
         try {
-            conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = CONNECT_TIMEOUT_MS
-                readTimeout = READ_TIMEOUT_MS
-                instanceFollowRedirects = true
-                requestMethod = "GET"
-                setRequestProperty("Accept-Encoding", "identity")
-                setRequestProperty("Cache-Control", "no-cache")
-            }
-            if (conn.responseCode !in 200..299) return null
-
             val total = conn.contentLength
             var done = 0
             conn.inputStream.use { input ->
@@ -403,8 +393,6 @@ object LessonCache {
         } catch (_: Throwable) {
             runCatching { tmp.delete() }
             return null
-        } finally {
-            runCatching { conn?.disconnect() }
         }
     }
 
