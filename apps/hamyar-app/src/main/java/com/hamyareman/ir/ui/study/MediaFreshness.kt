@@ -54,27 +54,56 @@ object MediaFreshness {
      */
     fun remoteSignatureBlocking(fileId: String): String? = runCatching {
         val url = metaUrl(fileId).takeIf { it.isNotBlank() } ?: return@runCatching null
-        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 8000
-            readTimeout = 8000
+        val head = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 8_000
+            readTimeout = 8_000
             instanceFollowRedirects = true
             requestMethod = "HEAD"
             setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
+            setRequestProperty("Pragma", "no-cache")
+        }
+        val headSignature: String?
+        val headStatus: Int
+        try {
+            headStatus = head.responseCode
+            headSignature = if (headStatus in 200..299) signatureFrom(head, null) else null
+        } finally {
+            runCatching { head.disconnect() }
+        }
+        if (headSignature != null) return@runCatching headSignature
+        // Some object-storage/CDN configurations reject HEAD. A one-byte GET supplies
+        // the total object length through Content-Range while transferring minimal data.
+        if (headStatus != 405 && headStatus != 501) return@runCatching null
+        val range = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 8_000
+            readTimeout = 8_000
+            instanceFollowRedirects = true
+            requestMethod = "GET"
+            setRequestProperty("Range", "bytes=0-0")
+            setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
+            setRequestProperty("Pragma", "no-cache")
         }
         try {
-            if (conn.responseCode !in 200..299) return@runCatching null
-            val etag = conn.getHeaderField("ETag").orEmpty().trim()
-            val size = conn.getHeaderField("Content-Length")?.toLongOrNull()
-                ?: conn.contentLengthLong
-            val modified = conn.getHeaderField("Last-Modified").orEmpty().ifBlank {
-                conn.lastModified.takeIf { it > 0L }?.toString().orEmpty()
-            }
-            if (etag.isBlank() && size < 0L && modified.isBlank()) return@runCatching null
-            listOf(etag, size.toString(), modified).joinToString("|")
+            if (range.responseCode != HttpURLConnection.HTTP_PARTIAL) return@runCatching null
+            signatureFrom(range, range.getHeaderField("Content-Range")?.substringAfterLast("/", "")?.toLongOrNull())
         } finally {
-            runCatching { conn.disconnect() }
+            runCatching { range.inputStream.close() }
+            runCatching { range.disconnect() }
         }
     }.getOrNull()
+
+    private fun signatureFrom(conn: HttpURLConnection, rangeTotal: Long?): String? {
+        val etag = conn.getHeaderField("ETag").orEmpty().trim()
+        val size = rangeTotal ?: conn.getHeaderField("Content-Length")?.toLongOrNull()
+            ?: conn.contentLengthLong
+        val modified = conn.getHeaderField("Last-Modified").orEmpty().ifBlank {
+            conn.lastModified.takeIf { it > 0L }?.toString().orEmpty()
+        }
+        if (etag.isBlank() && size < 0L && modified.isBlank()) return null
+        return listOf(etag, size.toString(), modified).joinToString("|")
+    }
 
     /** ثبت دانلود موفق: شناسه‌ها و امضای HTTP فعلی. */
     fun rememberDownload(ctx: Context, key: String, fileId: String, cacheKey: String, isPdf: Boolean) {
