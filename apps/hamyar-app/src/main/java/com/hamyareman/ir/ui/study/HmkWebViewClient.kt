@@ -43,6 +43,17 @@ open class HmkWebViewClient(
         val isHtml = path.endsWith(".html", ignoreCase = true)
         val isMusic = path.contains("background-music", ignoreCase = true)
 
+        // Encrypted HTML uses HMK1/LessonCache. Other bucket resources use a binary
+        // disk cache with validator checks and byte-range responses for audio/video.
+        if (!isHtml) {
+            return RemoteAssetCache.intercept(
+                ctx = appContext,
+                url = url,
+                path = path,
+                rangeHeader = request.requestHeaders["Range"],
+            )
+        }
+
         // iframe یک HTML واقعی است، نه «درس بعدی»: پاسخِ خالی در نسخهٔ قبل
         // مخصوصاً iframeهای background-music داخل یوگا و ورزش را نامرئی می‌کرد.
         // پیش‌دانلود فقط با هدر صریح ممکن است؛ HTMLهای فعلی
