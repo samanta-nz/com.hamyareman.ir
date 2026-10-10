@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 object LessonCache {
     const val MAX_DECRYPT_BYTES: Int = 32 * 1024 * 1024
     enum class Freshness { CACHED, UPDATED, DOWNLOADED }
+    enum class FailureReason { NETWORK, INVALID_PAYLOAD, NOT_FOUND }
     data class PrepareResult(val file: File, val freshness: Freshness)
 
     private data class RemoteMeta(
@@ -36,6 +37,7 @@ object LessonCache {
     private const val FRESH_CHECK_TTL_MS = 1_500L
     private val locks = ConcurrentHashMap<String, Any>()
     private val recentChecks = ConcurrentHashMap<String, Long>()
+    private val lastFailures = ConcurrentHashMap<String, FailureReason>()
 
     fun canonical(url: String): String {
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return url
@@ -61,6 +63,9 @@ object LessonCache {
 
     fun isCached(ctx: Context, url: String): Boolean =
         looksUsable(ctx, fileFor(ctx, url), canonical(url))
+
+    fun failureReason(url: String): FailureReason =
+        lastFailures[keyOf(url)] ?: FailureReason.NETWORK
 
     fun evict(ctx: Context, url: String) {
         val key = keyOf(url)
@@ -232,9 +237,12 @@ object LessonCache {
             try {
                 if (conn.responseCode !in 200..299) return null
                 val range = conn.getHeaderField("Content-Range").orEmpty()
-                val total = range.substringAfterLast("/", "").toLongOrNull()
-                    ?: conn.contentLengthLong.takeIf { it >= 0L }
-                    ?: -1L
+                val rangeTotal = range.substringAfterLast("/", "").toLongOrNull()
+                val total = rangeTotal ?: if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                    conn.contentLengthLong.takeIf { it >= 0L } ?: -1L
+                } else {
+                    -1L
+                }
                 conn.inputStream.use { input ->
                     val buffer = ByteArray(PROBE_BYTES)
                     input.read(buffer)
@@ -370,7 +378,15 @@ object LessonCache {
                 setRequestProperty("Accept-Encoding", "identity")
                 setRequestProperty("Cache-Control", "no-cache")
             }
-            if (conn.responseCode !in 200..299) return null
+            val responseCode = conn.responseCode
+            if (responseCode !in 200..299) {
+                lastFailures[keyOf(url)] = if (responseCode == 403 || responseCode == 404 || responseCode == 410) {
+                    FailureReason.NOT_FOUND
+                } else {
+                    FailureReason.NETWORK
+                }
+                return null
+            }
             val total = conn.contentLength
             var done = 0
             conn.inputStream.use { input ->
@@ -388,19 +404,24 @@ object LessonCache {
                 }
             }
             if (conn.contentLengthLong >= 0L && done.toLong() != conn.contentLengthLong) {
+                lastFailures[keyOf(url)] = FailureReason.INVALID_PAYLOAD
                 tmp.delete()
                 return null
             }
             if (!looksUsable(null, tmp, url, conn.contentType.orEmpty())) {
+                lastFailures[keyOf(url)] = FailureReason.INVALID_PAYLOAD
                 tmp.delete()
                 return null
             }
             if (!replaceTarget(tmp, target)) {
+                lastFailures[keyOf(url)] = FailureReason.NETWORK
                 tmp.delete()
                 return null
             }
+            lastFailures.remove(keyOf(url))
             return target
         } catch (_: Throwable) {
+            lastFailures[keyOf(url)] = FailureReason.NETWORK
             runCatching { tmp.delete() }
             return null
         } finally {
@@ -456,8 +477,8 @@ object LessonCache {
             return true
         }
         if (!backup.renameTo(target)) {
-            runCatching { backup.copyTo(target, overwrite = true) }
-            runCatching { backup.delete() }
+            val restored = runCatching { backup.copyTo(target, overwrite = true) }.isSuccess
+            if (restored) runCatching { backup.delete() }
         }
         return false
     }
