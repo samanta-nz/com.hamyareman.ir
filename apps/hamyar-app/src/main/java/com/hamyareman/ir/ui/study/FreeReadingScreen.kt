@@ -274,6 +274,9 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         val key = book.mediaKey
         if (key.isNotBlank() && !state.hasMedia) {
             val cache = freeDownloadKey(book, key)
+            if (MediaVault.isVerified(ctx, cache)) {
+                MediaFreshness.ensureCurrent(ctx, "free:${book.id}:${cache}", key, cache, isPdf = false)
+            }
             val uri = if (MediaVault.isVerified(ctx, cache)) MediaVault.localUrl(ctx, cache) else StudyMedia.viewUrl(key)
             downloaded.value = MediaVault.isVerified(ctx, cache)
             playback.setMedia(uri, book.title, FreeReadingState.pos(ctx, book.id))
@@ -361,6 +364,10 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                         kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
                             try {
                                 MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(book.mediaKey), freeDownloadKey(book, book.mediaKey)) { _, _ -> }
+                                MediaFreshness.rememberDownload(
+                                    ctx, "free:${book.id}:${freeDownloadKey(book, book.mediaKey)}",
+                                    book.mediaKey, freeDownloadKey(book, book.mediaKey), isPdf = false,
+                                )
                                 withContext(Dispatchers.Main) {
                                     downloaded.value = true
                                     note = "دانلود کامل شد."
@@ -509,14 +516,22 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                 Card(Modifier.fillMaxWidth().clickable {
                     if (chapter.mediaKey.isNotBlank()) {
                         val local = freeDownloadKey(book, chapter.mediaKey)
-                        playback.setMedia(
-                            if (MediaVault.isVerified(ctx, local)) MediaVault.localUrl(ctx, local) else StudyMedia.viewUrl(chapter.mediaKey),
-                            book.title + " — " + chapter.title,
-                            chapter.startMs,
-                        )
-                        downloaded.value = MediaVault.isVerified(ctx, local)
-                    } else playback.seekTo(chapter.startMs)
-                    playback.play()
+                        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                            if (MediaVault.isVerified(ctx, local)) {
+                                MediaFreshness.ensureCurrent(ctx, "free:${book.id}:${local}", chapter.mediaKey, local, isPdf = false)
+                            }
+                            val localReady = MediaVault.isVerified(ctx, local)
+                            val uri = if (localReady) MediaVault.localUrl(ctx, local) else StudyMedia.viewUrl(chapter.mediaKey)
+                            withContext(Dispatchers.Main) {
+                                playback.setMedia(uri, book.title + " — " + chapter.title, chapter.startMs)
+                                downloaded.value = localReady
+                                playback.play()
+                            }
+                        }
+                    } else {
+                        playback.seekTo(chapter.startMs)
+                        playback.play()
+                    }
                 }) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Book, null)
@@ -525,7 +540,13 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                         Text(clock(chapter.startMs), style = MaterialTheme.typography.labelSmall)
                         if (key.isNotBlank()) IconButton(onClick = {
                             kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
-                                runCatching { MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(key), freeDownloadKey(book, key)) { _, _ -> } }
+                                runCatching {
+                                    MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(key), freeDownloadKey(book, key)) { _, _ -> }
+                                    MediaFreshness.rememberDownload(
+                                        ctx, "free:${book.id}:${freeDownloadKey(book, key)}",
+                                        key, freeDownloadKey(book, key), isPdf = false,
+                                    )
+                                }
                                 withContext(Dispatchers.Main) {
                                     downloaded.value = MediaVault.isVerified(ctx, freeDownloadKey(book, key))
                                 }
