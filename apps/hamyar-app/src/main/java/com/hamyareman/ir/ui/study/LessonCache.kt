@@ -11,10 +11,9 @@ import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * کش بایت‌های **رمزشدهٔ** HTML روی دیسک.
- *
- * روی دیسک فقط HMK1 می‌نشیند. متن ساده هیچ‌وقت به‌عنوان کش ماندگار ذخیره نمی‌شود؛
- * رمزگشایی فقط هنگام تحویل به WebView و در حافظه انجام می‌شود.
+ * کش HTML روی دیسک: **HMK1 رمزشده** یا **HTML ساده** (فایلی که با `<` شروع شود).
+ * غیرِ HTML (تصویر، صوت، …) فقط وقتی کش می‌شود که HMK1 باشد؛ بقیه مستقیم از شبکه می‌آیند.
+ * رمزگشایی HMK1 فقط هنگام تحویل به WebView و در حافظه انجام می‌شود.
  *
  * قرارداد محتوا: هر فایل یک آدرس ثابت روی باکت دارد. کافی است فایل جدید دقیقاً در
  * همان آدرس آپلود شود؛ اپ بدون APK جدید تغییر را تشخیص می‌دهد و فایل تازه را می‌گیرد.
@@ -89,8 +88,24 @@ object LessonCache {
 
     fun isCached(ctx: Context, url: String): Boolean {
         val f = fileFor(ctx, url)
-        return f.exists() && f.length() > HtmlCodec.MIN_WRAPPED_BYTES && looksWrapped(f)
+        return f.exists() && isAcceptable(f, url)
     }
+
+    private fun isHtmlUrl(url: String): Boolean =
+        runCatching { Uri.parse(url).path.orEmpty().endsWith(".html", ignoreCase = true) }
+            .getOrDefault(false)
+
+    private fun looksLikeHtmlFile(file: File): Boolean = runCatching {
+        file.inputStream().use { input ->
+            val head = ByteArray(64)
+            val n = input.read(head)
+            n > 0 && HtmlCodec.looksLikeHtml(head, n)
+        }
+    }.getOrDefault(false)
+
+    /** بدنهٔ معتبر: HMK1، یا برای آدرس‌های `.html` یک HTML ساده. */
+    private fun isAcceptable(file: File, url: String): Boolean =
+        looksWrapped(file) || (isHtmlUrl(url) && file.length() > 0L && looksLikeHtmlFile(file))
 
     fun evict(ctx: Context, url: String) {
         val key = keyOf(url)
@@ -202,7 +217,7 @@ object LessonCache {
             val freshness = if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED
             onStatus?.invoke(freshness)
 
-            val saved = saveBody(conn, target, onProgress)
+            val saved = saveBody(conn, canonicalUrl, target, onProgress)
             if (saved == null) {
                 // دانلود شکست خورد؛ فایل قبلی دست‌نخورده مانده (جایگزینی فقط پس از اعتبارسنجی).
                 if (hasCache && isCached(ctx, canonicalUrl)) {
@@ -352,9 +367,10 @@ object LessonCache {
         }
     }
 
-    /** بدنهٔ پاسخ ۲۰۰ را در .tmp می‌ریزد، اعتبار HMK1 را می‌سنجد و اتمیک جایگزین می‌کند. */
+    /** بدنهٔ پاسخ ۲۰۰ را در .tmp می‌ریزد، اعتبار (HMK1 یا HTML ساده) را می‌سنجد و اتمیک جایگزین می‌کند. */
     private fun saveBody(
         conn: HttpURLConnection,
+        url: String,
         target: File,
         onProgress: ((Int, Int) -> Unit)?,
     ): File? {
@@ -377,7 +393,7 @@ object LessonCache {
                 }
             }
 
-            if (!looksWrapped(tmp)) {
+            if (!isAcceptable(tmp, url)) {
                 tmp.delete()
                 return null
             }
