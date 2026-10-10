@@ -10,17 +10,9 @@ import java.io.File
 import java.net.URLConnection
 
 /**
- * میانجیِ درخواست‌های WebView برای محتوای رمزشدهٔ باکت.
- *
- * چرا این‌طور: WebView باید روی **آدرس واقعی باکت** باشد تا origin ثابت بماند و
- * لینک نسبی «قبلی/بعدی»، `iframe` موسیقی و `localStorage` کار کنند. ولی بایت‌هایی
- * که از باکت می‌آیند `HMK1` هستند و مرورگر نمی‌فهمدشان. پس اینجا وسط راه:
- * بایت رمزشده از [LessonCache] خوانده، در حافظه رمزگشایی و متن‌ساده تحویل می‌شود.
- *
- * نکتهٔ تشخیص پیش‌دانلود: هدر `X-Hy-Prefetch` در هیچ‌کدام از HTMLهای فعلی وجود
- * ندارد (بررسی شد: صفر مورد در ۷۴ فایل) و قرار است HTMLها دست‌نخورده بمانند.
- * پس پیش‌دانلود از روی «main-frame نبودن + پسوند html + نبودن نام موسیقی»
- * تشخیص داده می‌شود؛ همان اثر را بدون تغییر محتوا می‌دهد.
+ * Serves the current bytes at the bucket URL without assuming that the payload
+ * is encrypted. HMK1 is decrypted in memory; valid ordinary HTML is delivered
+ * unchanged. Both formats keep the same URL/origin for relative links and frames.
  */
 open class HmkWebViewClient(
     private val appContext: Context,
@@ -40,36 +32,53 @@ open class HmkWebViewClient(
 
         val url = uri.toString()
         val path = uri.path.orEmpty()
-        val isHtml = path.endsWith(".html", ignoreCase = true)
+        val isHtml = path.endsWith(".html", ignoreCase = true) ||
+            path.endsWith(".htm", ignoreCase = true)
         val isMusic = path.contains("background-music", ignoreCase = true)
 
-        // iframe یک HTML واقعی است، نه «درس بعدی»: پاسخِ خالی در نسخهٔ قبل
-        // مخصوصاً iframeهای background-music داخل یوگا و ورزش را نامرئی می‌کرد.
-        // پیش‌دانلود فقط با هدر صریح ممکن است؛ HTMLهای فعلی
-        // چنین هدرِ داخلی ندارند، پس همهٔ frameها سند واقعی‌شان را می‌گیرند.
+        // HTML frames are documents too. Only the explicit prefetch header suppresses
+        // rendering; normal iframe requests pass through the same freshness/type logic.
         val explicitPrefetch = request.requestHeaders["X-Hy-Prefetch"] == "1"
         if (isHtml && !request.isForMainFrame && explicitPrefetch && !isMusic) {
             LessonCache.ensure(appContext, url)
             return empty200()
         }
 
-        // فقط برای document اصلی ثبت می‌شود؛ این مقدار به میزبان موسیقی می‌گوید
-        // نشانگر کوتاه cache را نشان دهد یا پیشرفت واقعی شبکه را به خود HTML بسپارد.
-        val wasCached = LessonCache.isCached(appContext, url)
-        if (request.isForMainFrame && isHtml) mainDocumentFromCache = wasCached
-        val file = LessonCache.ensure(appContext, url)
-        if (file == null) {
-            onProblem(Problem.OFFLINE)
-            return if (request.isForMainFrame) errorPage(MSG_OFFLINE) else null
+        val prepared = LessonCache.prepare(appContext, url)
+        if (prepared == null) {
+            if (request.isForMainFrame && isHtml) {
+                lastMessage = MSG_OFFLINE
+                onProblem(Problem.OFFLINE)
+                return errorPage(MSG_OFFLINE)
+            }
+            // Let WebView make its ordinary request for non-HTML resources or a
+            // subframe when no validated cache payload could be prepared.
+            return null
         }
 
+        val wasCached = prepared.freshness == LessonCache.Freshness.CACHED
+        if (request.isForMainFrame && isHtml) mainDocumentFromCache = wasCached
+        val file = prepared.file
         val raw = runCatching { file.readBytes() }.getOrNull()
-            ?: return if (request.isForMainFrame) errorPage(MSG_CORRUPT) else null
+            ?: return if (request.isForMainFrame && isHtml) errorPage(MSG_CORRUPT) else null
 
-        // ۲-۲) غیررمزی (تصویر، فونت، …): همان‌طور عبور بده، با MIME حدس‌زده از نام.
+        // Dispatch by the current file's signature, not the previous cache version.
         if (!HtmlCodec.hasMagic(raw)) {
+            if (isHtml) {
+                if (!HtmlCodec.isPlainHtml(raw)) {
+                    lastMessage = MSG_CORRUPT
+                    onProblem(Problem.CORRUPT)
+                    return if (request.isForMainFrame) errorPage(MSG_CORRUPT) else null
+                }
+                val delivered = if (isMusic && wasCached) musicCacheHint(raw) else raw
+                return WebResourceResponse(
+                    "text/html", "utf-8", 200, "OK", htmlHeaders(), ByteArrayInputStream(delivered),
+                )
+            }
             val mime = URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream"
-            return WebResourceResponse(mime, null, 200, "OK", passthroughHeaders(), ByteArrayInputStream(raw))
+            return WebResourceResponse(
+                mime, null, 200, "OK", passthroughHeaders(), ByteArrayInputStream(raw),
+            )
         }
 
         if (raw.size > LessonCache.MAX_DECRYPT_BYTES) {
@@ -80,33 +89,30 @@ open class HmkWebViewClient(
         if (plain == null) {
             return if (request.isForMainFrame) errorPage(lastMessage) else null
         }
-        // برای iframe موسیقی، وضعیت hit کش را در همان سند (فقط RAM) می‌گذاریم.
-        // صفحهٔ مادر ممکن است تازه از شبکه آمده باشد ولی iframe موسیقی از کش باشد؛
-        // پس این علامت، badge یک‌ثانیه‌ای را دقیقاً به همان درخواست وصل می‌کند.
         val delivered = if (isMusic && wasCached) musicCacheHint(plain) else plain
         return WebResourceResponse(
             "text/html", "utf-8", 200, "OK", htmlHeaders(), ByteArrayInputStream(delivered),
         )
     }
 
-    /** یک بار رمزگشایی؛ اگر شکست خورد کش را دور بینداز، یک بار دیگر دانلود و تلاش کن. */
+    /**
+     * If the cached envelope fails authentication, download a fresh candidate into
+     * a temporary file while preserving the previous cache until the candidate is
+     * validated. A replacement may now be plain HTML, so classify it again.
+     */
     private fun decryptTwice(url: String, file: File, first: ByteArray): ByteArray? {
         runCatching { HtmlCodec.unwrap(appContext, first) }.onSuccess { return it }
 
         if (HtmlMediaKey.get(appContext) == null) {
             lastMessage = MSG_NO_KEY
             onProblem(Problem.KEY_MISSING)
-            return null // دانلود تکراری راه نمی‌اندازیم؛ مشکل کلید است نه فایل.
-        }
-
-        LessonCache.evict(appContext, url)
-        val again = LessonCache.ensure(appContext, url) ?: run {
-            lastMessage = MSG_OFFLINE
-            onProblem(Problem.OFFLINE)
             return null
         }
-        val bytes = runCatching { again.readBytes() }.getOrNull()
+
+        val refreshed = LessonCache.refresh(appContext, url)?.file ?: file
+        val bytes = runCatching { refreshed.readBytes() }.getOrNull()
         if (bytes != null && bytes.size <= LessonCache.MAX_DECRYPT_BYTES) {
+            if (!HtmlCodec.hasMagic(bytes) && HtmlCodec.isPlainHtml(bytes)) return bytes
             runCatching { HtmlCodec.unwrap(appContext, bytes) }.onSuccess { return it }
         }
         lastMessage = MSG_CORRUPT
@@ -117,7 +123,6 @@ open class HmkWebViewClient(
     @Volatile private var lastMessage: String = MSG_CORRUPT
     @Volatile private var mainDocumentFromCache: Boolean = false
 
-    /** وضعیت همان navigation اصلی، نه iframe/فایل جانبی. */
     fun mainDocumentWasLoadedFromCache(): Boolean = mainDocumentFromCache
 
     private fun empty200(): WebResourceResponse =
@@ -126,15 +131,7 @@ open class HmkWebViewClient(
             mapOf("Cache-Control" to "no-store"), ByteArrayInputStream(ByteArray(0)),
         )
 
-    /**
-     * HTML رمزگشایی‌شده فقط همان لحظه در RAM با یک نشانهٔ بسیار کوچک تکمیل می‌شود.
-     *
-     * نشانه باید **داخل `<head>`** برود. نسخهٔ قبل آن را در ابتدای سند می‌گذاشت، یعنی
-     * قبل از `<!doctype html>`؛ هر `<script>` پیش از doctype مرورگر را به quirks mode
-     * می‌برد (box-sizing/ارتفاع ۱۰۰٪ و layout پلیر عوض می‌شود) و این فقط وقتی رخ می‌داد
-     * که فایل موسیقی از cache می‌آمد، یعنی از بار دوم به بعد. اگر `<head>` پیدا نشد،
-     * سند بدون نشانه تحویل می‌شود (فقط badge کش از دست می‌رود، نه حالت rendering).
-     */
+    /** Add the local cache marker inside head so doctype/layout stay unchanged. */
     private fun musicCacheHint(plain: ByteArray): ByteArray {
         val hint = "<script>window.__hamyarHmkCacheHit=true;</script>".toByteArray(Charsets.UTF_8)
         val needle = "<head>".toByteArray(Charsets.UTF_8)
@@ -144,9 +141,15 @@ open class HmkWebViewClient(
         while (i <= limit) {
             var match = true
             for (j in needle.indices) {
-                if (plain[i + j] != needle[j]) { match = false; break }
+                if (plain[i + j] != needle[j]) {
+                    match = false
+                    break
+                }
             }
-            if (match) { at = i + needle.size; break }
+            if (match) {
+                at = i + needle.size
+                break
+            }
             i++
         }
         if (at < 0) return plain
@@ -178,10 +181,6 @@ open class HmkWebViewClient(
 
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-        // HTMLها دست‌نخورده‌اند؛ این پل فقط در میزبان WebView قرار می‌گیرد. وقتی
-        // mini-player داخل iframe باز می‌شود، خود iframe پیام state می‌فرستد و
-        // میزبان آن را تا تمام viewport بزرگ می‌کند. بنابراین sheet پشت iframe
-        // کوچک یا پشت صفحهٔ یوگا/ورزش گم نمی‌شود.
         view.installMusicFrameOverlayBridge()
     }
 
@@ -191,22 +190,11 @@ open class HmkWebViewClient(
         const val MSG_CORRUPT = "فایل درس خراب است. دوباره تلاش کن."
         const val MSG_TOO_BIG = "این فایل برای باز شدن روی این دستگاه خیلی بزرگ است."
 
-        /**
-         * ریشهٔ ثابتِ باکت محتوا.
-         *
-         * عمداً از [ServerResolver] خوانده نمی‌شود: لایهٔ WebView باید یک origin
-         * قطعی داشته باشد تا هر درخواستِ داخلِ صفحه (از جمله iframe و دارایی‌های
-         * آن) حتماً از همین مسیرِ رمزگشایی رد شود. اگر host از Resolver بیاید و
-         * Resolver روزی مقصد را عوض کند، `shouldInterceptRequest` دیگر آن
-         * درخواست‌ها را نمی‌گیرد و محتوای رمزشده خام به WebView می‌رسد.
-         */
         const val BUCKET_BASE = "https://c539776.parspack.net"
         const val BUCKET_HOST = "c539776.parspack.net"
 
-        /** هاست باکت محتوا — ثابت و مستقل از انتخاب سرور. */
         fun bucketHost(): String = BUCKET_HOST
 
-        /** نشانی کاملِ یک کلیدِ باکت روی همان origin ثابت. */
         fun bucketUrl(key: String): String =
             BUCKET_BASE + "/" + key.trimStart('/').replace(" ", "%20")
     }
