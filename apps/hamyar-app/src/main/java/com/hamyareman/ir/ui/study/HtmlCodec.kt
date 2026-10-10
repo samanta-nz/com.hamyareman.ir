@@ -52,9 +52,13 @@ object HtmlCodec {
      * This does not weaken unwrap(), which stays fail-closed for encrypted-only callers.
      */
     fun decodeHtml(ctx: Context, data: ByteArray): ByteArray {
-        if (isWrapped(data)) return unwrap(ctx, data)
-        require(isPlainHtml(data)) { "محتوای دریافت‌شده HTML معتبر نیست." }
-        return data
+        if (!isWrapped(data)) {
+            require(isPlainHtml(data)) { "محتوای دریافت‌شده HTML معتبر نیست." }
+            return data
+        }
+        val plain = unwrap(ctx, data)
+        require(isPlainHtml(plain)) { "محتوای رمزگشایی‌شده HTML معتبر نیست." }
+        return plain
     }
 
     fun unwrap(ctx: Context, data: ByteArray): ByteArray {
