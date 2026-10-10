@@ -44,13 +44,16 @@ import kotlinx.coroutines.withContext
  *  - اگر باکت بگوید فایل هنوز آپلود نشده (۴۰۴): تک‌فایل مشترک «در دست تولید»
  *    (`spaceholder.html`) باز می‌شود. به‌محض آپلود فایل در همان آدرس، بار بعد خودش
  *    لود می‌شود؛ نیازی به APK جدید نیست.
+ *  - صوت همان درس: اگر منو کلید صوت نداده باشد و صفحه در پوشهٔ `exam` باشد،
+ *    متناظر آن `….mp3` کنار همان صفحه انتظار می‌رود؛ پلیر فقط وقتی نشان داده
+ *    می‌شود که باکت صریحاً «نیست» نگوید (آفلاین = نمایش می‌دهد).
  *
- * PDFها روی باکت رمز نیستند، پس از مسیر [StudyPdfCache] می‌آیند؛ اسپیس‌هولدر
- * HTML رمزشده است و از میانجی [HmkWebViewClient] عبور می‌کند.
+ * PDFها روی باکت رمز نیستند، پس از مسیر [StudyPdfCache] می‌آیند؛ HTML ها (اسپیس‌هولدر و صفحه‌های
+ * تدریس) هم HMK1 هستند و هم HTML ساده، و از میانجی [HmkWebViewClient] عبور می‌کنند.
  */
 /**
- * تمام‌صفحه: نوار عنوان و فلش برگشت عمداً نیست — طبق خواستهٔ طراحی فقط پلیر
- * جمع‌شونده و منوی پایین دیده می‌شوند. برگشت با دکمهٔ back دستگاه.
+ * تمام‌صفحه: نوار عنوان و فلش برگشت عمداً نیست — طبق خواستهٔ طراحی فقط
+ * پلیر جمع‌شونده و منوی پایین دیده می‌شوند. برگشت با دکمهٔ back دستگاه.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -64,26 +67,53 @@ fun BookNodeScreen(
     // فایلِ هنوز آپلودنشده به‌جای خطا، «در دست تولید» را نشان می‌دهد.
     var missing by remember(bucketKey) { mutableStateOf(false) }
     val effectiveKey = if (missing) BooksMenu.SPACEHOLDER_KEY else bucketKey
+
+    // صوت: کلید منو اگر هست؛ وگرنه برای صفحهٔ تدریس پوشهٔ exam همان نام با پسوند mp3.
+    // کلید منو یعنی فایل هنگام ساخت منو وجود داشته است؛ کلید مشتقّشده باید پیش از نمایش سنجیده شود.
+    val derivedAudio = audioKey.isBlank()
+    val audio = remember(audioKey, bucketKey) { audioKey.ifBlank { examAudioFor(bucketKey) } }
+    var audioOk by remember(audio) { mutableStateOf(audio.isNotBlank() && !derivedAudio) }
+    LaunchedEffect(audio) {
+        if (audio.isBlank() || !derivedAudio) return@LaunchedEffect
+        val gone = withContext(Dispatchers.IO) {
+            val urls = StudyMedia.candidateUrls(audio).toList()
+            urls.isNotEmpty() && urls.all { u -> LessonCache.isRemoteMissing(u) }
+        }
+        audioOk = !gone
+    }
+
     Column(Modifier.fillMaxSize()) {
-        if (audioKey.isNotBlank()) {
-            val packId = remember(audioKey) { "book-" + StudyMedia.bookCacheKey("track", audioKey) }
-            val cacheKey = remember(audioKey) { StudyMedia.bookCacheKey("book-audio", audioKey) }
+        if (audio.isNotBlank() && audioOk) {
+            val packId = remember(audio) { "book-" + StudyMedia.bookCacheKey("track", audio) }
+            val cacheKey = remember(audio) { StudyMedia.bookCacheKey("book-audio", audio) }
             // برخلاف نسخهٔ قبل، کلید کامل باکت پاس داده می‌شود؛ basename در
             // server-map نبود و پلیر صوت‌های تدریس ریاضی را «غایب» می‌دید.
             TeachAudioBar(
                 packId = packId,
                 screenTitle = title,
                 bookTitle = "",
-                tracks = listOf(TeachTrack("صوت تدریس", audioKey, cacheKey)),
+                tracks = listOf(TeachTrack("صوت تدریس", audio, cacheKey)),
             )
         }
         if (BooksMenu.isPdf(effectiveKey)) {
             BookPdfPages(effectiveKey) { missing = true }
         } else {
-            RemoteHtmlPage(effectiveKey, audioKey) { missing = true }
+            // با تغییر audioOk (فقط برای صوت مشتقّشده) میزبان از نو ساخته می‌شود تا
+            // پل JavaScript برای پرش صوت با audioKey درست به WebView وصل شود.
+            androidx.compose.runtime.key(audioOk) {
+                RemoteHtmlPage(effectiveKey, if (audioOk) audio else "") { missing = true }
+            }
         }
     }
 }
+
+/** کلید mp3 هم‌نام برای صفحهٔ تدریس پوشهٔ exam؛ برای بقیهٔ صفحه‌ها تهی. */
+private fun examAudioFor(bucketKey: String): String =
+    if (bucketKey.contains("/exam/") && bucketKey.endsWith(".html", ignoreCase = true)) {
+        bucketKey.dropLast(".html".length) + ".mp3"
+    } else {
+        ""
+    }
 
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
