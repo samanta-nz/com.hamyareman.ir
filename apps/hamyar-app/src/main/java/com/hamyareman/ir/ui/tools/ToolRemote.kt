@@ -49,7 +49,7 @@ object ToolRemote {
     private fun plainDir(ctx: Context) = File(ctx.cacheDir, "hamyar-tools-plain").apply { mkdirs() }
     private fun plainFile(ctx: Context, toolId: String) = File(plainDir(ctx), fileId(toolId))
 
-    /** plaintext فقط در cacheDir موقت WebView است؛ نسخهٔ ماندگار HMK1 می‌ماند. */
+    /** خروجی اجرای محلی ابزار؛ کش مشترک، payload اصلی را با قالب واقعی خودش نگه می‌دارد. */
     fun ensure(ctx: Context, toolId: String): String? {
         val id = fileId(toolId)
         // از همان لایهٔ مشترک درس‌ها می‌خوانیم؛ RemoteHtmlCache بازنشسته شد.
