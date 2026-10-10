@@ -40,8 +40,10 @@ import kotlinx.coroutines.withContext
 /**
  * نمایش یک گره از منوی کتاب.
  *
- *  - اگر فایلِ خودش روی باکت آماده باشد: همان PDF صفحه‌به‌صفحه رندر می‌شود.
- *  - وگرنه: تک‌فایل مشترک «در دست تولید» (`spaceholder.html`) باز می‌شود.
+ *  - اگر فایلِ خودش روی باکت باشد: همان PDF صفحه‌به‌صفحه رندر می‌شود (یا HTML لود می‌شود).
+ *  - اگر باکت بگوید فایل هنوز آپلود نشده (۴۰۴): تک‌فایل مشترک «در دست تولید»
+ *    (`spaceholder.html`) باز می‌شود. به‌محض آپلود فایل در همان آدرس، بار بعد خودش
+ *    لود می‌شود؛ نیازی به APK جدید نیست.
  *
  * PDFها روی باکت رمز نیستند، پس از مسیر [StudyPdfCache] می‌آیند؛ اسپیس‌هولدر
  * HTML رمزشده است و از میانجی [HmkWebViewClient] عبور می‌کند.
@@ -59,6 +61,9 @@ fun BookNodeScreen(
     onBack: () -> Unit,
 ) {
     BackHandler(onBack = onBack)
+    // فایلِ هنوز آپلودنشده به‌جای خطا، «در دست تولید» را نشان می‌دهد.
+    var missing by remember(bucketKey) { mutableStateOf(false) }
+    val effectiveKey = if (missing) BooksMenu.SPACEHOLDER_KEY else bucketKey
     Column(Modifier.fillMaxSize()) {
         if (audioKey.isNotBlank()) {
             val packId = remember(audioKey) { "book-" + StudyMedia.bookCacheKey("track", audioKey) }
@@ -72,13 +77,17 @@ fun BookNodeScreen(
                 tracks = listOf(TeachTrack("صوت تدریس", audioKey, cacheKey)),
             )
         }
-        if (BooksMenu.isPdf(bucketKey)) BookPdfPages(bucketKey) else RemoteHtmlPage(bucketKey, audioKey)
+        if (BooksMenu.isPdf(effectiveKey)) {
+            BookPdfPages(effectiveKey) { missing = true }
+        } else {
+            RemoteHtmlPage(effectiveKey, audioKey) { missing = true }
+        }
     }
 }
 
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
-private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
+private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}) {
     val context = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
     val url = ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY })
@@ -132,8 +141,14 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "") {
                     }
                 },
             )
+            // فایل نه در کش است نه قابل دانلود: اگر باکت صریحاً ۴۰۴ می‌دهد یعنی هنوز آپلود نشده.
+            val gone = prepared == null && !hasCache && LessonCache.isRemoteMissing(url)
             handler.post {
                 when {
+                    gone -> {
+                        transferLoading = false
+                        onMissing()
+                    }
                     prepared == null && !hasCache -> {
                         pageReadyUrl = null
                         error = "دریافت این محتوا ممکن نشد."
@@ -263,7 +278,7 @@ private sealed interface BookPdfState {
 }
 
 @Composable
-private fun BookPdfPages(bucketKey: String) {
+private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
     val context = LocalContext.current
     // مسیر کامل، نه نام فایل: نام‌های یکسان در چند کتاب نباید cache یکدیگر را
     // بازنویسی کنند. DownloadsScreen هم دقیقاً همین کلید را استفاده می‌کند.
@@ -301,7 +316,13 @@ private fun BookPdfPages(bucketKey: String) {
             synchronized(lock) { renderer = pdf }
             state = BookPdfState.Ready(pdf.pageCount)
         }.onFailure {
-            state = BookPdfState.Failed(it.message?.take(180) ?: "دریافت این فایل ممکن نشد.")
+            val message = it.message?.take(180) ?: "دریافت این فایل ممکن نشد."
+            // اگر باکت برای همهٔ آدرس‌ها صریحاً «نیست» بگوید، یعنی هنوز آپلود نشده.
+            val gone = withContext(Dispatchers.IO) {
+                val urls = StudyMedia.candidateUrls(bucketKey).toList()
+                urls.isNotEmpty() && urls.all { u -> LessonCache.isRemoteMissing(u) }
+            }
+            if (gone) onMissing() else state = BookPdfState.Failed(message)
         }
     }
 

@@ -16,10 +16,16 @@ import java.util.concurrent.ConcurrentHashMap
  * روی دیسک فقط HMK1 می‌نشیند. متن ساده هیچ‌وقت به‌عنوان کش ماندگار ذخیره نمی‌شود؛
  * رمزگشایی فقط هنگام تحویل به WebView و در حافظه انجام می‌شود.
  *
+ * قرارداد محتوا: هر فایل یک آدرس ثابت روی باکت دارد. کافی است فایل جدید دقیقاً در
+ * همان آدرس آپلود شود؛ اپ بدون APK جدید تغییر را تشخیص می‌دهد و فایل تازه را می‌گیرد.
+ *
  * برای تشخیص تغییر محتوا، قبل از هر نمایشِ HTML:
- * ۱) ابتدا متادیتای سبک HTTP (ETag/Last-Modified/Length) بررسی می‌شود.
- * ۲) اگر برای کش قدیمی متادیتا نداشتیم، فقط ابتدا و انتهای فایل با Range کوچک مقایسه می‌شود.
+ * ۱) متادیتای سبک HTTP (ETag/Last-Modified/Length) بررسی می‌شود. اگر ETag هر دو طرف
+ *    موجود باشد، همان تصمیم قطعی است (حتی وقتی طول فایل برابر باشد).
+ * ۲) اگر برای کش قدیمی متادیتا نداشتیم، ابتدا و انتهای فایل با Range کوچک مقایسه می‌شود
+ *    (IV تازهٔ هر رمزنگاری در ابتدای فایل است، پس بازآپلودِ هم‌طول هم دیده می‌شود).
  * ۳) اگر محتوا تغییر کرده باشد، فایل تازه کامل دانلود و اتمیک جایگزین می‌شود.
+ * ۴) اگر دانلودِ نسخهٔ تازه شکست بخورد، نسخهٔ سالم قبلی نمایش داده می‌شود.
  */
 object LessonCache {
 
@@ -98,6 +104,28 @@ object LessonCache {
         runCatching { dir(ctx).listFiles()?.filter { it.extension == "bin" }?.sumOf { it.length() } ?: 0L }
             .getOrDefault(0L)
 
+    /**
+     * فقط وقتی `true` است که باکت صریحاً بگوید فایل وجود ندارد (۴۰۴/۴۱۰/۴۰۳).
+     * خطای شبکه یا آفلاین بودن `false` می‌دهد، تا «آفلاین» با «هنوز آپلود نشده» قاطی نشود.
+     * همگام است؛ فقط روی نخ پس‌زمینه صدا زده شود.
+     */
+    fun isRemoteMissing(url: String): Boolean = runCatching {
+        val conn = (URL(canonical(url)).openConnection() as HttpURLConnection).apply {
+            connectTimeout = CONNECT_TIMEOUT_MS
+            readTimeout = READ_TIMEOUT_MS
+            instanceFollowRedirects = true
+            requestMethod = "HEAD"
+            setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
+        }
+        try {
+            val code = conn.responseCode
+            code == 404 || code == 410 || code == 403
+        } finally {
+            conn.disconnect()
+        }
+    }.getOrDefault(false)
+
     fun prepare(
         ctx: Context,
         url: String,
@@ -120,6 +148,7 @@ object LessonCache {
 
                 val remote = fetchMeta(canonicalUrl)
                 if (remote == null) {
+                    // آفلاین یا فایل از باکت برداشته شده: نسخهٔ سالم قبلی نمایش داده می‌شود.
                     recentChecks[key] = now
                     return PrepareResult(target, Freshness.CACHED)
                 }
@@ -134,7 +163,18 @@ object LessonCache {
                 onStatus?.invoke(Freshness.UPDATED)
                 val downloaded = runCatching {
                     download(canonicalUrl, target, onProgress)
-                }.getOrNull() ?: return null
+                }.getOrNull()
+
+                if (downloaded == null) {
+                    // دانلود نسخهٔ تازه شکست خورد. فایل قبلی دست‌نخورده مانده
+                    // (جایگزینی فقط پس از اعتبارسنجی انجام می‌شود)، پس همان نمایش داده
+                    // می‌شود. recentChecks عمداً ثبت نمی‌شود تا بار بعد دوباره تلاش شود.
+                    return if (isCached(ctx, canonicalUrl)) {
+                        PrepareResult(target, Freshness.CACHED)
+                    } else {
+                        null
+                    }
+                }
 
                 writeMeta(ctx, canonicalUrl, remote)
                 recentChecks[key] = now
@@ -142,11 +182,14 @@ object LessonCache {
             }
 
             onStatus?.invoke(Freshness.DOWNLOADED)
+            // متادیتا پیش از دانلود گرفته می‌شود: اگر وسط کار فایل عوض شود، متادیتای
+            // قدیمی‌تر ثبت می‌شود و بررسی بعدی تغییر را می‌بیند (نه برعکس).
+            val remoteBefore = fetchMeta(canonicalUrl)
             val downloaded = runCatching {
                 download(canonicalUrl, target, onProgress)
             }.getOrNull() ?: return null
 
-            fetchMeta(canonicalUrl)?.let { writeMeta(ctx, canonicalUrl, it) }
+            remoteBefore?.let { writeMeta(ctx, canonicalUrl, it) }
             recentChecks[key] = System.currentTimeMillis()
             return PrepareResult(downloaded, Freshness.DOWNLOADED)
         }
@@ -163,6 +206,7 @@ object LessonCache {
                 instanceFollowRedirects = true
                 requestMethod = "HEAD"
                 setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Cache-Control", "no-cache")
             }
             try {
                 if (conn.responseCode !in 200..299) null
@@ -186,6 +230,7 @@ object LessonCache {
                 instanceFollowRedirects = true
                 requestMethod = "GET"
                 setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Cache-Control", "no-cache")
                 setRequestProperty("Range", "bytes=0-" + (PROBE_BYTES - 1))
             }
             try {
@@ -211,16 +256,22 @@ object LessonCache {
         local: File,
         remote: RemoteMeta,
     ): Boolean {
-        val meta = readMeta(ctx, url)
-        if (meta != null && meta.contentLength >= 0 && remote.contentLength >= 0 &&
-            meta.contentLength == remote.contentLength
-        ) {
-            if (meta.etag.isNotBlank() && remote.etag.isNotBlank() && meta.etag == remote.etag) return true
-            if (meta.lastModified > 0 && remote.lastModified > 0 && meta.lastModified == remote.lastModified) return true
-        }
-
+        // طول متفاوت یعنی قطعاً محتوای دیگر.
         if (remote.contentLength >= 0 && remote.contentLength != local.length()) return false
 
+        val meta = readMeta(ctx, url)
+        if (meta != null) {
+            // ETag هر دو طرف موجود: تصمیم قطعی. ETag متفاوت = فایل بازآپلود شده،
+            // حتی اگر طول دقیقاً برابر باشد.
+            if (meta.etag.isNotBlank() && remote.etag.isNotBlank()) {
+                return meta.etag == remote.etag
+            }
+            if (meta.lastModified > 0 && remote.lastModified > 0) {
+                return meta.lastModified == remote.lastModified
+            }
+        }
+
+        // متادیتای قابل‌اتکا نداریم (کش قدیمی یا سرور بدون ETag): ابتدا و انتها مقایسه شود.
         return compareRange(url, local, 0L, PROBE_BYTES) &&
             compareRange(
                 url,
@@ -242,6 +293,7 @@ object LessonCache {
                 instanceFollowRedirects = true
                 requestMethod = "GET"
                 setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Cache-Control", "no-cache")
                 setRequestProperty(
                     "Range",
                     "bytes=" + start + "-" + (start + length - 1),
@@ -315,6 +367,7 @@ object LessonCache {
                 instanceFollowRedirects = true
                 requestMethod = "GET"
                 setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Cache-Control", "no-cache")
             }
             if (conn.responseCode !in 200..299) return null
 
@@ -339,6 +392,9 @@ object LessonCache {
                 return null
             }
 
+            // rename روی همان پارتیشن، فایل قبلی را اتمیک جایگزین می‌کند؛ پس فایل
+            // قدیمی پیش از آماده شدن جدید پاک نمی‌شود. delete فقط یدک است.
+            if (tmp.renameTo(target)) return target
             runCatching { target.delete() }
             return if (tmp.renameTo(target)) target else {
                 tmp.delete()

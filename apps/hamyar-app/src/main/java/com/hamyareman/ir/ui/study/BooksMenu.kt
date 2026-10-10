@@ -8,13 +8,12 @@ import org.json.JSONObject
  * منوی کتاب‌ها دقیقاً از روی `menu.json` هر کتاب روی باکت پارس ساخته شده و در
  * `assets/content/books-menu.json` جمع شده است.
  *
- * هر گره یک `key` دارد (مسیر PDF روی باکت) و یک پرچم `ready`:
- *  - `true`  فایل روی باکت هست → همان PDF باز می‌شود
- *  - `false` منو اعلامش کرده ولی هنوز آپلود نشده
- *  - `null`  اصلاً فایلی اعلام نشده
- *
- * هر گره‌ای که `ready` آن `true` نباشد به یک فایل مشترک «در دست تولید» می‌رود:
- * [SPACEHOLDER_KEY].
+ * قرارداد محتوا (از ۳٫۰٫۴): هر گره‌ای که `key` دارد، آدرسش از پیش در اپ هست و
+ * همیشه همان فایل باز می‌شود؛ پرچم `ready` در JSON دیگر تعیین‌کننده نیست.
+ * یعنی برای نمایش یک محتوای تازه فقط باید فایل دقیقاً در همان مسیر باکت آپلود شود:
+ *  - فایل هست  → لود می‌شود (و با هر تغییر در باکت، خودکار به‌روز می‌شود)
+ *  - فایل هنوز نیست (۴۰۴) → صفحهٔ «در دست تولید» [SPACEHOLDER_KEY] نشان داده می‌شود
+ *  - گره‌ای که اصلاً `key` ندارد → همیشه «به‌زودی»
  */
 object BooksMenu {
 
@@ -83,11 +82,13 @@ object BooksMenu {
         if (arr == null) return emptyList()
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
+            val key = o.optStringOrNull("key")
             Node(
                 kind = o.optString("kind", "plain"),
                 title = o.optString("title"),
-                key = o.optStringOrNull("key"),
-                ready = o.optBooleanOrNull("ready"),
+                key = key,
+                // آدرس از پیش تعریف‌شده = آماده برای باز شدن؛ وجود فایل را باکت تعیین می‌کند.
+                ready = if (key != null) true else null,
                 teachKey = o.optStringOrNull("teachKey"),
                 audioKey = o.optStringOrNull("audioKey"),
                 tabs = tabs(o.optJSONArray("tabs")),
@@ -100,19 +101,17 @@ object BooksMenu {
         if (arr == null) return emptyList()
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
+            val key = o.optStringOrNull("key")
             Tab(
                 title = o.optString("title"),
-                key = o.optStringOrNull("key"),
-                ready = o.optBooleanOrNull("ready"),
+                key = key,
+                ready = if (key != null) true else null,
             )
         }
     }
 
     private fun JSONObject.optStringOrNull(name: String): String? =
         if (isNull(name)) null else optString(name).takeIf { it.isNotBlank() }
-
-    private fun JSONObject.optBooleanOrNull(name: String): Boolean? =
-        if (isNull(name) || !has(name)) null else optBoolean(name)
 
     fun all(ctx: Context): List<Book> {
         load(ctx)
@@ -126,7 +125,7 @@ object BooksMenu {
         return books.firstOrNull { it.code == digits }
     }
 
-    /** مقصد نهایی یک گره: فایل خودش اگر آماده باشد، وگرنه «در دست تولید». */
+    /** مقصد نهایی یک گره: فایل خودش اگر آدرس دارد، وگرنه «در دست تولید». */
     fun destination(key: String?, ready: Boolean?): String =
         if (ready == true && !key.isNullOrBlank()) key else SPACEHOLDER_KEY
 
