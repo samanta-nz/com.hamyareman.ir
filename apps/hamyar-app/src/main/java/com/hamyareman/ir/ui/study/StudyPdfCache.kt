@@ -74,7 +74,7 @@ object StudyPdfCache {
                 ProbeResult.Unavailable -> return target
                 is ProbeResult.Available -> {
                     expectedMeta = probe.meta
-                    if (sameContent(candidates.first { probeFor(it)?.status in 200..299 }, target, oldMeta, probe.meta)) {
+                    if (sameContent(probe.url, target, oldMeta, probe.meta)) {
                         writeRemoteMeta(metaFile, probe.meta.copy(
                             length = probe.meta.length.takeIf { it >= 0L } ?: target.length(),
                             checkedAt = now,
@@ -179,7 +179,7 @@ object StudyPdfCache {
     )
 
     private sealed interface ProbeResult {
-        data class Available(val meta: RemoteMeta) : ProbeResult
+        data class Available(val meta: RemoteMeta, val url: String) : ProbeResult
         data class Missing(val status: Int) : ProbeResult
         data object Unavailable : ProbeResult
     }
@@ -210,7 +210,7 @@ object StudyPdfCache {
             }
             val status = conn.responseCode
             when {
-                status in 200..299 -> ProbeResult.Available(metaFrom(conn))
+                status in 200..299 -> ProbeResult.Available(metaFrom(conn), url)
                 status == 403 || status == 404 || status == 410 -> ProbeResult.Missing(status)
                 else -> ProbeResult.Unavailable
             }
