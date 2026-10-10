@@ -125,11 +125,32 @@ object LessonCache {
                     return PrepareResult(target, Freshness.CACHED)
                 }
 
-                // Always fetch a complete candidate on each freshness check. Exact byte
-                // length is the fast first comparison; equal-length files are then
-                // compared byte-for-byte, including their middle. HTTP validators and
-                // small prefix/suffix samples are deliberately not trusted as proof
-                // that the content is unchanged.
+                // Freshness is determined only by exact byte length from HTTP HEAD.
+                // No response body is downloaded when local and remote lengths match.
+                // If the origin cannot report Content-Length, keep the good cache and
+                // retry the lightweight check on a later open instead of downloading
+                // the whole document just to compare it.
+                val remote = fetchMeta(canonicalUrl)
+                if (remote == null || remote.contentLength < 0L) {
+                    onStatus?.invoke(Freshness.CACHED)
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+
+                when (sameSize(target.length(), remote.contentLength)) {
+                    true -> {
+                        recentChecks[key] = now
+                        onStatus?.invoke(Freshness.CACHED)
+                        return PrepareResult(target, Freshness.CACHED)
+                    }
+                    null -> {
+                        onStatus?.invoke(Freshness.CACHED)
+                        return PrepareResult(target, Freshness.CACHED)
+                    }
+                    false -> Unit
+                }
+
+                // Different byte length: download a candidate and validate it before
+                // atomically replacing the old payload. Failed updates keep the cache.
                 val candidate = File(target.path + ".candidate")
                 runCatching { candidate.delete() }
                 val downloaded = runCatching {
@@ -144,13 +165,6 @@ object LessonCache {
                     } else {
                         null
                     }
-                }
-
-                if (sameBytes(target, downloaded)) {
-                    runCatching { downloaded.delete() }
-                    recentChecks[key] = System.currentTimeMillis()
-                    onStatus?.invoke(Freshness.CACHED)
-                    return PrepareResult(target, Freshness.CACHED)
                 }
 
                 if (!replaceTarget(downloaded, target)) {
@@ -210,44 +224,41 @@ object LessonCache {
     }
 
     /**
-     * Fast exact length check, followed by a complete byte-for-byte comparison.
-     * Unlike ETag or sampling, this detects a changed byte anywhere in an equal-size file.
+     * The only freshness criterion: exact file length in bytes.
+     * null means one side has no trustworthy size, so it must not trigger a download.
      */
-    internal fun sameBytes(first: File, second: File): Boolean {
-        if (!first.exists() || !second.exists() || first.length() != second.length()) return false
-        return try {
-            first.inputStream().buffered().use { left ->
-                second.inputStream().buffered().use { right ->
-                    val a = ByteArray(64 * 1024)
-                    val b = ByteArray(64 * 1024)
-                    while (true) {
-                        val readA = readChunk(left, a)
-                        val readB = readChunk(right, b)
-                        if (readA != readB) return false
-                        if (readA < 0) return true
-                        for (i in 0 until readA) {
-                            if (a[i] != b[i]) return false
-                        }
-                    }
-                    @Suppress("UNREACHABLE_CODE")
-                    false
-                }
-            }
-        } catch (_: Throwable) {
-            false
-        }
+    internal fun sameSize(localBytes: Long, remoteBytes: Long): Boolean? {
+        if (localBytes < 0L || remoteBytes < 0L) return null
+        return localBytes == remoteBytes
     }
 
-    private fun readChunk(input: java.io.InputStream, buffer: ByteArray): Int {
-        var total = 0
-        while (total < buffer.size) {
-            val n = input.read(buffer, total, buffer.size - total)
-            if (n < 0) break
-            if (n == 0) continue
-            total += n
+    /**
+     * Reads only HTTP response headers. Never falls back to GET/Range for freshness,
+     * so checking an unchanged cache does not download the document body.
+     */
+    private fun fetchMeta(url: String): RemoteMeta? = runCatching {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = CONNECT_TIMEOUT_MS
+            readTimeout = READ_TIMEOUT_MS
+            instanceFollowRedirects = true
+            requestMethod = "HEAD"
+            setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache")
         }
-        return if (total == 0) -1 else total
-    }
+        try {
+            if (conn.responseCode !in 200..299) return null
+            val length = conn.contentLengthLong
+            if (length < 0L) return null
+            RemoteMeta(
+                contentLength = length,
+                etag = "",
+                lastModified = 0L,
+                contentType = conn.contentType.orEmpty(),
+            )
+        } finally {
+            conn.disconnect()
+        }
+    }.getOrNull()
 
     private fun readMeta(ctx: Context, url: String): RemoteMeta? = runCatching {
         val p = Properties()
