@@ -6,26 +6,55 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * لایهٔ رمز مشترک HTML روی باکت: جادوی `HMK1` + IV ۱۲ بایتی + AES-GCM.
- * محتوای remote باید همیشه HMK1 باشد؛ نبود magic به‌صورت fail-closed رد می‌شود.
+ * Recognizes both supported HTML representations:
+ * HMK1 + IV + AES-GCM ciphertext, and ordinary UTF-8 HTML.
+ *
+ * unwrap() remains strict and only decrypts HMK1. Call decodeHtml() only at a
+ * call site that explicitly expects an HTML document and is allowed to accept
+ * either representation.
  */
 object HtmlCodec {
 
     private val MAGIC = byteArrayOf(0x48, 0x4D, 0x4B, 0x31) // HMK1
+    private val HTML_TAG = Regex(
+        """<!doctype\s+html\b|<html(?:\s|>)|<(?:head|body|script|iframe|meta|title|div|main|section|style|article|p)(?:\s|/|>)""",
+        RegexOption.IGNORE_CASE,
+    )
 
-    /** کمینهٔ اندازهٔ یک فایل معتبر: magic ۴ + IV ۱۲ + تگ GCM ۱۶. */
+    /** Minimum envelope size: 4-byte magic + 12-byte IV + 16-byte GCM tag. */
     const val MIN_WRAPPED_BYTES: Int = 4 + 12 + 16
 
-    /** فقط چهار بایت اول را می‌سنجد — برای وارسی سریع فایل روی دیسک یا سرِ پاسخ. */
+    /** Quick signature check for a byte prefix or full payload. */
     fun hasMagic(head: ByteArray): Boolean {
         if (head.size < MAGIC.size) return false
         for (i in MAGIC.indices) if (head[i] != MAGIC[i]) return false
         return true
     }
 
-    fun isWrapped(data: ByteArray): Boolean {
-        if (data.size < MIN_WRAPPED_BYTES) return false
-        return hasMagic(data)
+    fun isWrapped(data: ByteArray): Boolean =
+        data.size >= MIN_WRAPPED_BYTES && hasMagic(data)
+
+    /**
+     * Validate an ordinary HTML document using only a bounded UTF-8 prefix.
+     * This rejects binary files and common non-HTML error payloads before caching.
+     */
+    fun isPlainHtml(data: ByteArray): Boolean {
+        if (data.size < 8 || hasMagic(data)) return false
+        val prefix = String(data, 0, minOf(data.size, 16 * 1024), Charsets.UTF_8)
+            .removePrefix("\uFEFF")
+            .trimStart()
+        if (prefix.isEmpty() || prefix.indexOf('\u0000') >= 0 || !prefix.contains('>')) return false
+        return HTML_TAG.containsMatchIn(prefix)
+    }
+
+    /**
+     * Decode only when the payload is wrapped; otherwise return validated plain HTML.
+     * This does not weaken unwrap(), which stays fail-closed for encrypted-only callers.
+     */
+    fun decodeHtml(ctx: Context, data: ByteArray): ByteArray {
+        if (isWrapped(data)) return unwrap(ctx, data)
+        require(isPlainHtml(data)) { "محتوای دریافت‌شده HTML معتبر نیست." }
+        return data
     }
 
     fun unwrap(ctx: Context, data: ByteArray): ByteArray {
