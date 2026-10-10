@@ -73,15 +73,21 @@ object StudyMedia {
         return out.toList()
     }
 
-    private val resolved = ConcurrentHashMap<String, String>()
-    private val missing = ConcurrentHashMap.newKeySet<String>()
+    private const val RESOLUTION_TTL_MS = 30_000L
+    private data class Resolution(val fileId: String, val checkedAt: Long)
+    private val resolved = ConcurrentHashMap<String, Resolution>()
+    private val missing = ConcurrentHashMap<String, Long>()
 
     /** آیا هیچ‌کدام از نام‌های محتمل این صوت روی باکت هست؟ */
     fun audioExists(fileId: String): Boolean {
         if (fileId.isBlank()) return false
-        if (missing.contains(fileId)) return false
+        val now = System.currentTimeMillis()
+        val missingAt = missing[fileId]
+        if (missingAt != null && now >= missingAt && now - missingAt < RESOLUTION_TTL_MS) return false
+        if (missingAt != null) missing.remove(fileId, missingAt)
+
         val ok = candidateIds(fileId).any { existsOnServer(it) }
-        if (!ok) missing += fileId
+        if (!ok) missing[fileId] = now else missing.remove(fileId)
         return ok
     }
 
@@ -89,10 +95,17 @@ object StudyMedia {
 
     fun resolveFileId(fileId: String): String {
         if (fileId.isBlank() || fileId.startsWith("Bucket/")) return fileId
-        resolved[fileId]?.let { return it }
+        val now = System.currentTimeMillis()
+        val cached = resolved[fileId]
+        if (cached != null && now >= cached.checkedAt && now - cached.checkedAt < RESOLUTION_TTL_MS) {
+            return cached.fileId
+        }
+        if (cached != null) resolved.remove(fileId, cached)
+
         for (id in candidateIds(fileId)) {
             if (existsOnServer(id)) {
-                resolved[fileId] = id
+                resolved[fileId] = Resolution(id, System.currentTimeMillis())
+                missing.remove(fileId)
                 return id
             }
         }
@@ -106,11 +119,34 @@ object StudyMedia {
                 readTimeout = 8000
                 instanceFollowRedirects = true
                 requestMethod = "HEAD"
+                setRequestProperty("Cache-Control", "no-cache")
+                setRequestProperty("Pragma", "no-cache")
             }
-            conn.connect()
-            val ok = conn.responseCode in 200..299
-            conn.disconnect()
-            ok
+            try {
+                val status = conn.responseCode
+                if (status in 200..299) true
+                else if (status != 405 && status != 501) false
+                else {
+                    conn.disconnect()
+                    val range = (URL(url).openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 8000
+                        readTimeout = 8000
+                        instanceFollowRedirects = true
+                        requestMethod = "GET"
+                        setRequestProperty("Range", "bytes=0-0")
+                        setRequestProperty("Accept-Encoding", "identity")
+                        setRequestProperty("Cache-Control", "no-cache")
+                        setRequestProperty("Pragma", "no-cache")
+                    }
+                    try { range.responseCode == HttpURLConnection.HTTP_PARTIAL }
+                    finally {
+                        runCatching { range.inputStream.close() }
+                        range.disconnect()
+                    }
+                }
+            } finally {
+                runCatching { conn.disconnect() }
+            }
         }.getOrDefault(false)
     }
 }
