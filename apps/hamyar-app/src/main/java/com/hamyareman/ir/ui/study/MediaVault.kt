@@ -73,6 +73,32 @@ object MediaVault {
         prefs.edit().putStringSet("verified", set).apply()
     }
 
+    /**
+     * Atomically switch a cache key to a separately downloaded, already verified file.
+     * The old payload remains intact until the staged payload passes verification.
+     */
+    fun replaceVerifiedCache(ctx: Context, stagedKey: String, targetKey: String): Boolean =
+        synchronized(this) {
+            if (stagedKey.isBlank() || targetKey.isBlank() || stagedKey == targetKey) return@synchronized false
+            if (!isVerified(ctx, stagedKey)) return@synchronized false
+            val staged = vaultFile(ctx, stagedKey)
+            val target = vaultFile(ctx, targetKey)
+            val backup = File(target.parentFile, target.name + ".refresh-backup")
+            runCatching { backup.delete() }
+            if (target.exists() && !target.renameTo(backup)) return@synchronized false
+            if (!staged.renameTo(target)) {
+                if (backup.exists()) runCatching { backup.renameTo(target) }
+                return@synchronized false
+            }
+            val prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val verified = prefs.getStringSet("verified", emptySet()).orEmpty().toMutableSet()
+            verified.remove(stagedKey)
+            verified += targetKey
+            prefs.edit().putStringSet("verified", verified).apply()
+            runCatching { backup.delete() }
+            true
+        }
+
     /** نگاهِ کوتاه به ابتدای فایلِ رمزگشایی‌شده — برای اطمینان از سالم‌بودنِ دانلود. */
     fun peek(ctx: Context, cacheKey: String, bytes: Int = 4096): ByteArray? {
         val all = vaultFile(ctx, cacheKey)
