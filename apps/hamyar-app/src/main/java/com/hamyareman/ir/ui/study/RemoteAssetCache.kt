@@ -92,7 +92,7 @@ object RemoteAssetCache {
                 }
             }
         } ?: return null
-        return createResponse(chosen.file, path, chosen.snapshot, rangeHeader)
+        return createResponse(ctx, chosen.file, path, chosen.snapshot, rangeHeader)
     }
 
     private fun inspect(url: String): Probe {
@@ -269,7 +269,8 @@ object RemoteAssetCache {
         val bytes = ByteArray(32)
         val count = runCatching { file.inputStream().use { it.read(bytes) } }.getOrDefault(-1)
         if (count <= 0) return false
-        if (count >= 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "HMK1") return false
+        val isWrapped = count >= 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "HMK1"
+        if (isWrapped) return file.length() > HtmlCodec.MIN_WRAPPED_BYTES
         val prefix = String(bytes, 0, count, Charsets.ISO_8859_1).trimStart().lowercase()
         return !prefix.startsWith("<!doctype html") && !prefix.startsWith("<html")
     }
@@ -296,7 +297,22 @@ object RemoteAssetCache {
         return URLConnection.guessContentTypeFromName(path) ?: fromHeader.ifBlank { "application/octet-stream" }
     }
 
-    private fun createResponse(file: File, path: String, snapshot: Snapshot?, rangeHeader: String?): WebResourceResponse {
+    private fun createResponse(
+        ctx: Context,
+        file: File,
+        path: String,
+        snapshot: Snapshot?,
+        rangeHeader: String?,
+    ): WebResourceResponse? {
+        val prefix = ByteArray(4)
+        val prefixLength = runCatching { file.inputStream().use { it.read(prefix) } }.getOrDefault(-1)
+        if (prefixLength == 4 && HtmlCodec.hasMagic(prefix)) {
+            // Some non-HTML bucket resources may also be HMK1 wrapped. Keep ciphertext
+            // on disk, unwrap only in memory, then apply Range to the decoded bytes.
+            if (file.length() > LessonCache.MAX_DECRYPT_BYTES || file.length() <= HtmlCodec.MIN_WRAPPED_BYTES) return null
+            val plain = runCatching { HtmlCodec.unwrap(ctx, file.readBytes()) }.getOrNull() ?: return null
+            return createBytesResponse(plain, mimeFromBytes(plain, path, snapshot?.mimeType.orEmpty()), rangeHeader)
+        }
         val mime = detectedMime(file, path, snapshot?.mimeType.orEmpty())
         val length = file.length()
         val headers = linkedMapOf("Accept-Ranges" to "bytes", "Cache-Control" to "no-store")
@@ -337,6 +353,54 @@ object RemoteAssetCache {
         }
         val stream = if (status == 206) LimitedInputStream(input, end - start + 1L) else input
         return WebResourceResponse(mime, charsetFor(mime), status, reason, headers, stream)
+    }
+
+    private fun createBytesResponse(bytes: ByteArray, mime: String, rangeHeader: String?): WebResourceResponse {
+        val headers = linkedMapOf("Accept-Ranges" to "bytes", "Cache-Control" to "no-store")
+        var start = 0
+        var end = bytes.lastIndex
+        var status = 200
+        var reason = "OK"
+        if (!rangeHeader.isNullOrBlank() && rangeHeader.startsWith("bytes=")) {
+            val spec = rangeHeader.removePrefix("bytes=").trim()
+            if (spec.contains(',')) return rangeError(mime, bytes.size.toLong())
+            val parts = spec.split('-', limit = 2)
+            if (parts.size == 2) {
+                val left = parts[0].toIntOrNull()
+                val right = parts[1].toIntOrNull()
+                if (left == null && right != null && right > 0) start = (bytes.size - right).coerceAtLeast(0)
+                else if (left != null && left >= 0) {
+                    start = left
+                    if (right != null) end = right
+                }
+            }
+            if (start >= bytes.size || end < start) return rangeError(mime, bytes.size.toLong())
+            end = end.coerceAtMost(bytes.lastIndex)
+            headers["Content-Length"] = (end - start + 1).toString()
+            headers["Content-Range"] = "bytes " + start + "-" + end + "/" + bytes.size
+            status = 206
+            reason = "Partial Content"
+        } else {
+            headers["Content-Length"] = bytes.size.toString()
+        }
+        val delivered = if (status == 206) bytes.copyOfRange(start, end + 1) else bytes
+        return WebResourceResponse(mime, charsetFor(mime), status, reason, headers, ByteArrayInputStream(delivered))
+    }
+
+    private fun mimeFromBytes(bytes: ByteArray, path: String, declared: String): String {
+        if (bytes.size >= 8 && (bytes[0].toInt() and 0xFF) == 0x89 &&
+            bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte()
+        ) return "image/png"
+        if (bytes.size >= 3 && (bytes[0].toInt() and 0xFF) == 0xFF &&
+            (bytes[1].toInt() and 0xFF) == 0xD8 && (bytes[2].toInt() and 0xFF) == 0xFF
+        ) return "image/jpeg"
+        if (bytes.size >= 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "OggS") return "audio/ogg"
+        if (bytes.size >= 3 && String(bytes, 0, 3, Charsets.US_ASCII) == "ID3") return "audio/mpeg"
+        if (bytes.size >= 5 && String(bytes, 0, 5, Charsets.US_ASCII) == "%PDF-") return "application/pdf"
+        if (bytes.size >= 8 && String(bytes, 4, 4, Charsets.US_ASCII) == "ftyp") return "video/mp4"
+        val fromHeader = declared.substringBefore(';').trim()
+        return if (fromHeader.isNotBlank() && fromHeader != "application/octet-stream") fromHeader
+        else URLConnection.guessContentTypeFromName(path) ?: fromHeader.ifBlank { "application/octet-stream" }
     }
 
     private fun rangeError(mime: String, length: Long) = WebResourceResponse(
@@ -383,7 +447,7 @@ object RemoteAssetCache {
     private fun readSnapshot(file: File): Snapshot? = runCatching {
         if (!file.isFile) return null
         val properties = Properties()
-        file.inputStream().use(properties::load)
+        file.inputStream().use { properties.load(it) }
         Snapshot(
             length = properties.getProperty("length", "-1").toLong(),
             etag = properties.getProperty("etag", ""),
