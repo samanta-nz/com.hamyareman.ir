@@ -7,7 +7,10 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * لایهٔ رمز مشترک HTML روی باکت: جادوی `HMK1` + IV ۱۲ بایتی + AES-GCM.
- * محتوای remote باید همیشه HMK1 باشد؛ نبود magic به‌صورت fail-closed رد می‌شود.
+ *
+ * فایل روی باکت یکی از دو قالب است: HMK1 (رمزشده) یا HTML ساده. [unwrap] همچنان
+ * سخت‌گیرانه است (نبود magic = خطا)؛ برای مسیرهایی که هر دو قالب را می‌پذیرند
+ * از [unwrapOrPlain] استفاده می‌شود. رمزگشایی همیشه فقط در حافظه است.
  */
 object HtmlCodec {
 
@@ -37,4 +40,11 @@ object HtmlCodec {
         c.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), GCMParameterSpec(128, iv))
         return c.doFinal(data, 16, data.size - 16)
     }
+
+    /**
+     * قالب را از روی خود بایت‌ها تشخیص می‌دهد: با magic `HMK1` در حافظه رمزگشایی
+     * می‌شود (کلید لازم است)، وگرنه HTML ساده همان‌طور برمی‌گردد.
+     */
+    fun unwrapOrPlain(ctx: Context, data: ByteArray): ByteArray =
+        if (hasMagic(data)) unwrap(ctx, data) else data
 }

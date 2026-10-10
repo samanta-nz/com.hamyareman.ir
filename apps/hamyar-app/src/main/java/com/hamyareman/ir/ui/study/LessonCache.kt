@@ -11,10 +11,13 @@ import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * کش بایت‌های **رمزشدهٔ** HTML روی دیسک.
+ * کش بایت‌های HTML باکت روی دیسک.
  *
- * روی دیسک فقط HMK1 می‌نشیند. متن ساده هیچ‌وقت به‌عنوان کش ماندگار ذخیره نمی‌شود؛
- * رمزگشایی فقط هنگام تحویل به WebView و در حافظه انجام می‌شود.
+ * دو قالب پذیرفته می‌شود و از روی خود فایل تشخیص داده می‌شود:
+ *  - HMK1 (رمزشده): همان‌طور رمزشده روی دیسک می‌ماند و فقط هنگام تحویل به WebView
+ *    در حافظه رمزگشایی می‌شود.
+ *  - HTML ساده (فقط برای آدرس‌های `.html`): همان‌طور ذخیره و تحویل می‌شود.
+ * فایل‌های غیر HTML (تصویر، فونت و…) مثل قبل وارد این کش نمی‌شوند.
  *
  * قرارداد محتوا: هر فایل یک آدرس ثابت روی باکت دارد. کافی است فایل جدید دقیقاً در
  * همان آدرس آپلود شود؛ اپ بدون APK جدید تغییر را تشخیص می‌دهد و فایل تازه را می‌گیرد.
@@ -89,7 +92,9 @@ object LessonCache {
 
     fun isCached(ctx: Context, url: String): Boolean {
         val f = fileFor(ctx, url)
-        return f.exists() && f.length() > HtmlCodec.MIN_WRAPPED_BYTES && looksWrapped(f)
+        if (!f.exists()) return false
+        if (f.length() > HtmlCodec.MIN_WRAPPED_BYTES && looksWrapped(f)) return true
+        return acceptsPlain(url) && looksLikeHtml(f)
     }
 
     fun evict(ctx: Context, url: String) {
@@ -202,7 +207,7 @@ object LessonCache {
             val freshness = if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED
             onStatus?.invoke(freshness)
 
-            val saved = saveBody(conn, target, onProgress)
+            val saved = saveBody(conn, target, onProgress, acceptsPlain(canonicalUrl))
             if (saved == null) {
                 // دانلود شکست خورد؛ فایل قبلی دست‌نخورده مانده (جایگزینی فقط پس از اعتبارسنجی).
                 if (hasCache && isCached(ctx, canonicalUrl)) {
@@ -352,11 +357,15 @@ object LessonCache {
         }
     }
 
-    /** بدنهٔ پاسخ ۲۰۰ را در .tmp می‌ریزد، اعتبار HMK1 را می‌سنجد و اتمیک جایگزین می‌کند. */
+    /**
+     * بدنهٔ پاسخ ۲۰۰ را در .tmp می‌ریزد، قالب را می‌سنجد (HMK1 یا — اگر [allowPlain] —
+     * HTML ساده) و اتمیک جایگزین می‌کند.
+     */
     private fun saveBody(
         conn: HttpURLConnection,
         target: File,
         onProgress: ((Int, Int) -> Unit)?,
+        allowPlain: Boolean,
     ): File? {
         val tmp = File(target.path + ".tmp")
         runCatching { tmp.delete() }
@@ -377,7 +386,8 @@ object LessonCache {
                 }
             }
 
-            if (!looksWrapped(tmp)) {
+            val valid = looksWrapped(tmp) || (allowPlain && looksLikeHtml(tmp))
+            if (!valid) {
                 tmp.delete()
                 return null
             }
@@ -403,6 +413,32 @@ object LessonCache {
                 val head = ByteArray(4)
                 if (input.read(head) != 4) return false
                 HtmlCodec.hasMagic(head)
+            }
+        }.getOrDefault(false)
+    }
+
+    /** فقط آدرس‌های `.html` اجازهٔ ذخیرهٔ HTML ساده دارند. */
+    private fun acceptsPlain(url: String): Boolean =
+        runCatching { Uri.parse(url).path.orEmpty().endsWith(".html", ignoreCase = true) }
+            .getOrDefault(false)
+
+    /** بایت‌های اول با (BOM و فاصله‌های ابتدایی) به `<` برسد؛ صفحهٔ خطا/JSON/باینری رد می‌شود. */
+    private fun looksLikeHtml(file: File): Boolean {
+        if (!file.exists() || file.length() <= 0L) return false
+        return runCatching {
+            file.inputStream().use { input ->
+                val head = ByteArray(2048)
+                val n = input.read(head)
+                if (n <= 0) return false
+                var i = 0
+                if (n >= 3 && head[0] == 0xEF.toByte() && head[1] == 0xBB.toByte() && head[2] == 0xBF.toByte()) {
+                    i = 3
+                }
+                while (i < n) {
+                    val b = head[i].toInt()
+                    if (b == 0x20 || b == 0x09 || b == 0x0A || b == 0x0D) i++ else break
+                }
+                i < n && head[i].toInt() == 0x3C
             }
         }.getOrDefault(false)
     }
