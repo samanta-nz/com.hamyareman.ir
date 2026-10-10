@@ -117,8 +117,15 @@ open class HmkWebViewClient(
     private fun decryptTwice(url: String, file: File, first: ByteArray): ByteArray? {
         runCatching { HtmlCodec.decodeHtml(appContext, first) }.onSuccess { return it }
 
-        // Refresh before asking for the shared key: the new remote version may now be
-        // ordinary HTML even when the stale cached version used HMK1.
+        // Missing key is an authentication problem, not a freshness signal. Do not
+        // download the full file again just because a cached HMK1 payload needs a key.
+        if (HtmlCodec.hasMagic(first) && HtmlMediaKey.get(appContext) == null) {
+            lastMessage = MSG_NO_KEY
+            onProblem(Problem.KEY_MISSING)
+            return null
+        }
+
+        // Recovery download is reserved for a payload that actually failed validation.
         val refreshed = LessonCache.refresh(appContext, url)?.file ?: file
         val bytes = runCatching { refreshed.readBytes() }.getOrNull()
         if (bytes != null && bytes.size <= LessonCache.MAX_DECRYPT_BYTES) {
