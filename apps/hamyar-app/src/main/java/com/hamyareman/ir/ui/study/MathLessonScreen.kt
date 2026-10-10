@@ -410,12 +410,11 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
             runCatching {
                 if (MediaVault.isVerified(ctx, fid)) {
                     MediaFreshness.ensureCurrent(ctx, "html:$fid", fid, fid, isPdf = false)
-                }
-                if (!MediaVault.isVerified(ctx, fid)) {
+                } else {
                     MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(fid), fid) { _, _ -> }
-                }
-                if (MediaVault.isVerified(ctx, fid)) {
-                    MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
+                    if (MediaVault.isVerified(ctx, fid)) {
+                        MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
+                    }
                 }
                 String(MediaVault.decryptToMemory(ctx, fid), Charsets.UTF_8)
             }.getOrNull()
