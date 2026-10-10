@@ -150,7 +150,6 @@ object LessonCache {
                     } else null
                 }
 
-                (fetchMeta(canonicalUrl) ?: remote).let { writeMeta(ctx, canonicalUrl, it) }
                 recentChecks[key] = System.currentTimeMillis()
                 onStatus?.invoke(Freshness.UPDATED)
                 return PrepareResult(downloaded, Freshness.UPDATED)
@@ -160,7 +159,6 @@ object LessonCache {
             val downloaded = runCatching {
                 download(ctx, canonicalUrl, target, onProgress)
             }.getOrNull() ?: return null
-            fetchMeta(canonicalUrl)?.let { writeMeta(ctx, canonicalUrl, it) }
             recentChecks[key] = System.currentTimeMillis()
             return PrepareResult(downloaded, Freshness.DOWNLOADED)
         }
@@ -191,7 +189,6 @@ object LessonCache {
             if (downloaded == null) {
                 return if (hadCache) PrepareResult(target, Freshness.CACHED) else null
             }
-            fetchMeta(canonicalUrl)?.let { writeMeta(ctx, canonicalUrl, it) }
             recentChecks[key] = System.currentTimeMillis()
             return PrepareResult(
                 downloaded,
@@ -419,6 +416,18 @@ object LessonCache {
                 tmp.delete()
                 return null
             }
+            // Save validators attached to these exact downloaded bytes. A later HEAD
+            // could describe a concurrent replacement instead of this local payload.
+            writeMeta(
+                ctx,
+                url,
+                RemoteMeta(
+                    conn.contentLengthLong,
+                    conn.getHeaderField("ETag").orEmpty(),
+                    conn.lastModified,
+                    conn.contentType.orEmpty(),
+                ),
+            )
             lastFailures.remove(keyOf(url))
             return target
         } catch (_: Throwable) {
