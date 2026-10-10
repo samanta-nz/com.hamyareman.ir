@@ -141,7 +141,7 @@ object LessonCache {
                 }
 
                 val downloaded = runCatching {
-                    download(canonicalUrl, target, onProgress)
+                    download(ctx, canonicalUrl, target, onProgress)
                 }.getOrNull()
                 if (downloaded == null) {
                     onStatus?.invoke(Freshness.CACHED)
@@ -158,7 +158,7 @@ object LessonCache {
 
             onStatus?.invoke(Freshness.DOWNLOADED)
             val downloaded = runCatching {
-                download(canonicalUrl, target, onProgress)
+                download(ctx, canonicalUrl, target, onProgress)
             }.getOrNull() ?: return null
             fetchMeta(canonicalUrl)?.let { writeMeta(ctx, canonicalUrl, it) }
             recentChecks[key] = System.currentTimeMillis()
@@ -186,7 +186,7 @@ object LessonCache {
         synchronized(lock) {
             val hadCache = looksUsable(ctx, target, canonicalUrl)
             val downloaded = runCatching {
-                download(canonicalUrl, target, onProgress)
+                download(ctx, canonicalUrl, target, onProgress)
             }.getOrNull()
             if (downloaded == null) {
                 return if (hadCache) PrepareResult(target, Freshness.CACHED) else null
@@ -362,6 +362,7 @@ object LessonCache {
     }
 
     private fun download(
+        ctx: Context,
         url: String,
         target: File,
         onProgress: ((Int, Int) -> Unit)?,
@@ -408,7 +409,7 @@ object LessonCache {
                 tmp.delete()
                 return null
             }
-            if (!looksUsable(null, tmp, url, conn.contentType.orEmpty())) {
+            if (!looksUsable(ctx, tmp, url, conn.contentType.orEmpty(), verifyEncrypted = true)) {
                 lastFailures[keyOf(url)] = FailureReason.INVALID_PAYLOAD
                 tmp.delete()
                 return null
@@ -434,10 +435,22 @@ object LessonCache {
         file: File,
         url: String,
         responseContentType: String = "",
+        verifyEncrypted: Boolean = false,
     ): Boolean {
         if (!file.exists() || file.length() <= 0L) return false
         val prefix = readPrefix(file, PROBE_BYTES)
-        if (HtmlCodec.hasMagic(prefix)) return file.length() >= HtmlCodec.MIN_WRAPPED_BYTES
+        if (HtmlCodec.hasMagic(prefix)) {
+            if (file.length() < HtmlCodec.MIN_WRAPPED_BYTES) return false
+            // Verify GCM authentication before replacing a good cache when the key is
+            // already available. If there is no key yet, keep the structurally valid
+            // envelope so a later authenticated session can decode it.
+            if (!verifyEncrypted || ctx == null ||
+                HtmlMediaKey.get(ctx) == null || file.length() > MAX_DECRYPT_BYTES
+            ) return true
+            val wrapped = runCatching { file.readBytes() }.getOrNull() ?: return false
+            val plain = runCatching { HtmlCodec.unwrap(ctx, wrapped) }.getOrNull() ?: return false
+            return HtmlCodec.isPlainHtml(plain)
+        }
 
         val savedType = if (ctx != null) readMeta(ctx, url)?.contentType.orEmpty() else ""
         val contentType = responseContentType.ifBlank { savedType }
