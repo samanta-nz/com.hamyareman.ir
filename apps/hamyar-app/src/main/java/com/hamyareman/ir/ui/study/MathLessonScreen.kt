@@ -408,11 +408,14 @@ private fun MathTeachTab(pack: StudyPack, bookTitle: String, showPlayer: Boolean
         remoteHtml = withContext(Dispatchers.IO) {
             try { HtmlMediaKey.fetch(ctx, container.tables) } catch (_: Throwable) {}
             runCatching {
+                if (MediaVault.isVerified(ctx, fid)) {
+                    MediaFreshness.ensureCurrent(ctx, "html:$fid", fid, fid, isPdf = false)
+                }
                 if (!MediaVault.isVerified(ctx, fid)) {
                     MediaVault.downloadEncrypted(ctx, StudyMedia.candidateUrls(fid), fid) { _, _ -> }
-                    if (MediaVault.isVerified(ctx, fid)) {
-                        MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
-                    }
+                }
+                if (MediaVault.isVerified(ctx, fid)) {
+                    MediaFreshness.rememberDownload(ctx, "html:$fid", fid, fid, isPdf = false)
                 }
                 String(MediaVault.decryptToMemory(ctx, fid), Charsets.UTF_8)
             }.getOrNull()
