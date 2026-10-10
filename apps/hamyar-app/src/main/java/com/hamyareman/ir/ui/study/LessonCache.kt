@@ -453,8 +453,10 @@ object LessonCache {
             // Verify GCM authentication before replacing a good cache when the key is
             // already available. If there is no key yet, keep the structurally valid
             // envelope so a later authenticated session can decode it.
-            if (!verifyEncrypted || ctx == null ||
-                HtmlMediaKey.get(ctx) == null || file.length() > MAX_DECRYPT_BYTES
+            val hasKey = ctx != null && runCatching { HtmlMediaKey.get(ctx) != null }
+                .getOrDefault(false)
+            if (!verifyEncrypted || ctx == null || !hasKey ||
+                file.length() > MAX_DECRYPT_BYTES
             ) return true
             val wrapped = runCatching { file.readBytes() }.getOrNull() ?: return false
             val plain = runCatching { HtmlCodec.unwrap(ctx, wrapped) }.getOrNull() ?: return false
