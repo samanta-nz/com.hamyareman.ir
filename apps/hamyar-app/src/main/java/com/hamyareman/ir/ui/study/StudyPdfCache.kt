@@ -68,12 +68,21 @@ object StudyPdfCache {
                 System.currentTimeMillis() - savedMeta.checkedAt < CHECK_TTL_MS
             ) return target
 
-            val probe = probeRemote(candidates)
+            // کش با ETag ذخیره‌شده: یک GET شرطی (Range 0-0 + If-None-Match). ۳۰۴ = بدون بدنه؛
+            // تغییر = ۲۰۶ با یک بایت و ETag جدید. بدون ETag یا بدون پشتیبانی سرور، probe قبلی.
+            val probe = if (hasCache && savedMeta != null && savedMeta.etag.isNotBlank()) {
+                when (val conditional = conditionalProbe(candidates, savedMeta)) {
+                    Probe.Unavailable -> probeRemote(candidates)
+                    else -> conditional
+                }
+            } else {
+                probeRemote(candidates)
+            }
             when (probe) {
                 is Probe.Missing -> throw RemoteMissingException(probe.url)
                 Probe.Unavailable -> if (hasCache) return target
                 is Probe.Available -> {
-                    if (hasCache && sameContent(target, probe.url, savedMeta, probe.meta)) {
+                    if (hasCache && (probe.notModified || sameContent(target, probe.url, savedMeta, probe.meta))) {
                         writeMeta(target, probe.meta.copy(checkedAt = System.currentTimeMillis()))
                         return target
                     }
@@ -143,7 +152,7 @@ object StudyPdfCache {
                             throw IOException("جایگزینی امن PDF ناموفق بود.")
                         }
                         val freshMeta = if (priorMeta != null && priorMetaUrl == url) priorMeta else head(url)
-                        if (freshMeta != null) writeMeta(target, freshMeta)
+                        if (freshMeta != null) writeMeta(target, freshMeta.copy(url = url))
                         onProgress(100)
                         return target
                     } catch (error: Throwable) {
@@ -172,10 +181,17 @@ object StudyPdfCache {
         val etag: String,
         val lastModified: String,
         val checkedAt: Long = System.currentTimeMillis(),
+        /** مبدأیی که این ETag از آن آمده؛ ETag هر mirror مستقل است. */
+        val url: String = "",
     )
 
     private sealed interface Probe {
-        data class Available(val url: String, val meta: RemoteMeta) : Probe
+        data class Available(
+            val url: String,
+            val meta: RemoteMeta,
+            /** سرور ۳۰۴ داد (یا ETag برابر برگشت)؛ محتوا همان کش است. */
+            val notModified: Boolean = false,
+        ) : Probe
         data class Missing(val url: String) : Probe
         data object Unavailable : Probe
     }
@@ -264,6 +280,74 @@ object StudyPdfCache {
         return sawMissing?.let { Probe.Missing(it) } ?: Probe.Unavailable
     }
 
+    /**
+     * یک درخواست شرطی برای PDF/فایل بزرگ: `GET Range: bytes=0-0` + `If-None-Match`.
+     * ۳۰۴ → بدون بدنه. ۲۰۶/۲۰۰ → فقط یک بایت خوانده می‌شود (اتصال بسته می‌شود) و متادیتای تازه برمی‌گردد.
+     * ETag فقط برای همان مبدأیی که ذخیره شده فرستاده می‌شود؛ mirror دیگر ETag دیگری دارد.
+     */
+    private fun conditionalProbe(urls: List<String>, saved: RemoteMeta): Probe {
+        val ordered = if (saved.url.isNotBlank() && saved.url in urls) {
+            listOf(saved.url) + urls.filterNot { it == saved.url }
+        } else {
+            urls
+        }
+        var sawMissing: String? = null
+        var sawUnavailable = false
+        for (url in ordered) {
+            val sameOrigin = saved.url.isBlank() || url == saved.url
+            val conn = runCatching {
+                (URL(url).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = CONNECT_TIMEOUT_MS
+                    readTimeout = READ_TIMEOUT_MS
+                    instanceFollowRedirects = true
+                    useCaches = false
+                    requestMethod = "GET"
+                    setRequestProperty("Accept-Encoding", "identity")
+                    setRequestProperty("Cache-Control", "no-cache")
+                    setRequestProperty("Range", "bytes=0-0")
+                    if (sameOrigin) setRequestProperty("If-None-Match", saved.etag)
+                }
+            }.getOrNull()
+            if (conn == null) {
+                sawUnavailable = true
+                continue
+            }
+            try {
+                val status = conn.responseCode
+                if (status == HttpURLConnection.HTTP_NOT_MODIFIED && sameOrigin) {
+                    return Probe.Available(
+                        url,
+                        saved.copy(checkedAt = System.currentTimeMillis(), url = url),
+                        notModified = true,
+                    )
+                }
+                if (status in 200..299) {
+                    val range = conn.getHeaderField("Content-Range").orEmpty()
+                    val length = range.substringAfterLast("/", "").toLongOrNull()
+                        ?: conn.contentLengthLong
+                    val etag = conn.getHeaderField("ETag").orEmpty().trim()
+                    val meta = RemoteMeta(
+                        length = length,
+                        etag = etag,
+                        lastModified = conn.getHeaderField("Last-Modified").orEmpty().trim(),
+                        url = url,
+                    )
+                    // سرور شرط را نادیده گرفته ولی ETag همان است: تغییری نشده.
+                    val unchanged = sameOrigin && etag.isNotBlank() && etag == saved.etag
+                    return Probe.Available(url, meta, notModified = unchanged)
+                }
+                if (status == 403 || status == 404 || status == 410) sawMissing = url
+                else sawUnavailable = true
+            } catch (_: Throwable) {
+                sawUnavailable = true
+            } finally {
+                runCatching { conn.disconnect() }
+            }
+        }
+        if (sawMissing != null && !sawUnavailable) return Probe.Missing(sawMissing!!)
+        return Probe.Unavailable
+    }
+
     private fun head(url: String): RemoteMeta? =
         (probeRemote(listOf(url)) as? Probe.Available)?.meta
 
@@ -276,7 +360,7 @@ object StudyPdfCache {
             if (saved.lastModified.isNotBlank() && remote.lastModified.isNotBlank()) {
                 if (saved.lastModified != remote.lastModified) return false
                 if (saved.length >= 0L && remote.length >= 0L && saved.length != remote.length) return false
-                // Last-Modified معمولاً دقت ثانیه‌ای دارد؛ برابر بودنش به‌تنهایی
+                // Last-Modified معمولاً دقت ثانیه دارد؛ برابر بودنش به‌تنهایی
                 // جایگزینی هم‌طول در همان ثانیه را رد نمی‌کند، پس Range هم بررسی شود.
             }
         }
@@ -338,6 +422,7 @@ object StudyPdfCache {
             etag = p.getProperty("etag", ""),
             lastModified = p.getProperty("lastModified", ""),
             checkedAt = p.getProperty("checkedAt", "0").toLong(),
+            url = p.getProperty("url", ""),
         )
     }.getOrNull()
 
@@ -349,6 +434,7 @@ object StudyPdfCache {
                 setProperty("etag", meta.etag)
                 setProperty("lastModified", meta.lastModified)
                 setProperty("checkedAt", meta.checkedAt.toString())
+                setProperty("url", meta.url)
             }
             temp.outputStream().use { p.store(it, null) }
             val output = metaFile(target)
