@@ -205,8 +205,9 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
         loadErr = null
         val local = runCatching {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-                if (!keyReady) null else ToolRemote.ensure(ctx, toolId)
+                // Best-effort key fetch: ToolRemote can serve plain HTML without it.
+                runCatching { com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables) }
+                ToolRemote.ensure(ctx, toolId)
             }
         }.getOrNull()
         pageUrl = when {
