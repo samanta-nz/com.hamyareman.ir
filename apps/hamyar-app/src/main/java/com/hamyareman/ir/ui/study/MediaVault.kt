@@ -37,6 +37,9 @@ object MediaVault {
     private const val EPOCH_KEY = "vault_epoch"
     /** نسخه‌ی محتوای گاوصندوق — v2: پاک‌سازی placeholderهای کش‌شده‌ی نسخه‌های قدیمی اپ. */
     private const val CACHE_EPOCH = 2
+    private const val VERSION_PREFS = "hamyar_media_versions"
+    private const val VERSION_CHECK_TTL_MS = 30_000L
+    private const val VERSION_SAMPLE_BYTES = 4096
 
     private var dataKey: SecretKey? = null
 
@@ -214,11 +217,10 @@ object MediaVault {
      */
     fun downloadEncrypted(ctx: Context, url: String, cacheKey: String, onProgress: (Long, Long) -> Unit) {
         val probed = probeSize(url)
-        if (probed > 0) {
-            val ok = runCatching { downloadParallel(ctx, url, cacheKey, probed, onProgress) }.isSuccess
-            if (ok) return
-        }
-        downloadSingle(ctx, url, cacheKey, probed, onProgress)
+        val parallelSucceeded = probed > 0 &&
+            runCatching { downloadParallel(ctx, url, cacheKey, probed, onProgress) }.isSuccess
+        if (!parallelSucceeded) downloadSingle(ctx, url, cacheKey, probed, onProgress)
+        // finishDownload ثبت امضا را بعد از جایگزینیِ تأییدشده انجام می‌دهد.
     }
 
     /**
@@ -237,9 +239,174 @@ object MediaVault {
             val result = runCatching { downloadEncrypted(ctx, url, cacheKey, onProgress) }
             if (result.isSuccess) return url
             failures += (result.exceptionOrNull()?.message ?: "خطای نامشخص")
-            delete(ctx, cacheKey)
+            // کش قبلی را نگه می‌داریم؛ خطای سرور دوم نباید فایل سالمِ محلی را پاک کند.
         }
         throw java.io.IOException(failures.joinToString(" | "))
+    }
+
+    /**
+     * تازه‌سازی کش رمزشده قبل از انتخاب نسخهٔ محلی برای پخش/نمایش.
+     * پاسخ شبکهٔ ناموفق کش سالم قبلی را حذف نمی‌کند. برای کش‌های قدیمیِ بدون امضا، یک بار
+     * نسخهٔ روی سرور دوباره دانلود می‌شود تا نسخهٔ قبلی بی‌صدا تازه فرض نشود.
+     * فقط روی نخ IO فراخوانی شود.
+     */
+    fun ensureFresh(
+        ctx: Context,
+        urls: List<String>,
+        cacheKey: String,
+        onProgress: (Long, Long) -> Unit = { _, _ -> },
+    ): Boolean {
+        val candidates = urls.distinct().filter { it.isNotBlank() }
+        if (candidates.isEmpty()) return false
+        if (!isVerified(ctx, cacheKey)) {
+            return runCatching {
+                downloadEncrypted(ctx, candidates, cacheKey, onProgress)
+                isVerified(ctx, cacheKey)
+            }.getOrDefault(false)
+        }
+
+        val prefs = versionPrefs(ctx)
+        val checkedKey = "checked:" + cacheKey
+        val now = System.currentTimeMillis()
+        if (now - prefs.getLong(checkedKey, 0L) < VERSION_CHECK_TTL_MS) return true
+
+        var currentUrl: String? = null
+        var current: RemoteVersion? = null
+        for (url in candidates) {
+            val candidate = remoteVersion(url)
+            if (candidate != null) {
+                currentUrl = url
+                current = candidate
+                break
+            }
+        }
+        // آفلاین/خطای CDN: cache سالمِ فعلی را برای حالت آفلاین حفظ کن و در بازشدن بعدی دوباره بررسی کن.
+        if (current == null || currentUrl == null) return true
+
+        val savedEtag = prefs.getString("etag:" + cacheKey, "").orEmpty()
+        val savedLength = prefs.getLong("length:" + cacheKey, -1L)
+        val savedModified = prefs.getString("modified:" + cacheKey, "").orEmpty()
+        val savedUrl = prefs.getString("url:" + cacheKey, "").orEmpty()
+
+        val same = when {
+            savedEtag.isNotBlank() && current.etag.isNotBlank() ->
+                (savedLength < 0L || current.length < 0L || savedLength == current.length) &&
+                    savedEtag == current.etag
+            savedModified.isNotBlank() && current.lastModified.isNotBlank() ->
+                (savedLength < 0L || current.length < 0L || savedLength == current.length) &&
+                    savedModified == current.lastModified
+            savedEtag.isBlank() && savedModified.isBlank() && savedUrl.isNotBlank() ->
+                compareCachedSamples(ctx, currentUrl, cacheKey, current.length)
+            else -> false
+        }
+
+        if (same) {
+            saveRemoteVersion(ctx, cacheKey, currentUrl, current, now)
+            return true
+        }
+
+        // اگر امضا از نسخهٔ قدیمی وجود نداشت یا تغییر دیده شد، نسخهٔ سرور را دریافت کن؛
+        // finishDownload کش قبلی را نگه می‌دارد تا جایگزینی سالم تأیید شود.
+        val ordered = listOf(currentUrl) + candidates.filterNot { it == currentUrl }
+        return runCatching {
+            downloadEncrypted(ctx, ordered, cacheKey, onProgress)
+            isVerified(ctx, cacheKey)
+        }.getOrElse {
+            isVerified(ctx, cacheKey)
+        }
+    }
+
+    private data class RemoteVersion(
+        val length: Long,
+        val etag: String,
+        val lastModified: String,
+    )
+
+    private fun versionPrefs(ctx: Context) =
+        ctx.getSharedPreferences(VERSION_PREFS, Context.MODE_PRIVATE)
+
+    private fun remoteVersion(url: String): RemoteVersion? = runCatching {
+        val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
+            connectTimeout = 10_000
+            readTimeout = 12_000
+            instanceFollowRedirects = true
+            requestMethod = "HEAD"
+            setRequestProperty("Accept-Encoding", "identity")
+            setRequestProperty("Cache-Control", "no-cache, no-store, max-age=0")
+            setRequestProperty("Pragma", "no-cache")
+        }
+        try {
+            if (conn.responseCode !in 200..299) return@runCatching null
+            val version = RemoteVersion(
+                length = conn.contentLengthLong,
+                etag = conn.getHeaderField("ETag").orEmpty().trim(),
+                lastModified = conn.getHeaderField("Last-Modified").orEmpty().trim(),
+            )
+            if (version.length < 0L && version.etag.isBlank() && version.lastModified.isBlank()) null
+            else version
+        } finally {
+            conn.disconnect()
+        }
+    }.getOrNull()
+
+    private fun saveRemoteVersion(
+        ctx: Context,
+        cacheKey: String,
+        url: String,
+        version: RemoteVersion,
+        checkedAt: Long = System.currentTimeMillis(),
+    ) {
+        versionPrefs(ctx).edit()
+            .putString("url:" + cacheKey, url)
+            .putString("etag:" + cacheKey, version.etag)
+            .putLong("length:" + cacheKey, version.length)
+            .putString("modified:" + cacheKey, version.lastModified)
+            .putLong("checked:" + cacheKey, checkedAt)
+            .apply()
+    }
+
+    private fun compareCachedSamples(ctx: Context, url: String, cacheKey: String, length: Long): Boolean {
+        if (length <= 0L) return false
+        val localHead = peek(ctx, cacheKey, VERSION_SAMPLE_BYTES) ?: return false
+        val wanted = minOf(VERSION_SAMPLE_BYTES.toLong(), length).toInt()
+        val remoteHead = runCatching {
+            val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
+                connectTimeout = 10_000
+                readTimeout = 12_000
+                instanceFollowRedirects = true
+                requestMethod = "GET"
+                setRequestProperty("Accept-Encoding", "identity")
+                setRequestProperty("Cache-Control", "no-cache, no-store, max-age=0")
+                setRequestProperty("Pragma", "no-cache")
+                setRequestProperty("Range", "bytes=0-" + (wanted - 1))
+            }
+            try {
+                if (conn.responseCode != 206) return false
+                conn.inputStream.use { input ->
+                    val out = ByteArray(wanted)
+                    var off = 0
+                    while (off < wanted) {
+                        val n = input.read(out, off, wanted - off)
+                        if (n <= 0) break
+                        off += n
+                    }
+                    if (off != wanted) return false
+                    out
+                }
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrNull() ?: return false
+        val headMatches = localHead.size >= wanted &&
+            localHead.copyOfRange(0, wanted).contentEquals(remoteHead)
+        return headMatches && tailMatchesServer(ctx, url, cacheKey, length)
+    }
+
+    private fun unmarkVerified(ctx: Context, cacheKey: String) {
+        val prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val verified = prefs.getStringSet("verified", emptySet()).orEmpty().toMutableSet()
+        verified.remove(cacheKey)
+        prefs.edit().putStringSet("verified", verified).apply()
     }
 
     /**
@@ -516,20 +683,39 @@ object MediaVault {
      * میانی اشتباه بسته شده باشد، فایل «تأییدشده» علامت نمی‌خورد.
      */
     private fun finishDownload(ctx: Context, url: String, cacheKey: String, part: File, target: File, total: Long) {
-        if (!part.renameTo(target)) {
-            part.copyTo(target, overwrite = true)
-            part.delete()
+        val backup = File(vaultDir(ctx), "$cacheKey.enc.bak")
+        runCatching { backup.delete() }
+        val hadPrevious = target.exists()
+        val previousVerified = isVerified(ctx, cacheKey)
+        if (hadPrevious && !target.renameTo(backup)) {
+            error("کش قبلی رسانه قابل حفظ نیست؛ دانلود تازه جایگزین نشد.")
         }
-        val head = peek(ctx, cacheKey)
-        if (head == null || head.size < 64) {
-            target.delete()
-            error("فایل ناقص دانلود شد؛ دوباره تلاش کن.")
+        try {
+            if (!part.renameTo(target)) {
+                part.copyTo(target, overwrite = true)
+                part.delete()
+            }
+            // peek به فایل تأییدشده نیاز دارد؛ فایل تازه را موقتاً verified می‌کنیم و در
+            // صورت شکست، وضعیت/فایل قبلی برگردانده می‌شود.
+            markVerified(ctx, cacheKey)
+            val head = peek(ctx, cacheKey)
+            if (head == null || head.size < 64) {
+                error("فایل ناقص دانلود شد؛ دوباره تلاش کن.")
+            }
+            if (total >= 4096 && !tailMatchesServer(ctx, url, cacheKey, total)) {
+                error("انتهای فایل با سرور یکی نبود؛ دوباره تلاش کن.")
+            }
+            remoteVersion(url)?.let { saveRemoteVersion(ctx, cacheKey, url, it) }
+            runCatching { backup.delete() }
+        } catch (error: Throwable) {
+            runCatching { target.delete() }
+            if (hadPrevious && backup.exists() && backup.renameTo(target)) {
+                if (previousVerified) markVerified(ctx, cacheKey) else unmarkVerified(ctx, cacheKey)
+            } else {
+                unmarkVerified(ctx, cacheKey)
+            }
+            throw error
         }
-        if (total >= 4096 && !tailMatchesServer(ctx, url, cacheKey, total)) {
-            target.delete()
-            error("انتهای فایل با سرور یکی نبود؛ دوباره تلاش کن.")
-        }
-        markVerified(ctx, cacheKey)
     }
 
     /** مقایسهٔ ~۶۴ بایتِ آخرِ رمزگشاشده با همان بازه از سرور. */
