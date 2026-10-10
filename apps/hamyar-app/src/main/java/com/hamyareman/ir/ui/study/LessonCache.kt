@@ -125,34 +125,47 @@ object LessonCache {
                     return PrepareResult(target, Freshness.CACHED)
                 }
 
-                val remote = fetchMeta(canonicalUrl)
-                if (remote == null) {
-                    // Do not confuse offline with a missing or invalid cache, and do not
-                    // suppress retries when connectivity comes back.
-                    onStatus?.invoke(Freshness.CACHED)
-                    return PrepareResult(target, Freshness.CACHED)
-                }
-
-                if (isSameContent(ctx, canonicalUrl, target, remote)) {
-                    writeMeta(ctx, canonicalUrl, remote)
-                    recentChecks[key] = now
-                    onStatus?.invoke(Freshness.CACHED)
-                    return PrepareResult(target, Freshness.CACHED)
-                }
-
+                // Always fetch a complete candidate on each freshness check. Exact byte
+                // length is the fast first comparison; equal-length files are then
+                // compared byte-for-byte, including their middle. HTTP validators and
+                // small prefix/suffix samples are deliberately not trusted as proof
+                // that the content is unchanged.
+                val candidate = File(target.path + ".candidate")
+                runCatching { candidate.delete() }
                 val downloaded = runCatching {
-                    download(ctx, canonicalUrl, target, onProgress)
+                    download(ctx, canonicalUrl, candidate, onProgress)
                 }.getOrNull()
+
                 if (downloaded == null) {
+                    runCatching { candidate.delete() }
                     onStatus?.invoke(Freshness.CACHED)
                     return if (looksUsable(ctx, target, canonicalUrl)) {
                         PrepareResult(target, Freshness.CACHED)
-                    } else null
+                    } else {
+                        null
+                    }
+                }
+
+                if (sameBytes(target, downloaded)) {
+                    runCatching { downloaded.delete() }
+                    recentChecks[key] = System.currentTimeMillis()
+                    onStatus?.invoke(Freshness.CACHED)
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+
+                if (!replaceTarget(downloaded, target)) {
+                    runCatching { downloaded.delete() }
+                    onStatus?.invoke(Freshness.CACHED)
+                    return if (looksUsable(ctx, target, canonicalUrl)) {
+                        PrepareResult(target, Freshness.CACHED)
+                    } else {
+                        null
+                    }
                 }
 
                 recentChecks[key] = System.currentTimeMillis()
                 onStatus?.invoke(Freshness.UPDATED)
-                return PrepareResult(downloaded, Freshness.UPDATED)
+                return PrepareResult(target, Freshness.UPDATED)
             }
 
             onStatus?.invoke(Freshness.DOWNLOADED)
@@ -168,9 +181,8 @@ object LessonCache {
         prepare(ctx, url, onProgress)?.file
 
     /**
-     * Force a fresh download after payload-level validation fails. This bypasses the
-     * freshness TTL, but still writes to a temporary file and preserves the old cache
-     * if the request or validation fails.
+     * Force a fresh download after payload-level validation fails. A valid candidate
+     * replaces the cache only after format validation; failures leave the old cache intact.
      */
     fun refresh(
         ctx: Context,
@@ -197,137 +209,44 @@ object LessonCache {
         }
     }
 
-    private fun fetchMeta(url: String): RemoteMeta? {
-        val head = runCatching {
-            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = CONNECT_TIMEOUT_MS
-                readTimeout = READ_TIMEOUT_MS
-                instanceFollowRedirects = true
-                requestMethod = "HEAD"
-                setRequestProperty("Accept-Encoding", "identity")
-                setRequestProperty("Cache-Control", "no-cache")
-            }
-            try {
-                if (conn.responseCode !in 200..299) null
-                else RemoteMeta(
-                    conn.contentLengthLong,
-                    conn.getHeaderField("ETag").orEmpty(),
-                    conn.lastModified,
-                    conn.contentType.orEmpty(),
-                )
-            } finally {
-                conn.disconnect()
-            }
-        }.getOrNull()
-        if (head != null) return head
-
-        return runCatching {
-            val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = CONNECT_TIMEOUT_MS
-                readTimeout = READ_TIMEOUT_MS
-                instanceFollowRedirects = true
-                requestMethod = "GET"
-                setRequestProperty("Accept-Encoding", "identity")
-                setRequestProperty("Cache-Control", "no-cache")
-                setRequestProperty("Range", "bytes=0-" + (PROBE_BYTES - 1))
-            }
-            try {
-                if (conn.responseCode !in 200..299) return null
-                val range = conn.getHeaderField("Content-Range").orEmpty()
-                val rangeTotal = range.substringAfterLast("/", "").toLongOrNull()
-                val total = rangeTotal ?: if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                    conn.contentLengthLong.takeIf { it >= 0L } ?: -1L
-                } else {
-                    -1L
-                }
-                conn.inputStream.use { input ->
-                    val buffer = ByteArray(PROBE_BYTES)
-                    input.read(buffer)
-                }
-                RemoteMeta(
-                    total,
-                    conn.getHeaderField("ETag").orEmpty(),
-                    conn.lastModified,
-                    conn.contentType.orEmpty(),
-                )
-            } finally {
-                conn.disconnect()
-            }
-        }.getOrNull()
-    }
-
-    private fun isSameContent(
-        ctx: Context,
-        url: String,
-        local: File,
-        remote: RemoteMeta,
-    ): Boolean {
-        if (!looksUsable(ctx, local, url)) return false
-        if (remote.contentLength >= 0L && remote.contentLength != local.length()) return false
-
-        // Byte samples are checked before trusting validators, so a stale sidecar or
-        // an encrypted/plain transition cannot be hidden by equal lengths or ETags.
-        val prefixMatches = compareRange(url, local, 0L, PROBE_BYTES)
-        if (prefixMatches == false) return false
-        val suffixStart = (local.length() - PROBE_BYTES).coerceAtLeast(0L)
-        val suffixMatches = compareRange(url, local, suffixStart, PROBE_BYTES)
-        if (suffixMatches == false) return false
-
-        val previous = readMeta(ctx, url)
-        if (previous != null &&
-            previous.etag.isNotBlank() && remote.etag.isNotBlank()
-        ) {
-            return previous.etag == remote.etag
-        }
-        if (previous != null && previous.lastModified > 0L && remote.lastModified > 0L) {
-            if (previous.lastModified != remote.lastModified) return false
-            return prefixMatches == true && suffixMatches == true
-        }
-        return prefixMatches == true && suffixMatches == true
-    }
-
-    /** true/false if comparable; null if the server did not provide a usable range. */
-    private fun compareRange(url: String, local: File, start: Long, requested: Int): Boolean? {
-        if (!local.exists() || local.length() <= 0L || start < 0L || start >= local.length()) return null
-        val length = minOf(requested.toLong(), local.length() - start).toInt()
-        if (length <= 0) return null
-        var conn: HttpURLConnection? = null
+    /**
+     * Fast exact length check, followed by a complete byte-for-byte comparison.
+     * Unlike ETag or sampling, this detects a changed byte anywhere in an equal-size file.
+     */
+    private fun sameBytes(first: File, second: File): Boolean {
+        if (!first.exists() || !second.exists() || first.length() != second.length()) return false
         return try {
-            conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = CONNECT_TIMEOUT_MS
-                readTimeout = READ_TIMEOUT_MS
-                instanceFollowRedirects = true
-                requestMethod = "GET"
-                setRequestProperty("Accept-Encoding", "identity")
-                setRequestProperty("Cache-Control", "no-cache")
-                setRequestProperty("Range", "bytes=" + start + "-" + (start + length - 1))
-            }
-            val code = conn.responseCode
-            if (code != HttpURLConnection.HTTP_PARTIAL &&
-                !(start == 0L && code == HttpURLConnection.HTTP_OK)
-            ) return null
-
-            val remoteBytes = ByteArray(length)
-            var offset = 0
-            conn.inputStream.use { input ->
-                while (offset < length) {
-                    val n = input.read(remoteBytes, offset, length - offset)
-                    if (n <= 0) break
-                    offset += n
+            first.inputStream().buffered().use { left ->
+                second.inputStream().buffered().use { right ->
+                    val a = ByteArray(64 * 1024)
+                    val b = ByteArray(64 * 1024)
+                    while (true) {
+                        val readA = readChunk(left, a)
+                        val readB = readChunk(right, b)
+                        if (readA != readB) return false
+                        if (readA < 0) return true
+                        for (i in 0 until readA) {
+                            if (a[i] != b[i]) return false
+                        }
+                    }
+                    @Suppress("UNREACHABLE_CODE")
+                    false
                 }
             }
-            if (offset != length) return false
-            val localBytes = ByteArray(length)
-            val count = java.io.RandomAccessFile(local, "r").use {
-                it.seek(start)
-                it.read(localBytes)
-            }
-            count == length && localBytes.contentEquals(remoteBytes)
         } catch (_: Throwable) {
-            null
-        } finally {
-            runCatching { conn?.disconnect() }
+            false
         }
+    }
+
+    private fun readChunk(input: java.io.InputStream, buffer: ByteArray): Int {
+        var total = 0
+        while (total < buffer.size) {
+            val n = input.read(buffer, total, buffer.size - total)
+            if (n < 0) break
+            if (n == 0) continue
+            total += n
+        }
+        return if (total == 0) -1 else total
     }
 
     private fun readMeta(ctx: Context, url: String): RemoteMeta? = runCatching {
