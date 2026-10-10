@@ -38,7 +38,7 @@ import com.hamyareman.ir.ui.study.stopManagedMedia
 /** فایل tile کاملِ باکت (خودبسنده، همهٔ صداها داخل خودش). */
 // نشانی مستقیم و ثابتِ باکت: مسیر موسیقی عمداً از ServerResolver رد نمی‌شود تا
 // صفحه و هر درخواستِ داخلِ آن روی یک origin بمانند و حتماً از HmkWebViewClient
-// (و در نتیجه رمزگشاییِ HMK1) عبور کنند.
+// (برای HMK1 رمزگشایی و برای HTML عادی عبور مستقیم) عبور کنند.
 private const val MUSIC_TILE_KEY = "Bucket/Html-files/background-music-tile.html"
 private val MUSIC_TILE_URL = HmkWebViewClient.bucketUrl(MUSIC_TILE_KEY)
 private val TILE_HEIGHT = 92.dp
@@ -114,18 +114,20 @@ fun BackgroundMusicTileHost(
     val appearance = LocalUiPrefs.current
     val liveAppearance = rememberUpdatedState(appearance)
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    var keyReady by remember { mutableStateOf<Boolean?>(null) }
+    var contentGateReady by remember { mutableStateOf<Boolean?>(null) }
     var pageReady by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     val expandedHeight = (screenHeight * 0.78f).coerceIn(420.dp, 620.dp)
     val expandedHeightDp = rememberUpdatedState(expandedHeight.value)
 
     LaunchedEffect(Unit) {
-        keyReady = runCatching { HtmlMediaKey.fetch(context, container.tables) }.getOrDefault(false)
+        // Best effort only: a plain HTML player has no encryption-key dependency.
+        runCatching { HtmlMediaKey.fetch(context, container.tables) }
+        contentGateReady = true
     }
     LaunchedEffect(expanded) { onExpandedChanged(expanded) }
 
-    when (keyReady) {
+    when (contentGateReady) {
         null -> Box(modifier.fillMaxWidth().height(TILE_HEIGHT), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
