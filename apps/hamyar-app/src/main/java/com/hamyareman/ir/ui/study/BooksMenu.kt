@@ -14,11 +14,21 @@ import org.json.JSONObject
  *  - فایل هست  → لود می‌شود (و با هر تغییر در باکت، خودکار به‌روز می‌شود)
  *  - فایل هنوز نیست (۴۰۴) → صفحهٔ «در دست تولید» [SPACEHOLDER_KEY] نشان داده می‌شود
  *  - گره‌ای که اصلاً `key` ندارد → همیشه «به‌زودی»
+ *
+ * از ۳٫۰٫۷: صفحهٔ تدریس هر درس ریاضی (`exam/ryazif<فصل>d<درس>.html` یا `…review.html`)
+ * هم از پیش در اپ تعریف می‌شود، حتی اگر هنگام ساخت JSON هنوز آپلود نشده بود؛ همان
+ * شمارش‌گر فصل/درس `scripts/build_books_menu.py` اینجا تکرار شده است. صوت همان درس
+ * (`…mp3` کنار html) در [BookNodeScreen] از روی همین کلید ساخته می‌شود.
  */
 object BooksMenu {
 
     /** تک‌فایل «در دست تولید» — مقصد همهٔ گره‌های بی‌محتوا. */
     const val SPACEHOLDER_KEY = "Bucket/Html-files/spaceholder.html"
+
+    private const val BOOKS_BASE = "Bucket/Pdf-files/G09"
+
+    /** slug پوشهٔ exam هر کتاب؛ برای کتاب تازه فقط همین‌جا (و در اسکریپت ساخت منو) اضافه شود. */
+    private val EXAM_SLUGS = mapOf("g9-math" to "ryazi")
 
     data class Tab(val title: String, val key: String?, val ready: Boolean?) {
         val hasContent: Boolean get() = ready == true && !key.isNullOrBlank()
@@ -29,9 +39,9 @@ object BooksMenu {
         val title: String,
         val key: String?,
         val ready: Boolean?,
-        /** صفحهٔ تدریس آمادهٔ این درس در پوشهٔ exam (اگر آپلود شده باشد). */
+        /** صفحهٔ تدریس این درس در پوشهٔ exam؛ اگر هنوز آپلود نشده باشد اسپیس‌هولدر باز می‌شود. */
         val teachKey: String? = null,
-        /** صوت تدریس همان درس در پوشهٔ exam. */
+        /** صوت تدریس همان درس در پوشهٔ exam (فقط وقتی هنگام ساخت منو وجود داشته). */
         val audioKey: String? = null,
         val tabs: List<Tab>,
         val children: List<Node>,
@@ -73,7 +83,7 @@ object BooksMenu {
                     )
                 }
             }.getOrDefault(emptyList())
-            books = parsed
+            books = parsed.map { withExamKeys(it) }
             loaded = true
         }
     }
@@ -112,6 +122,39 @@ object BooksMenu {
 
     private fun JSONObject.optStringOrNull(name: String): String? =
         if (isNull(name)) null else optString(name).takeIf { it.isNotBlank() }
+
+    /**
+     * کلید صفحهٔ تدریس را برای هر درسِ کتابی که پوشهٔ exam دارد از پیش می‌سازد.
+     * شمارش دقیقاً مثل `convert()` در `scripts/build_books_menu.py` است: هر گرهٔ
+     * دارای فرزند یک فصل جدید است و شمارندهٔ درس برای هر فهرست از صفر شروع می‌شود.
+     * مقدار موجود در JSON (در صورت وجود) دست‌نخورده می‌ماند.
+     */
+    private fun withExamKeys(book: Book): Book {
+        val slug = EXAM_SLUGS[book.folder] ?: return book
+        val chapter = intArrayOf(0)
+
+        fun walk(list: List<Node>): List<Node> {
+            var lessonNo = 0
+            return list.map { n ->
+                val container = n.children.isNotEmpty()
+                if (container) chapter[0] += 1 else lessonNo += 1
+                var teach = n.teachKey
+                if (teach == null && !container && n.tabs.isNotEmpty() && chapter[0] > 0) {
+                    val review = n.kind == "wrapup" || n.title.trim().startsWith("جمع")
+                    val chapterPart = chapter[0].toString().padStart(2, '0')
+                    val suffix = if (review) {
+                        "f${chapterPart}review"
+                    } else {
+                        "f${chapterPart}d${lessonNo.toString().padStart(2, '0')}"
+                    }
+                    teach = "$BOOKS_BASE/${book.folder}/exam/$slug$suffix.html"
+                }
+                n.copy(teachKey = teach, children = walk(n.children))
+            }
+        }
+
+        return book.copy(items = walk(book.items))
+    }
 
     fun all(ctx: Context): List<Book> {
         load(ctx)

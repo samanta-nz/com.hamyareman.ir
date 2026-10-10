@@ -16,6 +16,7 @@ import java.net.URLConnection
  * لینک نسبی «قبلی/بعدی»، `iframe` موسیقی و `localStorage` کار کنند. ولی بایت‌هایی
  * که از باکت می‌آیند `HMK1` هستند و مرورگر نمی‌فهمدشان. پس اینجا وسط راه:
  * بایت رمزشده از [LessonCache] خوانده، در حافظه رمزگشایی و متن‌ساده تحویل می‌شود.
+ * اگر فایل باکت اصلاً رمز نشده باشد (HTML ساده)، همان‌طور و با charset صریح تحویل می‌شود.
  *
  * نکتهٔ تشخیص پیش‌دانلود: هدر `X-Hy-Prefetch` در هیچ‌کدام از HTMLهای فعلی وجود
  * ندارد (بررسی شد: صفر مورد در ۷۴ فایل) و قرار است HTMLها دست‌نخورده بمانند.
@@ -54,7 +55,7 @@ open class HmkWebViewClient(
         }
 
         // هر HTML از همین‌جا freshness check می‌شود. برای document اصلی، UI پیشاپیش
-        // همین prepare را انجام داده و recentChecks مانع HEAD تکراری همان لحظه می‌شود.
+        // همین prepare را انجام داده و recentChecks مانع درخواست تکراری همان لحظه می‌شود.
         val prepared = LessonCache.prepare(appContext, url)
         if (prepared == null) {
             if (request.isForMainFrame && isHtml) {
@@ -75,8 +76,15 @@ open class HmkWebViewClient(
         val raw = runCatching { file.readBytes() }.getOrNull()
             ?: return if (request.isForMainFrame) errorPage(MSG_CORRUPT) else null
 
-        // ۲-۲) غیررمزی (تصویر، فونت، …): همان‌طور عبور بده، با MIME حدس‌زده از نام.
+        // ۲-۲) غیررمزی. HTML ساده: همان‌طور با charset صریح (بدون آن WebView متن فارسی
+        // را با رمزگذاری حدسی می‌خواند). بقیه (تصویر، فونت، …): عبور با MIME حدس‌زده از نام.
         if (!HtmlCodec.hasMagic(raw)) {
+            if (isHtml) {
+                val delivered = if (isMusic && wasCached) musicCacheHint(raw) else raw
+                return WebResourceResponse(
+                    "text/html", "utf-8", 200, "OK", htmlHeaders(), ByteArrayInputStream(delivered),
+                )
+            }
             val mime = URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream"
             return WebResourceResponse(mime, null, 200, "OK", passthroughHeaders(), ByteArrayInputStream(raw))
         }
@@ -116,7 +124,7 @@ open class HmkWebViewClient(
         }
         val bytes = runCatching { again.readBytes() }.getOrNull()
         if (bytes != null && bytes.size <= LessonCache.MAX_DECRYPT_BYTES) {
-            runCatching { HtmlCodec.unwrap(appContext, bytes) }.onSuccess { return it }
+            runCatching { HtmlCodec.unwrapOrPlain(appContext, bytes) }.onSuccess { return it }
         }
         lastMessage = MSG_CORRUPT
         onProblem(Problem.CORRUPT)

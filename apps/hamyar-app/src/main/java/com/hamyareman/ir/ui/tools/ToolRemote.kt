@@ -8,7 +8,7 @@ import com.hamyareman.ir.ui.study.LessonCache
 import com.hamyareman.ir.ui.study.ServerResolver
 import java.io.File
 
-/** ابزارهای HMK1 با انتخاب دقیق سرور و cache دائمیِ فقط-ciphertext. */
+/** ابزارهای HMK1 (یا HTML ساده) با انتخاب دقیق سرور و cache دائمیِ روی دیسک. */
 object ToolRemote {
 
     private val labs = setOf("chemistry", "physics", "biology")
@@ -65,14 +65,14 @@ object ToolRemote {
         )
     }
 
-    /** plaintext فقط در cacheDir موقت WebView است؛ نسخهٔ ماندگار HMK1 می‌ماند. */
+    /** plaintext فقط در cacheDir موقت WebView است؛ نسخهٔ ماندگار روی دیسک همان قالب باکت می‌ماند. */
     fun ensure(ctx: Context, toolId: String): String? {
         val id = fileId(toolId)
         // از همان لایهٔ مشترک درس‌ها می‌خوانیم؛ RemoteHtmlCache بازنشسته شد.
         val key = ContentCatalog.keyFor(id) ?: return null
         val cached = LessonCache.ensure(ctx, ServerResolver.internal(key)) ?: return null
         val raw = runCatching { cached.readBytes() }.getOrNull() ?: return null
-        val plain = runCatching { HtmlCodec.unwrap(ctx, raw) }.getOrNull() ?: return null
+        val plain = runCatching { HtmlCodec.unwrapOrPlain(ctx, raw) }.getOrNull() ?: return null
         val dest = plainFile(ctx, toolId)
         val part = File(dest.absolutePath + ".part")
         val offlineHtml = String(plain, Charsets.UTF_8).replace(
