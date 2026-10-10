@@ -7,7 +7,8 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * لایهٔ رمز مشترک HTML روی باکت: جادوی `HMK1` + IV ۱۲ بایتی + AES-GCM.
- * محتوای remote باید همیشه HMK1 باشد؛ نبود magic به‌صورت fail-closed رد می‌شود.
+ * HTML روی باکت یا HMK1 است یا HTML ساده (با `<` شروع می‌شود)؛ [unwrap] هر دو را می‌پذیرد و
+ * هر بدنهٔ دیگری fail-closed رد می‌شود.
  */
 object HtmlCodec {
 
@@ -28,8 +29,25 @@ object HtmlCodec {
         return hasMagic(data)
     }
 
+    /**
+     * HTML سادهٔ بدون HMK1: بعد از BOM و فاصله‌های ابتدایی با `<` شروع می‌شود.
+     * فقط [length] بایت اول بررسی می‌شود.
+     */
+    fun looksLikeHtml(head: ByteArray, length: Int = head.size): Boolean {
+        val n = minOf(length, head.size)
+        var i = 0
+        if (n >= 3 && head[0] == 0xEF.toByte() && head[1] == 0xBB.toByte() && head[2] == 0xBF.toByte()) i = 3
+        while (i < n) {
+            val b = head[i]
+            if (b == 0x20.toByte() || b == 0x0A.toByte() || b == 0x0D.toByte() || b == 0x09.toByte()) i++ else break
+        }
+        return i < n && head[i] == 0x3C.toByte()
+    }
+
+    /** HMK1 را رمزگشایی می‌کند؛ HTML ساده (بدون magic) همان‌طور برمی‌گرد؛ بدنهٔ دیگر رد می‌شود. */
     fun unwrap(ctx: Context, data: ByteArray): ByteArray {
-        require(isWrapped(data)) { "فایل HTML رمز معتبر HMK1 ندارد." }
+        if (!isWrapped(data) && looksLikeHtml(data)) return data
+        require(isWrapped(data)) { "فایل نه HMK1 معتبر است و نه HTML ساده." }
         val key = HtmlMediaKey.get(ctx)
             ?: error("کلید درس روی دستگاه نیست. دوباره وارد شو.")
         val iv = data.copyOfRange(4, 16)

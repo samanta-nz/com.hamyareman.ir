@@ -1,6 +1,9 @@
 package com.hamyareman.ir
 
 import android.app.Application
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import com.hamyareman.ir.ui.components.BucketRevalidateInterceptor
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.hamyareman.ir.platform.core.designsystem.LockBackdrop
@@ -13,10 +16,19 @@ import com.hamyareman.ir.ui.components.DesignAsset
 import com.hamyareman.ir.ui.components.RemoteDesignImage
 import com.hamyareman.ir.ui.study.SchoolAlarmStore
 
-class HamyarApplication : Application() {
+class HamyarApplication : Application(), ImageLoaderFactory {
 
     lateinit var container: AppContainer
         private set
+
+    /**
+     * Coil با یک interceptor که تصاویر باکت را در هر لود با درخواست شرطی (ETag / Last-Modified)
+     * اعتبارسنجی می‌کند: ۳۰۴ = همان تصویر کش‌شده، ۲۰۰ = تصویر تازه در همان آدرس.
+     */
+    override fun newImageLoader(): ImageLoader =
+        ImageLoader.Builder(this)
+            .components { add(BucketRevalidateInterceptor) }
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -79,7 +91,7 @@ class HamyarApplication : Application() {
                 Reminder("study-review", "مرور درس امروز", "ده دقیقه مرور، فردا خیلی راحت‌تر می‌شود.", 18, 0),
                 Reminder("calm-evening", "آرام‌سازی شبانه", "چند نفس عمیق و یک کشش کوتاه پیش از خواب.", 21, 30)).forEach { scheduler.upsert(it) }
         }
-        // مهاجرت نسخهٔ ۲.۱: این دو نوع یادآور طبق طراحی تازه دیگر وجود ندارند.
+        // مهاجرت نسخهٔ ۲٫۱: این دو نوع یادآور طبق طراحی تازه دیگر وجود ندارند.
         // remove علاوه بر پاک‌کردن state، PendingIntent نسخهٔ قبلی را هم لغو می‌کند.
         scheduler.remove(AI_LESSON_REMINDER_ID)
         scheduler.remove(SchoolAlarmStore.SCHOOL_M)
