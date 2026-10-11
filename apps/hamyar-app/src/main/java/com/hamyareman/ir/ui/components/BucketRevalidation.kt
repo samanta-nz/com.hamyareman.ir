@@ -9,6 +9,9 @@ import com.hamyareman.ir.ui.study.HmkWebViewClient
  * نگه می‌دارد ولی هر بار با `If-None-Match`/`If-Modified-Since` از سرور می‌پرسد.
  * ۳۰۴ یعنی همان تصویر (بدون دانلود)، ۲۰۰ یعنی فایل تازه‌ای در همان آدرس آپلود شده.
  * تصاویر غیر باکت (مثلاً فایل‌های محلی) دست‌نخورده می‌مانند.
+ *
+ * منطق تازگی همهٔ انواع فایل (نسخهٔ ۳.۰.۷): HTML در LessonCache، PDF در StudyPdfCache،
+ * صوت/ویدیو در MediaVault، تصویر در همین interceptor.
  */
 internal object BucketRevalidateInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
