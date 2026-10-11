@@ -6,8 +6,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,8 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -29,7 +25,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,8 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -117,8 +110,8 @@ fun BookDetailScreen(
             tocStore.putString("accset_$bookCode", next.joinToString("|"))
         }
         // منو دقیقاً از `books-menu.json` ساخته می‌شود — همان عنوان‌هایی که در
-        // menu.json هر کتاب روی باکت نوشته شده‌اند. گره‌ای که فایل آماده ندارد
-        // به تک‌فایل مشترک «در دست تولید» می‌رود.
+        // menu.json هر کتاب روی باکت نوشته شده‌اند. هر گره/سربرگ به آدرس مشخصی روی
+        // باکت لینک است؛ اگر فایل آنجا نبود، ContentLoader تک‌placeholder را نشان می‌دهد.
         val menu = remember(bookCode) { BooksMenu.forBook(ctx, bookCode) }
         Column(Modifier.fillMaxWidth()) {
             if (menu == null) {
@@ -276,18 +269,9 @@ private fun LessonCard(
                     Text("🔔 ${toPersianDigits(due.toString())} کارت امروز باید مرور شود", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
             }
-            if (pack == null) {
-                // کتابی که تازه اضافه شده (فهرست/جلد آماده، محتوا هنوز نه) و درس‌های
-                // اوّلِ کتاب‌های نیمه‌کامل: پیش‌تر دکمهٔ «ورود به درس» به صفحه‌ی
-                // «این درس پیدا نشد.» می‌رفت. حالا همان‌جا شفاف می‌گوییم که متنِ درس
-                // هنوز آماده نشده، تا دکمه‌ای که به بن‌بست می‌رسد نشان داده نشود.
-                Text(
-                    "📖 متنِ این درس هنوز آماده نشده — فهرست و عنوانش سرِ جایش است و به‌زودی اضافه می‌شود.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                return@Column
-            }
+            // درسی که محتوای داخلی ندارد: هیچ متن «به‌زودی» داخل اپ نمی‌ماند؛
+            // فهرست و عنوان سر جایش است و محتوا فقط از باکت می‌آید.
+            if (pack == null) return@Column
             if (!pack.pdfOnly) {
                 Text(
                     if (teachDone) "✅ دوره‌ی اول تدریس کامل شده"
@@ -347,7 +331,8 @@ private fun StaticCard(node: TocNode, depth: Int) {
 /**
  * یک گره از منوی کتاب. گرهٔ `plain` یک ردیف ساده است؛ گرهٔ `lesson` آکاردئونی
  * است که سربرگ‌هایش (تدریس، تمرینات کتابی، نکات گرامری، …) داخلش باز می‌شوند.
- * هر ردیف که فایل آماده نداشته باشد با برچسب «به‌زودی» به اسپیس‌هولدر می‌رود.
+ * هر گره و هر سربرگ به یک آدرس مشخص روی باکت لینک است ([BooksMenu.syntheticKey] برای
+ * آن‌هایی که `key` ندارند)؛ نبودن فایل را ContentLoader با placeholder مشترک مدیریت می‌کند.
  */
 @Composable
 private fun BookMenuNode(
@@ -390,7 +375,7 @@ private fun BookMenuNode(
                     .fillMaxWidth()
                     .clickable {
                         if (expandable) onToggle(path)
-                        else onOpen(BooksMenu.destination(node.key, node.ready), node.title, "")
+                        else onOpen(node.key ?: BooksMenu.syntheticKey(bookCode, path), node.title, "")
                     }
                     .padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -406,7 +391,6 @@ private fun BookMenuNode(
                     style = if (depth == 0) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
                     modifier = Modifier.weight(1f),
                 )
-                if (!expandable && !node.hasContent) SoonBadge()
             }
 
             AnimatedVisibility(
@@ -415,8 +399,8 @@ private fun BookMenuNode(
                 exit = fadeOut() + shrinkVertically(),
             ) {
                 Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
-                    if (node.hasContent && !curated) {
-                        LeafRow(node.title, node.key, node.ready, depth + 1, "", onOpen)
+                    if (node.key != null && !curated) {
+                        LeafRow(node.title, node.key, depth + 1, "", onOpen)
                     }
 
                     val rawTabs = when {
@@ -439,15 +423,16 @@ private fun BookMenuNode(
                     }
 
                     val tabs = if (bookCode == "C906") scienceExamTabs(rawTabs) else rawTabs
-                    tabs.forEach { tab ->
+                    tabs.forEachIndexed { index, tab ->
                         val label = tab.title.trim()
+                        val tabKey = tab.key ?: BooksMenu.syntheticKey(bookCode, path, index)
                         when {
                             specialPackId != null && (label == "روخوانی" || label == "خوانش") ->
                                 onOpen(Screen.LessonTeach.of(specialPackId), label, "")
                             label == "تدریس" && node.teachKey != null ->
-                                LeafRow(label, node.teachKey, true, depth + 1, node.audioKey.orEmpty(), onOpen)
+                                LeafRow(label, node.teachKey, depth + 1, node.audioKey.orEmpty(), onOpen)
                             else ->
-                                LeafRow(label, tab.key, tab.ready, depth + 1, "", onOpen)
+                                LeafRow(label, tabKey, depth + 1, "", onOpen)
                         }
                     }
 
@@ -472,8 +457,7 @@ private fun scienceExamTabs(tabs: List<BooksMenu.Tab>): List<BooksMenu.Tab> {
 @Composable
 private fun LeafRow(
     title: String,
-    key: String?,
-    ready: Boolean?,
+    key: String,
     depth: Int,
     audio: String,
     onOpen: (String, String, String) -> Unit,
@@ -481,7 +465,7 @@ private fun LeafRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable { onOpen(BooksMenu.destination(key, ready), title, audio) }
+            .clickable { onOpen(key, title, audio) }
             .padding(start = (depth * 14).dp + 14.dp, end = 12.dp, top = 9.dp, bottom = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -491,7 +475,6 @@ private fun LeafRow(
             modifier = Modifier.weight(1f),
             color = MaterialTheme.colorScheme.onSurface,
         )
-        if (ready != true || key.isNullOrBlank()) SoonBadge()
     }
 }
 
@@ -502,37 +485,3 @@ private fun normalizedMenuTitle(title: String): String =
         .substringAfterLast('—').substringAfterLast('-')
         .replace(Regex("\\s+"), "")
         .replace(Regex("[^\\p{L}\\p{N}]"), "")
-
-@Composable
-private fun onSpecialTab(
-    tab: BooksMenu.Tab,
-    packId: String,
-    pack: com.hamyareman.ir.platform.feature.study.StudyPack?,
-    depth: Int,
-    onOpen: (String, String, String) -> Unit,
-) {
-    if (tab.title.startsWith("تدریس") && pack != null) {
-        onOpen(
-            com.hamyareman.ir.ui.navigation.Screen.LessonTeach.of(packId),
-            tab.title,
-            "",
-        )
-        return
-    }
-    LeafRow(tab.title, tab.key, tab.ready, depth + 1, "", onOpen)
-}
-
-@Composable
-private fun SoonBadge() {
-    Text(
-        "به‌زودی",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant,
-                androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-            )
-            .padding(horizontal = 7.dp, vertical = 2.dp),
-    )
-}
