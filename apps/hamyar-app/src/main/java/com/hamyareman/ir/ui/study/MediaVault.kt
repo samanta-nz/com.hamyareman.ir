@@ -270,10 +270,25 @@ object MediaVault {
         val now = System.currentTimeMillis()
         if (now - prefs.getLong(checkedKey, 0L) < VERSION_CHECK_TTL_MS) return true
 
+        val savedEtag = prefs.getString("etag:" + cacheKey, "").orEmpty()
+        val savedLength = prefs.getLong("length:" + cacheKey, -1L)
+        val savedModified = prefs.getString("modified:" + cacheKey, "").orEmpty()
+        val savedUrl = prefs.getString("url:" + cacheKey, "").orEmpty()
+
+        // مبدأ ذخیره‌شده اول بررسی می‌شود؛ ETag هر mirror مستقل است.
+        val ordered = if (savedUrl.isNotBlank() && savedUrl in candidates) {
+            listOf(savedUrl) + candidates.filterNot { it == savedUrl }
+        } else {
+            candidates
+        }
+
         var currentUrl: String? = null
         var current: RemoteVersion? = null
-        for (url in candidates) {
-            val candidate = remoteVersion(url)
+        for (url in ordered) {
+            // GET شرطی (Range 0-0 + If-None-Match) فقط برای همان مبدأیی که ETag از آن آمده:
+            // ۳۰۴ یعنی بدون بدنه، تغییر یعنی ۲۰۶ با یک بایت. بدون ETag ذخیره‌شده: HEAD معمولی.
+            val ifNoneMatch = if (savedEtag.isNotBlank() && url == savedUrl) savedEtag else ""
+            val candidate = remoteVersion(url, ifNoneMatch)
             if (candidate != null) {
                 currentUrl = url
                 current = candidate
@@ -283,10 +298,10 @@ object MediaVault {
         // آفلاین/خطای CDN: cache سالمِ فعلی را برای حالت آفلاین حفظ کن و در بازشدن بعدی دوباره بررسی کن.
         if (current == null || currentUrl == null) return true
 
-        val savedEtag = prefs.getString("etag:" + cacheKey, "").orEmpty()
-        val savedLength = prefs.getLong("length:" + cacheKey, -1L)
-        val savedModified = prefs.getString("modified:" + cacheKey, "").orEmpty()
-        val savedUrl = prefs.getString("url:" + cacheKey, "").orEmpty()
+        if (current.notModified) {
+            saveRemoteVersion(ctx, cacheKey, currentUrl, RemoteVersion(savedLength, savedEtag, savedModified), now)
+            return true
+        }
 
         val same = when {
             savedEtag.isNotBlank() && current.etag.isNotBlank() ->
@@ -308,9 +323,9 @@ object MediaVault {
 
         // اگر امضا از نسخهٔ قدیمی وجود نداشت یا تغییر دیده شد، نسخهٔ سرور را دریافت کن؛
         // finishDownload کش قبلی را نگه می‌دارد تا جایگزینی سالم تأیید شود.
-        val ordered = listOf(currentUrl) + candidates.filterNot { it == currentUrl }
+        val downloadOrder = listOf(currentUrl) + candidates.filterNot { it == currentUrl }
         return runCatching {
-            downloadEncrypted(ctx, ordered, cacheKey, onProgress)
+            downloadEncrypted(ctx, downloadOrder, cacheKey, onProgress)
             isVerified(ctx, cacheKey)
         }.getOrElse {
             isVerified(ctx, cacheKey)
@@ -321,27 +336,55 @@ object MediaVault {
         val length: Long,
         val etag: String,
         val lastModified: String,
+        /** سرور ۳۰۴ داد (یا ETag برابر برگشت): محتوا همان کش است. */
+        val notModified: Boolean = false,
     )
 
     private fun versionPrefs(ctx: Context) =
         ctx.getSharedPreferences(VERSION_PREFS, Context.MODE_PRIVATE)
 
-    private fun remoteVersion(url: String): RemoteVersion? = runCatching {
+    private fun remoteVersion(url: String, ifNoneMatch: String = ""): RemoteVersion? = runCatching {
+        val conditional = ifNoneMatch.isNotBlank()
         val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
             connectTimeout = 10_000
             readTimeout = 12_000
             instanceFollowRedirects = true
-            requestMethod = "HEAD"
+            useCaches = false
             setRequestProperty("Accept-Encoding", "identity")
             setRequestProperty("Cache-Control", "no-cache, no-store, max-age=0")
             setRequestProperty("Pragma", "no-cache")
+            if (conditional) {
+                requestMethod = "GET"
+                setRequestProperty("Range", "bytes=0-0")
+                setRequestProperty("If-None-Match", ifNoneMatch)
+            } else {
+                requestMethod = "HEAD"
+            }
         }
         try {
-            if (conn.responseCode !in 200..299) return@runCatching null
+            val code = conn.responseCode
+            if (conditional && code == java.net.HttpURLConnection.HTTP_NOT_MODIFIED) {
+                return@runCatching RemoteVersion(
+                    length = -1L,
+                    etag = ifNoneMatch,
+                    lastModified = "",
+                    notModified = true,
+                )
+            }
+            if (code !in 200..299) return@runCatching null
+            val etag = conn.getHeaderField("ETag").orEmpty().trim()
+            val total = if (conditional) {
+                conn.getHeaderField("Content-Range").orEmpty().substringAfterLast("/", "").toLongOrNull()
+                    ?: conn.contentLengthLong
+            } else {
+                conn.contentLengthLong
+            }
             val version = RemoteVersion(
-                length = conn.contentLengthLong,
-                etag = conn.getHeaderField("ETag").orEmpty().trim(),
+                length = total,
+                etag = etag,
                 lastModified = conn.getHeaderField("Last-Modified").orEmpty().trim(),
+                // سرور شرط را نادیده گرفته ولی ETag همان است: تغییری نشده.
+                notModified = conditional && etag.isNotBlank() && etag == ifNoneMatch,
             )
             if (version.length < 0L && version.etag.isBlank() && version.lastModified.isBlank()) null
             else version
@@ -411,8 +454,8 @@ object MediaVault {
     }
 
     /**
-     * گزارشِ تُنُکِ پیشرفت: دستِ‌کم هر ۵۱۲KB یا هر ۲۰۰ms (نه هر تکهٔ شبکه) تا
-     * بازترکیبِ صفحه گلوگاهِ دانلود نشود. [lastBytes] و [lastTime] گزارشِ قبلی‌اند.
+     * گزارشِ تُنُکِ پیشرفت: دست‌کم هر ۵۱۲KB یا هر ۲۰۰ms (نه هر تکهٔ شبکه) تا
+     * بازترکیبِ صفحه گلوگاهِ دانلود نشود. [lastBytes] و [lastTime] گزارشِ قبلیاند.
      */
     private fun reportProgress(
         onProgress: (Long, Long) -> Unit,
@@ -547,7 +590,7 @@ object MediaVault {
                     attempt++
                     if (attempt > MAX_RANGE_ATTEMPTS) throw t
                     // اگر اینترنت نیست، اول تا برگشتنش صبر می‌کنیم (تغییرِ شبکه/پروکسی
-                    // نباید دانلود را بکُشد) و بعد از همان‌جا ادامه می‌دهیم.
+                    // نباید دانلود را بکشد) و بعد از همان‌جا ادامه می‌دهیم.
                     if (!NetState.isOnline(ctx)) awaitNetwork(ctx)
                     // عقب‌نشینیِ پرشونده: ۰٫۴s، ۰٫۸s، ۱٫۶s …
                     runCatching { Thread.sleep(400L shl (attempt - 1)) }
@@ -793,7 +836,7 @@ object MediaVault {
 
     /**
      * بازکردنِ جریانِ خوانشِ جسته‌گریخته روی فایلِ گاوصندوق (برای پخش).
-     * برخلاف [decryptToMemory] کل فایل را در حافظه نمی‌ریخت و رمزگشایی نمی‌کند؛
+     * برخلافِ [decryptToMemory] کل فایل را در حافظه نمی‌ریخت و رمزگشایی نمی‌کند؛
      * هر بلاک درست لحظه‌ی درخواستِ پلیر رمزگشایی می‌شود — بنابراین بازکردن آنی است
      * و STATE_BUFFERINGِ ساختگیِ «پخش محلی شروع نشد» از بین می‌رود.
      */
