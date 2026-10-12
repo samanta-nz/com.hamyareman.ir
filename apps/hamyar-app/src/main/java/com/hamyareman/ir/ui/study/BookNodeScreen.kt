@@ -285,6 +285,13 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
     }
 }
 
+@Composable
+internal fun RemotePdfPage(bucketKey: String) {
+    var missing by remember(bucketKey) { mutableStateOf(false) }
+    if (missing) RemoteHtmlPage(BooksMenu.SPACEHOLDER_KEY)
+    else BookPdfPages(bucketKey, onMissing = { missing = true })
+}
+
 private sealed interface BookPdfState {
     data object Loading : BookPdfState
     data class Ready(val pages: Int) : BookPdfState
@@ -292,7 +299,7 @@ private sealed interface BookPdfState {
 }
 
 @Composable
-private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
+internal fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
     val context = LocalContext.current
     // مسیر کامل، نه نام فایل: نام‌های یکسان در چند کتاب نباید cache یکدیگر را
     // بازنویسی کنند. DownloadsScreen هم دقیقاً همین کلید را استفاده می‌کند.
@@ -315,9 +322,11 @@ private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
     LaunchedEffect(cacheId, retry) {
         val previous = StudyPdfCache.file(context, cacheId)
         if (StudyPdfCache.isValid(previous)) {
-            val local = withContext(Dispatchers.IO) { PdfRenderer(ParcelFileDescriptor.open(previous, ParcelFileDescriptor.MODE_READ_ONLY)) }
-            synchronized(lock) { renderer?.close(); renderer = local }
-            state = BookPdfState.Ready(local.pageCount)
+            val local = runCatching { withContext(Dispatchers.IO) { PdfRenderer(ParcelFileDescriptor.open(previous, ParcelFileDescriptor.MODE_READ_ONLY)) } }.getOrNull()
+            if (local != null) {
+                synchronized(lock) { renderer?.close(); renderer = local }
+                state = BookPdfState.Ready(local.pageCount)
+            } else state = BookPdfState.Loading
         } else state = BookPdfState.Loading
         progress = 0
         val handler = android.os.Handler(android.os.Looper.getMainLooper())

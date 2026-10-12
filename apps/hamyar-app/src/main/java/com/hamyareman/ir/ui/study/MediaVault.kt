@@ -56,7 +56,10 @@ object MediaVault {
         return dir
     }
 
-    fun vaultFile(ctx: Context, cacheKey: String) = File(vaultDir(ctx), "$cacheKey.enc")
+    private fun storageKey(cacheKey: String): String = if (cacheKey.matches(Regex("[A-Za-z0-9_.-]+")) && !cacheKey.startsWith("..")) cacheKey else
+        java.security.MessageDigest.getInstance("SHA-256").digest(cacheKey.toByteArray()).joinToString("") { "%02x".format(it.toInt() and 255) }
+
+    fun vaultFile(ctx: Context, cacheKey: String) = File(vaultDir(ctx), storageKey(cacheKey) + ".enc")
 
     fun isCached(ctx: Context, cacheKey: String): Boolean =
         vaultFile(ctx, cacheKey).let { it.exists() && it.length() > 32 }
@@ -90,7 +93,8 @@ object MediaVault {
 
     fun delete(ctx: Context, cacheKey: String) {
         vaultFile(ctx, cacheKey).delete()
-        File(vaultDir(ctx), "$cacheKey.enc.part").delete()
+        File(vaultFile(ctx, cacheKey).path + ".part").delete()
+        File(vaultFile(ctx, cacheKey).path + ".part.etag").delete()
         val prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val set = prefs.getStringSet("verified", emptySet()).orEmpty().toMutableSet()
         if (set.remove(cacheKey)) prefs.edit().putStringSet("verified", set).apply()

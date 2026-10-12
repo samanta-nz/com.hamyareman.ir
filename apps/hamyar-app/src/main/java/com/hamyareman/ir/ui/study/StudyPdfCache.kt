@@ -17,7 +17,8 @@ import java.util.concurrent.ConcurrentHashMap
 object StudyPdfCache {
 
     fun file(ctx: Context, fileId: String): File =
-        File(ctx.filesDir, "media/pdf-cache/$fileId").also { it.parentFile?.mkdirs() }
+        File(ctx.filesDir, "media/pdf-cache/" + if (fileId.matches(Regex("[A-Za-z0-9_.-]+")) && !fileId.startsWith("..")) fileId else
+            java.security.MessageDigest.getInstance("SHA-256").digest(fileId.toByteArray()).joinToString("") { "%02x".format(it.toInt() and 255) }).also { it.parentFile?.mkdirs() }
 
     fun isValid(file: File): Boolean = runCatching {
         if (!file.isFile || file.length() < 1024L) return@runCatching false

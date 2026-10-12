@@ -17,8 +17,9 @@ internal fun RemoteLessonScreen(packId: String, initialTab: Int = 0, onBack: () 
         NeedSubScreen(onBack = onBack)
         return
     }
-    val tabs = if (packId.endsWith("SUM")) listOf("تدریس" to "teach", "فلش‌کارت" to "flash", "خلاصه" to "summary", "آزمون" to "exam")
+    val baseTabs = if (packId.endsWith("SUM")) listOf("تدریس" to "teach", "فلش‌کارت" to "flash", "خلاصه" to "summary", "آزمون" to "exam")
         else listOf("تدریس" to "teach", "تمرینات کتابی" to "book", "خلاصه و نکات" to "summary", "فلش‌کارت" to "flash", "آزمون" to "exam", "حل تشریحی" to "solutions")
+    val tabs = baseTabs + listOf("کتاب درسی" to "pdf")
     var selected by remember(packId) { mutableIntStateOf(initialTab.coerceIn(0, tabs.lastIndex)) }
     Column(Modifier.fillMaxSize()) {
         if (pack != null) TeachAudioBar(packId, pack.title, pack.bookTitle, teachTracksOf(pack))
@@ -27,6 +28,11 @@ internal fun RemoteLessonScreen(packId: String, initialTab: Int = 0, onBack: () 
                 Tab(selected = selected == index, onClick = { selected = index }, text = { Text(tab.first) })
             }
         }
-        key(packId, selected) { RemoteHtmlPage(BucketRoutes.lesson(packId, tabs[selected].second), pack?.audioFileId.orEmpty()) }
+        key(packId, selected) {
+            if (tabs[selected].second == "pdf") {
+                val fileId = pack?.pdfFileName ?: packId + "_BOOK.pdf"
+                RemotePdfPage(com.hamyareman.ir.ui.content.ContentCatalog.keyFor(fileId) ?: "Bucket/Pdf-files/app/" + fileId)
+            } else RemoteHtmlPage(BucketRoutes.lesson(packId, tabs[selected].second), pack?.audioFileId.orEmpty())
+        }
     }
 }

@@ -252,6 +252,8 @@ private class AudioSeekBridge(private val onSeek: (Long) -> Unit) {
 
 @Composable
 private fun FreeAudioReader(book: FreeStudyBook) {
+    val scope = rememberCoroutineScope()
+    var currentMediaKey by remember(book.id) { mutableStateOf(book.mediaKey) }
     val ctx = LocalContext.current
     val container = LocalAppContainer.current
     val playback = remember { PlaybackController(ctx) }
@@ -269,22 +271,26 @@ private fun FreeAudioReader(book: FreeStudyBook) {
         if (!backgroundPlayback) playback.stop()
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(book.id, book.mediaKey) {
         playback.connect()
         val key = book.mediaKey
-        if (key.isNotBlank() && !state.hasMedia) {
+        if (key.isNotBlank()) {
             val cache = freeDownloadKey(book, key)
             if (MediaVault.isVerified(ctx, cache)) {
-                withContext(Dispatchers.IO) {
-                    MediaVault.ensureFresh(ctx, StudyMedia.candidateUrls(key), cache)
-                }
+                playback.setMedia(MediaVault.localUrl(ctx, cache), book.title, FreeReadingState.pos(ctx, book.id))
+                downloaded.value = true
             }
-            val useLocal = MediaVault.isVerified(ctx, cache)
-            val uri = if (useLocal) MediaVault.localUrl(ctx, cache) else StudyMedia.viewUrl(key)
-            downloaded.value = useLocal
-            playback.setMedia(uri, book.title, FreeReadingState.pos(ctx, book.id))
+            val ready = withContext(Dispatchers.IO) { MediaVault.ensureFresh(ctx, StudyMedia.candidateUrls(key), cache) }
+            if (ready) {
+                downloaded.value = true
+                playback.setMedia(MediaVault.localUrl(ctx, cache), book.title, FreeReadingState.pos(ctx, book.id))
+            } else note = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
         }
         if (timerUntil > System.currentTimeMillis()) playback.setSleepTimer(timerUntil)
+    }
+    val transfers by BucketTransfer.states.collectAsState()
+    LaunchedEffect(transfers) {
+        if (transfers.any { !it.confirmation && StudyMedia.candidateUrls(currentMediaKey).contains(it.url) }) playback.pause()
     }
 
     LaunchedEffect(state.playing) {
@@ -513,16 +519,17 @@ private fun FreeAudioReader(book: FreeStudyBook) {
             book.chapters.forEach { chapter ->
                 val key = chapter.mediaKey.ifBlank { book.mediaKey }
                 Card(Modifier.fillMaxWidth().clickable {
-                    if (chapter.mediaKey.isNotBlank()) {
-                        val local = freeDownloadKey(book, chapter.mediaKey)
-                        playback.setMedia(
-                            if (MediaVault.isVerified(ctx, local)) MediaVault.localUrl(ctx, local) else StudyMedia.viewUrl(chapter.mediaKey),
-                            book.title + " — " + chapter.title,
-                            chapter.startMs,
-                        )
-                        downloaded.value = MediaVault.isVerified(ctx, local)
-                    } else playback.seekTo(chapter.startMs)
-                    playback.play()
+                    scope.launch {
+                        if (chapter.mediaKey.isNotBlank()) {
+                            val local = freeDownloadKey(book, chapter.mediaKey)
+                            currentMediaKey = chapter.mediaKey
+                            val ready = withContext(Dispatchers.IO) { MediaVault.ensureFresh(ctx, StudyMedia.candidateUrls(chapter.mediaKey), local) }
+                            if (!ready) { note = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."; return@launch }
+                            playback.setMedia(MediaVault.localUrl(ctx, local), book.title + " — " + chapter.title, chapter.startMs)
+                            downloaded.value = true
+                        } else playback.seekTo(chapter.startMs)
+                        playback.play()
+                    }
                 }) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Book, null)
