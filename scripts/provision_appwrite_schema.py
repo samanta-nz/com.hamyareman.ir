@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -68,6 +69,18 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         "indexes": [{"$id": "studyUserPackIdx", "type": "key", "attributes": ["userId", "packId"]}],
     },
     {
+        "$id": "teach_stats", "name": "آمار تدریس", "rowSecurity": True,
+        "$permissions": USER_CREATE,
+        "columns": [
+            col("userId", size=64, required=True), col("packId", size=128, required=True),
+            col("stats", size=200000, default=""), col("updatedAtIso", size=32, default=""),
+            col("lastSessionIso", size=32, default=""),
+        ],
+        "indexes": [
+            {"$id": "teachUserPackIdx", "type": "key", "attributes": ["userId", "packId"]},
+        ],
+    },
+    {
         "$id": "lesson_notes", "name": "نکات درسی", "rowSecurity": True,
         "$permissions": USER_CREATE,
         "columns": [
@@ -98,7 +111,7 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         ],
     },
     {
-        "$id": "free_books", "name": "کتاب‌های مطالعه آزاد", "rowSecurity": false,
+        "$id": "free_books", "name": "کتاب‌های مطالعه آزاد", "rowSecurity": False,
         "$permissions": ['read("any")'],
         "columns": [
             col("bookId", size=128, required=True), col("type", size=16, required=True),
@@ -111,17 +124,18 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         "indexes": [{"$id": "freeBooksPublishedSort", "type": "key", "attributes": ["published", "sortOrder"]}],
     },
     {
-        "$id": "free_book_user_state", "name": "وضعیت مطالعه آزاد کاربران", "rowSecurity": true,
+        "$id": "free_book_user_state", "name": "وضعیت مطالعه آزاد کاربران", "rowSecurity": True,
         "$permissions": USER_CREATE,
         "columns": [
             col("userId", size=64, required=True), col("bookId", size=128, required=True),
             col("status", size=16, default="WANT"), col("positionMs", "integer", default=0),
+            col("durationMs", "integer", default=0), col("progressPct", "integer", default=0, minimum=0, maximum=100),
             col("updatedAtMs", "integer", default=0),
         ],
         "indexes": [{"$id": "freeStateUserBook", "type": "unique", "attributes": ["userId", "bookId"]}],
     },
     {
-        "$id": "free_book_requests", "name": "درخواست کتاب از همیار", "rowSecurity": true,
+        "$id": "free_book_requests", "name": "درخواست کتاب از همیار", "rowSecurity": True,
         "$permissions": USER_CREATE,
         "columns": [
             col("userId", size=64, required=True), col("title", size=256, required=True),
@@ -132,7 +146,7 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         "indexes": [{"$id": "freeRequestsUserTime", "type": "key", "attributes": ["userId", "createdAtMs"]}],
     },
     {
-        "$id": "book_comments", "name": "نظرات کتاب", "rowSecurity": false,
+        "$id": "book_comments", "name": "نظرات کتاب", "rowSecurity": False,
         "$permissions": ['read("any")', 'create("users")'],
         "columns": [
             col("commentId", size=128, required=True), col("bookId", size=128, required=True),
@@ -146,7 +160,7 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         ],
     },
     {
-        "$id": "book_comment_reactions", "name": "واکنش‌های نظرات کتاب", "rowSecurity": true,
+        "$id": "book_comment_reactions", "name": "واکنش‌های نظرات کتاب", "rowSecurity": True,
         "$permissions": USER_CREATE,
         "columns": [
             col("userId", size=64, required=True), col("commentId", size=128, required=True),
@@ -155,7 +169,7 @@ EXTRA_TABLES: list[dict[str, Any]] = [
         "indexes": [{"$id": "commentReactionUser", "type": "unique", "attributes": ["userId", "commentId"]}],
     },
     {
-        "$id": "moderation_terms", "name": "واژگان پالایش دیدگاه", "rowSecurity": false,
+        "$id": "moderation_terms", "name": "واژگان پالایش دیدگاه", "rowSecurity": False,
         "$permissions": ['read("any")'],
         "columns": [
             col("term", size=128, required=True), col("kind", size=24, default="insult"),
@@ -246,6 +260,37 @@ class Provisioner:
     @staticmethod
     def column_key(value: dict[str, Any]) -> str:
         return str(value.get("key") or value.get("$id") or "")
+
+    def list_tables(self) -> list[dict[str, Any]]:
+        """List all TablesDB tables, including resources absent from the app contract."""
+        result: list[dict[str, Any]] = []
+        offset = 0
+        while True:
+            query = urllib.parse.urlencode({"limit": 100, "offset": offset})
+            payload = self.api.call("GET", self.table_path() + "?" + query)[1]
+            page = payload.get("tables") or []
+            result.extend(page)
+            total = int(payload.get("total") or 0)
+            if not page or len(page) < 100 or (total and len(result) >= total):
+                break
+            offset += len(page)
+        return result
+
+    def prune_stale_tables(self, allowed_ids: set[str]) -> None:
+        """Delete only tables absent from the source-of-truth app allowlist."""
+        live = self.list_tables()
+        found = {
+            str(item.get("$id") or item.get("tableId") or item.get("id") or "")
+            for item in live
+        }
+        stale = sorted(table_id for table_id in found if table_id and table_id not in allowed_ids)
+        if not stale:
+            print("PRUNE no stale Appwrite tables found")
+            return
+        for table_id in stale:
+            self.api.call("DELETE", self.table_path(table_id), ok=(200, 202, 204))
+            print(f"DELETE stale table {table_id}")
+            self.created += 1
 
     def ensure_table(self, spec: dict[str, Any]) -> None:
         table_id = spec["$id"]
@@ -393,6 +438,13 @@ def normalize_baseline() -> list[dict[str, Any]]:
         else:
             table["$permissions"] = USER_CREATE
             table["rowSecurity"] = True
+        # chapterIndex is part of the current Kotlin playback payload but absent from
+        # the historical 23-table snapshot. Keep the snapshot historical and apply the
+        # forward migration here so a fresh provision and an existing DB converge.
+        if table_id == "lesson_media_progress":
+            known = {str(c.get("key") or c.get("$id")) for c in table.get("columns", [])}
+            if "chapterIndex" not in known:
+                table.setdefault("columns", []).append(col("chapterIndex", "integer", default=0))
         # بعضی snapshotهای قدیمی `$id` و `key` متفاوت دارند. API ستون را با
         # `key` می‌سازد، پس references ایندکس نیز باید به همان key نرمال شوند.
         column_keys = {str(c.get("$id")): str(c.get("key") or c.get("$id")) for c in table.get("columns", [])}
@@ -403,8 +455,42 @@ def normalize_baseline() -> list[dict[str, Any]]:
     return result
 
 
+def app_server_table_ids() -> set[str]:
+    """Read the canonical server-table allowlist directly from TableIds.kt."""
+    source_path = ROOT / "shared/core-common/src/main/java/com/hamyareman/ir/platform/core/common/TableIds.kt"
+    if not source_path.exists():
+        raise RuntimeError(f"cannot find app table contract: {source_path}")
+    source = source_path.read_text(encoding="utf-8")
+    constants = {
+        name: value
+        for name, value in re.findall(
+            r'const\s+val\s+([A-Z][A-Z0-9_]*)\s*=\s*"([^"]+)"', source
+        )
+    }
+    match = re.search(
+        r'val\s+serverTables\s*:\s*Set<String>\s*=\s*setOf\((.*?)\n\s*\)',
+        source,
+        re.S,
+    )
+    if match is None:
+        raise RuntimeError("cannot parse TableIds.serverTables")
+    body = re.sub(r"//[^\n]*", "", match.group(1))
+    names = re.findall(r"\b([A-Z][A-Z0-9_]*)\b", body)
+    unknown = sorted(set(names) - set(constants))
+    if unknown:
+        raise RuntimeError(f"unknown constants in TableIds.serverTables: {unknown}")
+    if len(names) != len(set(names)):
+        raise RuntimeError("duplicate constant in TableIds.serverTables")
+    return {constants[name] for name in names}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--prune-stale-tables",
+        action="store_true",
+        help="delete Appwrite tables not listed in TableIds.serverTables (destructive)",
+    )
     parser.add_argument("--endpoint", default=os.environ.get("APPWRITE_ENDPOINT", "https://sgp.cloud.appwrite.io/v1"))
     parser.add_argument("--project", default=os.environ.get("APPWRITE_PROJECT_ID", ""))
     parser.add_argument("--database", default=os.environ.get("APPWRITE_DATABASE_ID", ""))
@@ -417,15 +503,35 @@ def main() -> int:
     print(f"DATABASE {db.get('name', args.database)} ({args.database})")
     provisioner = Provisioner(api, args.database)
     specs = normalize_baseline() + EXTRA_TABLES
-    seen: set[str] = set()
+    specs_by_id: dict[str, dict[str, Any]] = {}
     for spec in specs:
-        if spec["$id"] in seen:
-            raise RuntimeError(f"duplicate schema table {spec['$id']}")
-        seen.add(spec["$id"])
-        provisioner.ensure_table(spec)
+        table_id = str(spec["$id"])
+        if table_id in specs_by_id:
+            raise RuntimeError(f"duplicate schema table {table_id}")
+        specs_by_id[table_id] = spec
+
+    app_ids = app_server_table_ids()
+    schema_ids = set(specs_by_id)
+    missing_specs = sorted(app_ids - schema_ids)
+    obsolete_specs = sorted(schema_ids - app_ids)
+    if missing_specs or obsolete_specs:
+        raise RuntimeError(
+            "app/schema table contract mismatch: "
+            f"missing_schema={missing_specs}; not_used_by_app={obsolete_specs}"
+        )
+
+    for table_id in [str(spec["$id"]) for spec in specs]:
+        provisioner.ensure_table(specs_by_id[table_id])
     provisioner.seed_release_row()
-    print(json.dumps({"database": args.database, "tables": len(specs),
-                      "created": provisioner.created, "existing": provisioner.existing}, separators=(",", ":")))
+    if args.prune_stale_tables:
+        provisioner.prune_stale_tables(app_ids)
+    print(json.dumps({
+        "database": args.database,
+        "tables": len(specs),
+        "created": provisioner.created,
+        "existing": provisioner.existing,
+        "prune_stale_tables": args.prune_stale_tables,
+    }, separators=(",", ":")))
     return 0
 
 
