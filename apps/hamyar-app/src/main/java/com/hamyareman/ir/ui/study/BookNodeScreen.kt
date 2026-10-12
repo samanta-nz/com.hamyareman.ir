@@ -87,7 +87,7 @@ fun BookNodeScreen(
 
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
-internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}, onPageReady: (android.webkit.WebView) -> Unit = {}, onConfigure: (android.webkit.WebView) -> Unit = {}) {
+internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}, onPageReady: (android.webkit.WebView) -> Unit = {}, onConfigure: (android.webkit.WebView) -> Unit = {}, confirmUpdates: Boolean = true) {
     val context = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
     val appearance = com.hamyareman.ir.ui.appearance.LocalUiPrefs.current
@@ -119,6 +119,7 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
             val prepared = LessonCache.prepare(
                 ctx = context,
                 url = url,
+                confirmUpdates = confirmUpdates,
                 onProgress = { done, total ->
                     if (total > 0) {
                         handler.post {

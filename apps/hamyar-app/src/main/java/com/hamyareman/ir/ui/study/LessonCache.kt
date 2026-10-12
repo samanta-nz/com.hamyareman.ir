@@ -154,12 +154,13 @@ object LessonCache {
         url: String,
         onProgress: ((Int, Int) -> Unit)? = null,
         onStatus: ((Freshness) -> Unit)? = null,
+        confirmUpdates: Boolean = true,
     ): PrepareResult? {
         val canonicalUrl = canonical(url)
         val key = keyOf(canonicalUrl)
         val lock = locks.getOrPut(key) { Any() }
         return synchronized(lock) {
-            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus)
+            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus, confirmUpdates)
         }
     }
 
@@ -172,6 +173,7 @@ object LessonCache {
         key: String,
         onProgress: ((Int, Int) -> Unit)?,
         onStatus: ((Freshness) -> Unit)?,
+        confirmUpdates: Boolean,
     ): PrepareResult? {
         val target = fileFor(ctx, canonicalUrl)
         val hasCache = isCached(ctx, canonicalUrl)
@@ -200,7 +202,7 @@ object LessonCache {
             // تا بار بعد دوباره بررسی شود.
             if (code == 404 || code == 410) {
                 if (!canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
-                    return prepare(ctx, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY), onProgress, onStatus)?.let {
+                    return prepare(ctx, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY), onProgress, onStatus, confirmUpdates && needsConfirmation(canonicalUrl))?.let {
                         PrepareResult(it.file, if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED)
                     }
                 }
@@ -227,7 +229,7 @@ object LessonCache {
             }
 
             if (hasCache) {
-                if (needsConfirmation(canonicalUrl) && !BucketTransfer.confirm(canonicalUrl)) {
+                if (confirmUpdates && needsConfirmation(canonicalUrl) && !BucketTransfer.confirm(canonicalUrl)) {
                     recentChecks[key] = now
                     onStatus?.invoke(Freshness.CACHED)
                     return PrepareResult(target, Freshness.CACHED)
@@ -240,7 +242,7 @@ object LessonCache {
             onStatus?.invoke(freshness)
 
             val downloaded = BucketByteDownloader.download(
-                canonicalUrl, target, conn, silent = !needsConfirmation(canonicalUrl),
+                canonicalUrl, target, conn, silent = !confirmUpdates || !needsConfirmation(canonicalUrl),
                 validate = { isAcceptable(it, canonicalUrl) },
                 onProgress = { done, total -> onProgress?.invoke(done.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), total.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()) },
             )

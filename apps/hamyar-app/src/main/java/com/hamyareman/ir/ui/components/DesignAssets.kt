@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.AsyncImage
+import com.hamyareman.ir.ui.components.BucketImage as AsyncImage
 import com.hamyareman.ir.ui.study.ServerResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -70,16 +70,5 @@ internal object DesignAsset {
 
 @Composable
 fun RemoteDesignImage(key: String, modifier: Modifier = Modifier, contentDescription: String? = null, contentScale: ContentScale = ContentScale.Crop) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val remote = remember(key) { DesignAsset.remoteUrl(key) }
-    val file = com.hamyareman.ir.ui.study.LessonCache.fileFor(context, remote)
-    var revision by remember(key) { mutableStateOf(file.lastModified()) }
-    var ready by remember(key) { mutableStateOf(file.takeIf { it.exists() }) }
-    LaunchedEffect(key) {
-        val result = withContext(Dispatchers.IO) { com.hamyareman.ir.ui.study.LessonCache.prepare(context, remote) }
-        ready = result?.file; revision = ready?.lastModified() ?: 0L
-    }
-    AsyncImage(model = coil.request.ImageRequest.Builder(context).data(ready)
-        .memoryCacheKey(remote + "@" + revision).build(), contentDescription = contentDescription,
-        contentScale = contentScale, modifier = modifier)
+    BucketImage(remember(key) { DesignAsset.remoteUrl(key) }, contentDescription, modifier, contentScale)
 }

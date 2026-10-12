@@ -194,7 +194,6 @@ fun HubCoverGrid(tiles: List<HubCoverTile>, slotId: String = "hub.practice.item"
 @Composable
 private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String) {
     val ctx = LocalContext.current
-    val cover = loadPracticeCover(ctx, tile.id)
     val shape = RoundedCornerShape(14.dp)
     Column(
         modifier
@@ -204,34 +203,10 @@ private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f), shape)
             .clickable(role = Role.Button, onClick = tile.onClick),
     ) {
-        if (cover != null) {
-            Image(
-                bitmap = cover,
-                contentDescription = tile.title,
-                modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
-                contentScale = ContentScale.Fit,
-            )
-        } else {
-            Box(
-                Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio),
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    Modifier.size(58.dp).background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        CircleShape,
-                    ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.AutoAwesome,
-                        contentDescription = tile.title,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(30.dp),
-                    )
-                }
-            }
-        }
+        com.hamyareman.ir.ui.components.BucketImage(
+            model = com.hamyareman.ir.ui.study.ServerResolver.internal("assets/practice-covers/" + tile.id + ".jpg"),
+            contentDescription = tile.title, modifier = Modifier.fillMaxWidth().aspectRatio(tile.imageAspectRatio), contentScale = ContentScale.Fit)
+
         Column(
             Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 7.dp, vertical = 5.dp),
             verticalArrangement = Arrangement.spacedBy(1.dp),

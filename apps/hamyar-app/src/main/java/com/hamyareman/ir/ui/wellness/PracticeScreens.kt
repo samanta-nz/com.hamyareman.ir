@@ -197,7 +197,6 @@ private fun PracticeRowTile(
     onClick: () -> Unit,
 ) {
     val ctx = LocalContext.current
-    val cover = loadPracticeCover(ctx, coverId)
     val shape = RoundedCornerShape(18.dp)
     Row(
         Modifier
@@ -214,11 +213,9 @@ private fun PracticeRowTile(
             Modifier.size(62.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surface.copy(alpha = .72f)),
             contentAlignment = Alignment.Center,
         ) {
-            if (cover != null) {
-                Image(cover, title, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            } else {
-                Text(emoji, style = MaterialTheme.typography.headlineSmall)
-            }
+            com.hamyareman.ir.ui.components.BucketImage(
+                com.hamyareman.ir.ui.study.ServerResolver.internal("assets/practice-covers/" + coverId + ".jpg"),
+                title, Modifier.fillMaxSize(), ContentScale.Crop)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

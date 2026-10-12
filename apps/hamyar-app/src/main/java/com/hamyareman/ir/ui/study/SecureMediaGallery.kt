@@ -67,7 +67,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import coil.compose.AsyncImage
+import com.hamyareman.ir.ui.components.BucketImage as AsyncImage
 import androidx.core.content.FileProvider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
