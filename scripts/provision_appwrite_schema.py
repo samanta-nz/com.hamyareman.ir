@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Idempotently provision the grade-nine TablesDB schema on Appwrite.
+"""Reconcile Appwrite TablesDB with the app's canonical table contract.
 
-The historic 23-table snapshot is the baseline. Runtime tables added after that
-snapshot are declared below. Existing tables/columns/indexes are validated and
-left in place; missing resources are created. No historic user data is copied.
+Table IDs come from TableIds.serverTables in the Kotlin app. The archived schema
+supplies field definitions for the original tables; EXTRA_TABLES defines runtime
+tables. Normal mode adds missing tables/columns/indexes and validates types.
+--prune-stale-tables explicitly deletes only tables not referenced by the app.
 """
 from __future__ import annotations
 
@@ -244,6 +245,7 @@ class Provisioner:
         self.database = urllib.parse.quote(database, safe="")
         self.created = 0
         self.existing = 0
+        self.deleted = 0
 
     def table_path(self, table: str = "") -> str:
         base = f"/tablesdb/{self.database}/tables"
@@ -290,7 +292,7 @@ class Provisioner:
         for table_id in stale:
             self.api.call("DELETE", self.table_path(table_id), ok=(200, 202, 204))
             print(f"DELETE stale table {table_id}")
-            self.created += 1
+            self.deleted += 1
 
     def ensure_table(self, spec: dict[str, Any]) -> None:
         table_id = spec["$id"]
@@ -491,17 +493,17 @@ def main() -> int:
         action="store_true",
         help="delete Appwrite tables not listed in TableIds.serverTables (destructive)",
     )
+    parser.add_argument(
+        "--check-contract-only",
+        action="store_true",
+        help="validate the Kotlin table allowlist and schema definitions without Appwrite credentials",
+    )
     parser.add_argument("--endpoint", default=os.environ.get("APPWRITE_ENDPOINT", "https://sgp.cloud.appwrite.io/v1"))
     parser.add_argument("--project", default=os.environ.get("APPWRITE_PROJECT_ID", ""))
     parser.add_argument("--database", default=os.environ.get("APPWRITE_DATABASE_ID", ""))
     parser.add_argument("--api-key", default=os.environ.get("APPWRITE_API_KEY", ""))
     args = parser.parse_args()
-    if not args.project or not args.database or not args.api_key:
-        parser.error("project, database and API key are required")
-    api = Api(args.endpoint, args.project, args.api_key)
-    db = api.call("GET", f"/databases/{urllib.parse.quote(args.database, safe='')}")[1]
-    print(f"DATABASE {db.get('name', args.database)} ({args.database})")
-    provisioner = Provisioner(api, args.database)
+
     specs = normalize_baseline() + EXTRA_TABLES
     specs_by_id: dict[str, dict[str, Any]] = {}
     for spec in specs:
@@ -520,8 +522,18 @@ def main() -> int:
             f"missing_schema={missing_specs}; not_used_by_app={obsolete_specs}"
         )
 
-    for table_id in [str(spec["$id"]) for spec in specs]:
-        provisioner.ensure_table(specs_by_id[table_id])
+    if args.check_contract_only:
+        print(json.dumps({"table_contract": "ok", "tables": len(app_ids)}, separators=(",", ":")))
+        return 0
+
+    if not args.project or not args.database or not args.api_key:
+        parser.error("project, database and API key are required")
+    api = Api(args.endpoint, args.project, args.api_key)
+    db = api.call("GET", f"/databases/{urllib.parse.quote(args.database, safe='')}")[1]
+    print(f"DATABASE {db.get('name', args.database)} ({args.database})")
+    provisioner = Provisioner(api, args.database)
+    for spec in specs:
+        provisioner.ensure_table(spec)
     provisioner.seed_release_row()
     if args.prune_stale_tables:
         provisioner.prune_stale_tables(app_ids)
@@ -530,6 +542,7 @@ def main() -> int:
         "tables": len(specs),
         "created": provisioner.created,
         "existing": provisioner.existing,
+        "deleted": provisioner.deleted,
         "prune_stale_tables": args.prune_stale_tables,
     }, separators=(",", ":")))
     return 0
