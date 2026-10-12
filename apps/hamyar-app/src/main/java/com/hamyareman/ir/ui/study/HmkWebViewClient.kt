@@ -26,6 +26,7 @@ open class HmkWebViewClient(
     private val appContext: Context,
     private val bucketHost: String,
     private val onProblem: (Problem) -> Unit = {},
+    private val confirmUpdates: Boolean = true,
 ) : WebViewClient() {
 
     enum class Problem { KEY_MISSING, CORRUPT, OFFLINE }
@@ -55,14 +56,14 @@ open class HmkWebViewClient(
 
         // هر HTML از همین‌جا freshness check می‌شود. برای document اصلی، UI پیشاپیش
         // همین prepare را انجام داده و recentChecks مانع HEAD تکراری همان لحظه می‌شود.
-        val prepared = LessonCache.prepare(appContext, url)
+        val prepared = LessonCache.prepare(appContext, url, confirmUpdates = confirmUpdates)
         if (prepared == null) {
             if (request.isForMainFrame && isHtml) {
                 lastMessage = MSG_OFFLINE
                 onProblem(Problem.OFFLINE)
                 return errorPage(MSG_OFFLINE)
             }
-            return null
+            return WebResourceResponse("application/octet-stream", null, 503, "Unavailable", passthroughHeaders(), ByteArrayInputStream(ByteArray(0)))
         }
         val wasCached = prepared.freshness == LessonCache.Freshness.CACHED
         if (request.isForMainFrame && isHtml) mainDocumentFromCache = wasCached

@@ -39,7 +39,7 @@ fun BucketImage(model: Any?, contentDescription: String?, modifier: Modifier = M
     }
     Box(modifier, contentAlignment = Alignment.Center) {
         when {
-            missing -> RemoteHtmlPage(BooksMenu.SPACEHOLDER_KEY, confirmUpdates = false)
+            missing -> BucketPlaceholderImage(revision, contentDescription, Modifier.matchParentSize(), contentScale)
             source != null -> CoilImage(
                 (if (model is ImageRequest) model.newBuilder(context) else ImageRequest.Builder(context))
                     .data(source).memoryCacheKey(address + "@" + revision).build(),

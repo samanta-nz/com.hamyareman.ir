@@ -197,6 +197,7 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
                         webViewClient = object : HmkWebViewClient(
                             c.applicationContext,
                             HmkWebViewClient.bucketHost(),
+                            confirmUpdates = confirmUpdates,
                             onProblem = { problem -> android.os.Handler(android.os.Looper.getMainLooper()).post {
                                 error = when (problem) {
                                     HmkWebViewClient.Problem.KEY_MISSING -> "کلید دسترسی محتوا دریافت نشد. دوباره تلاش کنید."
