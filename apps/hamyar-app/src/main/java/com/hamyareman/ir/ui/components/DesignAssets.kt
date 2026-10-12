@@ -70,5 +70,5 @@ internal object DesignAsset {
 
 @Composable
 fun RemoteDesignImage(key: String, modifier: Modifier = Modifier, contentDescription: String? = null, contentScale: ContentScale = ContentScale.Crop) {
-    BucketImage(remember(key) { DesignAsset.remoteUrl(key) }, contentDescription, modifier, contentScale)
+    AsyncImage(remember(key) { DesignAsset.remoteUrl(key) }, contentDescription, modifier, contentScale)
 }
