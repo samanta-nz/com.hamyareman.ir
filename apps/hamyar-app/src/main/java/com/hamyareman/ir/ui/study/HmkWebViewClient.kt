@@ -72,6 +72,8 @@ open class HmkWebViewClient(
             return if (request.isForMainFrame) errorPage(MSG_OFFLINE) else null
         }
 
+        if (!isHtml) return bucketRawResponse(file, path, request.requestHeaders["Range"])
+        if (file.length() > LessonCache.MAX_DECRYPT_BYTES) return errorPage(MSG_TOO_BIG)
         val raw = runCatching { file.readBytes() }.getOrNull()
             ?: return if (request.isForMainFrame) errorPage(MSG_CORRUPT) else null
 

@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.update
 object BucketTransfer {
     data class State(val id: String, val url: String, val done: Long = 0,
         val total: Long = -1, val speed: Long = 0, val paused: Boolean = false,
-        val confirmation: Boolean = false, val failure: Boolean = false)
+        val confirmation: Boolean = false, val failure: Boolean = false, val stopped: Boolean = false)
     class Cancelled : IOException("دانلود متوقف شد")
     private class Control {
         var decision = CountDownLatch(1)
@@ -80,8 +80,12 @@ object BucketTransfer {
     fun pause(id: String) {
         controls[id]?.let { c -> c.paused = !c.paused
             c.at = System.nanoTime()
-            states.update { list -> list.map { if (it.id == id) it.copy(paused = c.paused, speed = 0) else it } }
+            states.update { list -> list.map { if (it.id == id) it.copy(paused = c.paused, speed = 0, stopped = false) else it } }
         }
+    }
+    fun stop(id: String) {
+        controls[id]?.paused = true
+        states.update { list -> list.map { if (it.id == id) it.copy(paused = true, stopped = true, speed = 0) else it } }
     }
     fun cancel(id: String) { controls[id]?.let { it.cancelled = true; it.paused = false; it.decision.countDown() } }
     fun finish(id: String) { controls.remove(id); states.update { list -> list.filterNot { it.id == id } } }
@@ -114,7 +118,7 @@ fun BucketTransferHost() {
                 confirmButton = { TextButton(onClick = { BucketTransfer.decide(current.id, true) }) { Text("تلاش دوباره") } },
                 dismissButton = { TextButton(onClick = { BucketTransfer.decide(current.id, false) }) { Text("توقف") } })
         } else {
-            AlertDialog(onDismissRequest = {}, title = { Text(if (current.paused) "دانلود مکث شده" else "در حال دانلود محتوا") },
+            AlertDialog(onDismissRequest = { if (current.stopped) BucketTransfer.cancel(current.id) }, title = { Text(if (current.stopped) "دانلود متوقف شده" else if (current.paused) "دانلود مکث شده" else "در حال دانلود محتوا") },
                 text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (current.total > 0) LinearProgressIndicator(progress = { (current.done.toFloat() / current.total).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
                     else LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -122,7 +126,7 @@ fun BucketTransferHost() {
                     Text(bytesLabel(current.speed) + " در ثانیه")
                 } },
                 confirmButton = { TextButton(onClick = { BucketTransfer.pause(current.id) }) { Text(if (current.paused) "ادامه" else "مکث") } },
-                dismissButton = { TextButton(onClick = { BucketTransfer.cancel(current.id) }) { Text("توقف") } })
+                dismissButton = { TextButton(onClick = { if (current.stopped) BucketTransfer.cancel(current.id) else BucketTransfer.stop(current.id) }) { Text(if (current.stopped) "بستن" else "توقف") } })
         }
     }
     if (missing != null && current == null) {

@@ -50,6 +50,13 @@ object HtmlCodec {
         require(isWrapped(data)) { "فایل نه HMK1 معتبر است و نه HTML ساده." }
         val key = HtmlMediaKey.get(ctx)
             ?: error("کلید درس روی دستگاه نیست. دوباره وارد شو.")
+        return unwrapWithKey(data, key)
+    }
+
+    internal fun unwrapWithKey(data: ByteArray, key: ByteArray): ByteArray {
+        if (!isWrapped(data) && looksLikeHtml(data)) return data
+        require(isWrapped(data))
+        require(key.size == 32) { "AES-256 requires a 32-byte key" }
         val iv = data.copyOfRange(4, 16)
         val c = Cipher.getInstance("AES/GCM/NoPadding")
         c.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), GCMParameterSpec(128, iv))
