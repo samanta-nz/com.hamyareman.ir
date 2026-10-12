@@ -1,0 +1,53 @@
+name: Reconcile Appwrite schema
+
+on:
+  workflow_dispatch:
+    inputs:
+      prune_stale_tables:
+        description: "Delete tables not referenced by TableIds.serverTables after provisioning"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appwrite-schema-reconcile
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout app source of truth
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate Kotlin-to-schema table contract
+        run: python scripts/provision_appwrite_schema.py --check-contract-only
+
+      - name: Reconcile Appwrite TablesDB
+        env:
+          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1' }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID || '6abb238d000d05730d10' }}
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$APPWRITE_API_KEY" ]]; then
+            echo "::error::Missing APPWRITE_API_KEY repository secret (needs TablesDB read/write permissions)."
+            exit 1
+          fi
+          args=()
+          if [[ "${{ inputs.prune_stale_tables }}" == "true" ]]; then
+            args+=(--prune-stale-tables)
+          fi
+          python scripts/provision_appwrite_schema.py "${args[@]}"
