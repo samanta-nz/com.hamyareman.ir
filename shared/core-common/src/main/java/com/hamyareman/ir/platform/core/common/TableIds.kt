@@ -51,6 +51,8 @@ object TableIds {
     // --- پرامپت ۰۱: حافظه‌ی پیشرفت پلیر ویدیو/صوت ---
     const val LESSON_MEDIA_PROGRESS = "lesson_media_progress"
     const val STUDY_PROGRESS = "study_progress"
+    /** آمار تجمیعی شنیدن/تماشای آموزشی برای هر کاربر و بسته. */
+    const val TEACH_STATS = "teach_stats"
     /** نکات درسی — متن/عنوان‌ها؛ فایل جزوه سینک نمی‌شود. */
     const val LESSON_NOTES = "lesson_notes"
     /** وضعیتِ عمومیِ برنامه (برنامه هفتگی، شیفت، کلاس مجازی، تیک‌ها) — کلید → JSON. */
@@ -86,8 +88,8 @@ object TableIds {
 
     /**
      * همه‌ی جداولی که واقعاً در Appwrite ساخته می‌شوند.
-     * snapshot تاریخی ۲۳ جدول دارد و provisioning نسخهٔ ۲٫۰ هفت جدول runtime را
-     * نیز می‌سازد؛ شمار دقیق را `PrivacyPolicyTest` نگهبانی می‌کند.
+     * این مجموعه مرجع نهایی allowlist سرور است؛ schema provisioner باید دقیقاً
+     * همین شناسه‌ها را بسازد و جدول خارج از این مجموعه را منسوخ بداند.
      */
     val serverTables: Set<String> = setOf(
         PROFILES, STUDENT_PROFILES, USER_SETTINGS, FATHER_LINKS, PAIRING_CODES,
@@ -95,7 +97,7 @@ object TableIds {
         WEEKLY_SUMMARIES, ROUTINE_BLOCKS, WATER_LOGS, EXERCISE_LOGS, BADGES,
         LESSONS, QUIZZES, RECIPES, EXERCISES, LEARNING_NODES, ART_PROMPTS,
         LESSON_MEDIA_PROGRESS, WELLNESS_MOVES, SKETCH_REFERENCES, WELLNESS_LOGS,
-        STUDY_PROGRESS, LESSON_NOTES, APP_STATE, USERS, SUBSCRIPTION_ORDERS, INSTALLMENTS,
+        STUDY_PROGRESS, TEACH_STATS, LESSON_NOTES, APP_STATE, USERS, SUBSCRIPTION_ORDERS, INSTALLMENTS,
         FREE_BOOKS, FREE_BOOK_USER_STATE, FREE_BOOK_REQUESTS, BOOK_COMMENTS, BOOK_COMMENT_REACTIONS,
         MODERATION_TERMS,
     )
