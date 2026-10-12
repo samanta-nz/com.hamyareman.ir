@@ -125,7 +125,15 @@ private fun syncCover(context: Context, key: String): String? {
             syncedThisProcess.add(key)
             return local
         }
-        if (code !in 200..299) return local
+        if (code !in 200..299) {
+            // Older graphic uploads may still be PNG. Preserve the cached WebP when present;
+            // on a first install, try the matching PNG before giving up.
+            if (local != null) return local
+            if (key.endsWith(".webp")) {
+                return syncCover(context, key.removeSuffix(".webp") + ".png")
+            }
+            return null
+        }
 
         val etag = conn.getHeaderField("ETag").orEmpty()
         val tmp = File(target.path + ".tmp")
