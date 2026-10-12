@@ -59,120 +59,29 @@ object StudyPdfCache {
         val target = file(ctx, cacheId)
         val candidates = urls.distinct().filter { it.isNotBlank() }
         require(candidates.isNotEmpty()) { "برای PDF نشانی سرور وجود ندارد." }
-        val lock = locks.getOrPut(cacheId) { Any() }
-
-        synchronized(lock) {
-            val hasCache = isValid(target)
-            val savedMeta = if (hasCache) readMeta(target) else null
-            if (hasCache && savedMeta != null &&
-                System.currentTimeMillis() - savedMeta.checkedAt < CHECK_TTL_MS
-            ) return target
-
-            // کش با ETag ذخیره‌شده: یک GET شرطی (Range 0-0 + If-None-Match). ۳۰۴ = بدون بدنه؛
-            // تغییر = ۲۰۶ با یک بایت و ETag جدید. بدون ETag یا بدون پشتیبانی سرور، probe قبلی.
-            val probe = if (hasCache && savedMeta != null && savedMeta.etag.isNotBlank()) {
-                when (val conditional = conditionalProbe(candidates, savedMeta)) {
-                    Probe.Unavailable -> probeRemote(candidates)
-                    else -> conditional
-                }
-            } else {
-                probeRemote(candidates)
-            }
+        return synchronized(locks.getOrPut(cacheId) { Any() }) {
+            val cached = isValid(target)
+            val saved = if (cached) readMeta(target) else null
+            val probe = if (saved != null) conditionalProbe(candidates, saved) else probeRemote(candidates)
             when (probe) {
-                is Probe.Missing -> throw RemoteMissingException(probe.url)
-                Probe.Unavailable -> if (hasCache) return target
+                is Probe.Missing -> { BucketTransfer.unavailable(probe.url); throw RemoteMissingException(probe.url) }
+                Probe.Unavailable -> {
+                    if (cached) return@synchronized target
+                    throw IOException("اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.")
+                }
                 is Probe.Available -> {
-                    if (hasCache && (probe.notModified || sameContent(target, probe.url, savedMeta, probe.meta))) {
-                        writeMeta(target, probe.meta.copy(checkedAt = System.currentTimeMillis()))
-                        return target
-                    }
-                    if (hasCache) File(target.absolutePath + ".part").delete()
-                }
-            }
-
-            val priorMeta = (probe as? Probe.Available)?.meta
-            val priorMetaUrl = (probe as? Probe.Available)?.url
-            val part = File(target.absolutePath + ".part")
-            var last: Throwable? = null
-            var confirmedMissing: String? = null
-
-            for (url in candidates) {
-                var attempts = 0
-                while (attempts < 7) {
-                    val offset = part.takeIf { it.isFile }?.length() ?: 0L
-                    var conn: HttpURLConnection? = null
+                    if (cached && (probe.notModified || sameContent(target, probe.url, saved, probe.meta))) return@synchronized target
+                    if (cached && !BucketTransfer.confirm(probe.url)) return@synchronized target
                     try {
-                        conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                            connectTimeout = CONNECT_TIMEOUT_MS
-                            readTimeout = READ_TIMEOUT_MS
-                            instanceFollowRedirects = true
-                            requestMethod = "GET"
-                            setRequestProperty("Accept-Encoding", "identity")
-                            setRequestProperty("Cache-Control", "no-cache, no-store, max-age=0")
-                            setRequestProperty("Pragma", "no-cache")
-                            if (offset > 0L) setRequestProperty("Range", "bytes=" + offset + "-")
-                        }
-                        val status = conn.responseCode
-                        if (status == 403 || status == 404 || status == 410) {
-                            confirmedMissing = url
-                            part.delete()
-                            break
-                        }
-                        if (status !in 200..299) throw IOException("HTTP " + status)
-
-                        val append = offset > 0L && status == 206
-                        if (offset > 0L && !append) {
-                            part.delete()
-                            attempts++
-                            continue
-                        }
-                        val base = if (append) offset else 0L
-                        val total = conn.contentLengthLong.let { if (it > 0L) base + it else -1L }
-                        FileOutputStream(part, append).use { output ->
-                            conn.inputStream.use { input ->
-                                val buffer = ByteArray(64 * 1024)
-                                var written = base
-                                while (true) {
-                                    val read = input.read(buffer)
-                                    if (read <= 0) break
-                                    output.write(buffer, 0, read)
-                                    written += read
-                                    if (total > 0L) {
-                                        onProgress(((written * 100L) / total).toInt().coerceIn(0, 100))
-                                    }
-                                }
-                                output.fd.sync()
-                            }
-                        }
-                        if (total > 0L && part.length() < total) {
-                            throw IOException("دانلود ناقص " + part.length() + "/" + total)
-                        }
-                        if (!isValid(part)) throw IOException("PDF ناقص یا نامعتبر است")
-                        if (!replacePreservingPrevious(part, target)) {
-                            throw IOException("جایگزینی امن PDF ناموفق بود.")
-                        }
-                        val freshMeta = if (priorMeta != null && priorMetaUrl == url) priorMeta else head(url)
-                        if (freshMeta != null) writeMeta(target, freshMeta.copy(url = url))
+                        val result = BucketByteDownloader.download(probe.url, target, validate = ::isValid,
+                            onProgress = { done, total -> if (total > 0) onProgress((done * 100 / total).toInt().coerceIn(0, 100)) })
+                        writeMeta(target, RemoteMeta(result.length, result.etag, "", url = probe.url))
                         onProgress(100)
-                        return target
-                    } catch (error: Throwable) {
-                        last = error
-                        attempts = if (error is IOException && error.message.orEmpty().startsWith("HTTP 4")) {
-                            7
-                        } else attempts + 1
-                        if (!NetState.isOnline(ctx)) NetState.awaitOnlineBlocking(ctx)
-                        if (attempts < 7) Thread.sleep((400L * attempts).coerceAtMost(3_000L))
-                    } finally {
-                        runCatching { conn?.disconnect() }
-                    }
+                        target
+                    } catch (missing: RemoteMissingException) { BucketTransfer.unavailable(missing.missingUrl); throw missing }
+                    catch (error: IOException) { if (cached && isValid(target)) target else throw error }
                 }
-                if (confirmedMissing != null) break
             }
-
-            if (confirmedMissing != null) throw RemoteMissingException(confirmedMissing!!)
-            if (hasCache && isValid(target)) return target
-            part.delete()
-            throw IOException(last?.message ?: "دانلود PDF کامل نشد.", last)
         }
     }
 
@@ -233,7 +142,7 @@ object StudyPdfCache {
                         lastModified = conn.getHeaderField("Last-Modified").orEmpty().trim(),
                     ))
                 }
-                if (status == 403 || status == 404 || status == 410) sawMissing = url
+                if (status == 404 || status == 410) sawMissing = url
                 else sawUnavailable = true
             } catch (_: Throwable) {
                 sawUnavailable = true
@@ -270,14 +179,14 @@ object StudyPdfCache {
                         lastModified = conn.getHeaderField("Last-Modified").orEmpty().trim(),
                     ))
                 }
-                if (status == 403 || status == 404 || status == 410) sawMissing = url
+                if (status == 404 || status == 410) sawMissing = url
             } catch (_: Throwable) {
                 // از «فایل موجود نیست» تفکیک می‌شود.
             } finally {
                 runCatching { conn.disconnect() }
             }
         }
-        return sawMissing?.let { Probe.Missing(it) } ?: Probe.Unavailable
+        return if (sawMissing != null && !sawUnavailable) Probe.Missing(sawMissing!!) else Probe.Unavailable
     }
 
     /**
@@ -305,7 +214,7 @@ object StudyPdfCache {
                     setRequestProperty("Accept-Encoding", "identity")
                     setRequestProperty("Cache-Control", "no-cache")
                     setRequestProperty("Range", "bytes=0-0")
-                    if (sameOrigin) setRequestProperty("If-None-Match", saved.etag)
+                    if (sameOrigin && saved.etag.isNotBlank()) setRequestProperty("If-None-Match", saved.etag)
                 }
             }.getOrNull()
             if (conn == null) {
@@ -336,7 +245,7 @@ object StudyPdfCache {
                     val unchanged = sameOrigin && etag.isNotBlank() && etag == saved.etag
                     return Probe.Available(url, meta, notModified = unchanged)
                 }
-                if (status == 403 || status == 404 || status == 410) sawMissing = url
+                if (status == 404 || status == 410) sawMissing = url
                 else sawUnavailable = true
             } catch (_: Throwable) {
                 sawUnavailable = true

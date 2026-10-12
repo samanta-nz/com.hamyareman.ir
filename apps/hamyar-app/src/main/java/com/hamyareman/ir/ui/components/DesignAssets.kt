@@ -68,115 +68,18 @@ internal object DesignAsset {
         "file:///android_asset/" + key.removePrefix("assets/")
 }
 
-private suspend fun readable(url: String): Boolean = withContext(Dispatchers.IO) {
-    runCatching {
-        val c = URL(url).openConnection() as HttpURLConnection
-        c.connectTimeout = 4_000
-        c.readTimeout = 4_000
-        c.instanceFollowRedirects = true
-        c.requestMethod = "GET"
-        c.setRequestProperty("Range", "bytes=0-1")
-        val ok = c.responseCode == 200 || c.responseCode == 206
-        c.disconnect()
-        ok
-    }.getOrDefault(false)
-}
-
-private val syncedThisProcess = ConcurrentHashMap.newKeySet<String>()
-
-private fun coverFile(context: Context, key: String): File {
-    val dir = File(context.filesDir, "design-covers").apply { mkdirs() }
-    return File(dir, key.substringAfterLast('/'))
-}
-
-/** نسخهٔ محلیِ موجود (اگر باشد) بدون هیچ شبکه‌ای. */
-private fun localCoverUri(context: Context, key: String): String? {
-    val file = coverFile(context, key)
-    return file.takeIf { it.exists() && it.length() > 1024L }?.toURI()?.toString()
-}
-
-/**
- * جلد را از باکت می‌گیرد و روی دیسک نگه می‌دارد. هر جلد در هر اجرای اپ یک‌بار با GET شرطی
- * (`If-None-Match`) اعتبارسنجی می‌شود: ۳۰۴ یعنی همان نسخه، ۲۰۰ یعنی فایل تازه در همان آدرس.
- * اشکال شبکه با نسخهٔ محلیِ موجود، همان نسخه را برمی‌گرداند؛ بدون نسخهٔ محلی `null`.
- */
-private fun syncCover(context: Context, key: String): String? {
-    val target = coverFile(context, key)
-    val etagFile = File(target.path + ".etag")
-    val local = localCoverUri(context, key)
-    if (local != null && syncedThisProcess.contains(key)) return local
-
-    var conn: HttpURLConnection? = null
-    try {
-        conn = (URL(DesignAsset.remoteUrl(key)).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 4_000
-            readTimeout = 15_000
-            instanceFollowRedirects = true
-            useCaches = false
-            setRequestProperty("Accept-Encoding", "identity")
-            setRequestProperty("Cache-Control", "no-cache")
-            if (local != null) {
-                val etag = runCatching { etagFile.readText().trim() }.getOrDefault("")
-                if (etag.isNotEmpty()) setRequestProperty("If-None-Match", etag)
-            }
-        }
-        val code = conn.responseCode
-        if (code == HttpURLConnection.HTTP_NOT_MODIFIED && local != null) {
-            syncedThisProcess.add(key)
-            return local
-        }
-        if (code !in 200..299) return local
-
-        val etag = conn.getHeaderField("ETag").orEmpty()
-        val tmp = File(target.path + ".tmp")
-        runCatching { tmp.delete() }
-        conn.inputStream.use { input ->
-            FileOutputStream(tmp).use { output -> input.copyTo(output) }
-        }
-        if (tmp.length() <= 1024L) {
-            tmp.delete()
-            return local
-        }
-        if (!tmp.renameTo(target)) {
-            tmp.copyTo(target, overwrite = true)
-            tmp.delete()
-        }
-        runCatching { etagFile.writeText(etag) }
-        syncedThisProcess.add(key)
-        return localCoverUri(context, key)
-    } catch (_: Throwable) {
-        return local
-    } finally {
-        runCatching { conn?.disconnect() }
-    }
-}
-
 @Composable
-fun RemoteDesignImage(
-    key: String,
-    modifier: Modifier = Modifier,
-    contentDescription: String? = null,
-    contentScale: ContentScale = ContentScale.Crop,
-) {
-    val remote = remember(key) { DesignAsset.remoteUrl(key) }
-    val embedded = remember(key) { DesignAsset.isEmbeddedBook(key) }
+fun RemoteDesignImage(key: String, modifier: Modifier = Modifier, contentDescription: String? = null, contentScale: ContentScale = ContentScale.Crop) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    var source by remember(key) {
-        mutableStateOf<Any?>(if (embedded) localCoverUri(context, key) else remote)
-    }
-
+    val remote = remember(key) { DesignAsset.remoteUrl(key) }
+    val file = com.hamyareman.ir.ui.study.LessonCache.fileFor(context, remote)
+    var revision by remember(key) { mutableStateOf(file.lastModified()) }
+    var ready by remember(key) { mutableStateOf(file.takeIf { it.exists() }) }
     LaunchedEffect(key) {
-        source = if (embedded) {
-            withContext(Dispatchers.IO) { syncCover(context, key) } ?: remote
-        } else {
-            if (readable(remote)) remote else DesignAsset.localUri(key)
-        }
+        val result = withContext(Dispatchers.IO) { com.hamyareman.ir.ui.study.LessonCache.prepare(context, remote) }
+        ready = result?.file; revision = ready?.lastModified() ?: 0L
     }
-
-    AsyncImage(
-        model = source,
-        contentDescription = contentDescription,
-        contentScale = contentScale,
-        modifier = modifier,
-    )
+    AsyncImage(model = coil.request.ImageRequest.Builder(context).data(ready)
+        .memoryCacheKey(remote + "@" + revision).build(), contentDescription = contentDescription,
+        contentScale = contentScale, modifier = modifier)
 }

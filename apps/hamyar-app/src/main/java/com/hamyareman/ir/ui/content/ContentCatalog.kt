@@ -39,6 +39,7 @@ object ContentCatalog {
     @Volatile private var itemsById: Map<String, ContentItem> = emptyMap()
     @Volatile private var mirrorKeys: Map<String, String> = emptyMap()
     @Volatile private var relativeFiles: Map<String, String> = emptyMap()
+    @Volatile private var pathFiles: Map<String, String> = emptyMap()
     @Volatile private var loaded = false
 
     fun load(ctx: Context) {
@@ -112,7 +113,8 @@ object ContentCatalog {
                 cats = cs.sortedBy { it.order }
                 itemsById = map
                 mirrorKeys = mirrors
-                relativeFiles = map.values.associate { it.key.substringAfterLast('/') to it.id }
+                pathFiles = map.values.associate { it.key to it.id }
+                relativeFiles = map.values.groupBy { it.key.substringAfterLast('/') }.filterValues { it.size == 1 }.mapValues { it.value.first().id }
                 loaded = true
             }
         }
@@ -169,6 +171,8 @@ object ContentCatalog {
     fun keyFor(fileId: String): String? = mirrorKeys[fileId]
 
     /** مقصد لینک نسبی در HTMLهای آموزشی، مثل 02-handwriting.html. */
+    fun itemIdForUrl(url: String): String? = pathFiles[android.net.Uri.parse(url).path.orEmpty().trimStart('/')]
+
     fun itemIdForRelativeFile(fileName: String): String? =
         relativeFiles[fileName.substringBefore('?').substringBefore('#').substringAfterLast('/')]
 

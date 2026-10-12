@@ -81,7 +81,7 @@ fun BookDetailScreen(
     AppTopBar(title = module?.title ?: "کتاب", onBack = onBack)
     HubBody {
         if (module == null) {
-            Text("این کتاب هنوز محتوایی ندارد.")
+            BookNodeScreen("کتاب", BucketRoutes.key("book-" + bookCode), onBack = onBack)
             return@HubBody
         }
 
@@ -282,7 +282,7 @@ private fun LessonCard(
                 // «این درس پیدا نشد.» می‌رفت. حالا همان‌جا شفاف می‌گوییم که متنِ درس
                 // هنوز آماده نشده، تا دکمه‌ای که به بن‌بست می‌رسد نشان داده نشود.
                 Text(
-                    "📖 متنِ این درس هنوز آماده نشده — فهرست و عنوانش سرِ جایش است و به‌زودی اضافه می‌شود.",
+                    "محتوای درس از باکت دریافت می‌شود.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -367,7 +367,7 @@ private fun BookMenuNode(
         listOf("حکایت", "شعرخوانی", "روانخوانی").any(normalized::startsWith)
     val farsiFree = bookCode == "C903" && normalized.startsWith("فصلآزاد")
     val curated = farsiPraise || farsiReading || farsiFree
-    val expandable = node.expandable || curated
+    val expandable = node.expandable
     val open = path in openPaths
     val indent = (depth * 14).dp
     val specialPackId = if (curated) {
@@ -406,7 +406,6 @@ private fun BookMenuNode(
                     style = if (depth == 0) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
                     modifier = Modifier.weight(1f),
                 )
-                if (!expandable && !node.hasContent) SoonBadge()
             }
 
             AnimatedVisibility(
@@ -419,31 +418,10 @@ private fun BookMenuNode(
                         LeafRow(node.title, node.key, node.ready, depth + 1, "", onOpen)
                     }
 
-                    val rawTabs = when {
-                        farsiPraise -> listOf(
-                            BooksMenu.Tab("روخوانی", null, null),
-                            BooksMenu.Tab("نکات ادبی", null, null),
-                            BooksMenu.Tab("نکات تکمیلی", null, null),
-                            BooksMenu.Tab("کتاب درسی", node.key, node.ready),
-                        )
-                        farsiReading -> listOf(
-                            BooksMenu.Tab("خوانش", null, null),
-                            BooksMenu.Tab("نکات ادبی", null, null),
-                            BooksMenu.Tab("کتاب درسی", node.key, node.ready),
-                        )
-                        farsiFree -> listOf(
-                            BooksMenu.Tab("راهنما", null, null),
-                            BooksMenu.Tab("کتاب درسی", node.key, node.ready),
-                        )
-                        else -> node.tabs
-                    }
-
-                    val tabs = if (bookCode == "C906") scienceExamTabs(rawTabs) else rawTabs
+                    val tabs = node.tabs
                     tabs.forEach { tab ->
                         val label = tab.title.trim()
                         when {
-                            specialPackId != null && (label == "روخوانی" || label == "خوانش") ->
-                                onOpen(Screen.LessonTeach.of(specialPackId), label, "")
                             label == "تدریس" && node.teachKey != null ->
                                 LeafRow(label, node.teachKey, true, depth + 1, node.audioKey.orEmpty(), onOpen)
                             else ->
@@ -491,7 +469,6 @@ private fun LeafRow(
             modifier = Modifier.weight(1f),
             color = MaterialTheme.colorScheme.onSurface,
         )
-        if (ready != true || key.isNullOrBlank()) SoonBadge()
     }
 }
 
@@ -525,7 +502,7 @@ private fun onSpecialTab(
 @Composable
 private fun SoonBadge() {
     Text(
-        "به‌زودی",
+        "محتوا",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier

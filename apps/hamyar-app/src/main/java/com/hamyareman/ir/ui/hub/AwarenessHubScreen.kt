@@ -250,34 +250,5 @@ fun AwarenessHubScreen(nav: NavController, onBack: () -> Unit) {
  */
 @Composable
 fun ReadingCornerScreen(onBack: () -> Unit) {
-    val context = LocalContext.current
-    val store = remember { LocalStore(context, "hamyar_reading") }
-    var title by remember { mutableStateOf("") }
-    val books = remember { store.getStringSet("my_shelf").filter { it.isNotBlank() }.sorted() }
-
-    HubBody {
-        HubHeader("قفسه‌ی من 📖", "مطالعه‌ی غیردرسی — دنیای خودت")
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("نام کتابی که می‌خواهی بخوانی…") },
-            modifier = Modifier.fillMaxWidth())
-        OutlinedButton(onClick = {
-            if (title.isNotBlank()) {
-                store.putStringSet("my_shelf", store.getStringSet("my_shelf") + title.trim())
-                title = ""
-            }
-        }) { Text("به قفسه اضافه کن") }
-
-        if (books.isEmpty()) {
-            Text("قفسه‌ات هنوز خالی است؛ اولین کتاب را اضافه کن ✨", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else {
-            books.forEach { Card(Modifier.fillMaxWidth().padding(vertical = 3.dp)) { Text("📗 $it", Modifier.padding(12.dp)) } }
-        }
-
-        Text(
-            "به‌زودی: پلیر مخصوص کتاب‌ها، هدف‌گذاری صفحات روزانه و پیشنهاد کتاب — این ماژول کامل جدا توسعه داده می‌شود.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+    com.hamyareman.ir.ui.study.BookNodeScreen("مطالعه آزاد", com.hamyareman.ir.ui.study.BucketRoutes.key("reading-corner"), onBack = onBack)
 }

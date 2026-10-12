@@ -80,17 +80,19 @@ fun BookNodeScreen(
         if (BooksMenu.isPdf(effectiveKey)) {
             BookPdfPages(effectiveKey) { missing = true }
         } else {
-            RemoteHtmlPage(effectiveKey, audioKey) { missing = true }
+            RemoteHtmlPage(effectiveKey, audioKey, onMissing = { missing = true })
         }
     }
 }
 
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
-private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}) {
+internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}, onPageReady: (android.webkit.WebView) -> Unit = {}) {
     val context = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
+    val appearance = com.hamyareman.ir.ui.appearance.LocalUiPrefs.current
     val url = ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY })
+    val webRef = remember(url) { arrayOfNulls<android.webkit.WebView>(1) }
     var pageReadyUrl by remember(url) {
         mutableStateOf(url.takeIf { LessonCache.isCached(context, it) })
     }
@@ -103,6 +105,7 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
     var reloadToken by remember(url) { mutableIntStateOf(0) }
 
     SecureWebEffect()
+    ManagedWebMediaEffect { webRef[0] }
 
     LaunchedEffect(url, retry) {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -113,10 +116,6 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
         }
 
         withContext(Dispatchers.IO) {
-            if (!HtmlMediaKey.fetch(context, container.tables)) {
-                handler.post { error = "کلید دسترسی محتوا دریافت نشد. دوباره وارد حساب شو." }
-                return@withContext
-            }
             val prepared = LessonCache.prepare(
                 ctx = context,
                 url = url,
@@ -151,7 +150,7 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
                     }
                     prepared == null && !hasCache -> {
                         pageReadyUrl = null
-                        error = "دریافت این محتوا ممکن نشد."
+                        error = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
                         transferLoading = false
                     }
                     prepared == null && hasCache -> {
@@ -177,6 +176,11 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
             AndroidView(
                 factory = { c ->
                     ZoomResetWebView(c).apply {
+                        webRef[0] = this
+                        installHamyarAppearanceBridge(appearance)
+                        installManagedMediaLifecycle()
+                        settings.allowFileAccess = false
+                        settings.allowContentAccess = false
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.cacheMode = WebSettings.LOAD_NO_CACHE
@@ -189,10 +193,21 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
                         webViewClient = object : HmkWebViewClient(
                             c.applicationContext,
                             HmkWebViewClient.bucketHost(),
+                            onProblem = { problem -> android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                error = when (problem) {
+                                    HmkWebViewClient.Problem.KEY_MISSING -> "کلید دسترسی محتوا دریافت نشد. دوباره تلاش کنید."
+                                    HmkWebViewClient.Problem.CORRUPT -> "فایل محتوا معتبر نیست. دوباره تلاش کنید."
+                                    HmkWebViewClient.Problem.OFFLINE -> "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
+                                }
+                                transferLoading = false
+                            } },
                         ) {
                             override fun onPageFinished(view: android.webkit.WebView, loadedUrl: String) {
                                 super.onPageFinished(view, loadedUrl)
                                 transferLoading = false
+                                view.bindManagedMediaLifecycle()
+                                view.publishHamyarAppearance(appearance.darkMode, appearance.darkTheme)
+                                onPageReady(view)
                                 if (audioKey.isNotBlank()) {
                                     view.evaluateJavascript(
                                         """
@@ -220,7 +235,6 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
                                 }
                             }
                         }
-                        loadUrl(url)
                     }
                 },
                 update = { view ->
@@ -231,7 +245,7 @@ private fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: 
                     }
                 },
                 modifier = Modifier.fillMaxSize(),
-                onRelease = { it.destroy() },
+                onRelease = { it.stopManagedMedia(); webRef[0] = null; it.destroy() },
             )
         }
 
@@ -299,7 +313,12 @@ private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
     }
 
     LaunchedEffect(cacheId, retry) {
-        state = BookPdfState.Loading
+        val previous = StudyPdfCache.file(context, cacheId)
+        if (StudyPdfCache.isValid(previous)) {
+            val local = withContext(Dispatchers.IO) { PdfRenderer(ParcelFileDescriptor.open(previous, ParcelFileDescriptor.MODE_READ_ONLY)) }
+            synchronized(lock) { renderer?.close(); renderer = local }
+            state = BookPdfState.Ready(local.pageCount)
+        } else state = BookPdfState.Loading
         progress = 0
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val result = withContext(Dispatchers.IO) {
@@ -313,7 +332,7 @@ private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
             }
         }
         result.onSuccess { pdf ->
-            synchronized(lock) { renderer = pdf }
+            synchronized(lock) { renderer?.close(); renderer = pdf }
             state = BookPdfState.Ready(pdf.pageCount)
         }.onFailure { failure ->
             val message = failure.message?.take(180) ?: "دریافت این فایل ممکن نشد."

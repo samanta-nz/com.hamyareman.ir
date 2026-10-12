@@ -1,0 +1,33 @@
+name: Verify bucket content 3.0.8
+on:
+  push:
+    branches: [codex/bucket-3.0.8]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Validate all bucket routes
+        run: python3 scripts/audit_bucket_routes.py
+      - name: Test and build
+        run: ./gradlew --console=plain :core-common:testDebugUnitTest :feature-study:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Release
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bucket-3.0.8-verification
+          path: |
+            apps/hamyar-app/build/outputs/apk/p09/release/*.apk
+            **/build/reports/tests/**
+            **/build/test-results/**

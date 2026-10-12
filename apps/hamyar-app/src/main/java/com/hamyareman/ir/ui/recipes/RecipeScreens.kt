@@ -98,56 +98,5 @@ fun RecipesScreen(onBack: () -> Unit, onDetail: (String) -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailScreen(recipeId: String, onBack: () -> Unit) {
-    val container = LocalAppContainer.current
-    var recipe by remember { mutableStateOf<Recipe?>(null) }
-
-    LaunchedEffect(recipeId) {
-        recipe = container.catalog.recipes().firstOrNull { it.id == recipeId }
-    }
-
-    val current = recipe
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar(current?.title ?: "دستور", onBack)
-        if (current == null) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("این دستور پیدا نشد. اگر آنلاین نیستی، بعداً دوباره امتحان کن.")
-                PrimaryButton("بازگشت", onBack)
-            }
-            return@Column
-        }
-
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AssistChip(onClick = { }, label = { Text("${current.minutes} دقیقه") })
-                AssistChip(onClick = { }, label = { Text("${current.servings} نفره") })
-                AssistChip(onClick = { }, label = { Text(current.difficulty) })
-            }
-
-            Text("مواد لازم", style = MaterialTheme.typography.titleMedium)
-            current.ingredients.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-
-            Spacer(Modifier.height(4.dp))
-            Text("طرز تهیه", style = MaterialTheme.typography.titleMedium)
-            current.steps.forEachIndexed { i, step ->
-                Text("${i + 1}) $step", style = MaterialTheme.typography.bodyMedium)
-            }
-
-            if (current.tip.isNotBlank()) {
-                SectionCard("نکته‌ی زهرا", current.tip) { }
-            }
-
-            val cookedLabel = container.store.getString(COOKED_KEY + current.id)
-                .let { if (it.isEmpty()) null else JalaliDate.formatFaLong(it) }
-            PrimaryButton(if (cookedLabel == null) "پختمش ✅" else "پختمش ✅ ($cookedLabel)") {
-                container.store.putString(COOKED_KEY + current.id, JalaliDate.todayIso())
-                onBack()
-            }
-        }
-    }
+    com.hamyareman.ir.ui.study.BookNodeScreen("دستور پخت", com.hamyareman.ir.ui.study.BucketRoutes.key("recipe-" + recipeId), onBack = onBack)
 }

@@ -74,7 +74,7 @@ fun ContentHubScreen(onBack: () -> Unit, onCategory: (String) -> Unit) {
                         Column(Modifier.weight(1f)) {
                             Text(c.title, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                if (n > 0) faNum(n) + " صفحه" else "به‌زودی",
+                                if (n > 0) faNum(n) + " صفحه" else "محتوا",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -95,6 +95,10 @@ fun ContentCategoryScreen(cat: String, onBack: () -> Unit, onOpen: (String) -> U
     val meta = remember(cat) { catalog.categories().firstOrNull { it.id == cat } }
     val gender = StudentProfileState.gender
     val items = remember(cat, gender) { catalog.itemsOf(cat, gender) }
+    if (items.isEmpty()) {
+        com.hamyareman.ir.ui.study.BookNodeScreen(meta?.title ?: "محتوا", com.hamyareman.ir.ui.study.BucketRoutes.key("category-" + cat), onBack = onBack)
+        return
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         AppTopBar(meta?.title ?: "محتوا", onBack)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -144,6 +148,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     var reloadToken by remember(activeId) { mutableStateOf(0) }
     val catalog = remember(ctx) { ContentCatalog.apply { load(ctx) } }
     val item = catalog.item(activeId)
+    if (item == null) {
+        com.hamyareman.ir.ui.study.BookNodeScreen("محتوا", com.hamyareman.ir.ui.study.BucketRoutes.key(activeId), onBack = onBack)
+        return
+    }
     val initialUrl = remember(activeId, item?.key) {
         item?.key?.let { com.hamyareman.ir.ui.study.ServerResolver.internal(it) }
     }
@@ -183,16 +191,6 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
         }
 
         withContext(Dispatchers.IO) {
-            val keyReady = com.hamyareman.ir.ui.study.HtmlMediaKey.fetch(ctx, container.tables)
-            if (!keyReady) {
-                handler.post {
-                    if (!hasCache) {
-                        error = "کلید دسترسی در دسترس نیست. دوباره وارد حساب شو."
-                    }
-                }
-                return@withContext
-            }
-
             val prepared = com.hamyareman.ir.ui.study.LessonCache.prepare(
                 ctx = ctx,
                 url = url,
@@ -292,11 +290,9 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                                 // درس بعدی که کاربر با لینک نسبی به آن رفته را در وضعیت اپ
                                 // ثبت می‌کنیم. tag هم همین‌جا به‌روز می‌شود تا update()
                                 // صفحه‌ای را که همین الان بار شده دوباره لود نکند.
-                                view.tag = url.substringBefore('#')
+                                view.tag = url.substringBefore('#') + "#" + reloadToken
                                 refreshing = false
-                                ContentCatalog.itemIdForRelativeFile(
-                                    url.substringBefore('#').substringBefore('?').substringAfterLast('/'),
-                                )?.let { if (it != activeId) activeId = it }
+                                ContentCatalog.itemIdForUrl(url)?.let { if (it != activeId) activeId = it }
                             }
                         }
                         installManagedMediaLifecycle()

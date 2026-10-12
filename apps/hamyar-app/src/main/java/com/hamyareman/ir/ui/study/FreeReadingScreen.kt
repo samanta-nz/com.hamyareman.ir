@@ -401,7 +401,7 @@ private fun FreeAudioReader(book: FreeStudyBook) {
                 val url = StudyMedia.viewUrl(book.htmlKey)
                 val handler = android.os.Handler(android.os.Looper.getMainLooper())
                 withContext(Dispatchers.IO) {
-                    if (!HtmlMediaKey.fetch(ctx, container.tables)) return@withContext
+                    // Key is requested only when a wrapped payload is intercepted.
 
                     val prepared = LessonCache.prepare(
                         ctx = ctx,
@@ -635,10 +635,6 @@ private fun FreeHtmlReader(book: FreeStudyBook) {
         if (url.isBlank()) return@LaunchedEffect
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         withContext(Dispatchers.IO) {
-            if (!HtmlMediaKey.fetch(ctx, container.tables)) {
-                handler.post { readyUrl = null }
-                return@withContext
-            }
             val prepared = LessonCache.prepare(
                 ctx = ctx,
                 url = url,

@@ -88,6 +88,7 @@ open class HmkWebViewClient(
             return if (request.isForMainFrame) errorPage(MSG_TOO_BIG) else null
         }
 
+        if (!plainHtml && HtmlCodec.hasMagic(raw) && HtmlMediaKey.get(appContext) == null) refreshKey()
         val plain = if (plainHtml) raw else decryptTwice(url, file, raw)
         if (plain == null) {
             return if (request.isForMainFrame) errorPage(lastMessage) else null
@@ -105,6 +106,9 @@ open class HmkWebViewClient(
     private fun decryptTwice(url: String, file: File, first: ByteArray): ByteArray? {
         runCatching { HtmlCodec.unwrap(appContext, first) }.onSuccess { return it }
 
+        if (refreshKey()) {
+            runCatching { HtmlCodec.unwrap(appContext, first) }.onSuccess { return it }
+        }
         if (HtmlMediaKey.get(appContext) == null) {
             lastMessage = MSG_NO_KEY
             onProblem(Problem.KEY_MISSING)
@@ -125,6 +129,11 @@ open class HmkWebViewClient(
         onProblem(Problem.CORRUPT)
         return null
     }
+
+    private fun refreshKey(): Boolean = runCatching {
+        val app = appContext.applicationContext as? com.hamyareman.ir.HamyarApplication ?: return false
+        kotlinx.coroutines.runBlocking { HtmlMediaKey.fetch(appContext, app.container.tables) }
+    }.getOrDefault(false)
 
     @Volatile private var lastMessage: String = MSG_CORRUPT
     @Volatile private var mainDocumentFromCache: Boolean = false

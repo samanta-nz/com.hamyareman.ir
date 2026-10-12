@@ -94,43 +94,7 @@ fun LearningHomeScreen(nav: NavController) {
 @OptIn(UnstableApi::class)
 @Composable
 fun LessonScreen(lessonId: String, onBack: () -> Unit, onQuiz: (String) -> Unit) {
-    val container = LocalAppContainer.current
-    var lesson by remember { mutableStateOf<Lesson?>(null) }
-
-    LaunchedEffect(lessonId) {
-        lesson = container.catalog.lesson(lessonId)
-        // «خوانده‌شدن» درس؛ پایه‌ی نمودار پیشرفت و استریک مطالعه.
-        if (lesson != null) markLessonRead(container.store, lessonId)
-    }
-
-    val current = lesson ?: return
-
-    // پرامپت ۰۱: اگر درس رسانه (ویدیو/صوت) دارد → صفحه‌ی پلیر اختصاصی نشان داده شود.
-    if (current.videoUrl.isNotBlank() || current.audioUrl.isNotBlank()) {
-        LessonPlayerScreen(lesson = current, onBack = onBack)
-        return
-    }
-
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar(current.title, onBack)
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(
-                current.subject + if (current.grade > 0) " · پایه ${current.grade}" else "",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            current.body.split("\n").filter { it.isNotBlank() }.forEach { paragraph ->
-                Text(paragraph, style = MaterialTheme.typography.bodyLarge)
-            }
-            PrimaryButton("آزمون این درس") { onQuiz(current.id) }
-            PrimaryButton("بازگشت", onBack)
-        }
-    }
+    com.hamyareman.ir.ui.study.BookNodeScreen("درس", com.hamyareman.ir.ui.study.BucketRoutes.key("learning-" + lessonId), onBack = onBack)
 }
 
 /**
@@ -139,82 +103,7 @@ fun LessonScreen(lessonId: String, onBack: () -> Unit, onQuiz: (String) -> Unit)
  */
 @Composable
 fun PlacementTestScreen(onBack: () -> Unit) {
-    val container = LocalAppContainer.current
-    var questions by remember { mutableStateOf<List<QuizQuestion>>(emptyList()) }
-    var index by remember { mutableIntStateOf(0) }
-    var score by remember { mutableIntStateOf(0) }
-    var picked by remember { mutableStateOf<Int?>(null) }
-    var result by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        val all = container.catalog.quizFor(null)
-        questions = if (all.size <= 5) all else {
-            val stride = all.size / 5.0
-            (0 until 5).map { all[(it * stride).toInt().coerceIn(0, all.lastIndex)] }.distinctBy { it.id }
-        }
-    }
-
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar("تعیین سطح", onBack)
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            val shown = result
-            if (shown != null) {
-                Text(shown, style = MaterialTheme.typography.titleMedium)
-                Text("نتیجه روی دستگاهت ذخیره شد؛ هر وقت خواستی دوباره امتحان بده.")
-                PrimaryButton("بازگشت", onBack)
-                return@Column
-            }
-            if (questions.isEmpty()) {
-                Text("سؤال‌ها در حال آماده‌سازی‌اند…")
-                return@Column
-            }
-
-            val q = questions[index.coerceAtMost(questions.lastIndex)]
-            Text("سؤال ${index + 1} از ${questions.size}", style = MaterialTheme.typography.bodySmall)
-            Text(q.question, style = MaterialTheme.typography.titleMedium)
-            q.choices.forEachIndexed { i, choice ->
-                val chosen = picked
-                val label = when {
-                    chosen == null -> choice
-                    i == q.answerIndex -> "$choice ✅"
-                    i == chosen -> "$choice ❌"
-                    else -> choice
-                }
-                PrimaryButton(label) {
-                    if (chosen == null) {
-                        picked = i
-                        if (i == q.answerIndex) score++
-                    }
-                }
-            }
-            if (picked != null) {
-                PrimaryButton(if (index < questions.lastIndex) "سؤال بعدی" else "دیدن نتیجه") {
-                    picked = null
-                    if (index < questions.lastIndex) {
-                        index++
-                    } else {
-                        val total = questions.size
-                        val level = when {
-                            score * 3 >= total * 2 -> "نیمه‌حرفه‌ای"
-                            score * 3 >= total -> "آشنا"
-                            else -> "مبتدی"
-                        }
-                        container.store.putString(PLACEMENT_LEVEL, level)
-                        container.store.putInt(PLACEMENT_SCORE, score)
-                        container.store.putInt(PLACEMENT_TOTAL, total)
-                        container.store.putString(PLACEMENT_DATE, JalaliDate.todayIso())
-                        result = "سطح تو: $level ($score از $total درست)"
-                    }
-                }
-            }
-        }
-    }
+    com.hamyareman.ir.ui.study.BookNodeScreen("آزمون", com.hamyareman.ir.ui.study.BucketRoutes.key("placement-test"), onBack = onBack)
 }
 
 /**

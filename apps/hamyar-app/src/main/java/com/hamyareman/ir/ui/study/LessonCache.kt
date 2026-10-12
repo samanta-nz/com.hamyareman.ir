@@ -91,6 +91,9 @@ object LessonCache {
         return f.exists() && isAcceptable(f, url)
     }
 
+    private fun needsConfirmation(url: String): Boolean =
+        Uri.parse(url).path.orEmpty().substringAfterLast('.').lowercase() in setOf("html", "pdf", "mp3", "opus", "mp4")
+
     private fun isHtmlUrl(url: String): Boolean =
         runCatching { Uri.parse(url).path.orEmpty().endsWith(".html", ignoreCase = true) }
             .getOrDefault(false)
@@ -105,7 +108,7 @@ object LessonCache {
 
     /** بدنهٔ معتبر: HMK1، یا برای آدرس‌های `.html` یک HTML ساده. */
     private fun isAcceptable(file: File, url: String): Boolean =
-        looksWrapped(file) || (isHtmlUrl(url) && file.length() > 0L && looksLikeHtmlFile(file))
+        looksWrapped(file) || (file.length() > 0L && (!isHtmlUrl(url) || looksLikeHtmlFile(file)))
 
     fun evict(ctx: Context, url: String) {
         val key = keyOf(url)
@@ -140,7 +143,7 @@ object LessonCache {
         }
         try {
             val code = conn.responseCode
-            code == 404 || code == 410 || code == 403
+            code == 404 || code == 410
         } finally {
             conn.disconnect()
         }
@@ -183,6 +186,7 @@ object LessonCache {
         var conn: HttpURLConnection? = null
         try {
             conn = openGet(canonicalUrl, stored)
+            if (hasCache) conn.setRequestProperty("Range", "bytes=0-0")
             val code = conn.responseCode
 
             // تغییری نکرده: بدون دریافت بدنه.
@@ -194,6 +198,14 @@ object LessonCache {
 
             // ۴۰۴/۴۰۳/۵xx و مانند آن: نسخهٔ سالم قبلی می‌ماند؛ recentChecks ثبت نمی‌شود
             // تا بار بعد دوباره بررسی شود.
+            if (code == 404 || code == 410) {
+                if (!canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
+                    return prepare(ctx, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY), onProgress, onStatus)?.let {
+                        PrepareResult(it.file, if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED)
+                    }
+                }
+                return null
+            }
             if (code !in 200..299) {
                 if (!hasCache) return null
                 onStatus?.invoke(Freshness.CACHED)
@@ -201,7 +213,7 @@ object LessonCache {
             }
 
             val remote = RemoteMeta(
-                contentLength = conn.contentLengthLong,
+                contentLength = if (code == 206) conn.getHeaderField("Content-Range").orEmpty().substringAfterLast("/").toLongOrNull() ?: -1L else conn.contentLengthLong,
                 etag = conn.getHeaderField("ETag").orEmpty(),
                 lastModified = conn.lastModified,
             )
@@ -214,10 +226,25 @@ object LessonCache {
                 return PrepareResult(target, Freshness.CACHED)
             }
 
+            if (hasCache) {
+                if (needsConfirmation(canonicalUrl) && !BucketTransfer.confirm(canonicalUrl)) {
+                    recentChecks[key] = now
+                    onStatus?.invoke(Freshness.CACHED)
+                    return PrepareResult(target, Freshness.CACHED)
+                }
+                conn.disconnect()
+                conn = openGet(canonicalUrl, null)
+                if (conn.responseCode !in 200..299) return PrepareResult(target, Freshness.CACHED)
+            }
             val freshness = if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED
             onStatus?.invoke(freshness)
 
-            val saved = saveBody(conn, canonicalUrl, target, onProgress)
+            val downloaded = BucketByteDownloader.download(
+                canonicalUrl, target, conn, silent = !needsConfirmation(canonicalUrl),
+                validate = { isAcceptable(it, canonicalUrl) },
+                onProgress = { done, total -> onProgress?.invoke(done.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), total.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()) },
+            )
+            val saved: File? = target
             if (saved == null) {
                 // دانلود شکست خورد؛ فایل قبلی دست‌نخورده مانده (جایگزینی فقط پس از اعتبارسنجی).
                 if (hasCache && isCached(ctx, canonicalUrl)) {
@@ -226,7 +253,7 @@ object LessonCache {
                 return null
             }
 
-            writeMeta(ctx, canonicalUrl, remote)
+            writeMeta(ctx, canonicalUrl, RemoteMeta(downloaded.length, downloaded.etag, downloaded.modified))
             recentChecks[key] = now
             return PrepareResult(saved, freshness)
         } catch (_: Throwable) {
@@ -275,25 +302,9 @@ object LessonCache {
         stored: RemoteMeta?,
         remote: RemoteMeta,
     ): Boolean {
-        if (remote.contentLength >= 0 && remote.contentLength != local.length()) return false
-        if (stored == null) return true
-
-        if (stored.etag.isNotBlank() && remote.etag.isNotBlank()) {
-            return stored.etag == remote.etag
-        }
-        if (stored.lastModified > 0L && remote.lastModified > 0L) {
-            return stored.lastModified == remote.lastModified
-        }
-
-        // سرور اعتبارسنج ندارد: ابتدا و انتها مقایسه شود (IV تازهٔ هر رمزنگاری در ابتدای فایل است).
-        return compareRange(url, local, 0L, PROBE_BYTES) &&
-            compareRange(
-                url,
-                local,
-                (local.length() - PROBE_BYTES).coerceAtLeast(0L),
-                PROBE_BYTES,
-            )
-    }
+        return stored != null && stored.etag.isNotBlank() && remote.etag.isNotBlank() &&
+            stored.etag == remote.etag && (remote.contentLength < 0 || remote.contentLength == local.length())
+}
 
     private fun compareRange(url: String, local: File, start: Long, requested: Int): Boolean {
         if (requested <= 0 || !local.exists() || local.length() < start) return false
@@ -368,50 +379,6 @@ object LessonCache {
     }
 
     /** بدنهٔ پاسخ ۲۰۰ را در .tmp می‌ریزد، اعتبار (HMK1 یا HTML ساده) را می‌سنجد و اتمیک جایگزین می‌کند. */
-    private fun saveBody(
-        conn: HttpURLConnection,
-        url: String,
-        target: File,
-        onProgress: ((Int, Int) -> Unit)?,
-    ): File? {
-        val tmp = File(target.path + ".tmp")
-        runCatching { tmp.delete() }
-        try {
-            val total = conn.contentLength
-            var done = 0
-            conn.inputStream.use { input ->
-                FileOutputStream(tmp).use { output ->
-                    val buffer = ByteArray(64 * 1024)
-                    while (true) {
-                        val n = input.read(buffer)
-                        if (n <= 0) break
-                        output.write(buffer, 0, n)
-                        done += n
-                        onProgress?.invoke(done, total)
-                    }
-                    output.flush()
-                }
-            }
-
-            if (!isAcceptable(tmp, url)) {
-                tmp.delete()
-                return null
-            }
-
-            // rename روی همان پارتیشن، فایل قبلی را اتمیک جایگزین می‌کند؛ پس فایل
-            // قدیمی پیش از آماده شدن جدید پاک نمی‌شود. delete فقط یدک است.
-            if (tmp.renameTo(target)) return target
-            runCatching { target.delete() }
-            return if (tmp.renameTo(target)) target else {
-                tmp.delete()
-                null
-            }
-        } catch (_: Throwable) {
-            runCatching { tmp.delete() }
-            return null
-        }
-    }
-
     private fun looksWrapped(file: File): Boolean {
         if (!file.exists() || file.length() <= HtmlCodec.MIN_WRAPPED_BYTES) return false
         return runCatching {

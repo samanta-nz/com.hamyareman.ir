@@ -34,9 +34,9 @@ android {
         // انتشار عمومی از Android 10 به بعد؛ APIهای قدیمی‌تر در این محصول پشتیبانی نمی‌شوند.
         targetSdk = 36
         // نسخهٔ پیش‌فرض توسعه؛ workflow انتشار versionCode/versionName را برای هر انتشار override می‌کند.
-    // Release grade 9 v3.0.7
-        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 307
-        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "3.0.7"
+    // Release grade 9 v3.0.8
+        versionCode = (findProperty("hamyarVersionCode") as? String)?.toIntOrNull() ?: 308
+        versionName = (findProperty("hamyarVersionName") as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: "3.0.8"
         ndk {
             // فقط معماری‌های واقعیِ گوشی. x86/x86_64 (شبیه‌ساز) عمداً حذف‌اند:
             // کتابخانه‌ی بومیِ WebRTC برای هر معماری ~۶ تا ۱۲ مگابایت است و هر دو

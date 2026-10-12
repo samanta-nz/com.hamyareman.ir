@@ -164,48 +164,7 @@ fun LessonTeachScreen(
     onStudy: (String) -> Unit,
     onPdf: (String) -> Unit,
 ) {
-    val pack = remember(packId) { BookModuleRegistry.pack(packId) }
-    // v1.25 — نام کتاب برای اعلان پخش («نام کتاب و درس»).
-    val bookTitle = remember(packId) {
-        BookModuleRegistry.modules.firstOrNull { m -> m.packs.any { it.packId == packId } }?.title.orEmpty()
-    }
-    if (pack == null) {
-        AppTopBar(title = "تدریس درس", onBack = onBack)
-        Column(
-            Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) { Text("این درس پیدا نشد.") }
-        return
-    }
-    val ctx = LocalContext.current
-    if (LessonAccess.gate(ctx, pack.bookCode, packId) == LessonAccess.Gate.NeedSub) {
-        NeedSubScreen(onBack = onBack)
-        return
-    }
-    if (pack.pdfOnly) {
-        // سند تمام‌صفحه است؛ کنترل برگشتِ جداگانه و عنوان بالا جای صفحه را نمی‌گیرند.
-        // برگشت استاندارد سیستم/ناوبری همچنان کار می‌کند.
-        Column(Modifier.fillMaxSize()) {
-            TeachPdfPages(modifier = Modifier.weight(1f), fileId = pack.pdfFileName, pack = pack)
-        }
-        return
-    }
-    if (pack.bookCode == "C905") {
-        MathLessonScreen(packId = packId, initialTab = 0, onBack = onBack)
-        return
-    }
-
-    // صفحهٔ رسانه تمام‌صفحه است؛ پلیر در بالا می‌ماند و کتاب (PDF) زیرش اسکرول می‌شود.
-    Column(
-        Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        val tracks = teachTracksOf(pack)
-        if (tracks.isNotEmpty()) TeachAudioBar(packId = packId, screenTitle = pack.title, bookTitle = bookTitle, tracks = tracks)
-
-        // v1.18: ویدیو به صفحه‌ی مجزای «ویدیوی تدریس» منتقل شد (VideoTeachScreen).
-        TeachPdfPages(modifier = Modifier.weight(1f), fileId = pack.pdfFileName, pack = pack)
-    }
+    RemoteLessonScreen(packId, 0, onBack)
 }
 
 /**
@@ -253,7 +212,12 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     var playerExpanded by remember { mutableStateOf(true) }
     var playerTouchTick by remember { mutableIntStateOf(0) }
 
+    if (tracks.isEmpty()) return
     val track = tracks[activeIdx]
+    val transfers by BucketTransfer.states.collectAsState()
+    LaunchedEffect(transfers) {
+        if (transfers.any { !it.confirmation && StudyMedia.candidateUrls(track.fileId).contains(it.url) }) { player?.pause(); playing = false }
+    }
     LaunchedEffect(packId, tracks.size) {
         TeachStats.expectMedia(context, packId, tracks.size.coerceAtLeast(1))
     }
@@ -284,7 +248,7 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     var availability by remember(packId) { mutableStateOf<Boolean?>(null) }
     LaunchedEffect(packId, tracks.size) {
         availability = withContext(Dispatchers.IO) {
-            tracks.any { t -> MediaVault.isVerified(context, t.cacheKey) || StudyMedia.audioExists(t.fileId) }
+            tracks.isNotEmpty()
         }
     }
 
@@ -390,11 +354,10 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
         scope.launch {
             val uri = withContext(Dispatchers.IO) {
                 val urls = remoteUris(t)
-                if (MediaVault.isVerified(context, t.cacheKey)) {
-                    MediaVault.ensureFresh(context, urls, t.cacheKey)
-                }
-                uriFor(t, preferLocal = preferLocal)
+                if (!MediaVault.ensureFresh(context, urls, t.cacheKey)) return@withContext ""
+                MediaVault.localUrl(context, t.cacheKey)
             }
+            if (uri.isBlank()) { note = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."; return@launch }
             loadedLocal = uri.startsWith("vault://")
             loadedRemoteIndex = 0
             loadedKey = t.cacheKey

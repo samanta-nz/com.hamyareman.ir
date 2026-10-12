@@ -60,11 +60,6 @@ class NatureWhisperPlayerViewModel : ViewModel() {
         viewModelScope.launch {
             val handler = android.os.Handler(android.os.Looper.getMainLooper())
             val prepared = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                val keyReady = runCatching {
-                    HtmlMediaKey.fetch(context, tables)
-                }.getOrDefault(false)
-                if (!keyReady) return@withContext null
-
                 LessonCache.prepare(
                     ctx = context,
                     url = MUSIC_FULL_URL,

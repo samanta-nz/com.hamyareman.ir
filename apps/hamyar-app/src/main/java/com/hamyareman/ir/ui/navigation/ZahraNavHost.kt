@@ -192,8 +192,8 @@ fun ZahraNavHost() {
             // placeholder مشترک جای صفحه و تب بازنشسته‌شدهٔ «همراه من» را گرفته است.
             composable(Screen.Placeholder.route) {
                 com.hamyareman.ir.ui.study.BookNodeScreen(
-                    title = "به‌زودی",
-                    bucketKey = com.hamyareman.ir.ui.study.BooksMenu.SPACEHOLDER_KEY,
+                    title = "محتوا",
+                    bucketKey = com.hamyareman.ir.ui.study.BucketRoutes.key("assistant"),
                     onBack = { nav.popBackStack() },
                 )
             }

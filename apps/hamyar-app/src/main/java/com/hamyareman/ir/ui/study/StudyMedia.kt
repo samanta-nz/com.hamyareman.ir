@@ -36,7 +36,12 @@ object StudyMedia {
      */
     fun candidateUrls(fileId: String): List<String> = when {
         fileId.startsWith("Bucket/") -> listOf(ServerResolver.internal(fileId))
-        else -> ContentCatalog.keyFor(fileId)?.let { listOf(ServerResolver.internal(it)) }.orEmpty()
+        else -> listOf(ServerResolver.internal(ContentCatalog.keyFor(fileId) ?: when {
+            fileId.endsWith(".pdf", true) -> "Bucket/Pdf-files/app/" + fileId
+            fileId.endsWith(".mp3", true) || fileId.endsWith(".opus", true) -> "Bucket/Audio-files/app/" + fileId
+            fileId.endsWith(".mp4", true) -> "Bucket/Video-files/app/" + fileId
+            else -> BucketRoutes.key(fileId)
+        }))
     }
 
     fun viewUrl(fileId: String): String = candidateUrls(fileId).firstOrNull().orEmpty()
@@ -64,9 +69,7 @@ object StudyMedia {
     /** آیا هیچ‌کدام از نام‌های محتمل این صوت روی باکت هست؟ */
     fun audioExists(fileId: String): Boolean {
         if (fileId.isBlank()) return false
-        if (missing.contains(fileId)) return false
         val ok = candidateIds(fileId).any { existsOnServer(it) }
-        if (!ok) missing += fileId
         return ok
     }
 

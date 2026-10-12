@@ -42,9 +42,8 @@ object ToolRemote {
 
     /** آیا HTML همین ابزار برای edition این پایه در manifest دو سرور وجود دارد؟ */
     fun isAvailable(toolId: String): Boolean {
-        val id = fileId(toolId)
-        return ContentCatalog.keyFor(id) != null
-    }
+        return true
+}
 
     private fun plainDir(ctx: Context) = File(ctx.cacheDir, "hamyar-tools-plain").apply { mkdirs() }
     private fun plainFile(ctx: Context, toolId: String) = File(plainDir(ctx), fileId(toolId))
@@ -63,38 +62,6 @@ object ToolRemote {
             onProgress = onProgress,
             onStatus = onStatus,
         )
-    }
-
-    /** plaintext فقط در cacheDir موقت WebView است؛ نسخهٔ ماندگار HMK1 می‌ماند. */
-    fun ensure(ctx: Context, toolId: String): String? {
-        val id = fileId(toolId)
-        // از همان لایهٔ مشترک درس‌ها می‌خوانیم؛ RemoteHtmlCache بازنشسته شد.
-        val key = ContentCatalog.keyFor(id) ?: return null
-        val cached = LessonCache.ensure(ctx, ServerResolver.internal(key)) ?: return null
-        val raw = runCatching { cached.readBytes() }.getOrNull() ?: return null
-        val plain = runCatching { HtmlCodec.unwrap(ctx, raw) }.getOrNull() ?: return null
-        val dest = plainFile(ctx, toolId)
-        val part = File(dest.absolutePath + ".part")
-        val offlineHtml = String(plain, Charsets.UTF_8).replace(
-            Regex("""https://cdn\.jsdelivr\.net/[^"']*jalaali[^"']*\.js""", RegexOption.IGNORE_CASE),
-            "file:///android_asset/tools/vendor/jalaali.min.js",
-        )
-        return runCatching {
-            part.writeText(offlineHtml, Charsets.UTF_8)
-            if (!part.renameTo(dest)) {
-                part.copyTo(dest, overwrite = true)
-                part.delete()
-            }
-            dest.absolutePath
-        }.getOrElse {
-            part.delete()
-            null
-        }
-    }
-
-    fun release(ctx: Context, toolId: String) {
-        runCatching { plainFile(ctx, toolId).delete() }
-        runCatching { File(plainFile(ctx, toolId).absolutePath + ".part").delete() }
     }
 
     fun clearPlainCache(ctx: Context) {

@@ -29,6 +29,7 @@ import javax.crypto.spec.SecretKeySpec
  * نتیجه: فایل از بیرون اپ (مدیر فایل/کپی/اشتراک) قابل پخش یا خواندن نیست.
  */
 object MediaVault {
+    private val bucketLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
 
     private const val DIR = "media-vault"
     private const val MAGIC = "HMV1"
@@ -78,28 +79,14 @@ object MediaVault {
 
     /** نگاهِ کوتاه به ابتدای فایلِ رمزگشایی‌شده — برای اطمینان از سالم‌بودنِ دانلود. */
     fun peek(ctx: Context, cacheKey: String, bytes: Int = 4096): ByteArray? {
-        val all = vaultFile(ctx, cacheKey)
-        if (!all.exists() || all.length() <= 20) return null
-        return runCatching {
-            // فقط همان چند کیلوبایتِ اول خوانده می‌شود (نه کل فایل) — در CTR
-            // رمزگشاییِprefix معتبر است و حافظه هم مصرف نمی‌شود.
-            val want = (20 + bytes).coerceAtMost(all.length().toInt())
-            val raw = ByteArray(want)
-            java.io.FileInputStream(all).use { fin ->
-                var off = 0
-                while (off < want) {
-                    val n = fin.read(raw, off, want - off)
-                    if (n <= 0) break
-                    off += n
-                }
-            }
-            if (!raw.startsWith(MAGIC.toByteArray(Charsets.US_ASCII))) return@runCatching null
-            val iv = raw.copyOfRange(4, 20)
-            val cipher = Cipher.getInstance("AES/CTR/NoPadding")
-            cipher.init(Cipher.DECRYPT_MODE, key(ctx), IvParameterSpec(iv))
-            cipher.doFinal(raw, 20, raw.size - 20)
-        }.getOrNull()
-    }
+        val stream = openPlainStream(ctx, cacheKey) ?: return null
+        return try {
+            val buffer = ByteArray(minOf(bytes.toLong(), stream.size).toInt())
+            var done = 0
+            while (done < buffer.size) { val n = stream.read(done.toLong(), buffer, done, buffer.size - done); if (n <= 0) break; done += n }
+            buffer.copyOf(done)
+        } finally { stream.close() }
+}
 
     fun delete(ctx: Context, cacheKey: String) {
         vaultFile(ctx, cacheKey).delete()
@@ -216,12 +203,18 @@ object MediaVault {
      * تک‌رشته برمی‌گردیم.
      */
     fun downloadEncrypted(ctx: Context, url: String, cacheKey: String, onProgress: (Long, Long) -> Unit) {
-        val probed = probeSize(url)
-        val parallelSucceeded = probed > 0 &&
-            runCatching { downloadParallel(ctx, url, cacheKey, probed, onProgress) }.isSuccess
-        if (!parallelSucceeded) downloadSingle(ctx, url, cacheKey, probed, onProgress)
-        // finishDownload ثبت امضا را بعد از جایگزینیِ تأییدشده انجام می‌دهد.
-    }
+        val lock = bucketLocks.getOrPut(cacheKey) { Any() }
+        synchronized(lock) {
+            try {
+                val downloaded = BucketByteDownloader.download(url, vaultFile(ctx, cacheKey), validate = { it.isFile && it.length() > 0L }, onProgress = onProgress)
+                markVerified(ctx, cacheKey)
+                saveRemoteVersion(ctx, cacheKey, url, RemoteVersion(downloaded.length, downloaded.etag, ""))
+            } catch (missing: StudyPdfCache.RemoteMissingException) {
+                BucketTransfer.unavailable(url)
+                throw missing
+            }
+        }
+}
 
     /**
      * FASTEST: origin برنده و سپس origin دوم؛ EXTERNAL/INTERNAL: فقط همان سرور.
@@ -268,7 +261,7 @@ object MediaVault {
         val prefs = versionPrefs(ctx)
         val checkedKey = "checked:" + cacheKey
         val now = System.currentTimeMillis()
-        if (now - prefs.getLong(checkedKey, 0L) < VERSION_CHECK_TTL_MS) return true
+        if (now - prefs.getLong(checkedKey, 0L) < 4_000L) return true
 
         val savedEtag = prefs.getString("etag:" + cacheKey, "").orEmpty()
         val savedLength = prefs.getLong("length:" + cacheKey, -1L)
@@ -323,6 +316,8 @@ object MediaVault {
 
         // اگر امضا از نسخهٔ قدیمی وجود نداشت یا تغییر دیده شد، نسخهٔ سرور را دریافت کن؛
         // finishDownload کش قبلی را نگه می‌دارد تا جایگزینی سالم تأیید شود.
+        if (current.missing) { BucketTransfer.unavailable(currentUrl); return false }
+        if (!BucketTransfer.confirm(currentUrl)) return true
         val downloadOrder = listOf(currentUrl) + candidates.filterNot { it == currentUrl }
         return runCatching {
             downloadEncrypted(ctx, downloadOrder, cacheKey, onProgress)
@@ -338,6 +333,7 @@ object MediaVault {
         val lastModified: String,
         /** سرور ۳۰۴ داد (یا ETag برابر برگشت): محتوا همان کش است. */
         val notModified: Boolean = false,
+        val missing: Boolean = false,
     )
 
     private fun versionPrefs(ctx: Context) =
@@ -358,7 +354,8 @@ object MediaVault {
                 setRequestProperty("Range", "bytes=0-0")
                 setRequestProperty("If-None-Match", ifNoneMatch)
             } else {
-                requestMethod = "HEAD"
+                requestMethod = "GET"
+                setRequestProperty("Range", "bytes=0-0")
             }
         }
         try {
@@ -371,9 +368,10 @@ object MediaVault {
                     notModified = true,
                 )
             }
+            if (code == 404 || code == 410) return@runCatching RemoteVersion(-1L, "", "", missing = true)
             if (code !in 200..299) return@runCatching null
             val etag = conn.getHeaderField("ETag").orEmpty().trim()
-            val total = if (conditional) {
+            val total = if (conn.responseCode == 206) {
                 conn.getHeaderField("Content-Range").orEmpty().substringAfterLast("/", "").toLongOrNull()
                     ?: conn.contentLengthLong
             } else {
@@ -849,8 +847,14 @@ object MediaVault {
             raf.seek(0)
             raf.readFully(header)
             if (String(header, 0, 4, Charsets.US_ASCII) != MAGIC) {
-                raf.close()
-                return null
+                return object : com.hamyareman.ir.platform.feature.playback.VaultStream {
+                    override val size: Long = f.length()
+                    override fun read(pos: Long, dst: ByteArray, off: Int, len: Int): Int {
+                        if (pos >= size) return -1
+                        raf.seek(pos); return raf.read(dst, off, minOf(len.toLong(), size - pos).toInt())
+                    }
+                    override fun close() { raf.close() }
+                }
             }
             val raw = key(ctx).encoded ?: return null
             com.hamyareman.ir.platform.feature.playback.CtrPlainReader(raw, header.copyOfRange(4, 20), 20L, f.length() - 20, raf)
@@ -859,17 +863,14 @@ object MediaVault {
 
     /** رمزگشایی کامل به حافظه — فقط داخل اپ و برای پخش (خروجی هرگز ذخیره نمی‌شود). */
     fun decryptToMemory(ctx: Context, cacheKey: String): ByteArray {
-        val f = vaultFile(ctx, cacheKey)
-        val all = f.readBytes()
-        if (all.size <= 20 || !all.startsWith(MAGIC.toByteArray(Charsets.US_ASCII))) {
-            error("فایل گاوصندوق معتبر نیست.")
-        }
-        val iv = all.copyOfRange(4, 20)
-        val cipher = Cipher.getInstance("AES/CTR/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, key(ctx), IvParameterSpec(iv))
-        val plain = cipher.doFinal(all, 20, all.size - 20)
-        return HtmlCodec.unwrap(ctx, plain)
-    }
+        val stream = openPlainStream(ctx, cacheKey) ?: error("فایل کش معتبر نیست")
+        return try {
+            require(stream.size <= Int.MAX_VALUE)
+            val bytes = ByteArray(stream.size.toInt()); var done = 0
+            while (done < bytes.size) { val n = stream.read(done.toLong(), bytes, done, bytes.size - done); if (n <= 0) error("کش ناقص است"); done += n }
+            bytes
+        } finally { stream.close() }
+}
 
     private fun ByteArray.startsWith(prefix: ByteArray): Boolean {
         if (size < prefix.size) return false

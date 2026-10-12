@@ -121,7 +121,7 @@ object BooksMenu {
     /** کتاب‌ها با کد سه‌رقمی روی باکت‌اند؛ اپ کدها را به شکل `C905` نگه می‌دارد. */
     fun forBook(ctx: Context, bookCode: String): Book? {
         load(ctx)
-        val digits = bookCode.filter { it.isDigit() }
+        val digits = when (val code = bookCode.filter { it.isDigit() }) { "908" -> "912"; "911" -> "913"; else -> code }
         return books.firstOrNull { it.code == digits }
     }
 

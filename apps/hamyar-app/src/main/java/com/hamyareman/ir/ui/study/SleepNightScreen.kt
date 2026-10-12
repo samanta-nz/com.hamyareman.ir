@@ -59,6 +59,11 @@ private const val SHOW_TOP_BAR = false
 
 @Composable
 fun SleepNightScreen(onBack: () -> Unit) {
+    var remoteTrack by remember { mutableStateOf<SleepTrack?>(null) }
+    if (remoteTrack != null) {
+        BookNodeScreen(remoteTrack!!.title, BucketRoutes.key("sleep-" + remoteTrack!!.id), onBack = { remoteTrack = null })
+        return
+    }
     val ctx = LocalContext.current
     val playback = remember { PlaybackController(ctx, SleepPlaybackService::class.java) }
     val state by playback.state.collectAsState()
@@ -90,14 +95,14 @@ fun SleepNightScreen(onBack: () -> Unit) {
 
     val audioTracks = remember {
         listOf(
-            SleepTrack("h1", "آرام‌سازی بدن", "خودهیپنوتیزم ملایم — فایل بعداً در باکت", ""),
-            SleepTrack("h2", "موسیقی خواب", "صدای آرام شب — فایل بعداً در باکت", ""),
+            SleepTrack("h1", "آرام‌سازی بدن", "خودهیپنوتیزم ملایم", ""),
+            SleepTrack("h2", "موسیقی خواب", "صدای آرام شب", ""),
             SleepTrack("h3", "باران پشت پنجره", "صدای یکنواخت برای خواب", ""),
         )
     }
 
     fun play(t: SleepTrack) {
-        if (t.uri.isBlank()) return
+        if (t.uri.isBlank()) { remoteTrack = t; return }
         scope.launch {
             playback.connect()
             playback.setMedia(t.uri, t.title)
@@ -196,50 +201,16 @@ fun SleepNightScreen(onBack: () -> Unit) {
 
 @Composable
 fun SleepBreathScreen(onBack: () -> Unit) {
-    var session by remember { mutableStateOf(false) }
-    var step by remember { mutableIntStateOf(0) }
-    val steps = listOf(
-        "به پهلو یا پشت دراز بکش. بالش بین زانو اگر راحت‌تر است.",
-        "دست روی شکم. دم از بینی؛ شکم بالا بیاید نه سینه.",
-        "بازدم آرام‌تر از دم؛ مثل بادکنکی که آرام خالی می‌شود.",
-        "چهار دم، هفت نگه، هشت بازدم — سه دور. اگر گیج شدی برگرد به نفس معمولی.",
-        "بگو: «امشب کارم تمام است.» اگر فکر آمد، روی بازدم سوارش کن و بفرست.",
-    )
-    Column(Modifier.fillMaxSize()) {
-        AppTopBar("تنفس پیش از خواب", onBack)
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text("برای خواب، نه برای بیداری. چراغ کم، گوشی رو به میز.", style = AppTypography.pageBody.style)
-            if (!session) {
-                steps.forEachIndexed { i, s ->
-                    Text(toPersianDigits((i + 1).toString()) + ". " + s, style = AppTypography.pageBody.style)
-                }
-                Spacer(Modifier.height(8.dp))
-                PrimaryButton("شروع جلسه") { session = true; step = 0 }
-            } else {
-                Text("گام " + toPersianDigits((step + 1).toString()) + " از " + toPersianDigits(steps.size.toString()), style = AppTypography.pageHeading.style)
-                Text(steps[step], style = AppTypography.pageBody.style)
-                if (step < steps.lastIndex) {
-                    PrimaryButton("گام بعد") { step++ }
-                } else {
-                    PrimaryButton("پایان جلسه") { session = false; step = 0 }
-                }
-            }
-        }
-    }
+    BookNodeScreen("تنفس آرام پیش از خواب", BucketRoutes.key("sleep-breath"), onBack = onBack)
 }
 
 @Composable
 private fun TrackRow(t: SleepTrack, playing: Boolean, onPlay: () -> Unit) {
-    Card(Modifier.fillMaxWidth().clickable(enabled = t.uri.isNotBlank(), onClick = onPlay)) {
+    Card(Modifier.fillMaxWidth().clickable(onClick = onPlay)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(t.title)
             Text(t.subtitle, style = MaterialTheme.typography.bodySmall)
-            if (t.uri.isBlank()) {
-                Text("این بخش به‌زودی فعال می‌شود", color = MaterialTheme.colorScheme.onSurfaceVariant, style = AppTypography.pageBody.style)
-            }
+
         }
     }
 }

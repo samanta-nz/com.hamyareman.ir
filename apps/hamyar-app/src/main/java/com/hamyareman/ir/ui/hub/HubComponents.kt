@@ -194,7 +194,7 @@ fun HubCoverGrid(tiles: List<HubCoverTile>, slotId: String = "hub.practice.item"
 @Composable
 private fun HubCoverCard(tile: HubCoverTile, modifier: Modifier, slotId: String) {
     val ctx = LocalContext.current
-    val cover = remember(tile.id) { loadPracticeCover(ctx, tile.id) }
+    val cover = loadPracticeCover(ctx, tile.id)
     val shape = RoundedCornerShape(14.dp)
     Column(
         modifier
@@ -281,68 +281,16 @@ internal fun AutoShrinkTileText(
     )
 }
 
-internal fun loadPracticeCover(ctx: android.content.Context, id: String) = runCatching {
-    ctx.assets.open("practice-covers/$id.jpg").use { BitmapFactory.decodeStream(it) }?.asImageBitmap()
-}.getOrNull()
-
-/** گروه تاشوی منوی هاب — دسته‌بندی در تو در تو (مشترک بین مدرسه/آموزشگاه/سلامتی). */
 @Composable
-fun HubMenuGroup(
-    title: String,
-    subtitle: String,
-    open: Boolean? = null,
-    onToggle: (() -> Unit)? = null,
-    slotId: String = FontCatalog.ROLE_HEADING,
-    content: @Composable () -> Unit,
-) {
-    var selfOpen by rememberSaveable { mutableStateOf(false) }
-    val isOpen = open ?: selfOpen
-    val shape = RoundedCornerShape(16.dp)
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .shadow(5.dp, shape)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .45f), shape)
-            .clickable(
-                role = Role.Button,
-                onClick = { if (onToggle != null) onToggle() else selfOpen = !selfOpen },
-            )
-            .padding(12.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontFamily = AppTypography.accordionTitle.family,
-                    fontWeight = AppTypography.accordionTitle.weight,
-                    fontSize = AppTypography.accordionTitle.size,
-                )
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = AppTypography.accordionSub.family,
-                    fontWeight = AppTypography.accordionSub.weight,
-                    fontSize = AppTypography.accordionSub.size,
-                )
-            }
-            Icon(
-                if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                contentDescription = if (isOpen) "بستن" else "بازکردن",
-            )
-        }
-        AnimatedVisibility(visible = isOpen) {
-            Column(
-                Modifier.padding(top = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) { content() }
+internal fun loadPracticeCover(ctx: android.content.Context, id: String): androidx.compose.ui.graphics.ImageBitmap? {
+    val url = com.hamyareman.ir.ui.study.ServerResolver.internal("assets/practice-covers/" + id + ".jpg")
+    val image by androidx.compose.runtime.produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, id) {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val cached = com.hamyareman.ir.ui.study.LessonCache.fileFor(ctx, url)
+            if (cached.exists()) value = BitmapFactory.decodeFile(cached.path)?.asImageBitmap()
+            val prepared = com.hamyareman.ir.ui.study.LessonCache.prepare(ctx, url)
+            if (prepared != null) value = BitmapFactory.decodeFile(prepared.file.path)?.asImageBitmap()
         }
     }
+    return image
 }
-

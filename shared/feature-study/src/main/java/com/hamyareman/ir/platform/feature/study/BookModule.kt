@@ -1,57 +1,33 @@
 package com.hamyareman.ir.platform.feature.study
 
-/**
- * ماژول هر کتاب — معماری مصوب: هر کتاب یک فایل Kotlin با کل محتوای درس‌هایش
- * (سکشن/فلش‌کارت/سوال/حل داخل کد). فصل‌های جدید به همان فایل اضافه می‌شوند.
- */
-data class BookModule(
-    val bookCode: String,
-    val title: String,
-    val subject: String,
-    val packs: List<StudyPack>,
-)
+data class BookModule(val bookCode: String, val title: String, val subject: String, val packs: List<StudyPack>)
 
-/**
- * رجیستری مرکزی ماژول کتاب‌ها — [StudyPackRepository] اول اینجا را می‌گردد.
- * کتاب جدید = ماژول جدید + افزودن به این فهرست.
- *
- * ساختار نهایی: ماژول‌های کامل (محتوای تعاملی) + درس‌های ۲ به بعد همه‌ی
- * کتاب‌ها از [ExtraLessons] (PDF واقعی از باکت؛ محتوای تعاملی به‌مرور بازسازی
- * و به همان ماژول اصلی اضافه می‌شود — پس اول ماژول کامل، بعد اسکلت‌ها).
- */
+/** Navigation metadata only. Lesson bodies, cards, questions and solutions live in the bucket. */
 object BookModuleRegistry {
-
-    /** ماژول‌های کامل — فقط محتوای واقعی authored. */
-    private val authored: List<BookModule> = listOf(
-        com.hamyareman.ir.platform.feature.study.books.MathC905.module,
-        com.hamyareman.ir.platform.feature.study.books.QuranC901.module,
-        com.hamyareman.ir.platform.feature.study.books.EslamiC902.module,
-        com.hamyareman.ir.platform.feature.study.books.FarsiC903.module,
-        com.hamyareman.ir.platform.feature.study.books.NegarC904.module,
-        com.hamyareman.ir.platform.feature.study.books.ScienceC906.module,
-        com.hamyareman.ir.platform.feature.study.books.EjtemaiC907.module,
-        com.hamyareman.ir.platform.feature.study.books.HonarC908.module,
-        com.hamyareman.ir.platform.feature.study.books.ArabicC909.module,
-        com.hamyareman.ir.platform.feature.study.books.EnglishC910.module,
-        com.hamyareman.ir.platform.feature.study.books.EnglishWbC911.module,
-        com.hamyareman.ir.platform.feature.study.books.KarC917.module,
-        com.hamyareman.ir.platform.feature.study.books.TafakkorC941.module,
-        com.hamyareman.ir.platform.feature.study.books.EdafaiC915.module,
+    private fun flatten(nodes: List<BookToc.TocNode>): List<BookToc.TocNode> = nodes.flatMap { listOf(it) + flatten(it.children) }
+    private fun module(code: String, title: String): BookModule = BookModule(code, title, title,
+        flatten(BookToc.forBook(code)).mapNotNull { node -> node.packId?.let { id ->
+            StudyPack(packId = id, bookCode = code, lessonId = id.substringAfter('_'),
+                title = BookToc.packTitle(id) ?: node.title, bookTitle = title,
+                pdfFileName = id + "_BOOK.pdf", audioFileId = id + "_AUDIO.mp3",
+                sections = emptyList(), flashcards = emptyList(), questions = emptyList(), solutions = emptyList())
+        } }.distinctBy { it.packId })
+    val modules: List<BookModule> = listOf(
+        module("C909", "عربی نهم"),
+        module("C908", "فرهنگ و هنر نهم"),
+        module("C915", "آمادگی دفاعی نهم"),
+        module("C910", "انگلیسی نهم"),
+        module("C911", "کتاب کار انگلیسی نهم"),
+        module("C903", "فارسی نهم"),
+        module("C941", "هدیه‌های آسمان نهم"),
+        module("C917", "کار و فناوری نهم"),
+        module("C905", "ریاضی نهم"),
+        module("C904", "نگارش نهم"),
+        module("C902", "پیام‌های آسمان نهم"),
+        module("C901", "آموزش قرآن نهم"),
+        module("C906", "علوم تجربی نهم"),
+        module("C907", "مطالعات اجتماعی نهم")
     )
-
-    val modules: List<BookModule> =
-        authored.map { m ->
-            m.copy(
-                // عنوان پک‌ها از فهرست رسمی کتاب (BookToc) می‌آید — v1.10؛
-                // اگر پک در فهرست نبود عنوان قبلی‌اش می‌ماند.
-                packs = (m.packs + ExtraLessons.extrasFor(m).filter { e -> m.packs.none { it.packId == e.packId } }).map { p ->
-                    BookToc.packTitle(p.packId)?.let { t -> p.copy(title = t) } ?: p
-                },
-            )
-        }
-
-    fun pack(packId: String): StudyPack? =
-        modules.asSequence().flatMap { it.packs }.firstOrNull { it.packId == packId }
-
+    fun pack(packId: String): StudyPack? = modules.asSequence().flatMap { it.packs }.firstOrNull { it.packId == packId }
     fun books(): List<BookModule> = modules
 }

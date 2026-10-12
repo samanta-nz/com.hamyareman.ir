@@ -400,6 +400,7 @@ class MainActivity : FragmentActivity() {
                             // ۲) وارد شده و قفل باز: اپ.
                             isUnlocked -> {
                             ZahraNavHost()
+                            com.hamyareman.ir.ui.study.BucketTransferHost()
                             }
                             // ۳) وارد شده ولی قفل فعال: صفحه‌ی PIN.
                             else -> {

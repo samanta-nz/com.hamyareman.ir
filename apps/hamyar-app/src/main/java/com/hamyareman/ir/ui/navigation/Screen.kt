@@ -191,6 +191,6 @@ val Tabs = listOf(
     Tab(Screen.Study.route, Icons.Filled.School, "مدرسه"),
     Tab(Screen.Academy.route, Icons.Filled.LocalLibrary, "آموزشگاه"),
     Tab(Screen.HealthHub.route, Icons.Filled.FitnessCenter, "سلامتی"),
-    Tab(Screen.Placeholder.route, Icons.Filled.SmartToy, "به‌زودی"),
+    Tab(Screen.Placeholder.route, Icons.Filled.SmartToy, "محتوا"),
     Tab(Screen.More.route, Icons.Filled.MoreHoriz, "بیشتر"))
 val TopRoutes = Tabs.map { it.route }.toSet()

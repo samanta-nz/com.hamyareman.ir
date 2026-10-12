@@ -118,8 +118,8 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     val remoteUris = StudyMedia.candidateUrls(fileId)
     LaunchedEffect(fileId) {
         withContext(Dispatchers.IO) {
-            if (MediaVault.isVerified(context, fileId)) {
-                MediaVault.ensureFresh(context, remoteUris, fileId)
+            if (!MediaVault.ensureFresh(context, remoteUris, fileId)) {
+                android.os.Handler(android.os.Looper.getMainLooper()).post { msg = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید." }
             }
         }
         useLocal = MediaVault.isVerified(context, fileId)
@@ -127,7 +127,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
         cacheTick++
     }
     var remoteIndex by remember(fileId) { mutableIntStateOf(0) }
-    val uri = if (freshnessChecked && useLocal && MediaVault.isVerified(context, fileId)) {
+    val uri = if (useLocal && MediaVault.isVerified(context, fileId)) {
         MediaVault.localUrl(context, fileId)
     } else {
         remoteUris.getOrElse(remoteIndex) { remoteUris.first() }

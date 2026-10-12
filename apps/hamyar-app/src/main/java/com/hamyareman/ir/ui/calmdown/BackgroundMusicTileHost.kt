@@ -134,8 +134,7 @@ fun BackgroundMusicTileHost(
     LaunchedEffect(Unit) {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val hasCache = LessonCache.isCached(context, MUSIC_TILE_URL)
-        keyReady = runCatching { HtmlMediaKey.fetch(context, container.tables) }.getOrDefault(false)
-        if (keyReady != true) return@LaunchedEffect
+        keyReady = true
 
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val prepared = LessonCache.prepare(

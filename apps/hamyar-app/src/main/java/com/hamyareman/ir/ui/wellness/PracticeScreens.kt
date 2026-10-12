@@ -197,7 +197,7 @@ private fun PracticeRowTile(
     onClick: () -> Unit,
 ) {
     val ctx = LocalContext.current
-    val cover = remember(coverId) { loadPracticeCover(ctx, coverId) }
+    val cover = loadPracticeCover(ctx, coverId)
     val shape = RoundedCornerShape(18.dp)
     Row(
         Modifier
@@ -259,94 +259,11 @@ fun PracticeItemScreen(
     onWellness: (String) -> Unit,
     onRoute: (String) -> Unit,
 ) {
-    val item = WellnessMenu.item(itemId)
-    val move = item?.wellnessSlug?.takeIf { it.isNotBlank() }?.let { WellnessCatalog.bySlug(it) }
-    val (body, steps) = if (item != null) WellnessMenu.resolveInstructions(item) else "" to emptyList()
-    var session by remember { mutableStateOf(false) }
-    var stepIx by remember { mutableStateOf(0) }
-
-    Column(Modifier.fillMaxSize()) {
-        if (!WellnessLayout.isPlaceholderItem(itemId)) {
-            com.hamyareman.ir.platform.core.designsystem.AppTopBar(
-                item?.title ?: "تمرین",
-                onBack,
-            )
-        }
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            if (item == null) {
-                Text("این تمرین پیدا نشد.", style = AppTypography.pageBody.style)
-                return@Column
-            }
-            val staticPlaceholder = WellnessLayout.isPlaceholderItem(item.id)
-            if (!staticPlaceholder) {
-                Text(item.subtitle, style = AppTypography.pageHeading.style)
-                if (item.minutes.isNotBlank()) {
-                    Text(
-                        item.minutes,
-                        style = AppTypography.pageBody.style,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            if (staticPlaceholder) {
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("این بخش به‌زودی فعال می‌شود", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            "این مقصد هنوز محتوای HTML یا ابزار اجرایی ندارد. به‌محض آماده‌شدن نسخهٔ واقعی، همین‌جا در دسترس قرار می‌گیرد.",
-                            style = AppTypography.pageBody.style,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                return@Column
-            }
-            if (!session) {
-                if (body.isNotBlank()) {
-                    Text(body, style = AppTypography.pageBody.style)
-                }
-                steps.forEachIndexed { i, s ->
-                    Text(
-                        toPersianDigits((i + 1).toString()) + ". " + s,
-                        style = AppTypography.pageBody.style,
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                PrimaryButton("شروع جلسه") {
-                    when {
-                        steps.isNotEmpty() || body.isNotBlank() -> {
-                            session = true
-                            stepIx = 0
-                        }
-                        move != null -> onWellness(move.category.wire)
-                        item.route.isNotBlank() -> onRoute(item.route)
-                        else -> {
-                            session = true
-                            stepIx = 0
-                        }
-                    }
-                }
-            } else {
-                val lines = if (steps.isNotEmpty()) steps else listOf(body.ifBlank { "یک دقیقه آرام بمان؛ بعد تمام." })
-                Text(
-                    "گام " + toPersianDigits((stepIx + 1).toString()) + " از " + toPersianDigits(lines.size.toString()),
-                    style = AppTypography.pageHeading.style,
-                )
-                Text(lines[stepIx], style = AppTypography.pageBody.style)
-                if (stepIx < lines.lastIndex) {
-                    PrimaryButton("گام بعد") { stepIx++ }
-                } else {
-                    PrimaryButton("پایان جلسه") { session = false; stepIx = 0 }
-                }
-            }
-        }
-    }
+    com.hamyareman.ir.ui.study.BookNodeScreen(
+        title = WellnessMenu.item(itemId)?.title ?: "تمرین",
+        bucketKey = com.hamyareman.ir.ui.study.BucketRoutes.key(itemId),
+        onBack = onBack,
+    )
 }
 
 @Composable

@@ -17,7 +17,11 @@ internal object BucketRevalidateInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val request = chain.request
         if (request.data.toString().startsWith(HmkWebViewClient.BUCKET_BASE)) {
-            return chain.proceed(request.newBuilder().setHeader("Cache-Control", "max-age=0").build())
+            val source = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                com.hamyareman.ir.ui.study.LessonCache.prepare(request.context, request.data.toString())
+            }
+            return chain.proceed(request.newBuilder().data(source?.file)
+                .memoryCacheKey(request.data.toString() + "@" + (source?.file?.lastModified() ?: 0L)).build())
         }
         return chain.proceed(request)
     }
