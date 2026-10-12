@@ -294,3 +294,66 @@ internal fun loadPracticeCover(ctx: android.content.Context, id: String): androi
     }
     return image
 }
+
+
+/** گروه تاشوی منوی هاب — دسته‌بندی در تو در تو (مشترک بین مدرسه/آموزشگاه/سلامتی). */
+@Composable
+fun HubMenuGroup(
+    title: String,
+    subtitle: String,
+    open: Boolean? = null,
+    onToggle: (() -> Unit)? = null,
+    slotId: String = FontCatalog.ROLE_HEADING,
+    content: @Composable () -> Unit,
+) {
+    var selfOpen by rememberSaveable { mutableStateOf(false) }
+    val isOpen = open ?: selfOpen
+    val shape = RoundedCornerShape(16.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .shadow(5.dp, shape)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .45f), shape)
+            .clickable(
+                role = Role.Button,
+                onClick = { if (onToggle != null) onToggle() else selfOpen = !selfOpen },
+            )
+            .padding(12.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = AppTypography.accordionTitle.family,
+                    fontWeight = AppTypography.accordionTitle.weight,
+                    fontSize = AppTypography.accordionTitle.size,
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = AppTypography.accordionSub.family,
+                    fontWeight = AppTypography.accordionSub.weight,
+                    fontSize = AppTypography.accordionSub.size,
+                )
+            }
+            Icon(
+                if (isOpen) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                contentDescription = if (isOpen) "بستن" else "بازکردن",
+            )
+        }
+        AnimatedVisibility(visible = isOpen) {
+            Column(
+                Modifier.padding(top = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) { content() }
+        }
+    }
+}
+

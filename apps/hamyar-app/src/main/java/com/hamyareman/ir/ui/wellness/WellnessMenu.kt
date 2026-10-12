@@ -79,15 +79,15 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "mf-body-scan", "🫀", "اسکن بدن", "۳ تا ۵ دقیقه از سر تا پا", "۴ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "mf-grounding", "🖐️", "زمین‌گیری ۵-۴-۳-۲-۱", "حواس پنج‌گانه برای برگشتن به الان", "۳ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "mf-one-minute", "⏳", "یک دقیقه نفس", "بین کارها؛ فقط شصت ثانیه", "۱ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -102,17 +102,17 @@ object WellnessMenu {
                 i(
                     "hyp-focus", "🎯", "من می‌تونم تمرکز کنم", "القای آرامش پیش از درس", "۵ دقیقه",
                     route = Screen.ContentHtml.of("mh-study-01"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-chapter", "✅", "تجسم کامل‌کردن یک فصل", "دیدنِ تمام‌شدن تمرین", "۴ دقیقه",
                     route = Screen.ContentHtml.of("mh-study-02"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-procrastinate", "🚪", "رهاسازی اهمال‌کاری", "شروع ۲ دقیقه‌ای به‌جای منتظر ماندن", "۳ دقیقه",
                     route = Screen.ContentHtml.of("mh-study-03"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -122,17 +122,17 @@ object WellnessMenu {
                 i(
                     "hyp-enter", "🏫", "تجسم ورود آروم به جلسه", "راهرو، صندلی، برگه", "۵ دقیقه",
                     route = Screen.ContentHtml.of("mh-exam-01"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-memory", "🧠", "حافظه‌ام در دسترسمه", "تلقینِ بازیابی آرام", "۴ دقیقه",
                     route = Screen.ContentHtml.of("mh-exam-02"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-anxiety", "🌊", "مدیریت اضطراب پیش از امتحان", "Test Anxiety — موج می‌آید و می‌رود", "۵ دقیقه",
                     route = Screen.ContentHtml.of("mh-exam-03"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -142,17 +142,17 @@ object WellnessMenu {
                 i(
                     "hyp-reframe", "🔄", "بازنویسی فکر منفی", "Cognitive Reframing واقع‌بینانه", "۵ دقیقه",
                     route = Screen.ContentHtml.of("mh-thoughts-01"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-esteem", "🌟", "تلقین عزت‌نفس", "برای نوجوان؛ بدون مقایسه", "۴ دقیقه",
                     route = Screen.ContentHtml.of("mh-thoughts-02"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-compare", "🕊️", "رهاسازی مقایسه با دیگران", "مسیر خودت", "۴ دقیقه",
                     route = Screen.ContentHtml.of("mh-thoughts-03"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -162,17 +162,17 @@ object WellnessMenu {
                 i(
                     "hyp-talk", "🗣️", "آرامش پیش از گفت‌وگوی سخت", "با دوست، خانواده یا معلم", "۴ دقیقه",
                     route = Screen.ContentHtml.of("mh-social-01"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-empathy", "👁️", "دیدن از زاویه‌ی دیگری", "تمرین همدلی", "۵ دقیقه",
                     route = Screen.ContentHtml.of("mh-social-02"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "hyp-anger", "🔥", "رهاسازی خشم کوچک", "دلخوری را زمین بگذار", "۴ دقیقه",
                     route = Screen.ContentHtml.of("mh-social-03"),
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -181,7 +181,7 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "hyp-sleep", "🛏️", "آرام‌سازی پیش از خواب با تلقین", "بدن سنگین، فکر سبک", "۶ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                     route = Screen.SleepNight.route,
                 ),
             ),
@@ -191,11 +191,11 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "th-auto", "⚡", "تشخیص فکر منفی خودکار", "اول ببین، بعد عوض کن", "۳ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "th-rewrite", "✏️", "بازنویسی جمله‌ی منفی", "واقع‌بینانه، نه شعار", "۴ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "th-strengths", "📒", "سه نقطه‌قوت امروز", "شکرگزاریِ عملی", "۴ دقیقه",
@@ -209,15 +209,15 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "so-label", "🏷️", "نام‌گذاری احساس", "Emotion Labeling", "۲ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "so-perspective", "🔭", "دیدن از دید دیگران", "Perspective Taking", "۵ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "so-issue", "📰", "مسئله‌ی اجتماعی روز", "پرسش‌های تأملی، نه شعار", "۶ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "so-kindness", "💛", "مهربانی با غریبه", "یک لطف کوچک امروز — از پرسش روزانه", "۲ دقیقه",
@@ -241,11 +241,11 @@ object WellnessMenu {
                 i("ln-recall", "🔁", "فعال‌سازی حافظه", "بدون نگاه‌کردن بگو", slug = "learn-active-recall"),
                 i(
                     "ln-two-min", "⏱️", "تکنیک ۲ دقیقه", "شروع کار سخت فقط با دو دقیقه‌ی اول", "۲ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "ln-quiz", "❓", "مرور فعال با سؤال‌سازی", "Self-Quizzing", "۵ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -265,11 +265,11 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "pmr-full", "🧘", "نسخه‌ی کامل سر تا پا", "۱۰ تا ۱۲ دقیقه", "۱۲ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "pmr-short", "🙌", "نسخه‌ی کوتاه دست و شانه", "وسط روز، پشت میز", "۳ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -280,37 +280,37 @@ object WellnessMenu {
                     "jn-forest", "🌲", "جنگل آرام", "باد، برگ، پرنده", "۷ دقیقه",
                     route = Screen.ContentHtml.of("cj-01"),
                     body = "",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "jn-beach", "🌊", "ساحل و امواج", "دریا، شن گرم", "۷ دقیقه",
                     route = Screen.ContentHtml.of("cj-02"),
                     body = "",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "jn-cabin", "🔥", "کلبه‌ی کوهستانی برفی", "سکوت، آتش، پتو", "۷ دقیقه",
                     route = Screen.ContentHtml.of("cj-03"),
                     body = "",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "jn-garden", "🌸", "باغ مخفی", "رایحه‌ی گل، صدای آب", "۶ دقیقه",
                     route = Screen.ContentHtml.of("cj-04"),
                     body = "",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "jn-boat", "🛶", "قایق روی رودخانه‌ی آرام", "جریان تو را می‌برد", "۶ دقیقه",
                     route = Screen.ContentHtml.of("cj-05"),
                     body = "",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "jn-rain", "🌧️", "پیاده‌روی زیر باران بهاری", "بوی خاک، قطره‌های نرم", "۶ دقیقه",
                     route = Screen.ContentHtml.of("cj-06"),
                     body = "",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -319,27 +319,27 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "vz-relax", "🌫️", "مه رنگی آرامش", "Relaxation Imagery", "۵ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "vz-perf", "🏅", "تصویرسازی عملکردی", "موفقیت در امتحان یا ارائه", "۵ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "vz-process", "🪜", "تصویرسازی مرحله‌به‌مرحله", "Process Imagery — قدم‌های درس", "۵ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "vz-end", "🌅", "تصویرسازی حالت‌نهایی", "خودِ رسیده‌به هدف", "۴ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "vz-bubble", "🫧", "حباب محافظ", "برای اضطراب اجتماعی", "۴ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "vz-box", "📦", "جعبه‌ی نگرانی", "Worry Box — بگذار برای بعد", "۳ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -404,11 +404,11 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "bl-202020", BETWEEN_ICON, "قانون ۲۰-۲۰-۲۰", "هر ۲۰ دقیقه، ۲۰ ثانیه به فاصله‌ی حدود ۶ متر", "۲۰ ثانیه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "bl-focus", BETWEEN_ICON, "فوکوس نزدیک/دور", "نوک انگشت و افق", "۱ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -417,15 +417,15 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "bl-stand", BETWEEN_ICON, "ایستادن و کشش کامل", "دست‌ها بالا، قد بکش", "۱ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "bl-walk", BETWEEN_ICON, "راه‌رفتن درجا / پله‌ی کوتاه", "خون‌رسانی بدون عرق", "۲ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "bl-shake", BETWEEN_ICON, "تکان دادن دست و پا", "Shake it off", "۳۰ ثانیه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -435,7 +435,7 @@ object WellnessMenu {
                 i("bl-box", BETWEEN_ICON, "تنفس شمارشی ۴-۴-۴", "قبلاً در تنفس سلامتی", slug = "breath-counting"),
                 i(
                     "bl-sentence", BETWEEN_ICON, "یک جمله‌ی تمرکز", "الان فقط همینو انجام بده", "۳۰ ثانیه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -448,15 +448,15 @@ object WellnessMenu {
                 i("pd-child", "🙇", "حالت کودک", "تمرین تعاملی", route = Screen.ContentHtml.of("yga-01")),
                 i(
                     "pd-butterfly", "🦋", "پروانه‌ی خوابیده", "Reclined Butterfly", "۲ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "pd-twist", "🌀", "پیچش خوابیده", "Supine Twist", "۲ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "pd-legs", "🦵", "پا به دیوار", "Legs-Up-the-Wall", "۳ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
             ),
         ),
@@ -472,7 +472,7 @@ object WellnessMenu {
             items = listOf(
                 i(
                     "pd-hips", "🦴", "کشش کمر و لگن", "ملایم، بدون فشار", "۳ دقیقه",
-                    steps = emptyList(),
+                    steps = emptyList<String>(),
                 ),
                 i(
                     "pd-heat", "🌡️", "کمپرس گرم + وضعیت تسکین", "گرما + دراز کشیدن", "۱۰ دقیقه",
@@ -586,7 +586,7 @@ object WellnessMenu {
         if (item.wellnessSlug.isNotBlank()) {
             val move = WellnessCatalog.bySlug(item.wellnessSlug)
             if (move != null) {
-                val steps = emptyList()}
+                val steps = emptyList<String>()}
         }
         return item.body to item.steps
     }

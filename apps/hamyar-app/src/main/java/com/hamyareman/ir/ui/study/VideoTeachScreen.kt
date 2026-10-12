@@ -115,8 +115,10 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     var cacheTick by remember { mutableIntStateOf(0) }
     var msg by remember { mutableStateOf<String?>(null) }
 
+    var retry by remember(fileId) { mutableIntStateOf(0) }
     val remoteUris = StudyMedia.candidateUrls(fileId)
-    LaunchedEffect(fileId) {
+    LaunchedEffect(fileId, retry) {
+        msg = null
         withContext(Dispatchers.IO) {
             if (!MediaVault.ensureFresh(context, remoteUris, fileId)) {
                 android.os.Handler(android.os.Looper.getMainLooper()).post { msg = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید." }
@@ -131,6 +133,14 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
         MediaVault.localUrl(context, fileId)
     } else {
         remoteUris.getOrElse(remoteIndex) { remoteUris.first() }
+    }
+
+    if (!useLocal) {
+        Column(Modifier.fillMaxSize(), verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center, horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+            Text(msg ?: "در حال دریافت محتوا")
+            if (msg != null) androidx.compose.material3.TextButton(onClick = { retry++ }) { Text("تلاش دوباره") }
+        }
+        return
     }
 
     // --- سرعت (قفل تا اتمام دوره‌ی اول — همان قانون صوت) ---

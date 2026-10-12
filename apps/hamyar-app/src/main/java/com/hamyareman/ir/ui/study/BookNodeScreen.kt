@@ -342,7 +342,7 @@ private fun BookPdfPages(bucketKey: String, onMissing: () -> Unit = {}) {
                 val urls = StudyMedia.candidateUrls(bucketKey).toList()
                 urls.isNotEmpty() && urls.all { u -> LessonCache.isRemoteMissing(u) }
             }
-            if (gone) onMissing() else state = BookPdfState.Failed(message)
+            if (gone) { BucketTransfer.missing.value = null; onMissing() } else state = BookPdfState.Failed(message)
         }
     }
 
