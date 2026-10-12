@@ -25,7 +25,7 @@ object TeachCloud {
 
     /** Appwrite row IDs are limited to 36 characters; hash the stable user+pack key. */
     fun rowIdFor(userId: String, packId: String): String {
-        val raw = "teach\\u0000$userId\\u0000$packId"
+        val raw = "teach|$userId|$packId"
         val hex = MessageDigest.getInstance("SHA-256")
             .digest(raw.toByteArray(Charsets.UTF_8))
             .take(16)
