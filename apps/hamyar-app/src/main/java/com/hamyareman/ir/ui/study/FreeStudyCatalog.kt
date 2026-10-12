@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.security.MessageDigest
 
 data class FreeStudyChapter(
     val id: String,
@@ -69,16 +70,18 @@ object FreeStudyCatalog {
         durationMs: Long,
         status: String,
     ) {
-        val pct = if (durationMs > 0) (positionMs * 100L / durationMs).coerceIn(0, 100) else 0
+        val safeDurationMs = durationMs.coerceAtLeast(0)
+        val safePositionMs = positionMs.coerceAtLeast(0)
+            .coerceAtMost(safeDurationMs.takeIf { it > 0 } ?: Long.MAX_VALUE)
+        val pct = if (safeDurationMs > 0) (safePositionMs * 100L / safeDurationMs).coerceIn(0, 100) else 0
         sync.enqueue(
-            TableIds.LESSON_MEDIA_PROGRESS,
-            "free-${userId}-${book.id}",
+            TableIds.FREE_BOOK_USER_STATE,
+            stableRowId("fbs", "$userId|${book.id}"),
             mapOf(
                 "userId" to userId,
-                "mediaKey" to book.id,
-                "mediaType" to book.kind,
-                "positionMs" to positionMs.coerceAtLeast(0),
-                "durationMs" to durationMs.coerceAtLeast(0),
+                "bookId" to book.id,
+                "positionMs" to safePositionMs,
+                "durationMs" to safeDurationMs,
                 "progressPct" to pct,
                 "status" to status,
                 "updatedAtMs" to System.currentTimeMillis(),
@@ -87,21 +90,32 @@ object FreeStudyCatalog {
     }
 
     fun queueRequest(sync: SyncEngine, userId: String, book: FreeStudyBook?, requestText: String) {
+        val now = System.currentTimeMillis()
+        val request = requestText.trim().take(2000)
+        val title = book?.title?.trim()?.take(256)?.takeIf { it.isNotBlank() }
+            ?: request.take(256).ifBlank { "درخواست کتاب" }
         sync.enqueue(
-            TableIds.APP_STATE,
-            "free-book-request-${userId}-${System.currentTimeMillis()}",
+            TableIds.FREE_BOOK_REQUESTS,
+            stableRowId("fbr", "$userId|$now|${book?.id.orEmpty()}|$request"),
             mapOf(
                 "userId" to userId,
-                "key" to "free_book_request",
-                "payload" to JSONObject()
-                    .put("bookId", book?.id.orEmpty())
-                    .put("kind", book?.kind.orEmpty())
-                    .put("request", requestText.trim().take(2000))
-                    .put("createdAtMs", System.currentTimeMillis())
-                    .toString(),
-                "updatedAt" to System.currentTimeMillis(),
+                "title" to title,
+                "author" to "",
+                "type" to (book?.kind?.take(16) ?: "TEXT"),
+                "note" to request,
+                "createdAtMs" to now,
+                "status" to "PENDING",
             ),
         )
+    }
+
+    /** Appwrite row IDs may contain at most 36 characters. */
+    private fun stableRowId(prefix: String, value: String): String {
+        val hex = MessageDigest.getInstance("SHA-256")
+            .digest(value.toByteArray(Charsets.UTF_8))
+            .take(16)
+            .joinToString("") { (it.toInt() and 0xff).toString(16).padStart(2, '0') }
+        return "${prefix}_$hex"
     }
 
     private fun cached(context: Context): List<FreeStudyBook> = runCatching {
