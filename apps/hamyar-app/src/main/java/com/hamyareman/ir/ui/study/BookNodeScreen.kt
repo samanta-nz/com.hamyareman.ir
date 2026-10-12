@@ -145,6 +145,12 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
             val gone = prepared == null && !hasCache && LessonCache.isRemoteMissing(url)
             handler.post {
                 when {
+                    prepared?.resolvedUrl != null -> {
+                        pageReadyUrl = prepared.resolvedUrl
+                        cachedDocument = false
+                        transferLoading = false
+                        reloadToken++
+                    }
                     gone -> {
                         transferLoading = false
                         onMissing()
@@ -243,14 +249,15 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
                     }
                 },
                 update = { view ->
-                    val tag = url + "#" + reloadToken
+                    val target = pageReadyUrl ?: url
+                    val tag = target + "#" + reloadToken
                     if (view.tag != tag) {
                         view.tag = tag
-                        view.loadUrl(url)
+                        view.loadUrl(target)
                     }
                 },
                 modifier = Modifier.fillMaxSize(),
-                onRelease = { it.stopManagedMedia(); webRef[0] = null; it.destroy() },
+                onRelease = { (it.webViewClient as? HmkWebViewClient)?.dispose(); it.stopManagedMedia(); webRef[0] = null; it.destroy() },
             )
         }
 

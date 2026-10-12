@@ -265,7 +265,6 @@ object MediaVault {
         val prefs = versionPrefs(ctx)
         val checkedKey = "checked:" + cacheKey
         val now = System.currentTimeMillis()
-        if (now - prefs.getLong(checkedKey, 0L) < 4_000L) return true
 
         val savedEtag = prefs.getString("etag:" + cacheKey, "").orEmpty()
         val savedLength = prefs.getLong("length:" + cacheKey, -1L)

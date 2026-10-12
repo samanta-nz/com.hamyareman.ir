@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -119,6 +120,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     val remoteUris = StudyMedia.candidateUrls(fileId)
     LaunchedEffect(fileId, retry) {
         msg = null
+        val previousStamp = MediaVault.vaultFile(context, fileId).lastModified()
         withContext(Dispatchers.IO) {
             if (!MediaVault.ensureFresh(context, remoteUris, fileId)) {
                 android.os.Handler(android.os.Looper.getMainLooper()).post { msg = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید." }
@@ -126,7 +128,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
         }
         useLocal = MediaVault.isVerified(context, fileId)
         freshnessChecked = true
-        cacheTick++
+        if (MediaVault.vaultFile(context, fileId).lastModified() != previousStamp) cacheTick++
     }
     var remoteIndex by remember(fileId) { mutableIntStateOf(0) }
     val uri = if (useLocal && MediaVault.isVerified(context, fileId)) {
@@ -150,9 +152,11 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     }
 
     // --- پلیر ---
-    var player by remember(fileId, uri) { mutableStateOf<ExoPlayer?>(null) }
-    var watchAccum by remember(fileId, uri) { mutableLongStateOf(0L) }
-    var posMs by remember(fileId, uri) {
+    var player by remember(fileId, uri, cacheTick) { mutableStateOf<ExoPlayer?>(null) }
+    val transfers by BucketTransfer.states.collectAsState()
+    LaunchedEffect(transfers) { if (transfers.any { !it.confirmation && it.url in remoteUris }) player?.pause() }
+    var watchAccum by remember(fileId, uri, cacheTick) { mutableLongStateOf(0L) }
+    var posMs by remember(fileId, uri, cacheTick) {
         mutableLongStateOf(store.getString("vid_${packId}_pos", "0").toLongOrNull() ?: 0L)
     }
 
@@ -161,7 +165,7 @@ fun VideoTeachScreen(packId: String, onBack: () -> Unit) {
     // v1.25 — خروج از صفحه‌ی ویدیو (هوم/پنجره‌ها/قفل صفحه) = مکث پخش.
     PauseOnStopEffect(pause = { player?.pause() })
 
-    DisposableEffect(fileId, uri) {
+    DisposableEffect(fileId, uri, cacheTick) {
         val p = ExoPlayer.Builder(context)
             .setMediaSourceFactory(
                 com.hamyareman.ir.platform.feature.playback.vaultAwareMediaSourceFactory(context),

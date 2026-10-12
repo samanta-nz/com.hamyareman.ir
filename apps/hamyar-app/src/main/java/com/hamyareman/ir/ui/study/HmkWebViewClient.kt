@@ -8,6 +8,7 @@ import android.webkit.WebViewClient
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.net.URLConnection
+import kotlinx.coroutines.*
 
 /**
  * میانجیِ درخواست‌های WebView برای محتوای رمزشدهٔ باکت.
@@ -30,6 +31,9 @@ open class HmkWebViewClient(
 ) : WebViewClient() {
 
     enum class Problem { KEY_MISSING, CORRUPT, OFFLINE }
+    private val revalidationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val checking = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    fun dispose() { revalidationScope.cancel() }
 
     override fun shouldInterceptRequest(
         view: WebView,
@@ -56,7 +60,10 @@ open class HmkWebViewClient(
 
         // هر HTML از همین‌جا freshness check می‌شود. برای document اصلی، UI پیشاپیش
         // همین prepare را انجام داده و recentChecks مانع HEAD تکراری همان لحظه می‌شود.
-        val prepared = LessonCache.prepare(appContext, url, confirmUpdates = confirmUpdates)
+        val prepared = if (LessonCache.isCached(appContext, url)) {
+            revalidateCached(view, url, request.isForMainFrame)
+            LessonCache.PrepareResult(LessonCache.fileFor(appContext, url), LessonCache.Freshness.CACHED)
+        } else LessonCache.prepare(appContext, url, confirmUpdates = confirmUpdates)
         if (prepared == null) {
             if (request.isForMainFrame && isHtml) {
                 lastMessage = MSG_OFFLINE
@@ -131,6 +138,30 @@ open class HmkWebViewClient(
         lastMessage = MSG_CORRUPT
         onProblem(Problem.CORRUPT)
         return null
+    }
+
+    private fun revalidateCached(view: WebView, url: String, main: Boolean) {
+        if (!checking.add(url)) return
+        revalidationScope.launch {
+            try {
+                val result = runInterruptible { LessonCache.prepare(appContext, url,
+                    confirmUpdates = confirmUpdates, forceCheck = false,
+                    onStatus = { if (it == LessonCache.Freshness.UPDATED) view.post { view.stopManagedMedia() } }) }
+                if (result == null || result.freshness == LessonCache.Freshness.CACHED || !isActive) return@launch
+                view.post {
+                    if (!view.isAttachedToWindow) return@post
+                    if (main) {
+                        if (LessonCache.canonical(view.url.orEmpty()) == LessonCache.canonical(url)) {
+                            if (result.resolvedUrl != null) view.loadUrl(result.resolvedUrl) else view.reload()
+                        }
+                    } else {
+                        val before = org.json.JSONObject.quote(url.substringBefore('#'))
+                        val after = org.json.JSONObject.quote(result.resolvedUrl ?: url)
+                        view.evaluateJavascript("(function(){document.querySelectorAll('img,audio,video,iframe').forEach(function(el){if((el.src||'').split('#')[0]===" + before + "){if(el.pause)el.pause();el.src=" + after + ";if(el.load)el.load();}});})();", null)
+                    }
+                }
+            } finally { checking.remove(url) }
+        }
     }
 
     private fun refreshKey(): Boolean = runCatching {

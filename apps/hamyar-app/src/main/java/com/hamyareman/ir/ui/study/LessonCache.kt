@@ -41,6 +41,7 @@ object LessonCache {
     data class PrepareResult(
         val file: File,
         val freshness: Freshness,
+        val resolvedUrl: String? = null,
     )
 
     private data class RemoteMeta(
@@ -155,12 +156,13 @@ object LessonCache {
         onProgress: ((Int, Int) -> Unit)? = null,
         onStatus: ((Freshness) -> Unit)? = null,
         confirmUpdates: Boolean = true,
+        forceCheck: Boolean = true,
     ): PrepareResult? {
         val canonicalUrl = canonical(url)
         val key = keyOf(canonicalUrl)
         val lock = locks.getOrPut(key) { Any() }
         return synchronized(lock) {
-            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus, confirmUpdates)
+            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus, confirmUpdates, forceCheck)
         }
     }
 
@@ -174,12 +176,13 @@ object LessonCache {
         onProgress: ((Int, Int) -> Unit)?,
         onStatus: ((Freshness) -> Unit)?,
         confirmUpdates: Boolean,
+        forceCheck: Boolean,
     ): PrepareResult? {
         val target = fileFor(ctx, canonicalUrl)
         val hasCache = isCached(ctx, canonicalUrl)
         val now = System.currentTimeMillis()
 
-        if (hasCache && now - (recentChecks[key] ?: 0L) < DEDUPE_MS) {
+        if (!forceCheck && hasCache && now - (recentChecks[key] ?: 0L) < DEDUPE_MS) {
             onStatus?.invoke(Freshness.CACHED)
             return PrepareResult(target, Freshness.CACHED)
         }
@@ -193,7 +196,7 @@ object LessonCache {
 
             // تغییری نکرده: بدون دریافت بدنه.
             if (code == HttpURLConnection.HTTP_NOT_MODIFIED && hasCache) {
-                recentChecks[key] = now
+                recentChecks[key] = System.currentTimeMillis()
                 onStatus?.invoke(Freshness.CACHED)
                 return PrepareResult(target, Freshness.CACHED)
             }
@@ -202,8 +205,8 @@ object LessonCache {
             // تا بار بعد دوباره بررسی شود.
             if (code == 404 || code == 410) {
                 if (!canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
-                    return prepare(ctx, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY), onProgress, onStatus, confirmUpdates && needsConfirmation(canonicalUrl))?.let {
-                        PrepareResult(it.file, if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED)
+                    return prepare(ctx, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY), onProgress, onStatus, confirmUpdates && needsConfirmation(canonicalUrl), forceCheck = false)?.let {
+                        PrepareResult(it.file, if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY))
                     }
                 }
                 return null
@@ -223,14 +226,14 @@ object LessonCache {
             // سرور شرط را نادیده گرفته ولی محتوا همان است: اتصال بدون خواندن بدنه بسته می‌شود.
             if (hasCache && isUnchanged(canonicalUrl, target, stored, remote)) {
                 writeMeta(ctx, canonicalUrl, remote)
-                recentChecks[key] = now
+                recentChecks[key] = System.currentTimeMillis()
                 onStatus?.invoke(Freshness.CACHED)
                 return PrepareResult(target, Freshness.CACHED)
             }
 
             if (hasCache) {
                 if (confirmUpdates && needsConfirmation(canonicalUrl) && !BucketTransfer.confirm(canonicalUrl)) {
-                    recentChecks[key] = now
+                    recentChecks[key] = System.currentTimeMillis()
                     onStatus?.invoke(Freshness.CACHED)
                     return PrepareResult(target, Freshness.CACHED)
                 }
@@ -256,7 +259,7 @@ object LessonCache {
             }
 
             writeMeta(ctx, canonicalUrl, RemoteMeta(downloaded.length, downloaded.etag, downloaded.modified))
-            recentChecks[key] = now
+            recentChecks[key] = System.currentTimeMillis()
             return PrepareResult(saved, freshness)
         } catch (_: Throwable) {
             // آفلاین/timeout: کش سالم همان‌جا نمایش داده می‌شود.

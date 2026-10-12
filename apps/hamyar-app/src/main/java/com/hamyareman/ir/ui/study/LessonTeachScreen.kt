@@ -348,42 +348,26 @@ internal fun TeachAudioBar(packId: String, screenTitle: String, bookTitle: Strin
     )
 
     fun startTrack(t: TeachTrack, autoplay: Boolean, startMs: Long? = null, preferLocal: Boolean = true) {
-        if (availability == false) return
-        if (autoplay && quietOn()) return
+        if (availability == false || autoplay && quietOn()) return
         val p = player ?: return
-        val pos = startMs ?: if (preferLocal && cached(t)) savedPos(t) else 0L
-        scope.launch {
-            val uri = withContext(Dispatchers.IO) {
-                val urls = remoteUris(t)
-                if (!MediaVault.ensureFresh(context, urls, t.cacheKey)) return@withContext ""
-                MediaVault.localUrl(context, t.cacheKey)
-            }
-            if (uri.isBlank()) { note = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."; return@launch }
-            loadedLocal = uri.startsWith("vault://")
-            loadedRemoteIndex = 0
-            loadedKey = t.cacheKey
-            lastSaveMs = 0L
-            posMs = pos
-            runCatching {
-                p.setMediaItem(
-                    MediaItem.Builder()
-                        .setUri(uri)
-                        .setMediaId(t.cacheKey)
-                        .setMediaMetadata(
-                            MediaMetadata.Builder()
-                                .setTitle(screenTitle)
-                                .setArtist(bookTitle.ifBlank { t.label })
-                                .build(),
-                        )
-                        .build(),
-                )
-                if (pos > 0) p.seekTo(pos)
-                p.setPlaybackSpeed(speed)
-                p.prepare()
-                p.playWhenReady = autoplay
-            }
+        val pos = startMs ?: savedPos(t)
+        fun showCache() {
+            loadedLocal = true; loadedRemoteIndex = 0; loadedKey = t.cacheKey
+            lastSaveMs = 0L; posMs = pos
+            p.setMediaItem(MediaItem.Builder().setUri(MediaVault.localUrl(context, t.cacheKey)).setMediaId(t.cacheKey)
+                .setMediaMetadata(MediaMetadata.Builder().setTitle(screenTitle).setArtist(bookTitle.ifBlank { t.label }).build()).build())
+            if (pos > 0) p.seekTo(pos)
+            p.setPlaybackSpeed(speed); p.prepare(); p.playWhenReady = autoplay
         }
-    }
+        val hadCache = cached(t)
+        val previousStamp = MediaVault.vaultFile(context, t.cacheKey).lastModified()
+        if (hadCache) showCache()
+        scope.launch {
+            val ready = withContext(Dispatchers.IO) { MediaVault.ensureFresh(context, remoteUris(t), t.cacheKey) }
+            if (!ready) { p.stop(); loadedKey = null; note = "دریافت محتوا انجام نشد. دوباره تلاش کنید."; return@launch }
+            if (!hadCache || MediaVault.vaultFile(context, t.cacheKey).lastModified() != previousStamp) showCache()
+        }
+}
 
     // درخواستِ «پخشِ همین درس» (مثلاً از جای دیگر) → همین‌جا شروع کن.
     LaunchedEffect(packId) {

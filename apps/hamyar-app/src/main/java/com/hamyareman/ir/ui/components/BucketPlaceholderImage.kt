@@ -24,7 +24,9 @@ private val placeholderSnapshot = MutableStateFlow(PlaceholderSnapshot())
 
 /** One renderer for the shared downloaded HTML; hundreds of missing thumbnails do not create hundreds of WebViews. */
 @Composable
-internal fun BucketPlaceholderImage(revision: Long, description: String?, modifier: Modifier, scale: ContentScale) {
+internal fun BucketPlaceholderImage(requestedRevision: Long, description: String?, modifier: Modifier, scale: ContentScale) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val revision = LessonCache.fileFor(context, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY)).lastModified()
     val token = remember(revision) { UUID.randomUUID().toString() }
     val snapshot by placeholderSnapshot.collectAsState()
     SideEffect {
@@ -45,7 +47,7 @@ internal fun BucketPlaceholderImage(revision: Long, description: String?, modifi
             AndroidView(modifier = Modifier.size(1.dp).alpha(0f), factory = { context ->
                 WebView(context).apply {
                     setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-                    settings.javaScriptEnabled = false
+                    settings.javaScriptEnabled = true
                     settings.allowFileAccess = false
                     settings.allowContentAccess = false
                     webViewClient = object : HmkWebViewClient(context.applicationContext, HmkWebViewClient.bucketHost(), confirmUpdates = false) {
@@ -63,7 +65,7 @@ internal fun BucketPlaceholderImage(revision: Long, description: String?, modifi
                     }
                     loadUrl(ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY))
                 }
-            }, onRelease = { it.stopLoading(); it.destroy() })
+            }, onRelease = { (it.webViewClient as? HmkWebViewClient)?.dispose(); it.stopLoading(); it.destroy() })
         }
     }
 }

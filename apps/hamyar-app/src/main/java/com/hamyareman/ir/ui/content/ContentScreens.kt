@@ -227,6 +227,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
 
             handler.post {
                 when {
+                    prepared?.resolvedUrl != null -> { pageUrl = prepared.resolvedUrl; pageWasCached = false; reloadToken++; refreshing = false }
                     prepared == null && !hasCache -> {
                         pageUrl = null
                         error = "برای بار اول باز کردن این محتوا به اینترنت نیاز است."
@@ -315,8 +316,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxSize(),
                 onRelease = {
+                    (it.webViewClient as? com.hamyareman.ir.ui.study.HmkWebViewClient)?.dispose()
                     it.stopManagedMedia()
                     if (webRef[0] === it) webRef[0] = null
+                    (it.webViewClient as? com.hamyareman.ir.ui.study.HmkWebViewClient)?.dispose()
                     it.destroy()
                 },
             )
