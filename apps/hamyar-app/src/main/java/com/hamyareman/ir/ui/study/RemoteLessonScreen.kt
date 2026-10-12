@@ -13,6 +13,8 @@ internal fun RemoteLessonScreen(packId: String, initialTab: Int = 0, onBack: () 
     BackHandler(onBack = onBack)
     val pack = remember(packId) { BookModuleRegistry.pack(packId) }
     val context = LocalContext.current
+    val container = com.hamyareman.ir.LocalAppContainer.current
+    val store = remember { com.hamyareman.ir.platform.core.common.LocalStore(context, "hamyar_math_html") }
     if (pack != null && LessonAccess.gate(context, pack.bookCode, packId) == LessonAccess.Gate.NeedSub) {
         NeedSubScreen(onBack = onBack)
         return
@@ -32,7 +34,16 @@ internal fun RemoteLessonScreen(packId: String, initialTab: Int = 0, onBack: () 
             if (tabs[selected].second == "pdf") {
                 val fileId = pack?.pdfFileName ?: packId + "_BOOK.pdf"
                 RemotePdfPage(com.hamyareman.ir.ui.content.ContentCatalog.keyFor(fileId) ?: "Bucket/Pdf-files/app/" + fileId)
-            } else RemoteHtmlPage(BucketRoutes.lesson(packId, tabs[selected].second), pack?.audioFileId.orEmpty())
+            } else {
+                val kind = tabs[selected].second
+                val bridge = remember(packId, kind) { HamyarHtmlBridge(context.applicationContext, packId, kind, store, container.studyProgress) }
+                RemoteHtmlPage(BucketRoutes.lesson(packId, kind), pack?.audioFileId.orEmpty(),
+                    onConfigure = { it.addJavascriptInterface(bridge, "Hamyar") },
+                    onPageReady = { view ->
+                        val script = context.assets.open("math/c905/hamyar-persist.js").bufferedReader().use { it.readText() }
+                        view.evaluateJavascript(script, null)
+                    })
+            }
         }
     }
 }

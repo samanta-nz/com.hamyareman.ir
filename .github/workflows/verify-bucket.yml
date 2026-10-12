@@ -2,6 +2,12 @@ name: Verify bucket content 3.0.8
 on:
   push:
     branches: [codex/bucket-3.0.8]
+    paths:
+      - "apps/**"
+      - "shared/**"
+      - "scripts/audit_bucket_routes.py"
+      - ".github/workflows/**"
+      - "config/grade9-release-policy.json"
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,6 +29,17 @@ jobs:
         run: python3 scripts/audit_bucket_routes.py
       - name: Test and build
         run: ./gradlew --console=plain :core-common:testDebugUnitTest :feature-study:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Release
+      - name: Verify APK contains no bundled lesson payload
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          apk = next(Path("apps/hamyar-app/build/outputs/apk/p09/release").glob("*.apk"))
+          with zipfile.ZipFile(apk) as z:
+              forbidden = [n for n in z.namelist() if n.startswith("assets/") and n.lower().endswith((".html", ".pdf", ".mp3", ".opus", ".mp4"))]
+              assert not forbidden, forbidden
+          print("APK_REMOTE_CONTENT_ONLY_VERIFIED")
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:

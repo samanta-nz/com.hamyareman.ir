@@ -195,7 +195,9 @@ fun ToolWebScreen(toolId: String, title: String, onBack: () -> Unit) {
     val key = com.hamyareman.ir.ui.content.ContentCatalog.keyFor(ToolRemote.fileId(toolId))
         ?: com.hamyareman.ir.ui.study.BucketRoutes.key("tool-" + toolId)
     androidx.activity.compose.BackHandler(onBack = onBack)
-    com.hamyareman.ir.ui.study.RemoteHtmlPage(key, onPageReady = { view ->
+    com.hamyareman.ir.ui.study.RemoteHtmlPage(key, onConfigure = { view ->
+        view.addJavascriptInterface(HamyarToolBridge(context.applicationContext, toolId) { }, "HamyarTool")
+    }, onPageReady = { view ->
         view.settings.enableStudyPinchZoom()
         if (toolId in setOf("physics", "chemistry", "biology")) view.settings.enableLabLayout()
         view.evaluateJavascript(toolPageJs(toolId, premium), null)

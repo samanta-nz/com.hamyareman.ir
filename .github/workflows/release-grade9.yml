@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - "config/grade9-release-policy.json"
       - "apps/hamyar-app/**"
       - ".github/workflows/release-grade9.yml"
       - "shared/**"
@@ -157,7 +158,18 @@ jobs:
           if event == "workflow_dispatch":
               needed = True
 
+          policy_path = Path("config/grade9-release-policy.json")
+          policy = json.loads(policy_path.read_text(encoding="utf-8")) if policy_path.exists() else {}
+          policy_matches = policy.get("versionName") == name and int(policy.get("versionCode", -1)) == code
+          announce = os.environ.get("ANNOUNCE") == "true"
+          force_default = False
+          if event == "push" and needed and policy_matches:
+              announce = policy.get("announce") is True
+              force_default = policy.get("forceUpdate") is True
+
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as out:
+              out.write(f"ANNOUNCE={'true' if announce else 'false'}\n")
+              out.write(f"FORCE_UPDATE_DEFAULT={'true' if force_default else 'false'}\n")
               out.write(f"VERSION_NAME={name}\n")
               out.write(f"VERSION_CODE={code}\n")
               out.write(f"RELEASE_NEEDED={'true' if needed else 'false'}\n")
@@ -279,7 +291,16 @@ jobs:
           if [ -n "${RELEASE_NOTES_INPUT:-}" ]; then
             printf '%s\n' "$RELEASE_NOTES_INPUT" > release-notes.md
           else
-            git show -s --format=%B "$GITHUB_SHA" > release-notes.md
+            python3 - <<'PY' > release-notes.md
+          import json, os, subprocess
+          from pathlib import Path
+          path = Path("config/grade9-release-policy.json")
+          policy = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+          if policy.get("versionName") == os.environ["VERSION_NAME"] and policy.get("notes"):
+              print("\n".join(policy["notes"]))
+          else:
+              print(subprocess.check_output(["git", "show", "-s", "--format=%B", os.environ["GITHUB_SHA"]], text=True))
+          PY
           fi
           {
             echo
@@ -339,7 +360,7 @@ jobs:
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
-          FORCE_UPDATE_INPUT: ${{ inputs.force_update }}
+          FORCE_UPDATE_INPUT: ${{ inputs.force_update || env.FORCE_UPDATE_DEFAULT == 'true' }}
           ROLLOUT_INPUT: ${{ inputs.rollout }}
         run: |
           set -euo pipefail

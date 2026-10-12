@@ -87,7 +87,7 @@ fun BookNodeScreen(
 
 /** هر HTML روی باکت — صفحهٔ تدریس آماده یا همان اسپیس‌هولدر مشترک. */
 @Composable
-internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}, onPageReady: (android.webkit.WebView) -> Unit = {}) {
+internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing: () -> Unit = {}, onPageReady: (android.webkit.WebView) -> Unit = {}, onConfigure: (android.webkit.WebView) -> Unit = {}) {
     val context = LocalContext.current
     val container = com.hamyareman.ir.LocalAppContainer.current
     val appearance = com.hamyareman.ir.ui.appearance.LocalUiPrefs.current
@@ -181,6 +181,9 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
                         installManagedMediaLifecycle()
                         settings.allowFileAccess = false
                         settings.allowContentAccess = false
+                        addJavascriptInterface(HamyarHtmlBridge(c.applicationContext, LessonCache.keyOf(url), "document",
+                            com.hamyareman.ir.platform.core.common.LocalStore(c, "hamyar_remote_html"), container.studyProgress), "Hamyar")
+                        onConfigure(this)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.cacheMode = WebSettings.LOAD_NO_CACHE
