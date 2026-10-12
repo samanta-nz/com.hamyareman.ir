@@ -3,9 +3,11 @@ package com.hamyareman.ir.ui.study
 import android.content.Context
 import com.hamyareman.ir.platform.core.appwrite.AuthService
 import com.hamyareman.ir.platform.core.appwrite.TablesDbService
+import com.hamyareman.ir.platform.core.common.TableIds
 import com.hamyareman.ir.platform.core.common.LocalStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.security.MessageDigest
 import org.json.JSONObject
 
 /**
@@ -18,10 +20,18 @@ import org.json.JSONObject
  */
 object TeachCloud {
 
-    const val TABLE = "teach_stats"
+    const val TABLE = TableIds.TEACH_STATS
     private const val KEY_LAST = "teach_cloud_last_sync"
 
-    fun rowIdFor(userId: String, packId: String) = "teach_${userId}_$packId"
+    /** Appwrite row IDs are limited to 36 characters; hash the stable user+pack key. */
+    fun rowIdFor(userId: String, packId: String): String {
+        val raw = "teach\\u0000$userId\\u0000$packId"
+        val hex = MessageDigest.getInstance("SHA-256")
+            .digest(raw.toByteArray(Charsets.UTF_8))
+            .take(16)
+            .joinToString("") { (it.toInt() and 0xff).toString(16).padStart(2, '0') }
+        return "ts_$hex"
+    }
 
     /** صف‌کردن وضعیت فعلی یک پک (بعد از هر ثبت رویداد یا هر نشست). */
     fun enqueue(ctx: Context, sync: com.hamyareman.ir.platform.core.sync.SyncEngine?, userId: String?, packId: String) {
