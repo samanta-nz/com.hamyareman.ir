@@ -1,6 +1,12 @@
 name: Reconcile Appwrite schema
 
 on:
+  pull_request:
+    paths:
+      - "scripts/provision_appwrite_schema.py"
+      - "archive/backend/appwrite.json"
+      - "shared/core-common/src/main/java/com/hamyareman/ir/platform/core/common/TableIds.kt"
+      - ".github/workflows/reconcile-appwrite-schema.yml"
   workflow_dispatch:
     inputs:
       prune_stale_tables:
@@ -17,8 +23,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app source of truth
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile schema provisioner
+        run: python -m py_compile scripts/provision_appwrite_schema.py
+
+      - name: Validate Kotlin-to-schema table contract
+        run: python scripts/provision_appwrite_schema.py --check-contract-only
+
   reconcile:
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
