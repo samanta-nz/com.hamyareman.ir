@@ -14,5 +14,5 @@ internal object BucketHtmlPath {
             else -> null
         }
     }
-    fun plainPath(path: String): String = if (encrypted(path)) path.dropLast(5) else path
+    fun plainPath(path: String): String = if (encrypted(path)) alternative(path)!! else path
 }

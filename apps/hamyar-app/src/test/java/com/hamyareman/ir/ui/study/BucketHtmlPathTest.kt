@@ -10,6 +10,7 @@ class BucketHtmlPathTest {
         assertTrue(BucketHtmlPath.encrypted("LESSON.HTML.HMK1"))
         assertEquals("https://bucket/lesson.html.hmk1?x=1#part", BucketHtmlPath.alternative("https://bucket/lesson.html?x=1#part"))
         assertEquals("https://bucket/lesson.html?x=1#part", BucketHtmlPath.alternative("https://bucket/lesson.html.hmk1?x=1#part"))
+        assertEquals("https://bucket/lesson.html?x=1#part", BucketHtmlPath.plainPath("https://bucket/lesson.html.hmk1?x=1#part"))
         assertNull(BucketHtmlPath.alternative("photo.jpg"))
         assertEquals("folder/lesson.html", BucketHtmlPath.plainPath("folder/lesson.html.hmk1"))
     }
