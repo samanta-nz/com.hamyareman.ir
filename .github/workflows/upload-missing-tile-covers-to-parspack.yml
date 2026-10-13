@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     env:
-      PARSPACK_ACCESS_KEY: \${{ secrets.PARSPACK_ACCESS_KEY }}
-      PARSPACK_SECRET_KEY: \${{ secrets.PARSPACK_SECRET_KEY }}
+      PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+      PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
     steps:
       - name: Checkout New-graphic
         uses: actions/checkout@v4
