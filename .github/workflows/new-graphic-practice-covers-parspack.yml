@@ -1,0 +1,64 @@
+name: Upload CSV-mapped practice covers to ParsPack
+
+on:
+  push:
+    branches: [New-graphic]
+    paths:
+      - ".github/workflows/new-graphic-practice-covers-parspack.yml"
+      - "scripts/upload_bucket_map_images.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: parspack-practice-cover-bulk-upload
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == 'New-graphic'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    env:
+      PARSPACK_ACCESS_KEY: ${{ secrets.PARSPACK_ACCESS_KEY }}
+      PARSPACK_SECRET_KEY: ${{ secrets.PARSPACK_SECRET_KEY }}
+      PARSPACK_ENDPOINT: https://parspack.net
+      PARSPACK_REGION: us-east-1
+      PARSPACK_BUCKET: c539776
+    steps:
+      - name: Checkout uploader and S3 configuration
+        uses: actions/checkout@v4
+        with:
+          ref: New-graphic
+
+      - name: Checkout exact image bytes from Books-Data
+        uses: actions/checkout@v4
+        with:
+          repository: samanta-nz/Books-Data
+          ref: main
+          path: books-data
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install S3 and verification tools
+        run: python -m pip install --disable-pip-version-check --quiet boto3 requests
+
+      - name: Upload all 189 mapped JPGs and verify public reads
+        run: |
+          set -euo pipefail
+          python scripts/upload_bucket_map_images.py \
+            --source "books-data/Bucket/Html-files/assets/practice-covers" \
+            --out "parspack-practice-cover-upload.md" | tee "parspack-practice-cover-upload.log"
+
+      - name: Publish result summary
+        if: always()
+        run: |
+          if [ -f parspack-practice-cover-upload.md ]; then
+            cat parspack-practice-cover-upload.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Upload did not produce a report; inspect the preceding step logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
