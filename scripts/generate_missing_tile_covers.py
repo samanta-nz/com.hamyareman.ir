@@ -276,7 +276,11 @@ def upload_and_verify(dst, path: Path) -> tuple[str, int, str, str]:
     try:
         existing = client.head_object(Bucket=dst.bucket, Key=key)
     except ClientError as exc:
-        if not missing_object(exc):
+        # This bucket may hide a not-yet-created key with 403 instead of 404.
+        response_meta = exc.response.get("ResponseMetadata", {})
+        code = str(exc.response.get("Error", {}).get("Code", ""))
+        status = response_meta.get("HTTPStatusCode")
+        if not missing_object(exc) and status != 403 and code not in {"403", "Forbidden"}:
             raise
     metadata = (existing or {}).get("Metadata") or {}
     identical = (
@@ -356,14 +360,14 @@ def main() -> int:
 
     report = [
         "# ParsPack missing wellness tile covers", "",
-        f"- Bucket: \`{dst.bucket}\`", f"- Expected files: {len(NAMES)}",
+        f"- Bucket: `{dst.bucket}`", f"- Expected files: {len(NAMES)}",
         f"- Uploaded: {uploaded}", f"- Already identical: {identical}",
         f"- Failures: {failures}", f"- Source bytes: {total_bytes}", "",
         "| File | Bytes | Write | Public verification | URL |",
         "|---|---:|---|---|---|",
     ]
     report.extend(
-        f"| \`{name}\` | {size} | {state} | {public} | {dst.public_url(PREFIX + name)} |"
+        f"| `{name}` | {size} | {state} | {public} | {dst.public_url(PREFIX + name)} |"
         for name, size, state, public in rows
     )
     args.report.parent.mkdir(parents=True, exist_ok=True)
