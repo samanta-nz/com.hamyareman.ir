@@ -1,4 +1,4 @@
-name: Upload CSV-mapped tile covers to ParsPack
+name: Upload mapped app images to ParsPack
 
 on:
   push:
@@ -6,13 +6,14 @@ on:
     paths:
       - ".github/workflows/upload-practice-covers-to-parspack.yml"
       - "scripts/upload_practice_covers_to_parspack.py"
+      - "scripts/upload_book_covers_to_parspack.py"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: parspack-csv-tile-covers
+  group: parspack-mapped-app-images
   cancel-in-progress: false
 
 jobs:
@@ -47,6 +48,11 @@ jobs:
           test "$COUNT" -eq 189
           echo "Books-Data main: $(git -C /tmp/books-data rev-parse HEAD)" | tee /tmp/books-data-revision.txt
           echo "CSV expected: 189 images; found: $COUNT"
+          BOOKS="/tmp/books-data/Bucket/Html-files/assets/book-covers"
+          test -d "$BOOKS"
+          BOOK_COUNT="$(find "$BOOKS" -maxdepth 1 -type f | wc -l)"
+          test "$BOOK_COUNT" -eq 12
+          echo "Remaining book covers expected: 12; found: $BOOK_COUNT"
 
       - name: Upload all 189 CSV keys and verify public bytes
         run: |
@@ -55,6 +61,11 @@ jobs:
             --source /tmp/books-data/Bucket/Html-files/assets/practice-covers \
             --report ci-report/practice-covers-upload.md
 
+      - name: Upload remaining book covers and verify public bytes
+        run: |
+          set -euo pipefail
+          python scripts/upload_book_covers_to_parspack.py --source /tmp/books-data/Bucket/Html-files/assets/book-covers --report ci-report/book-covers-upload.md
+
       - name: Publish verification summary
         if: always()
         shell: bash
@@ -62,5 +73,6 @@ jobs:
           {
             echo "## ParsPack tile-cover upload"
             cat /tmp/books-data-revision.txt 2>/dev/null || true
-            cat ci-report/practice-covers-upload.md 2>/dev/null || echo "No upload report was generated."
+            cat ci-report/practice-covers-upload.md 2>/dev/null || echo "No practice-cover report was generated."
+            cat ci-report/book-covers-upload.md 2>/dev/null || echo "No book-cover report was generated."
           } >> "$GITHUB_STEP_SUMMARY"
