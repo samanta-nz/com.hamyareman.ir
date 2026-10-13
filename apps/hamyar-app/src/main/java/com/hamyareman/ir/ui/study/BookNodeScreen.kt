@@ -94,7 +94,7 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
     val url = ServerResolver.internal(bucketKey.ifBlank { BooksMenu.SPACEHOLDER_KEY })
     val webRef = remember(url) { arrayOfNulls<android.webkit.WebView>(1) }
     var pageReadyUrl by remember(url) {
-        mutableStateOf(url.takeIf { LessonCache.isCached(context, it) })
+        mutableStateOf(LessonCache.cachedUrl(context, url))
     }
     var cachedDocument by remember(url) { mutableStateOf(pageReadyUrl != null) }
     var transferLoading by remember(url) { mutableStateOf(false) }
@@ -109,7 +109,8 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
 
     LaunchedEffect(url, retry) {
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
-        val hasCache = LessonCache.isCached(context, url)
+        val cachedAddress = LessonCache.cachedUrl(context, url)
+        val hasCache = cachedAddress != null
         if (hasCache && pageReadyUrl == null) {
             pageReadyUrl = cachedAddress
             cachedDocument = true

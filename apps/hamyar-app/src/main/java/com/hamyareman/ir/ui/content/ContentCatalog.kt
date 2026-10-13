@@ -113,8 +113,8 @@ object ContentCatalog {
                 cats = cs.sortedBy { it.order }
                 itemsById = map
                 mirrorKeys = mirrors
-                pathFiles = map.values.associate { it.key to it.id }
-                relativeFiles = map.values.groupBy { it.key.substringAfterLast('/') }.filterValues { it.size == 1 }.mapValues { it.value.first().id }
+                pathFiles = map.values.associate { com.hamyareman.ir.ui.study.BucketHtmlPath.plainPath(it.key) to it.id }
+                relativeFiles = map.values.groupBy { com.hamyareman.ir.ui.study.BucketHtmlPath.plainPath(it.key.substringAfterLast('/')) }.filterValues { it.size == 1 }.mapValues { it.value.first().id }
                 loaded = true
             }
         }

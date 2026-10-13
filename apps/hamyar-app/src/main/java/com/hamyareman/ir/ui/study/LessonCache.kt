@@ -219,8 +219,10 @@ object LessonCache {
                     val alternate = BucketHtmlPath.alternative(canonicalUrl)
                     if (alternate != null && !canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
                         conn.disconnect()
-                        return prepare(ctx, alternate, onProgress, onStatus, confirmUpdates, forceCheck,
-                            tryAlternative = false)?.let { it.copy(resolvedUrl = it.resolvedUrl ?: alternate) }
+                        val result = prepare(ctx, alternate, onProgress, onStatus, confirmUpdates, forceCheck,
+                            tryAlternative = false)
+                        if (result == null) failures[key] = failureMessage(alternate)
+                        return result?.let { it.copy(resolvedUrl = it.resolvedUrl ?: alternate) }
                     }
                 }
                 if (!canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
