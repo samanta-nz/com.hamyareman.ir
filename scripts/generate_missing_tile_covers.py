@@ -1,238 +1,379 @@
 #!/usr/bin/env python3
-"""Generate deterministic square covers for every menu tile lacking artwork.
-
-The committed JPEGs are build assets; this script is a reproducible fallback for
-new tiles and needs Pillow only when artwork is regenerated.  It never overwrites
-an existing cover unless --force is supplied.
-"""
+"""Generate the seven missing wellness menu covers, upload them, and verify public bytes."""
 from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import math
-import random
+import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+import requests
+from PIL import Image, ImageDraw, ImageFilter
+from botocore.exceptions import ClientError
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "apps/hamyar-app/src/main/assets/practice-covers"
+sys.path.insert(0, str(ROOT / "scripts"))
+from s3_targets import target  # noqa: E402
+
 SIZE = 512
-
-# Legacy asset intentionally removed from the current wellness catalog.
-FORBIDDEN_IDS = {"hl-sleep-calm"}
-
-MOTIFS = {
-    "hl-cycle": "calendar", "pd-child": "rest", "pd-diaph": "breath", "pd-478": "breath",
-    "th-strengths": "journal", "mu-pitch": "piano", "mu-staff": "staff",
-    "mu-rhythm": "drum", "mu-meter": "metronome",
-    "sk-speed": "book", "sk-hand": "pen", "sk-type": "keyboard", "sk-cornell": "notes",
-    "sk-summary": "summary", "sk-debate": "debate", "sk-fallacy": "puzzle",
-    "sk-present": "microphone", "sk-voice": "voice", "sk-email": "envelope",
-    "sk-listen": "listen", "sk-math": "math", "sk-palace": "castle", "sk-chain": "chain",
-    "sk-lateral": "bulb", "sk-family": "home", "sk-friend": "friends",
-    "sk-love-lang": "heart", "sk-feel": "face", "sk-esteem": "sprout", "sk-bias": "brain",
-    "sk-resilience": "leaf", "sk-plan": "checklist", "sk-habit": "cycle", "sk-desk": "desk",
-    "sk-win": "computer", "sk-ai-what": "network", "sk-ai-use": "ai-book",
-    "sk-ai-limit": "warning", "sk-search": "search", "sk-privacy": "lock",
-    "sk-fake": "news", "sk-team": "team", "sk-conflict": "peace", "sk-no": "stop",
-    "sk-budget": "coins", "sk-need": "target", "sk-storm": "cloud", "sk-everyday": "tools",
-}
-
-PALETTES = {
-    "hl": ((247, 210, 221), (245, 239, 227), (133, 52, 83)),
-    "pd": ((241, 205, 215), (236, 222, 242), (117, 57, 92)),
-    "mu": ((224, 204, 166), (244, 232, 207), (79, 57, 43)),
-    "th": ((204, 226, 208), (239, 231, 205), (53, 92, 66)),
-    "sk": ((193, 221, 230), (238, 226, 200), (42, 78, 92)),
-}
+NAMES = (
+    "hl-sleep-prep.jpg",
+    "sd-study.jpg",
+    "sd-stress.jpg",
+    "sd-nature.jpg",
+    "sd-noise.jpg",
+    "sd-freq.jpg",
+    "sd-sleep.jpg",
+)
+PREFIX = "assets/practice-covers/"
+CACHE_CONTROL = "public, max-age=3600, must-revalidate"
 
 
-def palette(tile_id: str):
-    return PALETTES.get(tile_id.split("-", 1)[0], PALETTES["sk"])
+def rgb(hex_color: str) -> tuple[int, int, int]:
+    h = hex_color.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def gradient(seed: int, start, end) -> Image.Image:
-    image = Image.new("RGB", (SIZE, SIZE))
-    px = image.load()
-    rng = random.Random(seed)
+def gradient(top: str, bottom: str) -> Image.Image:
+    a, b = rgb(top), rgb(bottom)
+    im = Image.new("RGB", (SIZE, SIZE))
+    pixels = im.load()
     for y in range(SIZE):
         t = y / (SIZE - 1)
+        color = tuple(round(a[c] * (1 - t) + b[c] * t) for c in range(3))
         for x in range(SIZE):
-            glow = 0.08 * math.sin((x / SIZE) * math.pi)
-            noise = rng.randint(-3, 3)
-            px[x, y] = tuple(max(0, min(255, int(a * (1 - t) + b * t + 255 * glow + noise))) for a, b in zip(start, end))
-    return image
+            pixels[x, y] = color
+    return im
 
 
-def line(draw: ImageDraw.ImageDraw, points, color, width=13, joint="curve"):
-    draw.line(points, fill=color, width=width, joint=joint)
+def soft_glow(im: Image.Image, xy: tuple[int, int, int, int], color: str, blur: int = 26) -> None:
+    layer = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    c = rgb(color)
+    d.ellipse(xy, fill=(*c, 100))
+    layer = layer.filter(ImageFilter.GaussianBlur(blur))
+    im.paste(Image.alpha_composite(im.convert("RGBA"), layer).convert("RGB"))
 
 
-def people(draw, ink, accent, count=2):
-    xs = [256] if count == 1 else ([205, 307] if count == 2 else [170, 256, 342])
-    for i, x in enumerate(xs):
-        y = 212 if count < 3 or i == 1 else 230
-        draw.ellipse((x-34, y-34, x+34, y+34), outline=ink, width=12, fill=(255, 248, 230))
-        draw.arc((x-62, y+35, x+62, y+158), 190, 350, fill=accent if i % 2 else ink, width=14)
+def draw_star(d: ImageDraw.ImageDraw, x: int, y: int, r: int, color: str) -> None:
+    c = rgb(color)
+    d.polygon([(x, y-r), (x+r//4, y-r//4), (x+r, y), (x+r//4, y+r//4),
+               (x, y+r), (x-r//4, y+r//4), (x-r, y), (x-r//4, y-r//4)], fill=c)
 
 
-def motif(draw: ImageDraw.ImageDraw, kind: str, ink, accent):
-    if kind == "book":
-        draw.rounded_rectangle((105,170,407,355),24,fill=(255,249,232),outline=ink,width=12); line(draw,[(256,180),(256,350)],accent,9); line(draw,[(130,210),(220,225)],ink,8); line(draw,[(292,225),(382,210)],ink,8)
-    elif kind == "pen":
-        line(draw,[(150,350),(342,158)],ink,30); line(draw,[(326,150),(365,189)],accent,30); draw.polygon([(135,365),(155,315),(185,345)],fill=ink); line(draw,[(118,390),(390,390)],accent,9)
-    elif kind == "keyboard":
-        draw.rounded_rectangle((90,175,422,350),22,fill=(255,249,232),outline=ink,width=12)
-        for r in range(3):
-            for c in range(8): draw.rounded_rectangle((115+c*36,200+r*38,141+c*36,226+r*38),5,outline=accent,width=5)
-        draw.rounded_rectangle((180,318,332,336),5,fill=ink)
-    elif kind in {"notes","checklist","journal"}:
-        draw.rounded_rectangle((135,105,377,407),22,fill=(255,249,232),outline=ink,width=12)
-        for y in (180,240,300,360): line(draw,[(190,y),(340,y)],accent,8)
-        if kind == "checklist":
-            for y in (180,240,300): draw.rectangle((155,y-12,178,y+11),outline=ink,width=5)
-        elif kind == "journal": draw.ellipse((165,135,210,180),fill=accent)
-        else: line(draw,[(175,115),(175,400)],accent,8)
-    elif kind == "summary":
-        for y,w in ((165,235),(215,185),(265,145)): line(draw,[(110,y),(110+w,y)],ink,10)
-        line(draw,[(130,340),(340,340)],accent,18); draw.polygon([(340,315),(405,340),(340,365)],fill=accent)
-    elif kind == "debate":
-        people(draw,ink,accent,2); draw.rounded_rectangle((100,105,235,170),24,outline=ink,width=9); draw.rounded_rectangle((277,95,412,160),24,outline=accent,width=9)
-    elif kind == "puzzle":
-        draw.rounded_rectangle((135,135,377,377),28,fill=(255,249,232),outline=ink,width=12); draw.ellipse((225,105,287,165),fill=accent); draw.ellipse((347,225,407,287),fill=accent); line(draw,[(256,145),(256,367)],ink,8); line(draw,[(145,256),(367,256)],ink,8)
-    elif kind in {"microphone","voice"}:
-        draw.rounded_rectangle((210,105,302,295),46,fill=(255,249,232),outline=ink,width=12); draw.arc((165,170,347,350),0,180,fill=accent,width=14); line(draw,[(256,350),(256,410)],ink,14); line(draw,[(190,410),(322,410)],ink,14)
-        if kind == "voice":
-            for dx in (0,25): draw.arc((315+dx,145-dx,390+dx,255+dx),270,90,fill=accent,width=8)
-    elif kind == "envelope":
-        draw.rounded_rectangle((90,150,422,365),22,fill=(255,249,232),outline=ink,width=12); line(draw,[(105,170),(256,285),(407,170)],accent,13); line(draw,[(105,350),(215,255)],ink,8); line(draw,[(407,350),(297,255)],ink,8)
-    elif kind == "listen":
-        draw.arc((130,95,345,405),265,100,fill=ink,width=18); draw.arc((190,170,305,330),265,105,fill=accent,width=14); draw.arc((300,165,430,345),270,90,fill=accent,width=9)
-    elif kind == "math":
-        line(draw,[(110,210),(220,210)],ink,16); line(draw,[(165,155),(165,265)],ink,16); line(draw,[(295,165),(395,265)],accent,16); line(draw,[(395,165),(295,265)],accent,16); line(draw,[(135,345),(377,345)],ink,13)
-    elif kind == "castle":
-        draw.rectangle((135,205,377,390),fill=(255,249,232),outline=ink,width=12); draw.rectangle((115,155,190,390),fill=(255,249,232),outline=ink,width=12); draw.rectangle((322,155,397,390),fill=(255,249,232),outline=ink,width=12); draw.arc((215,285,297,425),180,360,fill=accent,width=12)
-    elif kind == "chain":
-        draw.ellipse((105,185,275,335),outline=ink,width=20); draw.ellipse((237,185,407,335),outline=accent,width=20); line(draw,[(215,260),(297,260)],ink,15)
-    elif kind == "bulb":
-        draw.ellipse((160,90,352,310),fill=(255,249,215),outline=ink,width=12); line(draw,[(210,285),(225,385),(287,385),(302,285)],accent,12); line(draw,[(220,420),(292,420)],ink,14)
-        for a in range(0,360,45):
-            x=256+int(145*math.cos(math.radians(a))); y=200+int(145*math.sin(math.radians(a))); x2=256+int(180*math.cos(math.radians(a))); y2=200+int(180*math.sin(math.radians(a))); line(draw,[(x,y),(x2,y2)],accent,8)
-    elif kind == "home":
-        draw.polygon([(95,260),(256,105),(417,260)],fill=(255,249,232),outline=ink); draw.rectangle((130,245,382,405),fill=(255,249,232),outline=ink,width=12); draw.rounded_rectangle((225,300,287,405),20,outline=accent,width=10)
-    elif kind in {"friends","team"}:
-        people(draw,ink,accent,3 if kind=="team" else 2)
-    elif kind == "heart":
-        draw.polygon([(256,405),(110,245),(120,155),(190,120),(256,185),(322,120),(392,155),(402,245)],fill=(255,241,232),outline=ink); line(draw,[(155,255),(220,255),(245,215),(280,300),(310,255),(365,255)],accent,11)
-    elif kind == "face":
-        draw.ellipse((105,105,407,407),fill=(255,249,232),outline=ink,width=12); draw.ellipse((175,205,205,235),fill=ink); draw.ellipse((307,205,337,235),fill=ink); draw.arc((180,225,332,345),15,165,fill=accent,width=12)
-    elif kind in {"sprout","leaf"}:
-        line(draw,[(256,405),(256,205)],ink,16); draw.ellipse((130,155,255,265),fill=(226,245,212),outline=accent,width=10); draw.ellipse((257,120,392,245),fill=(226,245,212),outline=ink,width=10); draw.arc((120,355,392,455),180,360,fill=accent,width=10)
-    elif kind == "brain":
-        draw.ellipse((115,125,397,370),fill=(255,239,225),outline=ink,width=12); line(draw,[(256,135),(256,360)],accent,9); draw.arc((145,165,260,280),110,300,fill=ink,width=8); draw.arc((250,205,370,340),250,80,fill=accent,width=8)
-    elif kind == "cycle":
-        draw.arc((110,110,402,402),35,210,fill=ink,width=20); draw.polygon([(105,285),(125,205),(180,265)],fill=ink); draw.arc((110,110,402,402),215,390,fill=accent,width=20); draw.polygon([(407,227),(387,307),(332,247)],fill=accent)
-    elif kind == "desk":
-        draw.rectangle((95,235,417,285),fill=(255,249,232),outline=ink,width=11); line(draw,[(135,285),(115,415)],ink,14); line(draw,[(377,285),(397,415)],ink,14); draw.rectangle((170,145,342,235),outline=accent,width=10); line(draw,[(256,235),(256,275)],accent,10)
-    elif kind == "computer":
-        draw.rounded_rectangle((100,100,412,335),24,fill=(244,250,249),outline=ink,width=12); line(draw,[(100,175),(412,175)],accent,9); line(draw,[(256,335),(256,405)],ink,14); line(draw,[(185,405),(327,405)],ink,14)
-        for x in (130,165,200): draw.ellipse((x,132,x+16,148),fill=accent)
-    elif kind in {"network","ai-book"}:
-        nodes=[(150,170),(360,155),(256,255),(155,355),(360,365)]
-        for a,b in ((0,2),(1,2),(2,3),(2,4)): line(draw,[nodes[a],nodes[b]],accent,9)
-        for x,y in nodes: draw.ellipse((x-25,y-25,x+25,y+25),fill=(255,249,232),outline=ink,width=8)
-        if kind=="ai-book": draw.rounded_rectangle((170,300,342,425),18,outline=ink,width=10)
-    elif kind == "warning":
-        draw.polygon([(256,80),(435,405),(77,405)],fill=(255,243,210),outline=ink); line(draw,[(256,175),(256,305)],accent,22); draw.ellipse((243,340,269,366),fill=accent)
-    elif kind == "search":
-        draw.ellipse((105,105,330,330),fill=(246,251,247),outline=ink,width=16); line(draw,[(310,310),(415,415)],accent,28)
-    elif kind == "lock":
-        draw.rounded_rectangle((135,225,377,420),26,fill=(255,249,232),outline=ink,width=12); draw.arc((175,80,337,300),180,360,fill=accent,width=18); draw.ellipse((238,285,274,321),fill=ink); line(draw,[(256,315),(256,365)],ink,12)
-    elif kind == "news":
-        draw.rounded_rectangle((105,95,407,417),20,fill=(255,249,232),outline=ink,width=12); draw.rectangle((135,135,245,245),outline=accent,width=10)
-        for y in (150,195,270,315,360): line(draw,[(270 if y<245 else 135,y),(375,y)],ink,8)
-        line(draw,[(145,380),(225,300)],accent,13); line(draw,[(145,300),(225,380)],accent,13)
-    elif kind == "peace":
-        draw.rounded_rectangle((80,120,235,240),30,outline=ink,width=10); draw.rounded_rectangle((277,120,432,240),30,outline=accent,width=10); draw.arc((135,230,377,440),180,360,fill=ink,width=13); draw.polygon([(256,315),(220,365),(292,365)],fill=accent)
-    elif kind == "stop":
-        pts=[(180,85),(332,85),(427,180),(427,332),(332,427),(180,427),(85,332),(85,180)]
-        draw.polygon(pts,fill=(255,239,225),outline=ink); line(draw,[(150,256),(362,256)],accent,28)
-    elif kind == "coins":
-        for x,y in ((165,315),(256,285),(347,330)): draw.ellipse((x-65,y-35,x+65,y+35),fill=(255,231,155),outline=ink,width=9)
-        draw.rounded_rectangle((110,105,402,255),35,outline=accent,width=12); draw.ellipse((226,140,286,200),outline=ink,width=9)
-    elif kind == "target":
-        for r,c in ((155,ink),(110,accent),(60,ink)): draw.ellipse((256-r,256-r,256+r,256+r),outline=c,width=13)
-        line(draw,[(256,256),(405,107)],accent,16); draw.polygon([(405,107),(350,118),(394,162)],fill=accent)
-    elif kind == "cloud":
-        draw.ellipse((95,190,250,350),fill=(247,250,246),outline=ink,width=10); draw.ellipse((180,120,345,350),fill=(247,250,246),outline=ink,width=10); draw.ellipse((275,195,425,350),fill=(247,250,246),outline=ink,width=10); line(draw,[(145,385),(365,385)],accent,12)
-    elif kind == "tools":
-        line(draw,[(135,385),(350,170)],ink,28); draw.ellipse((285,105,405,225),outline=accent,width=18); draw.polygon([(120,405),(155,330),(195,370)],fill=accent)
-    elif kind == "calendar":
-        draw.rounded_rectangle((105,115,407,405),25,fill=(255,249,245),outline=ink,width=12); line(draw,[(105,190),(407,190)],accent,13)
-        for y in (235,290,345):
-            for x in (155,220,285,350): draw.ellipse((x-9,y-9,x+9,y+9),fill=accent if (x+y)%3 else ink)
-    elif kind in {"rest","breath"}:
-        draw.ellipse((190,125,322,257),fill=(255,249,232),outline=ink,width=11); draw.arc((125,230,387,430),190,350,fill=accent,width=16)
-        if kind=="breath":
-            for r in (45,75,105): draw.arc((256-r,245-r,256+r,245+r),290,70,fill=ink,width=7)
-        else: line(draw,[(145,350),(367,350)],ink,12)
-    elif kind == "piano":
-        draw.rounded_rectangle((75,145,437,365),18,fill=(255,249,232),outline=ink,width=12)
-        for x in range(95,420,45): line(draw,[(x,155),(x,355)],ink,6)
-        for x in (125,215,260,350): draw.rectangle((x,155,x+30,270),fill=ink)
-    elif kind == "staff":
-        for y in (170,215,260,305,350): line(draw,[(85,y),(427,y)],ink,8)
-        draw.ellipse((215,225,275,270),fill=accent); line(draw,[(268,245),(268,120)],accent,10)
-    elif kind == "drum":
-        draw.ellipse((120,150,392,245),fill=(255,249,232),outline=ink,width=12); draw.polygon([(120,198),(150,390),(362,390),(392,198)],fill=(255,240,215),outline=ink); line(draw,[(155,105),(335,300)],accent,13); line(draw,[(357,105),(177,300)],accent,13)
-    elif kind == "metronome":
-        draw.polygon([(165,405),(347,405),(320,105),(192,105)],fill=(255,249,232),outline=ink); line(draw,[(256,345),(310,145)],accent,12); draw.ellipse((295,130,325,160),fill=accent)
-    else:
-        draw.ellipse((120,120,392,392),fill=(255,249,232),outline=ink,width=14); draw.ellipse((205,205,307,307),fill=accent)
+def wave_points(y0: int, amp: int, cycles: float, phase: float = 0, x0: int = 34, x1: int = 478) -> list[tuple[int, int]]:
+    return [(x, round(y0 + math.sin((x / SIZE) * cycles * 2 * math.pi + phase) * amp))
+            for x in range(x0, x1 + 1, 3)]
 
 
-def generate(tile_id: str, destination: Path) -> None:
-    seed = int(hashlib.sha256(tile_id.encode()).hexdigest()[:8], 16)
-    start, end, ink = palette(tile_id)
-    image = gradient(seed, start, end)
-    draw = ImageDraw.Draw(image)
-    accent = tuple(max(0, min(255, x + d)) for x, d in zip(ink, (55, 35, 45)))
-    draw.rounded_rectangle((45,45,467,467),55,fill=(255,255,255,90),outline=(255,255,255),width=5)
-    motif(draw, MOTIFS[tile_id], ink, accent)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    image.save(destination, "JPEG", quality=88, optimize=True, progressive=True)
+def cover_sleep_prep() -> Image.Image:
+    im = gradient("#D6E9E8", "#B7C7DD")
+    soft_glow(im, (60, 25, 390, 355), "#F5E9CC", 30)
+    d = ImageDraw.Draw(im)
+    # Soft moon and stars.
+    d.ellipse((332, 60, 420, 148), fill=rgb("#F5D88B"))
+    d.ellipse((358, 44, 438, 126), fill=rgb("#DCE6E7"))
+    for x, y, r in [(116, 78, 12), (220, 132, 8), (430, 187, 8), (286, 72, 7)]:
+        draw_star(d, x, y, r, "#FFF5D7")
+    # A peaceful bed/pillow, with a folded blanket.
+    d.rounded_rectangle((72, 285, 445, 412), radius=28, fill=rgb("#688E9A"))
+    d.rounded_rectangle((91, 272, 428, 367), radius=26, fill=rgb("#E9F0E7"))
+    d.rounded_rectangle((104, 276, 220, 340), radius=20, fill=rgb("#FFF7E8"))
+    d.polygon([(90, 344), (425, 344), (425, 392), (90, 392)], fill=rgb("#92B9B6"))
+    d.rounded_rectangle((72, 395, 445, 430), radius=16, fill=rgb("#526D83"))
+    # Small plant at the bedside.
+    d.line((70, 302, 56, 235), fill=rgb("#446B5B"), width=7)
+    d.ellipse((29, 225, 67, 258), fill=rgb("#6E9C77"))
+    d.ellipse((53, 244, 91, 277), fill=rgb("#80B58C"))
+    d.ellipse((35, 264, 68, 293), fill=rgb("#5D906D"))
+    return im
+
+
+def cover_study() -> Image.Image:
+    im = gradient("#D9ECF4", "#E6D4B8")
+    soft_glow(im, (245, 32, 473, 251), "#FFF4CE", 20)
+    d = ImageDraw.Draw(im)
+    # Sunlit window.
+    d.rounded_rectangle((290, 55, 447, 211), radius=18, fill=rgb("#F8E7BC"), outline=rgb("#FFFFFF"), width=8)
+    d.line((369, 60, 369, 207), fill=rgb("#D8B987"), width=6)
+    d.line((297, 133, 442, 133), fill=rgb("#D8B987"), width=6)
+    # Open book on desk.
+    d.polygon([(54, 285), (248, 253), (250, 421), (64, 450)], fill=rgb("#3D628B"))
+    d.polygon([(250, 253), (454, 286), (445, 450), (250, 421)], fill=rgb("#496C93"))
+    d.polygon([(70, 293), (244, 266), (244, 403), (77, 426)], fill=rgb("#FFF7DE"))
+    d.polygon([(257, 266), (438, 294), (428, 426), (257, 403)], fill=rgb("#FFF9E9"))
+    for y in [318, 345, 372, 395]:
+        d.line((94, y, 218, y-18), fill=rgb("#B8C9C7"), width=4)
+        d.line((279, y-15, 409, y+5), fill=rgb("#B8C9C7"), width=4)
+    d.line((250, 258, 250, 421), fill=rgb("#B08356"), width=6)
+    # Floating music notes.
+    d.ellipse((122, 198, 151, 222), fill=rgb("#D77FA0"))
+    d.line((146, 209, 146, 151), fill=rgb("#D77FA0"), width=7)
+    d.ellipse((168, 174, 196, 198), fill=rgb("#D77FA0"))
+    d.line((191, 185, 191, 126), fill=rgb("#D77FA0"), width=7)
+    d.line((146, 151, 191, 143), fill=rgb("#D77FA0"), width=7)
+    # Desk edge.
+    d.polygon([(36, 435), (475, 435), (495, 485), (18, 485)], fill=rgb("#A97F58"))
+    return im
+
+
+def cover_stress() -> Image.Image:
+    im = gradient("#F8D8B4", "#F0A8A0")
+    d = ImageDraw.Draw(im)
+    # Sun and pastel horizon.
+    d.ellipse((182, 82, 330, 230), fill=rgb("#FFE9A6"))
+    d.rectangle((0, 218, 512, 512), fill=rgb("#E5A2A2"))
+    d.rectangle((0, 258, 512, 512), fill=rgb("#D99DAD"))
+    # Layered ocean waves.
+    for y, color, amp, phase in [(294, "#9CBFD3", 20, 0.0), (342, "#6899B8", 23, 1.3),
+                                  (392, "#487E9B", 17, 2.0), (445, "#38677F", 20, 0.8)]:
+        points = [(0, 512), (0, y)]
+        points += wave_points(y, amp, 2.2, phase, 0, 512)
+        points += [(512, 512)]
+        d.polygon(points, fill=rgb(color))
+        for yy in range(y+5, y+25, 12):
+            d.line(wave_points(yy, 6, 2.1, phase, 18, 495), fill=rgb("#D7E7E8"), width=3)
+    # Distant birds.
+    d.arc((100, 178, 133, 200), 190, 335, fill=rgb("#936D86"), width=4)
+    d.arc((126, 176, 158, 199), 205, 345, fill=rgb("#936D86"), width=4)
+    # Subtle foreground leaves.
+    d.line((37, 476, 68, 413), fill=rgb("#517F6D"), width=6)
+    d.ellipse((29, 424, 62, 454), fill=rgb("#70A28A"))
+    d.ellipse((56, 438, 91, 465), fill=rgb("#81B398"))
+    return im
+
+
+def cover_nature() -> Image.Image:
+    im = gradient("#D4E8D0", "#9BC5B7")
+    soft_glow(im, (155, 30, 386, 271), "#EBEAC8", 25)
+    d = ImageDraw.Draw(im)
+    # Layered forest canopy.
+    for x, y, r, color in [(16, 62, 102, "#548F65"), (94, 38, 88, "#7EB17B"),
+                           (454, 64, 110, "#4B865C"), (383, 25, 88, "#75A970"),
+                           (43, 202, 77, "#78A972"), (467, 204, 84, "#5E9A69")]:
+        d.ellipse((x-r//2, y-r//2, x+r//2, y+r//2), fill=rgb(color))
+    # Rock ledges.
+    d.polygon([(110, 215), (230, 188), (294, 215), (380, 199), (446, 247),
+               (407, 282), (146, 286)], fill=rgb("#687C77"))
+    # Waterfall and pool.
+    d.polygon([(205, 183), (309, 183), (333, 354), (184, 354)], fill=rgb("#A5DAE4"))
+    d.polygon([(230, 190), (247, 190), (238, 345), (214, 345)], fill=rgb("#DFF7F4"))
+    d.polygon([(284, 189), (299, 190), (316, 345), (293, 345)], fill=rgb("#7CC0D1"))
+    d.ellipse((84, 325, 430, 459), fill=rgb("#5CA7B5"))
+    d.ellipse((119, 350, 398, 447), fill=rgb("#7DC7CE"))
+    # Foreground banks and foliage.
+    d.polygon([(0, 386), (112, 345), (177, 405), (140, 512), (0, 512)], fill=rgb("#3F7857"))
+    d.polygon([(512, 376), (401, 338), (358, 408), (392, 512), (512, 512)], fill=rgb("#477E58"))
+    for x, y, color in [(61, 389, "#8EB879"), (90, 423, "#9FC987"), (438, 397, "#91BE7C"),
+                        (405, 432, "#7EAF72"), (132, 463, "#6AA36B"), (380, 466, "#5F9964")]:
+        d.ellipse((x-18, y-10, x+18, y+10), fill=rgb(color))
+    return im
+
+
+def cover_noise() -> Image.Image:
+    im = gradient("#192650", "#392D78")
+    soft_glow(im, (68, 54, 453, 440), "#4D65C5", 30)
+    d = ImageDraw.Draw(im)
+    # Soft speaker body and concentric sound waves.
+    d.rounded_rectangle((178, 168, 336, 344), radius=28, fill=rgb("#273B72"), outline=rgb("#8DAAE7"), width=5)
+    d.polygon([(205, 216), (249, 183), (249, 329), (205, 296)], fill=rgb("#D4DDF5"))
+    d.ellipse((258, 211, 317, 271), outline=rgb("#A3BBEE"), width=7)
+    d.ellipse((270, 223, 305, 258), outline=rgb("#E3CBFF"), width=5)
+    for radius, color, width in [(104, "#79D4E4", 8), (143, "#8F9BEB", 7), (182, "#D18CE8", 5)]:
+        d.arc((256-radius, 256-radius, 256+radius, 256+radius), 300, 60, fill=rgb(color), width=width)
+        d.arc((256-radius, 256-radius, 256+radius, 256+radius), 120, 240, fill=rgb(color), width=width)
+    # Sound waves at the base.
+    d.line(wave_points(421, 18, 4.4, .3, 45, 467), fill=rgb("#84E2DD"), width=5)
+    d.line(wave_points(447, 11, 4.4, 1.2, 45, 467), fill=rgb("#E6A9E9"), width=4)
+    for x, y in [(79, 105), (413, 105), (115, 360), (390, 360)]:
+        draw_star(d, x, y, 9, "#F5DCA7")
+    return im
+
+
+def cover_frequency() -> Image.Image:
+    im = gradient("#171D52", "#322878")
+    soft_glow(im, (58, 62, 456, 445), "#5144AA", 33)
+    d = ImageDraw.Draw(im)
+    for box, color, width in [
+        ((52, 72, 460, 440), "#6C8AE3", 5),
+        ((80, 98, 432, 414), "#8F7BE9", 5),
+        ((111, 124, 401, 387), "#B58EE8", 4),
+    ]:
+        d.ellipse(box, outline=rgb(color), width=width)
+    # Waveform with a calm spectrum across the center.
+    colors = ["#68D5E7", "#76E3CB", "#E9D18A", "#EBA5C4", "#A5A1FF"]
+    points = []
+    for x in range(78, 435, 2):
+        envelope = 0.35 + 0.65 * math.exp(-((x - 256) / 100) ** 2)
+        y = 256 + math.sin((x - 78) / 356 * 18 * math.pi) * 70 * envelope
+        points.append((x, round(y)))
+    # Draw layered segments so the spectrum reads without text.
+    for i, color in enumerate(colors):
+        seg = points[i*70:(i+1)*70+1]
+        if len(seg) > 1:
+            d.line(seg, fill=rgb(color), width=7)
+    d.line([(80, 256), (432, 256)], fill=rgb("#D7D9FF"), width=3)
+    for x in [110, 158, 206, 254, 302, 350, 398]:
+        d.ellipse((x-5, 251, x+5, 261), fill=rgb("#FFF1C2"))
+    return im
+
+
+def cover_sleep_audio() -> Image.Image:
+    im = gradient("#252B66", "#6B68AB")
+    soft_glow(im, (100, 28, 417, 346), "#7A7BC1", 28)
+    d = ImageDraw.Draw(im)
+    # Crescent moon.
+    d.ellipse((183, 65, 332, 214), fill=rgb("#F6D68F"))
+    d.ellipse((224, 42, 348, 174), fill=rgb("#31366F"))
+    for x, y, r in [(107, 99, 11), (391, 101, 10), (365, 220, 8), (130, 230, 8)]:
+        draw_star(d, x, y, r, "#FFF2C7")
+    # Floating notes imply a quiet audio track.
+    d.ellipse((352, 169, 379, 192), fill=rgb("#9BE1E1"))
+    d.line((374, 180, 374, 131), fill=rgb("#9BE1E1"), width=6)
+    d.ellipse((133, 179, 157, 201), fill=rgb("#F0AFD2"))
+    d.line((153, 190, 153, 150), fill=rgb("#F0AFD2"), width=6)
+    # Soft clouds along the bottom.
+    for x, y, w, h, color in [
+        (15, 323, 170, 100, "#C1C7E8"), (120, 348, 210, 95, "#D7D8EF"),
+        (302, 319, 194, 112, "#B0B7E0"), (29, 380, 236, 99, "#A7B0D7"),
+        (233, 384, 264, 94, "#C4CBE9"),
+    ]:
+        d.ellipse((x, y, x+w, y+h), fill=rgb(color))
+    d.arc((54, 405, 224, 462), 205, 335, fill=rgb("#F5E9C8"), width=5)
+    return im
+
+
+GENERATORS = {
+    "hl-sleep-prep.jpg": cover_sleep_prep,
+    "sd-study.jpg": cover_study,
+    "sd-stress.jpg": cover_stress,
+    "sd-nature.jpg": cover_nature,
+    "sd-noise.jpg": cover_noise,
+    "sd-freq.jpg": cover_frequency,
+    "sd-sleep.jpg": cover_sleep_audio,
+}
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def missing_object(exc: ClientError) -> bool:
+    code = str(exc.response.get("Error", {}).get("Code", ""))
+    status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+    return code in {"404", "NoSuchKey", "NotFound"} or status == 404
+
+
+def upload_and_verify(dst, path: Path) -> tuple[str, int, str, str]:
+    client = dst.client()
+    body = path.read_bytes()
+    digest = sha256_bytes(body)
+    size = len(body)
+    key = PREFIX + path.name
+    existing = None
+    try:
+        existing = client.head_object(Bucket=dst.bucket, Key=key)
+    except ClientError as exc:
+        if not missing_object(exc):
+            raise
+    metadata = (existing or {}).get("Metadata") or {}
+    identical = (
+        existing is not None
+        and int(existing.get("ContentLength") or -1) == size
+        and metadata.get("sha256", "") == digest
+    )
+    state = "already-identical"
+    if not identical:
+        args = {
+            "Bucket": dst.bucket, "Key": key, "Body": body,
+            "ContentLength": size, "ContentType": "image/jpeg",
+            "CacheControl": CACHE_CONTROL, "Metadata": {"sha256": digest},
+        }
+        try:
+            client.put_object(ACL="public-read", **args)
+        except ClientError:
+            client.put_object(**args)
+        state = "uploaded"
+
+    stored = client.head_object(Bucket=dst.bucket, Key=key)
+    if (int(stored.get("ContentLength") or -1) != size
+            or (stored.get("Metadata") or {}).get("sha256") != digest):
+        return path.name, size, state, "failed-head-size-or-hash"
+
+    url = dst.public_url(key)
+    try:
+        response = requests.get(url, timeout=45)
+        public = "verified-200-hash-match" if (
+            response.status_code == 200 and sha256_bytes(response.content) == digest
+        ) else f"failed-http-{response.status_code}-or-hash"
+    except Exception as exc:  # noqa: BLE001
+        public = "failed-" + type(exc).__name__
+    return path.name, size, state, public
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--source", type=Path, required=True, help="App assets/practice-covers folder")
+    parser.add_argument("--report", type=Path, default=Path("ci-report/missing-tile-covers-upload.md"))
     args = parser.parse_args()
-    forbidden_in_generator = FORBIDDEN_IDS.intersection(MOTIFS)
-    if forbidden_in_generator:
-        raise SystemExit(
-            "forbidden legacy practice-cover IDs present in generator: "
-            + ", ".join(sorted(forbidden_in_generator))
-        )
+    source = args.source.resolve()
+    source.mkdir(parents=True, exist_ok=True)
 
-    for legacy_id in sorted(FORBIDDEN_IDS):
-        stale = OUTPUT / f"{legacy_id}.jpg"
-        if stale.exists():
-            stale.unlink()
-            print("removed legacy", stale.relative_to(ROOT))
+    # Regenerate deterministic 512x512 illustrations on every run so the seven
+    # committed APK covers and ParsPack objects always come from the same bytes.
+    for name, factory in GENERATORS.items():
+        image = factory().convert("RGB")
+        if image.size != (SIZE, SIZE):
+            raise SystemExit(f"Unexpected output size for {name}: {image.size}")
+        path = source / name
+        image.save(path, format="JPEG", quality=88, optimize=True, progressive=True)
+        with Image.open(path) as check:
+            check.verify()
+        print(f"RENDERED {path.relative_to(ROOT)} {path.stat().st_size}B")
 
-    made = skipped = 0
-    for tile_id in sorted(MOTIFS):
-        target = OUTPUT / f"{tile_id}.jpg"
-        if target.exists() and not args.force:
-            skipped += 1
-            continue
-        generate(tile_id, target)
-        made += 1
-        print("generated", target.relative_to(ROOT))
-    print(f"done generated={made} existing={skipped}")
-    return 0
+    dst = target("parspack")
+    if dst.bucket != "c539776":
+        raise SystemExit("Safety check failed: configured ParsPack bucket is not c539776")
+
+    rows = []
+    failures = 0
+    uploaded = identical = 0
+    total_bytes = 0
+    for name in NAMES:
+        result = upload_and_verify(dst, source / name)
+        rows.append(result)
+        filename, size, state, public = result
+        total_bytes += size
+        if public != "verified-200-hash-match":
+            failures += 1
+        elif state == "uploaded":
+            uploaded += 1
+        else:
+            identical += 1
+        print(f"{'OK' if public == 'verified-200-hash-match' else 'FAIL'} {PREFIX}{filename} {size}B write={state} public={public}")
+
+    report = [
+        "# ParsPack missing wellness tile covers", "",
+        f"- Bucket: \`{dst.bucket}\`", f"- Expected files: {len(NAMES)}",
+        f"- Uploaded: {uploaded}", f"- Already identical: {identical}",
+        f"- Failures: {failures}", f"- Source bytes: {total_bytes}", "",
+        "| File | Bytes | Write | Public verification | URL |",
+        "|---|---:|---|---|---|",
+    ]
+    report.extend(
+        f"| \`{name}\` | {size} | {state} | {public} | {dst.public_url(PREFIX + name)} |"
+        for name, size, state, public in rows
+    )
+    args.report.parent.mkdir(parents=True, exist_ok=True)
+    args.report.write_text("\n".join(report) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "expected": len(NAMES), "uploaded": uploaded, "identical": identical,
+        "failures": failures, "bytes": total_bytes,
+    }, ensure_ascii=False))
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())
