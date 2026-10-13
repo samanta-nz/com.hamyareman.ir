@@ -26,5 +26,20 @@
       "appwriteReadWriteReadBack": "success",
       "updateStateCommitted": "success"
     }
+  },
+  "latestSuccessfulCompileBuild": {
+    "versionName": "3.0.9",
+    "versionCode": 309,
+    "completedAt": "2026-10-13T02:32:15.640323+00:00",
+    "sourceCommit": "5009f05a170d0977121bb4ca162c350bf4cdc8bd",
+    "run": "https://github.com/samanta-nz/com.hamyareman.ir/actions/runs/38336760049",
+    "asset": "hamyar-grade9-3.0.9.apk",
+    "size": 32849536,
+    "sha256": "0cbae748c5ef29178554d09279d279a6329095540f5a58639a1ba6b941da74b2",
+    "signingSha256": "5f091b6bf47d7294b37f8994099a6c88ac2e25182dd6cbe6a36da6b3bf804959",
+    "status": {
+      "compile": "success",
+      "build": "success"
+    }
   }
 }
