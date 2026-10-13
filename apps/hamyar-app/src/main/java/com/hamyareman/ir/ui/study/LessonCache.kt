@@ -60,6 +60,9 @@ object LessonCache {
 
     private val locks = ConcurrentHashMap<String, Any>()
     private val recentChecks = ConcurrentHashMap<String, Long>()
+    private val failures = ConcurrentHashMap<String, String>()
+    fun failureMessage(url: String): String = failures[keyOf(url)]
+        ?: "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
 
     fun canonical(url: String): String {
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return url
@@ -181,6 +184,7 @@ object LessonCache {
         val target = fileFor(ctx, canonicalUrl)
         val hasCache = isCached(ctx, canonicalUrl)
         val now = System.currentTimeMillis()
+        failures.remove(key)
 
         if (!forceCheck && hasCache && now - (recentChecks[key] ?: 0L) < DEDUPE_MS) {
             onStatus?.invoke(Freshness.CACHED)
@@ -212,7 +216,10 @@ object LessonCache {
                 return null
             }
             if (code !in 200..299) {
-                if (!hasCache) return null
+                if (!hasCache) {
+                    failures[key] = "سرور دریافت فایل را نپذیرفت (HTTP $code). دوباره تلاش کنید."
+                    return null
+                }
                 onStatus?.invoke(Freshness.CACHED)
                 return PrepareResult(target, Freshness.CACHED)
             }
@@ -261,7 +268,8 @@ object LessonCache {
             writeMeta(ctx, canonicalUrl, RemoteMeta(downloaded.length, downloaded.etag, downloaded.modified))
             recentChecks[key] = System.currentTimeMillis()
             return PrepareResult(saved, freshness)
-        } catch (_: Throwable) {
+        } catch (error: Exception) {
+            if (error is BucketByteDownloader.InvalidContentException) failures[key] = "قالب فایل دریافت‌شده معتبر نیست؛ این خطا مربوط به اتصال اینترنت نیست."
             // آفلاین/timeout: کش سالم همان‌جا نمایش داده می‌شود.
             if (hasCache && isCached(ctx, canonicalUrl)) {
                 return PrepareResult(target, Freshness.CACHED)

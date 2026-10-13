@@ -230,7 +230,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
                     prepared?.resolvedUrl != null -> { pageUrl = prepared.resolvedUrl; pageWasCached = false; reloadToken++; refreshing = false }
                     prepared == null && !hasCache -> {
                         pageUrl = null
-                        error = "برای بار اول باز کردن این محتوا به اینترنت نیاز است."
+                        error = com.hamyareman.ir.ui.study.LessonCache.failureMessage(url)
                     }
                     prepared == null && hasCache -> {
                         refreshing = false

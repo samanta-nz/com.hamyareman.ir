@@ -66,7 +66,7 @@ open class HmkWebViewClient(
         } else LessonCache.prepare(appContext, url, confirmUpdates = confirmUpdates)
         if (prepared == null) {
             if (request.isForMainFrame && isHtml) {
-                lastMessage = MSG_OFFLINE
+                lastMessage = LessonCache.failureMessage(url)
                 onProblem(Problem.OFFLINE)
                 return errorPage(MSG_OFFLINE)
             }
@@ -125,16 +125,7 @@ open class HmkWebViewClient(
             return null // دانلود تکراری راه نمی‌اندازیم؛ مشکل کلید است نه فایل.
         }
 
-        LessonCache.evict(appContext, url)
-        val again = LessonCache.ensure(appContext, url) ?: run {
-            lastMessage = MSG_OFFLINE
-            onProblem(Problem.OFFLINE)
-            return null
-        }
-        val bytes = runCatching { again.readBytes() }.getOrNull()
-        if (bytes != null && bytes.size <= LessonCache.MAX_DECRYPT_BYTES) {
-            runCatching { HtmlCodec.unwrap(appContext, bytes) }.onSuccess { return it }
-        }
+        // Authentication failure cannot be repaired by downloading the identical ciphertext.
         lastMessage = MSG_CORRUPT
         onProblem(Problem.CORRUPT)
         return null

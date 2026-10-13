@@ -57,6 +57,27 @@ class BucketByteDownloaderTest {
         } finally { server.stop(0); directory.deleteRecursively() }
     }
 
+    @Test fun invalidContentIsDownloadedOnceAndPreservesThePreviousCache() {
+        var requests = 0
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/file") { exchange ->
+            requests++
+            val data = "unsupported envelope".toByteArray()
+            exchange.sendResponseHeaders(200, data.size.toLong())
+            exchange.responseBody.use { it.write(data) }
+        }
+        server.start()
+        val directory = Files.createTempDirectory("bucket-invalid").toFile()
+        try {
+            val target = directory.resolve("cache").apply { writeText("previous") }
+            try {
+                BucketByteDownloader.download("http://127.0.0.1:" + server.address.port + "/file", target, silent = true, validate = { false })
+                fail("Invalid content must fail")
+            } catch (_: BucketByteDownloader.InvalidContentException) { }
+            assertEquals(1, requests)
+            assertEquals("previous", target.readText())
+        } finally { server.stop(0); directory.deleteRecursively() }
+    }
     @Test fun forbiddenResponseIsNotClassifiedAsMissing() {
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/file") { it.sendResponseHeaders(403, -1); it.close() }

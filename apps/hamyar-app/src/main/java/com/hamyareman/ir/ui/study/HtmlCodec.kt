@@ -13,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec
 object HtmlCodec {
 
     private val MAGIC = byteArrayOf(0x48, 0x4D, 0x4B, 0x31) // HMK1
+    private val COMPAT_MAGIC = byteArrayOf(0x4D, 0x48, 0x4B, 0x31) // MHK1, same authenticated envelope
 
     /** کمینهٔ اندازهٔ یک فایل معتبر: magic ۴ + IV ۱۲ + تگ GCM ۱۶. */
     const val MIN_WRAPPED_BYTES: Int = 4 + 12 + 16
@@ -20,8 +21,8 @@ object HtmlCodec {
     /** فقط چهار بایت اول را می‌سنجد — برای وارسی سریع فایل روی دیسک یا سرِ پاسخ. */
     fun hasMagic(head: ByteArray): Boolean {
         if (head.size < MAGIC.size) return false
-        for (i in MAGIC.indices) if (head[i] != MAGIC[i]) return false
-        return true
+        return MAGIC.indices.all { head[it] == MAGIC[it] } ||
+            COMPAT_MAGIC.indices.all { head[it] == COMPAT_MAGIC[it] }
     }
 
     fun isWrapped(data: ByteArray): Boolean {

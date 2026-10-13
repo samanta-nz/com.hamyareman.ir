@@ -22,6 +22,16 @@ class HtmlCodecTest {
         val html = "<!doctype html><html>متن اصلی</html>".toByteArray()
         assertArrayEquals(html, HtmlCodec.unwrapWithKey(wrap(html), key))
     }
+    @Test fun mhk1CompatibilityEnvelopeUsesTheSameAuthenticatedCipher() {
+        val html = "<html>journey</html>".toByteArray()
+        val envelope = wrap(html)
+        "MHK1".toByteArray().copyInto(envelope)
+        assertTrue(HtmlCodec.hasMagic(envelope))
+        assertArrayEquals(html, HtmlCodec.unwrapWithKey(envelope, key))
+        envelope[envelope.lastIndex] = (envelope.last().toInt() xor 1).toByte()
+        try { HtmlCodec.unwrapWithKey(envelope, key); fail("Tag must still be authenticated") }
+        catch (_: javax.crypto.AEADBadTagException) { }
+    }
     @Test fun modifiedAuthenticationTagIsRejected() {
         val data = wrap("<html>test</html>".toByteArray())
         data[data.lastIndex] = (data.last().toInt() xor 1).toByte()

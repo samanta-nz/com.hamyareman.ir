@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption
 /** Downloads exact source bytes. Resume is bound to a strong ETag; old cache survives every failure. */
 internal object BucketByteDownloader {
     data class Result(val etag: String, val modified: Long, val length: Long)
+    internal class InvalidContentException : IOException("قالب محتوای دریافتی معتبر نیست")
     private class Paused : IOException()
     fun download(url: String, target: File, initial: HttpURLConnection? = null,
         silent: Boolean = false, validate: (File) -> Boolean,
@@ -61,7 +62,7 @@ internal object BucketByteDownloader {
                         output.fd.sync()
                     } }
                     if (total >= 0L && part.length() != total) throw IOException("دانلود ناقص است")
-                    if (!validate(part)) { part.delete(); tagFile.delete(); throw IOException("محتوا نامعتبر است") }
+                    if (!validate(part)) { part.delete(); tagFile.delete(); throw InvalidContentException() }
                     val result = Result(etag, c.lastModified, part.length())
                     Files.move(part.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
                     tagFile.delete()
@@ -71,6 +72,7 @@ internal object BucketByteDownloader {
                     transfer?.let(BucketTransfer::checkpoint)
                 } catch (cancelled: BucketTransfer.Cancelled) { throw cancelled }
                 catch (missing: StudyPdfCache.RemoteMissingException) { throw missing }
+                catch (invalid: InvalidContentException) { throw invalid }
                 catch (error: IOException) {
                     c.disconnect(); connection = null
                     if (++failures >= 3 || error.message.orEmpty().startsWith("HTTP 4")) {

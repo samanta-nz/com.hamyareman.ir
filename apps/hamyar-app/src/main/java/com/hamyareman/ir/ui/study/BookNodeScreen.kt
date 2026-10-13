@@ -157,7 +157,7 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
                     }
                     prepared == null && !hasCache -> {
                         pageReadyUrl = null
-                        error = "اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
+                        error = LessonCache.failureMessage(url)
                         transferLoading = false
                     }
                     prepared == null && hasCache -> {

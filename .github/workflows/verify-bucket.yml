@@ -1,7 +1,7 @@
 name: Verify bucket content 3.0.8
 on:
   push:
-    branches: [codex/bucket-3.0.8]
+    branches: [codex/bucket-3.0.8, codex/journey-3.0.9]
     paths:
       - "apps/**"
       - "shared/**"
@@ -27,6 +27,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Validate all bucket routes
         run: python3 scripts/audit_bucket_routes.py
+      - name: Verify actual journey envelope against server key
+        if: github.ref_name == 'codex/journey-3.0.9'
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID || '6abb134a002025222005' }}
+          APPWRITE_DATABASE_ID: '6abb238d000d05730d10'
+        run: |
+          python3 -m pip install requests cryptography
+          python3 scripts/verify_journey_envelope.py
       - name: Test and build
         run: ./gradlew --console=plain :core-common:testDebugUnitTest :feature-study:testDebugUnitTest :hamyar-app:testP09DebugUnitTest :hamyar-app:assembleP09Release
       - name: Verify APK contains no bundled lesson payload
@@ -48,3 +57,4 @@ jobs:
             apps/hamyar-app/build/outputs/apk/p09/release/*.apk
             **/build/reports/tests/**
             **/build/test-results/**
+            ci-report/journey-envelope.json
