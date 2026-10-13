@@ -169,7 +169,9 @@ object LessonCache {
     ): PrepareResult? {
         val canonicalUrl = canonical(url)
         val key = keyOf(canonicalUrl)
-        val lock = locks.getOrPut(key) { Any() }
+        // Both suffixes share a reentrant lock, so concurrent variant requests cannot deadlock.
+        val lockKey = keyOf(BucketHtmlPath.plainPath(canonicalUrl))
+        val lock = locks.getOrPut(lockKey) { Any() }
         return synchronized(lock) {
             prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus, confirmUpdates, forceCheck, tryAlternative)
         }
