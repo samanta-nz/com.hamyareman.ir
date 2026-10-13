@@ -96,11 +96,9 @@ object LessonCache {
     }
 
     private fun needsConfirmation(url: String): Boolean =
-        Uri.parse(url).path.orEmpty().substringAfterLast('.').lowercase() in setOf("html", "pdf", "mp3", "opus", "mp4")
+        BucketHtmlPath.isHtml(url) || Uri.parse(url).path.orEmpty().substringAfterLast('.').lowercase() in setOf("pdf", "mp3", "opus", "mp4")
 
-    private fun isHtmlUrl(url: String): Boolean =
-        runCatching { Uri.parse(url).path.orEmpty().endsWith(".html", ignoreCase = true) }
-            .getOrDefault(false)
+    private fun isHtmlUrl(url: String): Boolean = BucketHtmlPath.isHtml(url)
 
     private fun looksLikeHtmlFile(file: File): Boolean = runCatching {
         file.inputStream().use { input ->
@@ -112,7 +110,14 @@ object LessonCache {
 
     /** بدنهٔ معتبر: HMK1، یا برای آدرس‌های `.html` یک HTML ساده. */
     private fun isAcceptable(file: File, url: String): Boolean =
-        looksWrapped(file) || (file.length() > 0L && (!isHtmlUrl(url) || looksLikeHtmlFile(file)))
+        if (BucketHtmlPath.encrypted(url)) looksWrapped(file)
+        else looksWrapped(file) || (file.length() > 0L && (!isHtmlUrl(url) || looksLikeHtmlFile(file)))
+
+    fun cachedUrl(ctx: Context, url: String): String? {
+        if (isCached(ctx, url)) return canonical(url)
+        val alternate = BucketHtmlPath.alternative(canonical(url)) ?: return null
+        return alternate.takeIf { isCached(ctx, it) }
+    }
 
     fun evict(ctx: Context, url: String) {
         val key = keyOf(url)
@@ -160,12 +165,13 @@ object LessonCache {
         onStatus: ((Freshness) -> Unit)? = null,
         confirmUpdates: Boolean = true,
         forceCheck: Boolean = true,
+        tryAlternative: Boolean = true,
     ): PrepareResult? {
         val canonicalUrl = canonical(url)
         val key = keyOf(canonicalUrl)
         val lock = locks.getOrPut(key) { Any() }
         return synchronized(lock) {
-            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus, confirmUpdates, forceCheck)
+            prepareLocked(ctx, canonicalUrl, key, onProgress, onStatus, confirmUpdates, forceCheck, tryAlternative)
         }
     }
 
@@ -180,6 +186,7 @@ object LessonCache {
         onStatus: ((Freshness) -> Unit)?,
         confirmUpdates: Boolean,
         forceCheck: Boolean,
+        tryAlternative: Boolean,
     ): PrepareResult? {
         val target = fileFor(ctx, canonicalUrl)
         val hasCache = isCached(ctx, canonicalUrl)
@@ -208,6 +215,14 @@ object LessonCache {
             // ۴۰۴/۴۰۳/۵xx و مانند آن: نسخهٔ سالم قبلی می‌ماند؛ recentChecks ثبت نمی‌شود
             // تا بار بعد دوباره بررسی شود.
             if (code == 404 || code == 410) {
+                if (tryAlternative) {
+                    val alternate = BucketHtmlPath.alternative(canonicalUrl)
+                    if (alternate != null && !canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
+                        conn.disconnect()
+                        return prepare(ctx, alternate, onProgress, onStatus, confirmUpdates, forceCheck,
+                            tryAlternative = false)?.let { it.copy(resolvedUrl = it.resolvedUrl ?: alternate) }
+                    }
+                }
                 if (!canonicalUrl.endsWith(BooksMenu.SPACEHOLDER_KEY)) {
                     return prepare(ctx, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY), onProgress, onStatus, confirmUpdates && needsConfirmation(canonicalUrl), forceCheck = false)?.let {
                         PrepareResult(it.file, if (hasCache) Freshness.UPDATED else Freshness.DOWNLOADED, ServerResolver.internal(BooksMenu.SPACEHOLDER_KEY))
@@ -217,6 +232,9 @@ object LessonCache {
             }
             if (code !in 200..299) {
                 if (!hasCache) {
+                    cachedUrl(ctx, canonicalUrl)?.let { cached ->
+                        return PrepareResult(fileFor(ctx, cached), Freshness.CACHED, cached)
+                    }
                     failures[key] = "سرور دریافت فایل را نپذیرفت (HTTP $code). دوباره تلاش کنید."
                     return null
                 }
@@ -269,6 +287,9 @@ object LessonCache {
             recentChecks[key] = System.currentTimeMillis()
             return PrepareResult(saved, freshness)
         } catch (error: Exception) {
+            if (!hasCache) cachedUrl(ctx, canonicalUrl)?.let { cached ->
+                return PrepareResult(fileFor(ctx, cached), Freshness.CACHED, cached)
+            }
             if (error is BucketByteDownloader.InvalidContentException) failures[key] = "قالب فایل دریافت‌شده معتبر نیست؛ این خطا مربوط به اتصال اینترنت نیست."
             // آفلاین/timeout: کش سالم همان‌جا نمایش داده می‌شود.
             if (hasCache && isCached(ctx, canonicalUrl)) {

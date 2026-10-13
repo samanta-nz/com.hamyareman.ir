@@ -157,7 +157,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
     }
     var pageUrl by remember(activeId, initialUrl) {
         mutableStateOf(
-            initialUrl?.takeIf { com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, it) },
+            initialUrl?.let { com.hamyareman.ir.ui.study.LessonCache.cachedUrl(ctx, it) },
         )
     }
     var pageWasCached by remember(activeId, initialUrl) {
@@ -184,9 +184,10 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
 
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val url = com.hamyareman.ir.ui.study.ServerResolver.internal(current.key)
-        val hasCache = com.hamyareman.ir.ui.study.LessonCache.isCached(ctx, url)
+        val cachedAddress = com.hamyareman.ir.ui.study.LessonCache.cachedUrl(ctx, url)
+        val hasCache = cachedAddress != null
         if (hasCache && pageUrl == null) {
-            pageUrl = url
+            pageUrl = cachedAddress
             pageWasCached = true
         }
 
@@ -227,7 +228,7 @@ fun ContentHtmlScreen(itemId: String, onBack: () -> Unit) {
 
             handler.post {
                 when {
-                    prepared?.resolvedUrl != null -> { pageUrl = prepared.resolvedUrl; pageWasCached = false; reloadToken++; refreshing = false }
+                    prepared?.resolvedUrl != null -> { pageUrl = prepared.resolvedUrl; pageWasCached = prepared.freshness == com.hamyareman.ir.ui.study.LessonCache.Freshness.CACHED; if (!pageWasCached) reloadToken++; refreshing = false }
                     prepared == null && !hasCache -> {
                         pageUrl = null
                         error = com.hamyareman.ir.ui.study.LessonCache.failureMessage(url)

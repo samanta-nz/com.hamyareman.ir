@@ -111,7 +111,7 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val hasCache = LessonCache.isCached(context, url)
         if (hasCache && pageReadyUrl == null) {
-            pageReadyUrl = url
+            pageReadyUrl = cachedAddress
             cachedDocument = true
         }
 
@@ -147,9 +147,9 @@ internal fun RemoteHtmlPage(bucketKey: String, audioKey: String = "", onMissing:
                 when {
                     prepared?.resolvedUrl != null -> {
                         pageReadyUrl = prepared.resolvedUrl
-                        cachedDocument = false
+                        cachedDocument = prepared.freshness == LessonCache.Freshness.CACHED
                         transferLoading = false
-                        reloadToken++
+                        if (!cachedDocument) reloadToken++
                     }
                     gone -> {
                         transferLoading = false

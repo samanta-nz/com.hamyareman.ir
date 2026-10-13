@@ -171,10 +171,10 @@ object ContentCatalog {
     fun keyFor(fileId: String): String? = mirrorKeys[fileId]
 
     /** مقصد لینک نسبی در HTMLهای آموزشی، مثل 02-handwriting.html. */
-    fun itemIdForUrl(url: String): String? = pathFiles[android.net.Uri.parse(url).path.orEmpty().trimStart('/')]
+    fun itemIdForUrl(url: String): String? = pathFiles[com.hamyareman.ir.ui.study.BucketHtmlPath.plainPath(android.net.Uri.parse(url).path.orEmpty().trimStart('/'))]
 
     fun itemIdForRelativeFile(fileName: String): String? =
-        relativeFiles[fileName.substringBefore('?').substringBefore('#').substringAfterLast('/')]
+        relativeFiles[com.hamyareman.ir.ui.study.BucketHtmlPath.plainPath(fileName.substringBefore('?').substringBefore('#').substringAfterLast('/'))]
 
     /** یک فایل واقعیِ موجود روی هر دو origin برای سنجش Range و سرعت. */
     fun sampleHtmlItem(): ContentItem? =

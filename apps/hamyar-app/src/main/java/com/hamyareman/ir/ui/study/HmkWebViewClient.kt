@@ -45,7 +45,7 @@ open class HmkWebViewClient(
 
         val url = uri.toString()
         val path = uri.path.orEmpty()
-        val isHtml = path.endsWith(".html", ignoreCase = true)
+        val isHtml = BucketHtmlPath.isHtml(path)
         val isMusic = path.contains("background-music", ignoreCase = true)
 
         // iframe یک HTML واقعی است، نه «درس بعدی»: پاسخِ خالی در نسخهٔ قبل
@@ -60,9 +60,10 @@ open class HmkWebViewClient(
 
         // هر HTML از همین‌جا freshness check می‌شود. برای document اصلی، UI پیشاپیش
         // همین prepare را انجام داده و recentChecks مانع HEAD تکراری همان لحظه می‌شود.
-        val prepared = if (LessonCache.isCached(appContext, url)) {
+        val cachedUrl = LessonCache.cachedUrl(appContext, url)
+        val prepared = if (cachedUrl != null) {
             revalidateCached(view, url, request.isForMainFrame)
-            LessonCache.PrepareResult(LessonCache.fileFor(appContext, url), LessonCache.Freshness.CACHED)
+            LessonCache.PrepareResult(LessonCache.fileFor(appContext, cachedUrl), LessonCache.Freshness.CACHED, cachedUrl.takeIf { it != url })
         } else LessonCache.prepare(appContext, url, confirmUpdates = confirmUpdates)
         if (prepared == null) {
             if (request.isForMainFrame && isHtml) {
