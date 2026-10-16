@@ -10,6 +10,7 @@ import com.hamyareman.ir.platform.core.sync.SyncEngine
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
+import java.security.MessageDigest
 import java.util.UUID
 
 /**
@@ -90,7 +91,16 @@ class LessonMediaProgressRepository(
      */
     private fun stableRowId(userId: String, bookCode: String, lessonId: String, mediaType: MediaType): String {
         val u = userId.ifBlank { "anon" }
-        return "${u}__${bookCode}__${lessonId}__${mediaType.wire}".take(64)
+        val legacy = "${u}__${bookCode}__${lessonId}__${mediaType.wire}"
+        // Keep compatible IDs when valid; Appwrite rejects IDs longer than 36 characters
+        // or containing characters outside [A-Za-z0-9._-].
+        if (legacy.length <= 36 && legacy.matches(Regex("[A-Za-z0-9._-]+"))) return legacy
+        val raw = "$u|${bookCode}|${lessonId}|${mediaType.wire}"
+        val hex = MessageDigest.getInstance("SHA-256")
+            .digest(raw.toByteArray(Charsets.UTF_8))
+            .take(16)
+            .joinToString("") { (it.toInt() and 0xff).toString(16).padStart(2, '0') }
+        return "lmp_$hex"
     }
 
     /**
@@ -260,6 +270,7 @@ class LessonMediaProgressRepository(
             playbackSpeed = (data["playbackSpeed"] as? Number)?.toDouble() ?: 1.0,
             isCompleted = data["isCompleted"] as? Boolean ?: false,
             viewCount = (data["viewCount"] as? Number)?.toInt() ?: 0,
+            chapterIndex = (data["chapterIndex"] as? Number)?.toInt() ?: 0,
             lastViewedAtIso = (data["lastViewedAtIso"] as? String) ?: "",
             viewHistory = parseViewEvents(runCatching { JSONArray(viewHistoryRaw) }.getOrNull()),
             seekJumps = parseSeekEvents(runCatching { JSONArray(seekJumpsRaw) }.getOrNull()),
