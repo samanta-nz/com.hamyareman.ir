@@ -15,7 +15,7 @@ from s3_targets import target
 
 EXPECTED_SIZE = 163_527_961
 EXPECTED_SHA256 = "f3a290d384fbb27966d462905c71a46cef9e5fd00516b40df32a0b4afe77ac96"
-DEFAULT_KEY = "Hamyar-English/models/kokoro-v1.0.fp16.onnx"
+DEFAULT_KEY = "Hamyar.English/kokoro-v1.0.fp16.onnx"
 
 
 def sha256(path: Path) -> str:
