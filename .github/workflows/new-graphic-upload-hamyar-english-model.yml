@@ -2,6 +2,11 @@ name: Upload Hamyar English Kokoro model to ParsPack
 
 on:
   workflow_dispatch:
+  push:
+    branches: [New-graphic]
+    paths:
+      - '.github/workflows/new-graphic-upload-hamyar-english-model.yml'
+      - 'scripts/upload_kokoro_model.py'
 
 permissions:
   contents: read
